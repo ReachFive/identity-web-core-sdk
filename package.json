@@ -1,0 +1,35 @@
+{
+  "name": "@reach5/identity-core-sdk",
+  "version": "0.1.0",
+  "private": true,
+
+  "main": "cjs/main.js",
+  "module": "es/main.js",
+  "typings": "es/main/main.d.ts",
+
+  "dependencies": {
+    "validation.ts": "0.0.22",
+    "winchan": "0.2.0",
+    "lodash-es": "4.17.10"
+  },
+
+  "devDependencies": {
+    "@types/lodash-es": "4.17.1",
+    "@types/jest": "23.3.1",
+    "tslib": "1.9.3",
+    "typescript": "3.0.1",
+    "rollup": "0.64.1",
+    "rollup-plugin-commonjs": "9.1.5",
+    "rollup-plugin-node-resolve": "3.3.0",
+    "rollup-watch": "4.3.1",
+    "rollup-plugin-typescript2": "0.16.1",
+    "rollup-plugin-terser": "1.0.1"
+  },
+
+  "scripts": {
+    "build": "rollup -c --environment BUILD:production",
+    "watch": "rollup -c -w",
+    "test": "",
+    "pretest": "yarn build"
+  }
+}
