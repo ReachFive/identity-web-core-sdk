@@ -1,4 +1,4 @@
-import { Validator, snakeCaseTransformation } from 'validation.ts'
+import { Validator, snakeCaseTransformation, errorDebugString } from 'validation.ts'
 
 
 type AjaxParams<DATA> = {
@@ -19,7 +19,7 @@ export function ajax<DATA = undefined>(params: AjaxParams<DATA>): Promise<DATA> 
         if (validated.isOk())
           return validated.get()
         else
-          throw new Error('Validation error: ' + validated.get())
+          throw new Error(`reach5 validation error: \n ${errorDebugString(validated.get())}`)
       }
       else {
         return json as DATA
