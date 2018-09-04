@@ -1,4 +1,7 @@
-import ApiClient, { LoginWithPasswordParams } from './apiClient'
+import { ProviderId } from '../shared/providers/providers'
+import { Profile } from '../shared/model'
+import ApiClient, { SignupParams, LoginWithPasswordParams, PasswordlessParams } from './apiClient'
+import { AuthOptions } from './authOptions'
 import { apiClientConfig } from './apiClientConfig'
 import { ajax } from './ajax'
 
@@ -18,11 +21,101 @@ export default function createSdk(creationConfig: SdkCreationConfig) {
   .then(config => new ApiClient(config))
 
  
+  function signup(params: SignupParams) {
+    return apiClient.then(api => api.signup(params))
+  }
+
   function loginWithPassword(params: LoginWithPasswordParams) {
     return apiClient.then(api => api.loginWithPassword(params))
   }
 
+  function startPasswordless(params: PasswordlessParams, options: AuthOptions = {}) {
+    return apiClient.then(api => api.startPasswordless(params, options))
+  }
+
+  function verifyPasswordless(params: PasswordlessParams) {
+    return apiClient.then(api => api.verifyPasswordless(params))
+  }
+
+  function loginWithSocialProvider(provider: ProviderId, options: AuthOptions) {
+    return apiClient.then(api => api.loginWithSocialProvider(provider, options))
+  }
+
+  function requestPasswordReset(params: { email: string }) {
+    return apiClient.then(api => api.requestPasswordReset(params))
+  }
+
+  function unlink(params: { accessToken: string, identityId: string, fields?: string }) {
+    return apiClient.then(api => api.unlink(params))
+  }
+
+  function refreshTokens(params: { accessToken: string }) {
+    return apiClient.then(api => api.refreshTokens(params))
+  }
+
+  function logout(params: { redirect_to?: string }) {
+    return apiClient.then(api => api.logout(params))
+  }
+
+  function getUser(params: { accessToken: string, fields?: string }) {
+    return apiClient.then(api => api.getUser(params))
+  }
+
+  function updateProfile(params: { accessToken: string, data: Profile }) {
+    return apiClient.then(api => api.updateProfile(params))
+  }
+
+  function updateEmail(params: { accessToken: string, email: string }) {
+    return apiClient.then(api => api.updateEmail(params))
+  }
+
+  function updatePassword(params: { accessToken?: string, password: string, oldPasssord?: string, userId?: string }) {
+    return apiClient.then(api => api.updatePassword(params))
+  }
+
+  function updatePhoneNumber(params: { accessToken: string, phoneNumber: string }) {
+    return apiClient.then(api => api.updatePhoneNumber(params))
+  }
+
+  function verifyPhoneNumber(params: { accessToken: string, phoneNumber: string, verificationCode: string }) {
+    return apiClient.then(api => api.verifyPhoneNumber(params))
+  }
+
+  function loginWithCustomToken(params: { token: string, auth: AuthOptions }) {
+    return apiClient.then(api => api.loginWithCustomToken(params))
+  }
+
+  function getSsoData(params = {}) {
+    return apiClient.then(api => api.getSsoData(params))
+  }
+
+  function parseUrlFragment(url: string) {
+    return apiClient.then(api => api.parseUrlFragment(url))
+  }
+
+  function checkFragment(url: string = '') {
+    return apiClient.then(api => api.checkFragment(url))
+  }
+
   return {
-    loginWithPassword
+    signup,
+    loginWithPassword,
+    startPasswordless,
+    verifyPasswordless,
+    loginWithSocialProvider,
+    requestPasswordReset,
+    unlink,
+    refreshTokens,
+    logout,
+    getUser,
+    updateProfile,
+    updateEmail,
+    updatePassword,
+    updatePhoneNumber,
+    verifyPhoneNumber,
+    loginWithCustomToken,
+    getSsoData,
+    parseUrlFragment,
+    checkFragment
   }
 }

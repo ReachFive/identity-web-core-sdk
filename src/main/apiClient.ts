@@ -42,6 +42,8 @@ type RequestParams = {
   withCookies?: boolean
 }
 
+export type SignupParams = { data: Profile, auth: AuthOptions }
+
 export type LoginWithPasswordParams = { email: string, password: string, auth?: AuthOptions }
 
 export type PasswordlessParams = { authType: 'magic_link' | 'sms', email?: string, phoneNumber?: string }
@@ -295,7 +297,7 @@ export default class ApiClient {
     })
   }
 
-  signup(params: { data: Profile, auth: AuthOptions }) {
+  signup(params: SignupParams) {
     const { data, auth } = params
     const acceptTos = auth && auth.acceptTos
 
