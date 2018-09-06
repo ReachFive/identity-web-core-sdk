@@ -252,9 +252,9 @@ for-own@^0.1.4:
   dependencies:
     for-in "^1.0.1"
 
-fs-extra@5.0.0:
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-5.0.0.tgz#414d0110cdd06705734d055652c5411260c31abd"
+fs-extra@7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-7.0.0.tgz#8cc3f47ce07ef7b3593a11b9fb245f7e34c041d6"
   dependencies:
     graceful-fs "^4.1.2"
     jsonfile "^4.0.0"
@@ -715,18 +715,18 @@ rimraf@^2.6.1:
   dependencies:
     glob "^7.0.5"
 
-rollup-plugin-commonjs@9.1.5:
-  version "9.1.5"
-  resolved "https://registry.yarnpkg.com/rollup-plugin-commonjs/-/rollup-plugin-commonjs-9.1.5.tgz#c167d545d0d01f273e632748bff56fe7487b0145"
+rollup-plugin-commonjs@9.1.6:
+  version "9.1.6"
+  resolved "https://registry.yarnpkg.com/rollup-plugin-commonjs/-/rollup-plugin-commonjs-9.1.6.tgz#ad553813c922b71467152794b98f2fd0f195b8a5"
   dependencies:
     estree-walker "^0.5.1"
     magic-string "^0.22.4"
     resolve "^1.5.0"
     rollup-pluginutils "^2.0.1"
 
-rollup-plugin-node-resolve@3.3.0:
-  version "3.3.0"
-  resolved "https://registry.yarnpkg.com/rollup-plugin-node-resolve/-/rollup-plugin-node-resolve-3.3.0.tgz#c26d110a36812cbefa7ce117cadcd3439aa1c713"
+rollup-plugin-node-resolve@3.4.0:
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/rollup-plugin-node-resolve/-/rollup-plugin-node-resolve-3.4.0.tgz#908585eda12e393caac7498715a01e08606abc89"
   dependencies:
     builtin-modules "^2.0.0"
     is-module "^1.0.0"
@@ -739,23 +739,16 @@ rollup-plugin-terser@1.0.1:
     "@babel/code-frame" "^7.0.0-beta.47"
     terser "^3.7.5"
 
-rollup-plugin-typescript2@0.16.1:
-  version "0.16.1"
-  resolved "https://registry.yarnpkg.com/rollup-plugin-typescript2/-/rollup-plugin-typescript2-0.16.1.tgz#72e1f8a2e450550eabdc3d474e735feae322b474"
+rollup-plugin-typescript2@0.17.0:
+  version "0.17.0"
+  resolved "https://registry.yarnpkg.com/rollup-plugin-typescript2/-/rollup-plugin-typescript2-0.17.0.tgz#a540eecfe9ad8ff5e8e86eaf5069bb2a7f84f33a"
   dependencies:
-    fs-extra "5.0.0"
+    fs-extra "7.0.0"
     resolve "1.8.1"
-    rollup-pluginutils "2.3.0"
+    rollup-pluginutils "2.3.1"
     tslib "1.9.3"
 
-rollup-pluginutils@2.3.0:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/rollup-pluginutils/-/rollup-pluginutils-2.3.0.tgz#478ace04bd7f6da2e724356ca798214884738fc4"
-  dependencies:
-    estree-walker "^0.5.2"
-    micromatch "^2.3.11"
-
-rollup-pluginutils@^2.0.1:
+rollup-pluginutils@2.3.1, rollup-pluginutils@^2.0.1:
   version "2.3.1"
   resolved "https://registry.yarnpkg.com/rollup-pluginutils/-/rollup-pluginutils-2.3.1.tgz#760d185ccc237dedc12d7ae48c6bcd127b4892d0"
   dependencies:
@@ -770,9 +763,9 @@ rollup-watch@4.3.1:
     require-relative "0.8.7"
     rollup-pluginutils "^2.0.1"
 
-rollup@0.64.1:
-  version "0.64.1"
-  resolved "https://registry.yarnpkg.com/rollup/-/rollup-0.64.1.tgz#9188ee368e5fcd43ffbc00ec414e72eeb5de87ba"
+rollup@0.65.2:
+  version "0.65.2"
+  resolved "https://registry.yarnpkg.com/rollup/-/rollup-0.65.2.tgz#e1532e3c1a2e102c89d99289a184fcbbc7cd4b4a"
   dependencies:
     "@types/estree" "0.0.39"
     "@types/node" "*"
@@ -889,9 +882,9 @@ tslib@1.9.3:
   version "1.9.3"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.9.3.tgz#d7e4dd79245d85428c4d7e4822a79917954ca286"
 
-typescript@3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.0.1.tgz#43738f29585d3a87575520a4b93ab6026ef11fdb"
+typescript@3.0.3:
+  version "3.0.3"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.0.3.tgz#4853b3e275ecdaa27f78fda46dc273a7eb7fc1c8"
 
 universalify@^0.1.0:
   version "0.1.2"
