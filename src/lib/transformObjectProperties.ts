@@ -12,14 +12,14 @@ export const camelCaseProperties = (object: object) => transformObjectProperties
 export const snakeCaseProperties = (object: object) => transformObjectProperties(object, snakeCase)
 
 function transformObjectProperties(object: object, transform: (path: string) => string): object {
-    if (isArray(object)) {
-        return object.map(o => transformObjectProperties(o, transform))
-    } else if (isObject(object)) {
-        return reduce(object, (acc, value, key) => {
-            acc[transform(key)] = transformObjectProperties(value, transform)
-            return acc
-        }, {} as Record<string, any>)
-    } else {
-        return object
-    }
+  if (isArray(object)) {
+    return object.map(o => transformObjectProperties(o, transform))
+  } else if (isObject(object)) {
+    return reduce(object, (acc, value, key) => {
+      acc[transform(key)] = transformObjectProperties(value, transform)
+      return acc
+    }, {} as Record<string, unknown>)
+  } else {
+    return object
+  }
 }

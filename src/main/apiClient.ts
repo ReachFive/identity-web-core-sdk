@@ -24,12 +24,22 @@ type Events = {
   'signup_failed': ErrorResponse
 }
 
+type BrowserTab = {
+  openUrl(url: string, onSuccess: () => void, onError: (error: Error) => void): void
+  close(): void
+  isAvailable(onResponse: (available: boolean) => void, onError: () => void): void
+}
+
 declare global {
   interface Window {
     cordova?: {
-      plugins: any
-      InAppBrowser: any
-    }
+      plugins?: {
+        browsertab?: BrowserTab
+      }
+      InAppBrowser: {
+        open(url: string, target: '_self' | '_blank' | '_system') : void
+      }
+    } 
     handleOpenURL?: (url: string) => void
   }
 }
@@ -153,11 +163,11 @@ export default class ApiClient {
   }
 
   private openInCordovaSystemBrowser(url: string) {
-    return this.isCordovaBrowserTabAvailable().then(isAvailable => {
+    return this.getAvailableBrowserTabPlugin().then(maybeBrowserTab => {
       if (!window.cordova) return
 
-      if (isAvailable) {
-        window.cordova.plugins.browsertab.openUrl(url, () => {}, logError)
+      if (maybeBrowserTab) {
+        maybeBrowserTab.openUrl(url, () => {}, logError)
       }
       else if (window.cordova.InAppBrowser) {
         window.cordova.InAppBrowser.open(url, '_system')
@@ -165,23 +175,22 @@ export default class ApiClient {
       else {
         throw new Error('Cordova plugin "inappbrowser" is required.')
       }
-  })
+    })
   }
 
-  private isCordovaBrowserTabAvailable(): Promise<boolean> {
-    const cordova = window.cordova
+  private getAvailableBrowserTabPlugin(): Promise<BrowserTab | undefined> {
+    return new Promise((resolve, reject) => {
+      const cordova = window.cordova
 
-    if (!cordova)
-      return Promise.resolve(false)
+      if (!cordova) return false
+      if (!cordova.plugins || !cordova.plugins.browsertab) return false
 
-    if (cordova.plugins && cordova.plugins.browsertab) {
-      return new Promise<boolean>((resolve, reject) => {
-        cordova.plugins.browsertab.isAvailable(resolve, reject)
-      })
-    }
-    else {
-      return Promise.resolve(false)
-    }
+      const plugin = cordova.plugins.browsertab
+
+      return plugin.isAvailable(
+        isAvailable => resolve(isAvailable ? plugin : undefined),
+        reject)
+    })
   }
 
   private initCordovaCallbackIfNecessary() {
