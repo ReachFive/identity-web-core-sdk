@@ -9,7 +9,8 @@
 
   "dependencies": {
     "winchan": "0.2.0",
-    "lodash-es": "4.17.10"
+    "lodash-es": "4.17.10",
+    "validation.ts": "0.0.23"
   },
 
   "devDependencies": {

@@ -3,23 +3,18 @@ import { Profile } from '../shared/model'
 import ApiClient, { SignupParams, LoginWithPasswordParams, PasswordlessParams } from './apiClient'
 import { AuthOptions } from './authOptions'
 import { ApiClientConfig } from './apiClientConfig'
-import { ajax } from './ajax'
 
 
-type SdkCreationConfig = {
-  domain: string
-  clientId: string
+declare global {
+  interface Window {
+    ReachFiveConfig: ApiClientConfig
+  }
 }
 
-export default function createSdk(creationConfig: SdkCreationConfig) {
-  const { domain, clientId } = creationConfig
+export default function createSdk() {
+  const apiClient = Promise.resolve(new ApiClient(window.ReachFiveConfig))
 
-  const apiClient = ajax<ApiClientConfig>({
-    url: `https://${domain}/identity/v1/config/${clientId}`,
-  })
-  .then(config => new ApiClient(config))
 
- 
   function signup(params: SignupParams) {
     return apiClient.then(api => api.signup(params))
   }
