@@ -2,7 +2,7 @@ import { ProviderId } from '../shared/providers/providers'
 import { Profile } from '../shared/model'
 import ApiClient, { SignupParams, LoginWithPasswordParams, PasswordlessParams } from './apiClient'
 import { AuthOptions } from './authOptions'
-import { apiClientConfig } from './apiClientConfig'
+import { ApiClientConfig } from './apiClientConfig'
 import { ajax } from './ajax'
 
 
@@ -14,9 +14,8 @@ type SdkCreationConfig = {
 export default function createSdk(creationConfig: SdkCreationConfig) {
   const { domain, clientId } = creationConfig
 
-  const apiClient = ajax({
+  const apiClient = ajax<ApiClientConfig>({
     url: `https://${domain}/identity/v1/config/${clientId}`,
-    validator: apiClientConfig
   })
   .then(config => new ApiClient(config))
 

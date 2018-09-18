@@ -338,10 +338,6 @@ ignore-walk@^3.0.1:
   dependencies:
     minimatch "^3.0.4"
 
-immupdate@1.2.0:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/immupdate/-/immupdate-1.2.0.tgz#19576ba1fdaf55c9a1d6586d0a21788699a21541"
-
 inflight@^1.0.4:
   version "1.0.6"
   resolved "https://registry.yarnpkg.com/inflight/-/inflight-1.0.6.tgz#49bd6331d7d02d0c09bc910a1075ba8165b56df9"
@@ -809,12 +805,6 @@ source-map@^0.6.0, source-map@~0.6.1:
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.6.1.tgz#74722af32e9614e9c287a8d0bbde48b5e2f1a263"
 
-space-lift@>=0.0.0:
-  version "0.8.0"
-  resolved "https://registry.yarnpkg.com/space-lift/-/space-lift-0.8.0.tgz#64a0e14bca7b251023b93f0f2d05797ffddb9500"
-  dependencies:
-    immupdate "1.2.0"
-
 string-width@^1.0.1:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/string-width/-/string-width-1.0.2.tgz#118bdf5b8cdc51a2a7e70d211e07e2b0b9b107d3"
@@ -893,12 +883,6 @@ universalify@^0.1.0:
 util-deprecate@~1.0.1:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/util-deprecate/-/util-deprecate-1.0.2.tgz#450d4dc9fa70de732762fbd2d4a28981419a0ccf"
-
-validation.ts@0.0.22:
-  version "0.0.22"
-  resolved "https://registry.yarnpkg.com/validation.ts/-/validation.ts-0.0.22.tgz#f1aa00d340d4f5885e1c3f10d5226dba9c0e5ec7"
-  dependencies:
-    space-lift ">=0.0.0"
 
 vlq@^0.2.2:
   version "0.2.3"
