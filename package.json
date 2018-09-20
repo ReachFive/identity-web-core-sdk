@@ -1,7 +1,6 @@
 {
   "name": "@reach5/identity-core-sdk",
   "version": "0.1.0",
-  "private": true,
 
   "main": "cjs/main.js",
   "module": "es/main.js",
@@ -27,7 +26,7 @@
   },
 
   "scripts": {
-    "build": "rollup -c --environment BUILD:production",
+    "build": "rollup -c",
     "watch": "rollup -c -w",
     "test": "",
     "pretest": "yarn build"
