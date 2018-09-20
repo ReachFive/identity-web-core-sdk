@@ -5,14 +5,8 @@ import { AuthOptions } from './authOptions'
 import { ApiClientConfig } from './apiClientConfig'
 
 
-declare global {
-  interface Window {
-    ReachFiveConfig: ApiClientConfig
-  }
-}
-
-export default function createSdk() {
-  const apiClient = Promise.resolve(new ApiClient(window.ReachFiveConfig))
+export default function createSdk(config: ApiClientConfig) {
+  const apiClient = Promise.resolve(new ApiClient(config))
 
 
   function signup(params: SignupParams) {
