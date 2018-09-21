@@ -23,6 +23,11 @@
     "rollup-plugin-typescript2": "0.17.0"
   },
 
+  "files": [
+    "cjs",
+    "es"
+  ],
+
   "scripts": {
     "build": "rollup -c",
     "watch": "rollup -c -w",
