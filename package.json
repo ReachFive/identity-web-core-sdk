@@ -25,6 +25,11 @@
     "rollup-plugin-typescript2": "0.17.0"
   },
 
+  "files": [
+    "cjs",
+    "es"
+  ],
+
   "scripts": {
     "build": "rollup -c --environment BUILD:production",
     "watch": "rollup -c -w",
