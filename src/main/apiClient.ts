@@ -16,7 +16,7 @@ import { prepareAuthOptions, resolveScope, AuthOptions } from './authOptions'
 import { AuthResult } from './authResult'
 
 
-type Events = {
+export type Events = {
   'authenticated': AuthResult
   'profile_updated': Partial<Profile>
   'authentication_failed': ErrorResponse

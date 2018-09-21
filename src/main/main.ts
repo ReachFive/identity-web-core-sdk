@@ -1,6 +1,6 @@
 import { ProviderId } from '../shared/providers/providers'
 import { Profile } from '../shared/model'
-import ApiClient, { SignupParams, LoginWithPasswordParams, PasswordlessParams } from './apiClient'
+import ApiClient, { SignupParams, LoginWithPasswordParams, PasswordlessParams, Events } from './apiClient'
 import { AuthOptions } from './authOptions'
 import { ApiClientConfig } from './apiClientConfig'
 import { ajax } from './ajax'
@@ -19,7 +19,7 @@ export default function createSdk(creationConfig: SdkCreationConfig) {
   })
   .then(config => new ApiClient(config))
 
- 
+
   function signup(params: SignupParams) {
     return apiClient.then(api => api.signup(params))
   }
@@ -50,6 +50,10 @@ export default function createSdk(creationConfig: SdkCreationConfig) {
 
   function refreshTokens(params: { accessToken: string }) {
     return apiClient.then(api => api.refreshTokens(params))
+  }
+
+  function loginFromSession(options: AuthOptions = {}) {
+    return apiClient.then(api => api.loginFromSession(options))
   }
 
   function logout(params: { redirect_to?: string }) {
@@ -96,7 +100,17 @@ export default function createSdk(creationConfig: SdkCreationConfig) {
     return apiClient.then(api => api.checkFragment(url))
   }
 
+  function addEventListener<K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) {
+    return apiClient.then(api => api.addEventListener(eventName, listener))
+  }
+
+  function removeEventListener<K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) {
+    return apiClient.then(api => api.removeEventListener(eventName, listener))
+  }
+
   return {
+    addEventListener,
+    removeEventListener,
     signup,
     loginWithPassword,
     startPasswordless,
@@ -105,6 +119,7 @@ export default function createSdk(creationConfig: SdkCreationConfig) {
     requestPasswordReset,
     unlink,
     refreshTokens,
+    loginFromSession,
     logout,
     getUser,
     updateProfile,
