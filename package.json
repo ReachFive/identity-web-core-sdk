@@ -1,6 +1,6 @@
 {
-  "name": "@reach5/identity-core-sdk",
-  "version": "0.1.0",
+  "name": "@reachfive/identity-core",
+  "version": "0.1.0-alpha",
 
   "main": "cjs/main.js",
   "module": "es/main.js",
