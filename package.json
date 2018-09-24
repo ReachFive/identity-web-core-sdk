@@ -1,6 +1,6 @@
 {
   "name": "@reachfive/identity-core",
-  "version": "0.1.0-alpha.2",
+  "version": "0.1.0-alpha.3",
   "main": "cjs/main.js",
   "module": "es/main.js",
   "typings": "es/main/main.d.ts",
