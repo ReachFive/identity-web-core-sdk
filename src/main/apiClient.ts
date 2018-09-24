@@ -61,10 +61,9 @@ export type PasswordlessParams = { authType: 'magic_link' | 'sms', email?: strin
 
 export default class ApiClient {
 
-  private eventManager = new EventManager<Events>()
-
-  constructor(config: ApiClientConfig) {
+  constructor(config: ApiClientConfig, eventManager: EventManager<Events>) {
     this.config = config
+    this.eventManager = eventManager
     this.baseUrl = `https://${config.domain}/identity/v1`
     this.authorizeUrl = `https://${config.domain}/oauth/authorize`
     this.tokenUrl = `https://${config.domain}/oauth/token`
@@ -74,6 +73,7 @@ export default class ApiClient {
   }
 
   private config: ApiClientConfig
+  private eventManager: EventManager<Events>
   private baseUrl: string
   private authorizeUrl: string
   private tokenUrl: string

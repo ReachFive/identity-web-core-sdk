@@ -3,10 +3,12 @@ import { Profile } from '../shared/model'
 import ApiClient, { SignupParams, LoginWithPasswordParams, PasswordlessParams, Events } from './apiClient'
 import { AuthOptions } from './authOptions'
 import { ApiClientConfig } from './apiClientConfig'
+import EventManager from './eventManager'
 
 
 export default function createSdk(config: ApiClientConfig) {
-  const apiClient = Promise.resolve(new ApiClient(config))
+  const eventManager = new EventManager<Events>()
+  const apiClient = Promise.resolve(new ApiClient(config, eventManager))
 
   
   function signup(params: SignupParams) {
@@ -90,11 +92,11 @@ export default function createSdk(config: ApiClientConfig) {
   }
 
   function addEventListener<K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) {
-    return apiClient.then(api => api.addEventListener(eventName, listener))
+    return eventManager.addListener(eventName, listener)
   }
 
   function removeEventListener<K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) {
-    return apiClient.then(api => api.removeEventListener(eventName, listener))
+    return eventManager.removeListener(eventName, listener)
   }
 
   return {
