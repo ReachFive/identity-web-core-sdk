@@ -4,6 +4,7 @@ import ApiClient, { SignupParams, LoginWithPasswordParams, PasswordlessParams, E
 import { AuthOptions } from './authOptions'
 import { ApiClientConfig } from './apiClientConfig'
 import { ajax } from './ajax'
+import EventManager from './eventManager'
 
 
 type SdkCreationConfig = {
@@ -13,11 +14,13 @@ type SdkCreationConfig = {
 
 export default function createSdk(creationConfig: SdkCreationConfig) {
   const { domain, clientId } = creationConfig
+  const eventManager = new EventManager<Events>()
+
 
   const apiClient = ajax<ApiClientConfig>({
     url: `https://${domain}/identity/v1/config/${clientId}`,
   })
-  .then(config => new ApiClient(config))
+  .then(config => new ApiClient(config, eventManager))
 
 
   function signup(params: SignupParams) {
@@ -101,11 +104,11 @@ export default function createSdk(creationConfig: SdkCreationConfig) {
   }
 
   function addEventListener<K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) {
-    return apiClient.then(api => api.addEventListener(eventName, listener))
+    return eventManager.addListener(eventName, listener)
   }
 
   function removeEventListener<K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) {
-    return apiClient.then(api => api.removeEventListener(eventName, listener))
+    return eventManager.removeListener(eventName, listener)
   }
 
   return {
