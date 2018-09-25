@@ -182,12 +182,12 @@ export default class ApiClient {
     return new Promise((resolve, reject) => {
       const cordova = window.cordova
 
-      if (!cordova) return false
-      if (!cordova.plugins || !cordova.plugins.browsertab) return false
+      if (!cordova || !cordova.plugins || !cordova.plugins.browsertab)
+        return resolve(undefined)
 
       const plugin = cordova.plugins.browsertab
 
-      return plugin.isAvailable(
+      plugin.isAvailable(
         isAvailable => resolve(isAvailable ? plugin : undefined),
         reject)
     })
