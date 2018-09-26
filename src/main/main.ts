@@ -1,3 +1,4 @@
+import * as v from 'validation.ts'
 import { ProviderId } from '../shared/providers/providers'
 import { Profile } from '../shared/model'
 import ApiClient, { SignupParams, LoginWithPasswordParams, PasswordlessParams, Events } from './apiClient'
@@ -7,12 +8,17 @@ import { ajax } from './ajax'
 import EventManager from './eventManager'
 
 
-type SdkCreationConfig = {
-  domain: string
-  clientId: string
-}
+const sdkCreationConfig = v.object({
+  clientId: v.string,
+  domain: v.string
+})
+
+type SdkCreationConfig = typeof sdkCreationConfig.T
 
 export default function createSdk(creationConfig: SdkCreationConfig) {
+  sdkCreationConfig.validate(creationConfig)
+    .mapError(err => { throw `the reach5 creation config has errors:\n${v.errorDebugString(err)}` })
+
   const { domain, clientId } = creationConfig
   const eventManager = new EventManager<Events>()
 
