@@ -8,7 +8,7 @@ import EventManager from './eventManager'
 
 
 export default function createSdk(config: ApiClientConfig) {
-  apiClientConfig.validate(config).mapError(err => { throw `the reach5 creation config has errors. \n${errorDebugString(err)}` })
+  apiClientConfig.validate(config).mapError(err => { throw `the reach5 creation config has errors:\n${errorDebugString(err)}` })
 
   const eventManager = new EventManager<Events>()
   const apiClient = Promise.resolve(new ApiClient(config, eventManager))
