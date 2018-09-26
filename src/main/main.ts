@@ -1,12 +1,15 @@
+import { errorDebugString } from 'validation.ts'
 import { ProviderId } from '../shared/providers/providers'
 import { Profile } from '../shared/model'
 import ApiClient, { SignupParams, LoginWithPasswordParams, PasswordlessParams, Events } from './apiClient'
 import { AuthOptions } from './authOptions'
-import { ApiClientConfig } from './apiClientConfig'
+import { apiClientConfig, ApiClientConfig } from './apiClientConfig'
 import EventManager from './eventManager'
 
 
 export default function createSdk(config: ApiClientConfig) {
+  apiClientConfig.validate(config).mapError(err => { throw `the reach5 creation config has errors. \n${errorDebugString(err)}` })
+
   const eventManager = new EventManager<Events>()
   const apiClient = Promise.resolve(new ApiClient(config, eventManager))
 
