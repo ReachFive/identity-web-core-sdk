@@ -20,7 +20,7 @@ export default [
 	{
 		input: 'src/main/main.ts',
 		output: [
-			{ file: pkg.main, format: 'cjs' },
+			{ file: pkg.main, format: 'umd', name: 'reach5' },
 			{ file: pkg.module, format: 'es' }
     ],
     plugins,
