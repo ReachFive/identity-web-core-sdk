@@ -1,5 +1,9 @@
 import * as v from 'validation.ts'
-import { uniq, pick, isString, isArray, isUndefined } from 'lodash-es'
+import uniq from 'lodash-es/uniq'
+import pick from 'lodash-es/pick'
+import isString from 'lodash-es/isString'
+import isArray from 'lodash-es/isArray'
+import isUndefined from 'lodash-es/isUndefined'
 
 
 export const authOptions = v.object({
