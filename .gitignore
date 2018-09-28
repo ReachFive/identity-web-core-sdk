@@ -1,5 +1,6 @@
 es
 cjs
+umd
 node_modules
 .rpt2_cache
 .DS_Store

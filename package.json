@@ -27,7 +27,8 @@
 
   "files": [
     "cjs",
-    "es"
+    "es",
+    "umd"
   ],
 
   "scripts": {

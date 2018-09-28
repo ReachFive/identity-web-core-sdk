@@ -16,14 +16,19 @@ const plugins = [
   })
 ]
 
-export default [
-	{
+const externalDependencies = Object.keys(pkg.dependencies)
+
+function isNpmDependency(name) {
+  if (externalDependencies.includes(name)) return true
+  return /lodash-es/.test(name)
+}
+
+function createBundle({ file, format, name, external }) {
+  return {
 		input: 'src/main/main.ts',
-		output: [
-			{ file: pkg.main, format: 'umd', name: 'reach5' },
-			{ file: pkg.module, format: 'es' }
-    ],
+		output: { file, format, name },
     plugins,
+    external,
     onwarn: message => {
       // tsc generates local polyfills such as __extends with 'this' referenced
       if (message.code === 'THIS_IS_UNDEFINED') return
@@ -32,11 +37,13 @@ export default [
       // No great way around that I'm afraid.
       if (message.code === 'CIRCULAR_DEPENDENCY' && message.importer === 'node_modules/space-lift/es/option/index.js') return
 
-      // We could list all the external modules to remove these warnings... but listing lodash-es
-      // doesn't include all its sub-modules such as lodash-es/pickBy, etc so
-      // it becomes incredibly tedious.
-      if (/treating it as an external dependency/.test(message)) return
       console.warn(message)
     }
 	}
+}
+
+export default [
+  createBundle({ file: 'umd/main.js', format: 'umd', name: 'reach5' }),
+  createBundle({ file: pkg.main, format: 'cjs', external: isNpmDependency }),
+  createBundle({ file: pkg.module, format: 'es', external: isNpmDependency })
 ]
