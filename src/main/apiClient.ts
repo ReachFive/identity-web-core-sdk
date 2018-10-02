@@ -341,7 +341,11 @@ export default class ApiClient {
 
   updatePassword(params: { accessToken?: string, password: string, oldPasssord?: string, userId?: string }) {
     const { accessToken, ...data } = params
-    return this.requestPost('/update-password', data, { accessToken })
+    return this.requestPost(
+      '/update-password',
+      { clientId: this.config.clientId, ...data },
+      { accessToken }
+    )
   }
 
   updateEmail(params: { accessToken: string, email: string }) {
@@ -370,8 +374,8 @@ export default class ApiClient {
     return this.request<AuthResult>('/token/access-token', {
       method: 'POST',
       body: {
-        'client_id': this.config.clientId,
-        'access_token': accessToken
+        clientId: this.config.clientId,
+        accessToken
       }
     }).then(this.enrichAuthResult)
   }
@@ -381,8 +385,11 @@ export default class ApiClient {
   }
 
   updateProfile({ accessToken, data }: { accessToken: string, data: Profile }) {
-    return this.requestPost('/update-profile', data, { accessToken })
-      .then(() => this.fireEvent('profile_updated', data))
+    return this.requestPost(
+      '/update-profile',
+      data,
+      { accessToken }
+    ).then(() => this.fireEvent('profile_updated', data))
   }
 
   loginWithCustomToken({ token, auth }: { token: string, auth: AuthOptions }) {
@@ -394,7 +401,7 @@ export default class ApiClient {
   }
 
   getSsoData(auth = {}) {
-    const hints = snakeCaseProperties(pick(auth, ['idTokenHint', 'loginHint']))
+    const hints = pick(auth, ['idTokenHint', 'loginHint'])
     return this.requestGet(
       '/sso/data',
       { clientId: this.config.clientId, ...hints },
