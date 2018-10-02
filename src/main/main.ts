@@ -24,7 +24,7 @@ export default function createSdk(creationConfig: SdkCreationConfig) {
 
 
   const apiClient = ajax<ApiClientConfig>({
-    url: `https://${domain}/identity/v1/config/${clientId}`,
+    url: `https://${domain}/identity/v1/config?client_id=${clientId}`,
   })
   .then(config => new ApiClient(config, eventManager))
 
