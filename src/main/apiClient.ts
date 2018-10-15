@@ -1,4 +1,4 @@
-import * as WinChan from 'winchan'
+import WinChan from 'winchan'
 import isEmpty from 'lodash-es/isEmpty'
 import pick from 'lodash-es/pick'
 

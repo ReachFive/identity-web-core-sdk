@@ -17,9 +17,12 @@
     "noImplicitReturns": true,
     "forceConsistentCasingInFileNames": true,
     "declaration": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "types": [
       "lodash-es",
-      "jest"
+      "jest",
+      "node"
     ]
   },
   "include": [
