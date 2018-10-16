@@ -1,9 +1,8 @@
-
 import isObject from 'lodash-es/isObject'
 import isArray from 'lodash-es/isArray'
 import reduce from 'lodash-es/reduce'
 import camelCase from 'lodash-es/camelCase'
-import snakeCase from 'lodash-es/snakeCase'
+import lodashSnakeCase from 'lodash-es/snakeCase'
 
 export const snakeCasePath = (path: string) => path.split('.').map(snakeCase).join('.')
 export const camelCasePath = (path: string) => path.split('.').map(camelCase).join('.')
@@ -22,4 +21,10 @@ function transformObjectProperties(object: object, transform: (path: string) => 
   } else {
     return object
   }
+}
+
+/* reuse lodash as it covers most cases, but we want the same behavior as the
+   snakecasing strategy on the server where numbers are not separated from non numbers.  */
+function snakeCase(input: string) {
+  return lodashSnakeCase(input).replace(/\_\d/g, dashNumber => dashNumber.slice(1))
 }
