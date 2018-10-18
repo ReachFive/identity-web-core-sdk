@@ -114,7 +114,7 @@ test('with popup mode', async () => {
   })
 
   const authenticatedHandler = jest.fn()
-  api.addEventListener('authenticated', authenticatedHandler)
+  api.on('authenticated', authenticatedHandler)
 
   // When
   let error = null
@@ -164,10 +164,10 @@ test('with popup mode with expected failure', async () => {
   })
 
   const authenticatedHandler = jest.fn()
-  api.addEventListener('authenticated', authenticatedHandler)
+  api.on('authenticated', authenticatedHandler)
 
   const authenticationFailedHandler = jest.fn()
-  api.addEventListener('authentication_failed', authenticationFailedHandler)
+  api.on('authentication_failed', authenticationFailedHandler)
 
   // When
   let error = null
@@ -193,10 +193,10 @@ test('with popup mode with unexpected failure', async () => {
   winchanMocker.mockOpenError('Saboteur !!!')
 
   const authenticatedHandler = jest.fn()
-  api.addEventListener('authenticated', authenticatedHandler)
+  api.on('authenticated', authenticatedHandler)
 
   const authenticationFailedHandler = jest.fn()
-  api.addEventListener('authentication_failed', authenticationFailedHandler)
+  api.on('authentication_failed', authenticationFailedHandler)
 
   // When
   let error = null
