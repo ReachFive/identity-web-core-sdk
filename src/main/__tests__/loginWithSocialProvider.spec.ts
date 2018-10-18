@@ -1,4 +1,4 @@
-import CoreApi from '../main'
+import { createClient } from '../main'
 import { delay } from "../../lib/promise"
 import { toQueryString } from "../../lib/queryString"
 import winchanMocker from './winchanMocker'
@@ -16,7 +16,7 @@ function coreApi() {
   // Mocks the initial config fetching
   fetchMock.mockResponseOnce(JSON.stringify(conf), { status: 200 })
 
-  return CoreApi(conf)
+  return createClient(conf)
 }
 
 beforeEach(() => {

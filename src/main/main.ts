@@ -15,7 +15,8 @@ const sdkCreationConfig = v.object({
 
 type SdkCreationConfig = typeof sdkCreationConfig.T
 
-export default function createSdk(creationConfig: SdkCreationConfig) {
+
+export function createClient(creationConfig: SdkCreationConfig) {
   sdkCreationConfig.validate(creationConfig)
     .mapError(err => { throw `the reach5 creation config has errors:\n${v.errorDebugString(err)}` })
 
