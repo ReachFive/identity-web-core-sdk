@@ -409,12 +409,12 @@ export default class ApiClient {
     )
   }
 
-  addEventListener<K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) {
-    this.eventManager.addListener(eventName, listener)
+  on<K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) {
+    this.eventManager.on(eventName, listener)
   }
 
-  removeEventListener<K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) {
-    this.eventManager.removeListener(eventName, listener)
+  off<K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) {
+    this.eventManager.off(eventName, listener)
   }
 
   private authenticatedHandler = ({ responseType, redirectUri }: AuthOptions, response: AuthResult) => {

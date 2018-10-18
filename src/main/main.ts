@@ -94,17 +94,17 @@ export function createClient(config: ApiClientConfig) {
     return apiClient.then(api => api.checkFragment(url))
   }
 
-  function addEventListener<K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) {
-    return eventManager.addListener(eventName, listener)
+  function on<K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) {
+    return eventManager.on(eventName, listener)
   }
 
-  function removeEventListener<K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) {
-    return eventManager.removeListener(eventName, listener)
+  function off<K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) {
+    return eventManager.off(eventName, listener)
   }
 
   return {
-    addEventListener,
-    removeEventListener,
+    on,
+    off,
     signup,
     loginWithPassword,
     startPasswordless,
