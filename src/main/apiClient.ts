@@ -24,26 +24,6 @@ export type Events = {
   'signup_failed': ErrorResponse
 }
 
-type BrowserTab = {
-  openUrl(url: string, onSuccess: () => void, onError: (error: Error) => void): void
-  close(): void
-  isAvailable(onResponse: (available: boolean) => void, onError: () => void): void
-}
-
-declare global {
-  interface Window {
-    cordova?: {
-      plugins?: {
-        browsertab?: BrowserTab
-      }
-      InAppBrowser: {
-        open(url: string, target: '_self' | '_blank' | '_system') : void
-      }
-    } 
-    handleOpenURL?: (url: string) => void
-  }
-}
-
 type RequestParams = {
   method?: 'GET' | 'POST'
   params?: QueryString
@@ -52,7 +32,7 @@ type RequestParams = {
   withCookies?: boolean
 }
 
-export type SignupParams = { data: Profile, auth: AuthOptions }
+export type SignupParams = { data: Profile, auth?: AuthOptions }
 
 export type LoginWithPasswordParams = { email: string, password: string, auth?: AuthOptions }
 
@@ -80,9 +60,11 @@ export default class ApiClient {
   private popupRelayUrl: string
 
 
-  loginWithSocialProvider(provider: ProviderId, opts: AuthOptions) {
+  loginWithSocialProvider(provider: ProviderId, opts: AuthOptions = {}) {
+    const authParams = this.authParams(opts, { acceptPopupMode: true })
+
     const params = {
-      ...this.authParams(opts, { acceptPopupMode: true }),
+      ...authParams,
       provider
     }
     if ('cordova' in window) {
@@ -270,9 +252,11 @@ export default class ApiClient {
     )
   }
 
-  private loginWithPasswordToken(tkn: string, auth: AuthOptions) {
+  private loginWithPasswordToken(tkn: string, auth: AuthOptions = {}) {
+    const authParams = this.authParams(auth)
+
     const queryString = toQueryString({
-      ...this.authParams(auth),
+      ...authParams,
       tkn
     })
     window.location.assign(`${this.baseUrl}/password/callback?${queryString}`)

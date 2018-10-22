@@ -60,8 +60,8 @@
     ],
     "globals": {
       "ts-jest": {
-        "skipBabel": true,
-        "tsConfig": "tsconfig.test.json"
+        "tsConfig": "tsconfig.test.json",
+        "babelConfig": false
       }
     }
   }
