@@ -30,7 +30,7 @@ export function createClient(config: ApiClientConfig) {
     return apiClient.then(api => api.verifyPasswordless(params))
   }
 
-  function loginWithSocialProvider(provider: ProviderId, options: AuthOptions) {
+  function loginWithSocialProvider(provider: ProviderId, options: AuthOptions = {}) {
     return apiClient.then(api => api.loginWithSocialProvider(provider, options))
   }
 
