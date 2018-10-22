@@ -9,15 +9,10 @@ import { delay } from '../../lib/promise'
 const clientId = 'myclientid'
 
 function coreApi() {
-  const conf = {
+  return createClient({
     clientId: clientId,
     domain: 'local.reach5.net'
-  }
-
-  // Mocks the initial config fetching
-  fetchMock.mockResponseOnce(JSON.stringify(conf), { status: 200 })
-
-  return createClient(conf)
+  })
 }
 
 beforeEach(() => {

@@ -1,6 +1,6 @@
 import { createClient } from '../main'
-import { delay } from "../../lib/promise"
-import { toQueryString } from "../../lib/queryString"
+import { delay } from '../../lib/promise'
+import { toQueryString } from '../../lib/queryString'
 import winchanMocker from './winchanMocker'
 import fetchMock from 'jest-fetch-mock'
 
@@ -8,15 +8,10 @@ import fetchMock from 'jest-fetch-mock'
 const clientId = 'IZHFi'
 
 function coreApi() {
-  const conf = {
+  return createClient({
     clientId: clientId,
     domain: 'local.reach5.net'
-  }
-
-  // Mocks the initial config fetching
-  fetchMock.mockResponseOnce(JSON.stringify(conf), { status: 200 })
-
-  return createClient(conf)
+  })
 }
 
 beforeEach(() => {
