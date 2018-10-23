@@ -5,7 +5,7 @@ import ApiClient, { SignupParams, LoginWithPasswordParams, PasswordlessParams, E
 import { AuthOptions } from './authOptions'
 import { ApiClientConfig } from './apiClientConfig'
 import { ajax } from './ajax'
-import EventManager from './eventManager'
+import EventManager from '../lib/eventManager'
 
 
 const sdkCreationConfig = v.object({
