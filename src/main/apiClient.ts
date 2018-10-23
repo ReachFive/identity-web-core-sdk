@@ -2,9 +2,9 @@ import WinChan from 'winchan'
 import isEmpty from 'lodash-es/isEmpty'
 import pick from 'lodash-es/pick'
 
-import { logError } from './logger'
+import { logError } from '../lib/logger'
 import { parseQueryString, toQueryString, QueryString } from '../lib/queryString'
-import EventManager from './eventManager'
+import EventManager from '../lib/eventManager'
 import { camelCaseProperties, snakeCaseProperties } from '../lib/transformObjectProperties'
 import { parseJwtTokenPayload } from '../lib/jwt'
 

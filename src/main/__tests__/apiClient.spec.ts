@@ -5,7 +5,7 @@ import { toQueryString } from '../../lib/queryString'
 import fetchMock from 'jest-fetch-mock'
 import winchanMocker from './winchanMocker'
 import { delay } from '../../lib/promise'
-import EventManager from '../eventManager'
+import EventManager from '../../lib/eventManager'
 
 
 const clientId = 'zdfuh'

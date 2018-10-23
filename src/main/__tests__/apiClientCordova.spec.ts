@@ -2,7 +2,7 @@ import 'core-js/shim'
 import 'regenerator-runtime/runtime'
 import fetchMock from 'jest-fetch-mock'
 import ApiClient, { Events } from '../apiClient'
-import EventManager from '../eventManager'
+import EventManager from '../../lib/eventManager'
 import { delay } from '../../lib/promise'
 import { toQueryString } from '../../lib/queryString'
 

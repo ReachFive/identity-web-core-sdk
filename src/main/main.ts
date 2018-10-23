@@ -4,7 +4,7 @@ import { Profile } from '../shared/model'
 import ApiClient, { SignupParams, LoginWithPasswordParams, PasswordlessParams, Events } from './apiClient'
 import { AuthOptions } from './authOptions'
 import { apiClientConfig, ApiClientConfig } from './apiClientConfig'
-import EventManager from './eventManager'
+import EventManager from '../lib/eventManager'
 
 
 export function createClient(config: ApiClientConfig) {
