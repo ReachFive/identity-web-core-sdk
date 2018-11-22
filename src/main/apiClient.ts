@@ -60,7 +60,7 @@ export default class ApiClient {
   private popupRelayUrl: string
 
 
-  loginWithSocialProvider(provider: ProviderId, opts: AuthOptions = {}) {
+  loginWithSocialProvider(provider: ProviderId, opts: AuthOptions = {}): Promise<void> {
     const authParams = this.authParams(opts, { acceptPopupMode: true })
 
     const params = {
@@ -78,7 +78,7 @@ export default class ApiClient {
     }
   }
 
-  loginFromSession(opts: AuthOptions = {}) {
+  loginFromSession(opts: AuthOptions = {}): Promise<void> {
     if (!this.config.sso && !opts.idTokenHint) {
       return Promise.reject(new Error("Cannot call 'loginFromSession' without 'idTokenHint' parameter if SSO is not enabled."))
     }
@@ -131,12 +131,12 @@ export default class ApiClient {
     return undefined
   }
 
-  private loginWithRedirect(queryString: Record<string, string | boolean | undefined>) {
+  private loginWithRedirect(queryString: Record<string, string | boolean | undefined>): Promise<void> {
     window.location.assign(`${this.authorizeUrl}?${toQueryString(queryString)}`)
     return Promise.resolve()
   }
 
-  private loginWithCordovaInAppBrowser(opts: QueryString) {
+  private loginWithCordovaInAppBrowser(opts: QueryString): Promise<void> {
     const params = {
       ...opts,
       display: 'page'
@@ -144,9 +144,11 @@ export default class ApiClient {
     return this.openInCordovaSystemBrowser(`${this.authorizeUrl}?${toQueryString(params)}`)
   }
 
-  private openInCordovaSystemBrowser(url: string) {
+  private openInCordovaSystemBrowser(url: string): Promise<void> {
     return this.getAvailableBrowserTabPlugin().then(maybeBrowserTab => {
-      if (!window.cordova) return
+      if (!window.cordova) {
+        throw new Error('Cordova environnement not detected.')
+      }
 
       if (maybeBrowserTab) {
         maybeBrowserTab.openUrl(url, () => {}, logError)
@@ -191,7 +193,7 @@ export default class ApiClient {
     }
   }
 
-  private loginWithPopup(opts: AuthOptions & { provider: ProviderId }) {
+  private loginWithPopup(opts: AuthOptions & { provider: ProviderId }): Promise<void> {
     type WinChanResponse<D> = { success: true, data: D } | { success: false, data: ErrorResponse }
 
     WinChan.open({

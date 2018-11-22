@@ -5,7 +5,7 @@
 
   "main": "cjs/main.js",
   "module": "es/main.js",
-  "typings": "es/main/main.d.ts",
+  "types": "es/main/main.d.ts",
 
   "dependencies": {
     "winchan": "0.2.0",
