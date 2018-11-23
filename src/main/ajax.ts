@@ -1,7 +1,12 @@
+import { camelCaseProperties } from '../lib/transformObjectProperties'
 
 export function ajax<DATA = undefined>(params: { url: string } & RequestInit): Promise<DATA> {
-  return fetch(params.url, params).then(response => {
-    if (response.status == 204) return undefined as any as DATA
-    return response.json() as Promise<DATA>
+  const { url, ...options } = params
+  return fetch(url, options).then(response => {
+    if (response.status != 204) {
+      const dataP = response.json().then(camelCaseProperties) as any as Promise<DATA>
+      return response.ok ? dataP : dataP.then(data => Promise.reject(data))
+    }
+    return undefined as any as DATA
   })
 }

@@ -14,6 +14,7 @@ import { Profile, ErrorResponse } from '../shared/model'
 import { ApiClientConfig } from './apiClientConfig'
 import { prepareAuthOptions, resolveScope, AuthOptions } from './authOptions'
 import { AuthResult } from './authResult'
+import { ajax } from './ajax'
 
 
 export type Events = {
@@ -463,13 +464,7 @@ export default class ApiClient {
       ...(body && { body: JSON.stringify(snakeCaseProperties(body)) })
     }
 
-    return fetch(url, fetchOptions).then(response => {
-      if (response.status != 204) {
-        const dataP = response.json().then(camelCaseProperties) as any as Promise<Data>
-        return response.ok ? dataP : dataP.then(data => Promise.reject(data))
-      }
-      return undefined as any as Data
-    })
+    return ajax<Data>({ url, ...fetchOptions })
   }
 
   private computeProviderPopupOptions(provider: ProviderId) {
