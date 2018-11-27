@@ -3,27 +3,18 @@ import isEmpty from 'lodash-es/isEmpty'
 import pick from 'lodash-es/pick'
 
 import { logError } from '../lib/logger'
-import { parseQueryString, toQueryString, QueryString } from '../lib/queryString'
-import EventManager from '../lib/eventManager'
+import { toQueryString, QueryString } from '../lib/queryString'
 import { camelCaseProperties, snakeCaseProperties } from '../lib/transformObjectProperties'
-import { parseJwtTokenPayload } from '../lib/jwt'
 
 import { ProviderId } from '../shared/providers/providers'
 import providerSizes from '../shared/providers/provider-window-sizes'
 import { Profile, ErrorResponse } from '../shared/model'
 import { ApiClientConfig } from './apiClientConfig'
 import { prepareAuthOptions, resolveScope, AuthOptions } from './authOptions'
-import { AuthResult } from './authResult'
+import { AuthResult, enrichAuthResult } from './authResult'
 import { ajax } from './ajax'
-
-
-export type Events = {
-  'authenticated': AuthResult
-  'profile_updated': Partial<Profile>
-  'authentication_failed': ErrorResponse
-  'login_failed': ErrorResponse
-  'signup_failed': ErrorResponse
-}
+import { IdentityEventManager } from './identityEventManager'
+import { UrlParser } from './urlParser'
 
 type RequestParams = {
   method?: 'GET' | 'POST'
@@ -42,9 +33,10 @@ export type PasswordlessParams = { authType: 'magic_link' | 'sms', email?: strin
 
 export default class ApiClient {
 
-  constructor(config: ApiClientConfig, eventManager: EventManager<Events>) {
+  constructor(config: ApiClientConfig, eventManager: IdentityEventManager, urlParser: UrlParser) {
     this.config = config
     this.eventManager = eventManager
+    this.urlParser = urlParser
     this.baseUrl = `https://${config.domain}/identity/v1`
     this.authorizeUrl = `https://${config.domain}/oauth/authorize`
     this.tokenUrl = `https://${config.domain}/oauth/token`
@@ -54,7 +46,8 @@ export default class ApiClient {
   }
 
   private config: ApiClientConfig
-  private eventManager: EventManager<Events>
+  private eventManager: IdentityEventManager
+  private urlParser: UrlParser
   private baseUrl: string
   private authorizeUrl: string
   private tokenUrl: string
@@ -91,45 +84,6 @@ export default class ApiClient {
 
   logout(opts: { redirect_to?: string }) {
     window.location.assign(`${this.baseUrl}/logout?${toQueryString(opts)}`)
-  }
-
-  parseUrlFragment(url: string): boolean {
-    const authResult = this.checkFragment(url)
-
-    if (AuthResult.isAuthResult(authResult)) {
-      this.fireAuthenticatedEvent(authResult)
-      return true
-    }
-    else if (ErrorResponse.isErrorResponse(authResult)) {
-      this.fireEvent('authentication_failed', authResult)
-      return true
-    }
-    return false
-  }
-
-  checkFragment(url: string = ''): AuthResult | ErrorResponse | undefined {
-    const separatorIndex = url.indexOf('#')
-
-    if (separatorIndex >= 0) {
-      const parsed = parseQueryString(url.substr(separatorIndex + 1))
-
-      const expiresIn = parsed.expiresIn
-        ? parseInt(parsed.expiresIn)
-        : undefined
-
-      if (AuthResult.isAuthResult(parsed)) {
-        return {
-          ...parsed,
-          expiresIn
-        }
-      }
-
-      return ErrorResponse.isErrorResponse(parsed)
-        ? parsed
-        : undefined
-    }
-
-    return undefined
   }
 
   private loginWithRedirect(queryString: Record<string, string | boolean | undefined>): Promise<void> {
@@ -186,7 +140,7 @@ export default class ApiClient {
       const cordova = window.cordova
       if (!cordova) return
 
-      const parsed = this.parseUrlFragment(url)
+      const parsed = this.urlParser.parseUrlFragment(url)
 
       if (parsed && cordova.plugins && cordova.plugins.browsertab) {
         cordova.plugins.browsertab.close()
@@ -204,7 +158,7 @@ export default class ApiClient {
     }, (err: string, result: WinChanResponse<object>) => {
       if (err) {
         logError(err)
-        this.fireEvent('authentication_failed', {
+        this.eventManager.fireEvent('authentication_failed', {
           errorDescription: 'Unexpected error occurred',
           error: 'server_error'
         })
@@ -216,7 +170,7 @@ export default class ApiClient {
       if (r.success) {
         this.authenticatedHandler(opts, r.data)
       } else {
-        this.fireEvent('authentication_failed', r.data)
+        this.eventManager.fireEvent('authentication_failed', r.data)
       }
     })
     return Promise.resolve()
@@ -229,7 +183,7 @@ export default class ApiClient {
 
     return resultPromise.catch((err: any) => {
       if (err.error) {
-        this.fireEvent('login_failed', err)
+        this.eventManager.fireEvent('login_failed', err)
       }
       throw err
     })
@@ -243,7 +197,7 @@ export default class ApiClient {
       password,
       scope: resolveScope(auth),
       ...(pick(auth, 'origin'))
-    }).then(result => this.fireAuthenticatedEvent(result))
+    }).then(result => this.eventManager.fireEvent('authenticated', result))
   }
 
   private loginWithPasswordByRedirect({ auth = {}, ...rest }: LoginWithPasswordParams) {
@@ -288,7 +242,7 @@ export default class ApiClient {
     return this.requestPost('/verify-auth-code', params).then(_ =>
       this.loginWithVerificationCode(params, auth)
     ).catch(err => {
-      if (err.error) this.fireEvent('login_failed', err)
+      if (err.error) this.eventManager.fireEvent('login_failed', err)
       throw err
     })
   }
@@ -304,7 +258,7 @@ export default class ApiClient {
           scope: resolveScope(auth),
           ...(pick(auth, 'origin')),
           data
-        }).then(result => this.fireAuthenticatedEvent(result))
+        }).then(result => this.eventManager.fireEvent('authenticated', result))
       )
       : (
         this.requestPost<{ tkn: string }>('/signup', { clientId: this.config.clientId, acceptTos, data })
@@ -313,7 +267,7 @@ export default class ApiClient {
 
     return result.catch(err => {
       if (err.error) {
-        this.fireEvent('signup_failed', err)
+        this.eventManager.fireEvent('signup_failed', err)
       }
       throw err
     })
@@ -349,7 +303,7 @@ export default class ApiClient {
     const { phoneNumber } = data
     return this.requestPost('/verify-phone-number', data, { accessToken })
       .then(() =>
-        this.fireEvent('profile_updated', { phoneNumber, phoneNumberVerified: true })
+        this.eventManager.fireEvent('profile_updated', { phoneNumber, phoneNumberVerified: true })
       )
   }
 
@@ -364,7 +318,7 @@ export default class ApiClient {
         clientId: this.config.clientId,
         accessToken
       }
-    }).then(this.enrichAuthResult)
+    }).then(enrichAuthResult)
   }
 
   getUser({ accessToken, ...params }: { accessToken: string, fields?: string }) {
@@ -376,7 +330,7 @@ export default class ApiClient {
       '/update-profile',
       data,
       { accessToken }
-    ).then(() => this.fireEvent('profile_updated', data))
+    ).then(() => this.eventManager.fireEvent('profile_updated', data))
   }
 
   loginWithCustomToken({ token, auth }: { token: string, auth: AuthOptions }) {
@@ -396,44 +350,12 @@ export default class ApiClient {
     )
   }
 
-  on<K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) {
-    this.eventManager.on(eventName, listener)
-  }
-
-  off<K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) {
-    this.eventManager.off(eventName, listener)
-  }
-
   private authenticatedHandler = ({ responseType, redirectUri }: AuthOptions, response: AuthResult) => {
     if (responseType === 'code') {
       window.location.assign(`${redirectUri}?code=${response.code}`)
     } else {
-      this.fireAuthenticatedEvent(response)
+      this.eventManager.fireEvent('authenticated', response)
     }
-  }
-
-  private enrichAuthResult(response: AuthResult): AuthResult {
-    if (response.idToken) {
-      try {
-        const idTokenPayload = parseJwtTokenPayload(response.idToken)
-        return {
-          ...response,
-          idTokenPayload
-        }
-      } catch (e) {
-        logError('id token parsing error: ' + e)
-      }
-    }
-    return response
-  }
-
-  fireAuthenticatedEvent(data: AuthResult) {
-    data = this.enrichAuthResult(data)
-    this.eventManager.fire('authenticated', data)
-  }
-
-  fireEvent<K extends 'profile_updated' | 'authentication_failed' | 'login_failed' | 'signup_failed'>(eventName: K, data: Events[K]) {
-    this.eventManager.fire(eventName, data)
   }
 
   private requestGet(path: string, params: {} = {}, options: Omit<RequestParams, 'params'>) {

@@ -1,13 +1,15 @@
 import * as v from 'validation.ts'
 import { ProviderId } from '../shared/providers/providers'
 import { Profile } from '../shared/model'
-import ApiClient, { SignupParams, LoginWithPasswordParams, PasswordlessParams, Events } from './apiClient'
+import ApiClient, { SignupParams, LoginWithPasswordParams, PasswordlessParams } from './apiClient'
 import { AuthOptions } from './authOptions'
 import { ApiClientConfig } from './apiClientConfig'
 import { ajax } from './ajax'
-import EventManager from '../lib/eventManager'
 import { AuthResult } from './authResult'
+import createEventManager, { Events } from './identityEventManager'
+import createUrlParser from './urlParser'
 
+export { AuthResult } from './authResult'
 
 const configValidator = v.object({
   clientId: v.string,
@@ -17,28 +19,27 @@ const configValidator = v.object({
 export type Config = typeof configValidator.T
 
 export type Client = {
-  on: <K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) => void;
-  off: <K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) => void;
-  signup: (params: SignupParams) => Promise<void>;
-  loginWithPassword: (params: LoginWithPasswordParams) => Promise<void>;
-  startPasswordless: (params: PasswordlessParams, options?: AuthOptions) => Promise<any>;
-  verifyPasswordless: (params: PasswordlessParams) => Promise<void>;
-  loginWithSocialProvider: (provider: ProviderId, options?: AuthOptions) => Promise<void>;
-  requestPasswordReset: (params: { email: string }) => Promise<any>;
-  unlink: (params: { accessToken: string; identityId: string; fields?: string }) => Promise<any>;
-  refreshTokens: (params: { accessToken: string }) => Promise<AuthResult>;
-  loginFromSession: (options?: AuthOptions) => Promise<void>;
-  logout: (params: { redirect_to?: string }) => Promise<void>;
-  getUser: (params: { accessToken: string; fields?: string }) => Promise<any>;
-  updateProfile: (params: { accessToken: string; data: Profile }) => Promise<void>;
-  updateEmail: (params: { accessToken: string; email: string }) => Promise<any>;
-  updatePassword: (params: { accessToken?: string; password: string; oldPasssord?: string; userId?: string }) => Promise<any>;
-  updatePhoneNumber: (params: { accessToken: string; phoneNumber: string }) => Promise<any>;
-  verifyPhoneNumber: (params: { accessToken: string; phoneNumber: string; verificationCode: string }) => Promise<void>;
-  loginWithCustomToken: (params: { token: string; auth: AuthOptions }) => Promise<void>;
-  getSsoData: (params?: {}) => Promise<any>;
-  // parseUrlFragment: (url: string) => boolean;
-  // checkFragment: (url?: string) => AuthResult | ErrorResponse | undefined
+  on: <K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) => void
+  off: <K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) => void
+  signup: (params: SignupParams) => Promise<void>
+  loginWithPassword: (params: LoginWithPasswordParams) => Promise<void>
+  startPasswordless: (params: PasswordlessParams, options?: AuthOptions) => Promise<any>
+  verifyPasswordless: (params: PasswordlessParams) => Promise<void>
+  loginWithSocialProvider: (provider: ProviderId, options?: AuthOptions) => Promise<void>
+  requestPasswordReset: (params: { email: string }) => Promise<any>
+  unlink: (params: { accessToken: string; identityId: string; fields?: string }) => Promise<any>
+  refreshTokens: (params: { accessToken: string }) => Promise<AuthResult>
+  loginFromSession: (options?: AuthOptions) => Promise<void>
+  logout: (params: { redirect_to?: string }) => Promise<void>
+  getUser: (params: { accessToken: string; fields?: string }) => Promise<any>
+  updateProfile: (params: { accessToken: string; data: Profile }) => Promise<void>
+  updateEmail: (params: { accessToken: string; email: string }) => Promise<any>
+  updatePassword: (params: { accessToken?: string; password: string; oldPasssord?: string; userId?: string }) => Promise<any>
+  updatePhoneNumber: (params: { accessToken: string; phoneNumber: string }) => Promise<any>
+  verifyPhoneNumber: (params: { accessToken: string; phoneNumber: string; verificationCode: string }) => Promise<void>
+  loginWithCustomToken: (params: { token: string; auth: AuthOptions }) => Promise<void>
+  getSsoData: (params?: {}) => Promise<any>
+  parseUrlFragment: (url: string) => boolean
 }
 
 export function createClient(creationConfig: Config): Client {
@@ -46,13 +47,14 @@ export function createClient(creationConfig: Config): Client {
     .mapError(err => { throw `the reach5 creation config has errors:\n${v.errorDebugString(err)}` })
 
   const { domain, clientId } = creationConfig
-  const eventManager = new EventManager<Events>()
 
+  const eventManager = createEventManager()
+  const urlParser = createUrlParser(eventManager)
 
   const apiClient = ajax<ApiClientConfig>({
     url: `https://${domain}/identity/v1/config?client_id=${clientId}`,
   })
-  .then(config => new ApiClient(config, eventManager))
+  .then(config => new ApiClient(config, eventManager, urlParser))
 
 
   function signup(params: SignupParams) {
@@ -127,21 +129,25 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.getSsoData(params))
   }
 
-  // TODO: Make this function synchronous (Config is not needed)
-  // function parseUrlFragment(url: string): boolean {
-  //   return apiClient.then(api => api.parseUrlFragment(url))
-  // }
-
-  // TODO: Make this function synchronous (Config is not needed)
-  // function checkFragment(url: string = ''): AuthResult | ErrorResponse | undefined {
-  //   return apiClient.then(api => api.checkFragment(url))
-  // }
-
-  function on<K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) {
-    return eventManager.on(eventName, listener)
+  function parseUrlFragment(url: string = window.location.href): boolean {
+    const parsed = urlParser.parseUrlFragment(url)
+    if (parsed && url === window.location.href) {
+      window.location.hash = ''
+    }
+    return parsed
   }
 
-  function off<K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) {
+  function on<K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void): void {
+    eventManager.on(eventName, listener)
+
+    if (eventName === 'authenticated' || eventName === 'authentication_failed') {
+      // This call must be asynchronous to ensure the listener cannot be called synchronously
+      // (this type of behavior is generally unexpected for the developer)
+      setTimeout(() => parseUrlFragment(), 0)
+    }
+  }
+
+  function off<K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void): void {
     return eventManager.off(eventName, listener)
   }
 
@@ -165,6 +171,7 @@ export function createClient(creationConfig: Config): Client {
     updatePhoneNumber,
     verifyPhoneNumber,
     loginWithCustomToken,
-    getSsoData
+    getSsoData,
+    parseUrlFragment
   }
 }

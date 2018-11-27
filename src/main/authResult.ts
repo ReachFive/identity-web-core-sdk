@@ -1,5 +1,6 @@
 import * as v from 'validation.ts'
-import { idTokenPayload } from '../lib/jwt'
+import { idTokenPayload, parseJwtTokenPayload } from '../lib/jwt'
+import { logError } from '../lib/logger'
 
 
 export const authResult = v.object({
@@ -13,6 +14,21 @@ export const authResult = v.object({
 })
 
 export type AuthResult = typeof authResult.T
+
+export function enrichAuthResult(response: AuthResult): AuthResult {
+  if (response.idToken) {
+    try {
+      const idTokenPayload = parseJwtTokenPayload(response.idToken)
+      return {
+        ...response,
+        idTokenPayload
+      }
+    } catch (e) {
+      logError('id token parsing error: ' + e)
+    }
+  }
+  return response
+}
 
 export namespace AuthResult {
 
