@@ -10,6 +10,7 @@ import createEventManager, { Events } from './identityEventManager'
 import createUrlParser from './urlParser'
 
 export { AuthResult } from './authResult'
+export { AuthOptions } from './authOptions'
 
 const configValidator = v.object({
   clientId: v.string,
