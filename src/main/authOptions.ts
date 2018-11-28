@@ -5,7 +5,10 @@ import isString from 'lodash-es/isString'
 import isArray from 'lodash-es/isArray'
 import isUndefined from 'lodash-es/isUndefined'
 
-
+/**
+ * Validator for authentication options.
+ * More infos here: https://developer.reach5.co/api/identity-web-legacy/#authentication-options
+ */
 export const authOptions = v.object({
   responseType: v.optional(v.union('code', 'token')),
   redirectUri: v.optional(v.string),
@@ -25,6 +28,9 @@ export const authOptions = v.object({
 
 export type AuthOptions = typeof authOptions.T
 
+/**
+ * This type represents the parameters that are actually sent to the HTTP API
+ */
 type AuthParameters = {
   responseType: 'code' | 'token'
   scope: string
@@ -40,6 +46,11 @@ type AuthParameters = {
   acceptTos?: boolean
 }
 
+/**
+ * Resolve the actual oauth2 scope according to the authentication options.
+ * @param {AuthOptions} opts
+ * @returns {string}
+ */
 export function resolveScope(opts: AuthOptions = {}): string {
   const fetchBasicProfile = isUndefined(opts.fetchBasicProfile) || opts.fetchBasicProfile
   return uniq([
@@ -49,7 +60,15 @@ export function resolveScope(opts: AuthOptions = {}): string {
   ]).join(' ')
 }
 
-export function prepareAuthOptions(opts: AuthOptions = {}, { acceptPopupMode = false } = {}): AuthParameters {
+/**
+ * Transform authentication options into authentication parameters
+ * @param {AuthOptions} opts
+ *    Authentication options
+ * @param {boolean} acceptPopupMode
+ *    Indicates if the popup mode is allowed (depends on the type of authentication or context)
+ * @returns {AuthParameters}
+ */
+export function prepareAuthOptions(opts: AuthOptions = {}, { acceptPopupMode = false }: { acceptPopupMode?: boolean } = {}): AuthParameters {
   return {
     responseType: opts.redirectUri ? 'code' : 'token',
     scope: resolveScope(opts),
@@ -69,6 +88,12 @@ export function prepareAuthOptions(opts: AuthOptions = {}, { acceptPopupMode = f
   }
 }
 
+/**
+ * Normalize the scope format (e.g. "openid email" => ["openid", "email"])
+ * @param {string[] | string | undefined} scope
+ *    Scope entered by the user
+ * @returns {string[]}
+ */
 function parseScope(scope: string[] | string | undefined): string[] {
   if (isUndefined(scope)) return []
   if (isArray(scope)) return scope

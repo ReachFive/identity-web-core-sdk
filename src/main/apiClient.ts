@@ -30,17 +30,19 @@ export type LoginWithPasswordParams = { email: string, password: string, auth?: 
 
 export type PasswordlessParams = { authType: 'magic_link' | 'sms', email?: string, phoneNumber?: string }
 
-
+/**
+ * Identity Rest API Client
+ */
 export default class ApiClient {
 
-  constructor(config: ApiClientConfig, eventManager: IdentityEventManager, urlParser: UrlParser) {
-    this.config = config
-    this.eventManager = eventManager
-    this.urlParser = urlParser
-    this.baseUrl = `https://${config.domain}/identity/v1`
-    this.authorizeUrl = `https://${config.domain}/oauth/authorize`
-    this.tokenUrl = `https://${config.domain}/oauth/token`
-    this.popupRelayUrl = `https://${config.domain}/popup/relay`
+  constructor(props: { config: ApiClientConfig, eventManager: IdentityEventManager, urlParser: UrlParser }) {
+    this.config = props.config
+    this.eventManager = props.eventManager
+    this.urlParser = props.urlParser
+    this.baseUrl = `https://${this.config.domain}/identity/v1`
+    this.authorizeUrl = `https://${this.config.domain}/oauth/authorize`
+    this.tokenUrl = `https://${this.config.domain}/oauth/token`
+    this.popupRelayUrl = `https://${this.config.domain}/popup/relay`
 
     this.initCordovaCallbackIfNecessary()
   }
@@ -140,7 +142,7 @@ export default class ApiClient {
       const cordova = window.cordova
       if (!cordova) return
 
-      const parsed = this.urlParser.parseUrlFragment(url)
+      const parsed = this.urlParser.checkUrlFragment(url)
 
       if (parsed && cordova.plugins && cordova.plugins.browsertab) {
         cordova.plugins.browsertab.close()

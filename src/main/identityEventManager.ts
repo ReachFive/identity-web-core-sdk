@@ -10,6 +10,9 @@ export type Events = {
   'signup_failed': ErrorResponse
 }
 
+/**
+ * Event manager dedicated to Identity SDK events
+ */
 export type IdentityEventManager = {
   on: <K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) => void;
   off: <K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) => void;
