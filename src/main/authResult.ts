@@ -15,6 +15,11 @@ export const authResult = v.object({
 
 export type AuthResult = typeof authResult.T
 
+/**
+ * Parse the id token, if present, and add the payload to the AuthResult
+ * @param {AuthResult} response
+ * @returns {AuthResult}
+ */
 export function enrichAuthResult(response: AuthResult): AuthResult {
   if (response.idToken) {
     try {

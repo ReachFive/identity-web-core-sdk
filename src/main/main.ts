@@ -55,7 +55,7 @@ export function createClient(creationConfig: Config): Client {
   const apiClient = ajax<ApiClientConfig>({
     url: `https://${domain}/identity/v1/config?client_id=${clientId}`,
   })
-  .then(config => new ApiClient(config, eventManager, urlParser))
+  .then(config => new ApiClient({ config, eventManager, urlParser }))
 
 
   function signup(params: SignupParams) {
@@ -130,12 +130,12 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.getSsoData(params))
   }
 
-  function parseUrlFragment(url: string = window.location.href): boolean {
-    const parsed = urlParser.parseUrlFragment(url)
-    if (parsed && url === window.location.href) {
+  function checkUrlFragment(url: string = window.location.href): boolean {
+    const authResponseDetected = urlParser.checkUrlFragment(url)
+    if (authResponseDetected && url === window.location.href) {
       window.location.hash = ''
     }
-    return parsed
+    return authResponseDetected
   }
 
   function on<K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void): void {
@@ -144,7 +144,7 @@ export function createClient(creationConfig: Config): Client {
     if (eventName === 'authenticated' || eventName === 'authentication_failed') {
       // This call must be asynchronous to ensure the listener cannot be called synchronously
       // (this type of behavior is generally unexpected for the developer)
-      setTimeout(() => parseUrlFragment(), 0)
+      setTimeout(() => checkUrlFragment(), 0)
     }
   }
 
@@ -173,6 +173,6 @@ export function createClient(creationConfig: Config): Client {
     verifyPhoneNumber,
     loginWithCustomToken,
     getSsoData,
-    parseUrlFragment
+    checkUrlFragment
   }
 }
