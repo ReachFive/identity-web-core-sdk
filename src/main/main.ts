@@ -40,7 +40,7 @@ export type Client = {
   verifyPhoneNumber: (params: { accessToken: string; phoneNumber: string; verificationCode: string }) => Promise<void>
   loginWithCustomToken: (params: { token: string; auth: AuthOptions }) => Promise<void>
   getSsoData: (params?: {}) => Promise<any>
-  parseUrlFragment: (url: string) => boolean
+  checkUrlFragment: (url: string) => boolean
 }
 
 export function createClient(creationConfig: Config): Client {
