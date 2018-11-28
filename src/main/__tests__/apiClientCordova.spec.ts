@@ -1,21 +1,25 @@
 import 'core-js/shim'
 import 'regenerator-runtime/runtime'
 import fetchMock from 'jest-fetch-mock'
-import ApiClient, { Events } from '../apiClient'
-import EventManager from '../../lib/eventManager'
+import ApiClient from '../apiClient'
 import { delay } from '../../lib/promise'
 import { toQueryString } from '../../lib/queryString'
-
+import createEventManager from '../identityEventManager'
+import createUrlParser from '../urlParser'
 
 const clientId = 'kqIJE'
 
-function apiClient() {
-  const eventManager = new EventManager<Events>()
-
-  return new ApiClient({
-    clientId: clientId,
-    domain: 'local.reach5.net'
-  }, eventManager)
+function apiClientAndEventManager() {
+  const eventManager = createEventManager()
+  const client = new ApiClient({
+    config: {
+      clientId: clientId,
+      domain: 'local.reach5.net'
+    },
+    eventManager,
+    urlParser: createUrlParser(eventManager)
+  })
+  return { client, eventManager }
 }
 
 beforeEach(() => {
@@ -30,7 +34,7 @@ describe('signup', () => {
   test('with default auth', async () => {
 
     // Given
-    const client = apiClient()
+    const { client, eventManager } = apiClientAndEventManager()
 
     const idToken = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.Pd6t82tPL3EZdkeYxw_DV2KimE1U2FvuLHmfR_mimJ5US3JFU4J2Gd94O7rwpSTGN1B9h-_lsTebo4ua4xHsTtmczZ9xa8a_kWKaSkqFjNFaFp6zcoD6ivCu03SlRqsQzSRHXo6TKbnqOt9D6Y2rNa3C4igSwoS0jUE4BgpXbc0'
     const accessToken = 'kjbsdfljndvlksndfv'
@@ -38,7 +42,7 @@ describe('signup', () => {
     const tokenType = 'Bearer'
 
     const authenticatedHandler = jest.fn()
-    client.on('authenticated', authenticatedHandler)
+    eventManager.on('authenticated', authenticatedHandler)
 
     const signupCall = fetchMock.mockResponseOnce(JSON.stringify({
       'id_token': idToken,
@@ -95,7 +99,7 @@ describe('signup', () => {
   test('with origin', async () => {
 
     // Given
-    const client = apiClient()
+    const { client, eventManager } = apiClientAndEventManager()
 
     const idToken = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.Pd6t82tPL3EZdkeYxw_DV2KimE1U2FvuLHmfR_mimJ5US3JFU4J2Gd94O7rwpSTGN1B9h-_lsTebo4ua4xHsTtmczZ9xa8a_kWKaSkqFjNFaFp6zcoD6ivCu03SlRqsQzSRHXo6TKbnqOt9D6Y2rNa3C4igSwoS0jUE4BgpXbc0'
     const accessToken = 'kjbsdfljndvlksndfv'
@@ -105,7 +109,7 @@ describe('signup', () => {
     const origin = 'foobar'
 
     const authenticatedHandler = jest.fn()
-    client.on('authenticated', authenticatedHandler)
+    eventManager.on('authenticated', authenticatedHandler)
 
     const signupCall = fetchMock.mockResponseOnce(JSON.stringify({
       'id_token': idToken,
@@ -164,10 +168,10 @@ describe('signup', () => {
   test('with user error', async () => {
 
     // Given
-    const client = apiClient()
+    const { client, eventManager } = apiClientAndEventManager()
 
     const signupFailedHandler = jest.fn()
-    client.on('signup_failed', signupFailedHandler)
+    eventManager.on('signup_failed', signupFailedHandler)
 
     const error = 'email_already_exists'
     const errorDescription = 'Email already in use'
@@ -205,10 +209,10 @@ describe('signup', () => {
     expect.assertions(2)
 
     // Given
-    const client = apiClient()
+    const { client, eventManager } = apiClientAndEventManager()
 
     const signupFailedHandler = jest.fn()
-    client.on('signup_failed', signupFailedHandler)
+    eventManager.on('signup_failed', signupFailedHandler)
 
     const error = new Error('Saboteur !!')
 
@@ -236,13 +240,13 @@ describe('loginWithPassword', async () => {
     expect.assertions(2)
 
     // Given
-    const client = apiClient()
+    const { client, eventManager } = apiClientAndEventManager()
 
     const email = 'john.doe@example.com'
     const password = 'izDf8£Zd'
 
     const authenticatedHandler = jest.fn()
-    client.on('authenticated', authenticatedHandler)
+    eventManager.on('authenticated', authenticatedHandler)
 
     const idToken = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.Pd6t82tPL3EZdkeYxw_DV2KimE1U2FvuLHmfR_mimJ5US3JFU4J2Gd94O7rwpSTGN1B9h-_lsTebo4ua4xHsTtmczZ9xa8a_kWKaSkqFjNFaFp6zcoD6ivCu03SlRqsQzSRHXo6TKbnqOt9D6Y2rNa3C4igSwoS0jUE4BgpXbc0'
     const accessToken = 'kjbsdfljndvlksndfv'
@@ -292,13 +296,13 @@ describe('loginWithPassword', async () => {
     expect.assertions(2)
 
     // Given
-    const client = apiClient()
+    const { client, eventManager } = apiClientAndEventManager()
 
     const email = 'john.doe@example.com'
     const password = 'izDf8£Zd'
 
     const authenticatedHandler = jest.fn()
-    client.on('authenticated', authenticatedHandler)
+    eventManager.on('authenticated', authenticatedHandler)
 
     const idToken = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.Pd6t82tPL3EZdkeYxw_DV2KimE1U2FvuLHmfR_mimJ5US3JFU4J2Gd94O7rwpSTGN1B9h-_lsTebo4ua4xHsTtmczZ9xa8a_kWKaSkqFjNFaFp6zcoD6ivCu03SlRqsQzSRHXo6TKbnqOt9D6Y2rNa3C4igSwoS0jUE4BgpXbc0'
     const accessToken = 'kjbsdfljndvlksndfv'
@@ -350,13 +354,13 @@ describe('loginWithPassword', async () => {
 
   test('redirect uri ignored', async () => {
     // Given
-    const client = apiClient()
+    const { client, eventManager } = apiClientAndEventManager()
 
     const email = 'john.doe@example.com'
     const password = 'izDf8£Zd'
 
     const authenticatedHandler = jest.fn()
-    client.on('authenticated', authenticatedHandler)
+    eventManager.on('authenticated', authenticatedHandler)
 
     const idToken = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.Pd6t82tPL3EZdkeYxw_DV2KimE1U2FvuLHmfR_mimJ5US3JFU4J2Gd94O7rwpSTGN1B9h-_lsTebo4ua4xHsTtmczZ9xa8a_kWKaSkqFjNFaFp6zcoD6ivCu03SlRqsQzSRHXo6TKbnqOt9D6Y2rNa3C4igSwoS0jUE4BgpXbc0'
     const accessToken = 'kjbsdfljndvlksndfv'
@@ -408,10 +412,10 @@ describe('loginWithPassword', async () => {
 
   test('with user error', async () => {
     // Given
-    const client = apiClient()
+    const { client, eventManager } = apiClientAndEventManager()
 
     const loginFailedHandler = jest.fn()
-    client.on('login_failed', loginFailedHandler)
+    eventManager.on('login_failed', loginFailedHandler)
 
     const expectedError = {
       error: 'invalid_grant',
@@ -445,7 +449,7 @@ describe('loginWithSocialProvider', () => {
     expect.assertions(3)
 
     // Given
-    const client = apiClient()
+    const { client } = apiClientAndEventManager()
 
     let calledUrl = null
 
@@ -484,7 +488,7 @@ describe('loginWithSocialProvider', () => {
     expect.assertions(3)
 
     // Given
-    const client = apiClient()
+    const { client } = apiClientAndEventManager()
 
     window.cordova = {
       plugins: {
@@ -524,7 +528,7 @@ describe('loginWithSocialProvider', () => {
     expect.assertions(1)
 
     // Given
-    const client = apiClient()
+    const { client } = apiClientAndEventManager()
 
     window.cordova = {
       InAppBrowser: {
@@ -552,7 +556,7 @@ describe('loginWithSocialProvider', () => {
     expect.assertions(1)
 
     // Given
-    const client = apiClient()
+    const { client } = apiClientAndEventManager()
 
     // When
     try {
@@ -569,7 +573,7 @@ describe('loginWithSocialProvider', () => {
     expect.assertions(1)
 
     // Given
-    const client = apiClient()
+    const { client } = apiClientAndEventManager()
 
     const redirectUri = 'myapp://login/callback'
 
@@ -602,7 +606,7 @@ describe('loginWithSocialProvider', () => {
     expect.assertions(1)
 
     // Given
-    const client = apiClient()
+    const { client } = apiClientAndEventManager()
 
     window.cordova = {
       InAppBrowser: {
@@ -633,7 +637,7 @@ describe('handleOpenURL', () => {
 
   test('when defined by the sdk', async () => {
     // Given
-    const client = apiClient()
+    const { eventManager } = apiClientAndEventManager()
 
     const idToken = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.Pd6t82tPL3EZdkeYxw_DV2KimE1U2FvuLHmfR_mimJ5US3JFU4J2Gd94O7rwpSTGN1B9h-_lsTebo4ua4xHsTtmczZ9xa8a_kWKaSkqFjNFaFp6zcoD6ivCu03SlRqsQzSRHXo6TKbnqOt9D6Y2rNa3C4igSwoS0jUE4BgpXbc0'
     const accessToken = 'kjbsdfljndvlksndfv'
@@ -642,7 +646,7 @@ describe('handleOpenURL', () => {
 
     // When
     const authenticatedHandler = jest.fn().mockName('authenticationHandler')
-    client.on('authenticated', authenticatedHandler)
+    eventManager.on('authenticated', authenticatedHandler)
 
     window.handleOpenURL!('myapp://login/callback#' + [
       `id_token=${idToken}`,
@@ -673,7 +677,7 @@ describe('handleOpenURL', () => {
     const handleOpenURL = jest.fn()
     window.handleOpenURL = handleOpenURL
 
-    const client = apiClient()
+    const { eventManager } = apiClientAndEventManager()
 
     const idToken = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.Pd6t82tPL3EZdkeYxw_DV2KimE1U2FvuLHmfR_mimJ5US3JFU4J2Gd94O7rwpSTGN1B9h-_lsTebo4ua4xHsTtmczZ9xa8a_kWKaSkqFjNFaFp6zcoD6ivCu03SlRqsQzSRHXo6TKbnqOt9D6Y2rNa3C4igSwoS0jUE4BgpXbc0'
     const accessToken = 'kjbsdfljndvlksndfv'
@@ -682,7 +686,7 @@ describe('handleOpenURL', () => {
 
     // When
     const authenticatedHandler = jest.fn().mockName('authenticationHandler')
-    client.on('authenticated', authenticatedHandler)
+    eventManager.on('authenticated', authenticatedHandler)
 
     window.handleOpenURL('myapp://login/callback#' + [
       `id_token=${idToken}`,
@@ -702,7 +706,7 @@ describe('handleOpenURL', () => {
     expect.assertions(2)
 
     // Given
-    const client = apiClient()
+    const { eventManager } = apiClientAndEventManager()
 
     window.cordova = {
       plugins: {
@@ -721,7 +725,7 @@ describe('handleOpenURL', () => {
 
     // When
     const authenticatedHandler = jest.fn().mockName('authenticationHandler')
-    client.on('authenticated', authenticatedHandler)
+    eventManager.on('authenticated', authenticatedHandler)
 
     window.handleOpenURL!('myapp://login/callback#' + [
       `id_token=${idToken}`,

@@ -1,23 +1,29 @@
 import 'core-js/shim'
 import 'regenerator-runtime/runtime'
-import ApiClient, { Events } from '../apiClient'
+import ApiClient from '../apiClient'
 import { toQueryString } from '../../lib/queryString'
 import fetchMock from 'jest-fetch-mock'
 import winchanMocker from './winchanMocker'
 import { delay } from '../../lib/promise'
-import EventManager from '../../lib/eventManager'
+import createEventManager from '../identityEventManager'
+import createUrlParser from '../urlParser'
 
 
 const clientId = 'zdfuh'
 
-function apiClient(config = {}) {
-  const eventManager = new EventManager<Events>()
-
-  return new ApiClient({
-    clientId: clientId,
-    domain: 'local.reach5.net',
-    ...config
-  }, eventManager)
+function createServices(config = {}) {
+  const eventManager = createEventManager()
+  const urlParser = createUrlParser(eventManager)
+  const client = new ApiClient({
+    config: {
+      clientId,
+      domain: 'local.reach5.net',
+      ...config
+    },
+    eventManager,
+    urlParser
+  })
+  return { client, eventManager, urlParser }
 }
 
 beforeEach(() => {
@@ -32,7 +38,7 @@ describe('getSsoData', () => {
     expect.assertions(2)
 
     // Given
-    const client = apiClient()
+    const { client } = createServices()
 
     const apiResponse = {
       'name': 'John Doe',
@@ -70,7 +76,7 @@ describe('getSsoData', () => {
 
   test('with login_hint', async () => {
     // Given
-    const client = apiClient()
+    const { client } = createServices()
 
     const apiResponse = {
       'name': 'John Doe',
@@ -107,7 +113,7 @@ describe('getSsoData', () => {
   })
 
   test('with sso cookie', async () => {
-    const client = apiClient({ sso: true })
+    const { client } = createServices({ sso: true })
 
     const ssoDataCall = fetchMock.mockResponseOnce(JSON.stringify({
       'name': 'John Doe',
@@ -142,7 +148,7 @@ describe('getSsoData', () => {
 
   test('with sso cookie and id_token_hint', async () => {
 
-    const client = apiClient({ sso: true })
+    const { client } = createServices({ sso: true })
 
     const ssoDataCall = fetchMock.mockResponseOnce(JSON.stringify({
       'name': 'John Doe',
@@ -180,7 +186,7 @@ describe('getSsoData', () => {
 
   test('take into account only "id_token_hint" and "login_hint" params', async () => {
     // Given
-    const client = apiClient()
+    const { client } = createServices()
 
     const apiResponse = {
       'name': 'John Doe',
@@ -226,7 +232,7 @@ describe('loginFromSession', () => {
     expect.assertions(1)
 
     // Given
-    const client = apiClient()
+    const { client } = createServices()
     const idTokenHint = 'idtokencontent'
 
     // When
@@ -247,7 +253,7 @@ describe('loginFromSession', () => {
 
   test('with code authorization', async () => {
     // Given
-    const client = apiClient()
+    const { client } = createServices()
     const redirectUri = 'https://mysite/login/callback'
     const idTokenHint = 'idtokencontent'
 
@@ -273,7 +279,7 @@ describe('loginFromSession', () => {
 
   test('with sso cookie', async () => {
     // Given
-    const client = apiClient({ sso: true })
+    const { client } = createServices({ sso: true })
 
     // When
     await client.loginFromSession()
@@ -292,7 +298,7 @@ describe('loginFromSession', () => {
 
   test('should throw an exception, when sso is disabled, and no id token is sent', async () => {
     // Given
-    const client = apiClient({ sso: false })
+    const { client } = createServices({ sso: false })
 
     // When
     try {
@@ -307,7 +313,7 @@ describe('loginFromSession', () => {
 
   test('popup mode is ignored', async () => {
     // Given
-    const client = apiClient()
+    const { client } = createServices()
     const idTokenHint = 'idtokencontent'
 
     // When
@@ -336,7 +342,7 @@ describe('parseUrlFragment', () => {
     expect.assertions(3)
 
     // Given
-    const client = apiClient()
+    const { eventManager, urlParser } = createServices()
 
     const idToken = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.Pd6t82tPL3EZdkeYxw_DV2KimE1U2FvuLHmfR_mimJ5US3JFU4J2Gd94O7rwpSTGN1B9h-_lsTebo4ua4xHsTtmczZ9xa8a_kWKaSkqFjNFaFp6zcoD6ivCu03SlRqsQzSRHXo6TKbnqOt9D6Y2rNa3C4igSwoS0jUE4BgpXbc0'
     const accessToken = 'kjbsdfljndvlksndfv'
@@ -344,13 +350,13 @@ describe('parseUrlFragment', () => {
     const tokenType = 'Bearer'
 
     const authenticatedHandler = jest.fn().mockName('authenticatedHandler')
-    client.on('authenticated', authenticatedHandler)
+    eventManager.on('authenticated', authenticatedHandler)
 
     const authenticationFailedHandler = jest.fn().mockName('authenticationFailedHandler')
-    client.on('authentication_failed', authenticationFailedHandler)
+    eventManager.on('authentication_failed', authenticationFailedHandler)
 
     // When
-    const result = client.parseUrlFragment('https://example.com/login/callback#' + [
+    const result = urlParser.checkUrlFragment('https://example.com/login/callback#' + [
       `id_token=${idToken}`,
       `access_token=${accessToken}`,
       `expires_in=${expiresIn}`,
@@ -378,20 +384,20 @@ describe('parseUrlFragment', () => {
     expect.assertions(3)
 
     // Given
-    const client = apiClient()
+    const { eventManager, urlParser } = createServices()
 
     const error = 'invalid_grant'
     const errorDescription = 'Invalid email or password'
     const errorUsrMsg = 'Invalid email or password'
 
     const authenticatedHandler = jest.fn().mockName('authenticatedHandler')
-    client.on('authenticated', authenticatedHandler)
+    eventManager.on('authenticated', authenticatedHandler)
 
     const authenticationFailedHandler = jest.fn().mockName('authenticationFailedHandler')
-    client.on('authentication_failed', authenticationFailedHandler)
+    eventManager.on('authentication_failed', authenticationFailedHandler)
 
     // When
-    const result = client.parseUrlFragment('https://example.com/login/callback#' + [
+    const result = urlParser.checkUrlFragment('https://example.com/login/callback#' + [
       `error=${error}`,
       `error_description=${errorDescription}`,
       `error_usr_msg=${errorUsrMsg}`
@@ -413,16 +419,16 @@ describe('parseUrlFragment', () => {
     expect.assertions(3)
 
     // Given
-    const client = apiClient()
+    const { eventManager, urlParser } = createServices()
 
     const authenticatedHandler = jest.fn().mockName('authenticatedHandler')
-    client.on('authenticated', authenticatedHandler)
+    eventManager.on('authenticated', authenticatedHandler)
 
     const authenticationFailedHandler = jest.fn().mockName('authenticationFailedHandler')
-    client.on('authentication_failed', authenticationFailedHandler)
+    eventManager.on('authentication_failed', authenticationFailedHandler)
 
     // When
-    const result = client.parseUrlFragment('https://example.com/login/callback#toto=tutu')
+    const result = urlParser.checkUrlFragment('https://example.com/login/callback#toto=tutu')
 
     await delay(1)
 
