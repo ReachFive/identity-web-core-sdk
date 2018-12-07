@@ -1,23 +1,8 @@
-import { createClient } from '../main'
 import { delay } from "../../lib/promise"
 import { toQueryString } from "../../lib/queryString"
 import winchanMocker from './winchanMocker'
 import fetchMock from 'jest-fetch-mock'
-
-
-const clientId = 'IZHFi'
-
-function coreApi() {
-  const conf = {
-    clientId: clientId,
-    domain: 'local.reach5.net'
-  }
-
-  // Mocks the initial config fetching
-  fetchMock.mockResponseOnce(JSON.stringify(conf), { status: 200 })
-
-  return createClient(conf)
-}
+import { createDefaultTestClient } from './testHelpers'
 
 beforeEach(() => {
   window.fetch = fetchMock
@@ -25,7 +10,7 @@ beforeEach(() => {
 })
 
 test('with default auth', async () => {
-  const api = coreApi()
+  const { api, clientId, domain } = createDefaultTestClient()
 
   let error = null
   api.loginWithSocialProvider('google', {}).catch(err => error = err)
@@ -34,7 +19,7 @@ test('with default auth', async () => {
 
   expect(error).toBeNull()
   expect(window.location.assign).toHaveBeenCalledWith(
-    'https://local.reach5.net/oauth/authorize?' + toQueryString({
+    `https://${domain}/oauth/authorize?` + toQueryString({
       'client_id': clientId,
       'response_type': 'token',
       'scope': 'openid profile email phone',
@@ -45,7 +30,7 @@ test('with default auth', async () => {
 })
 
 test('with auth params', async () => {
-  const api = coreApi()
+  const { api, clientId, domain } = createDefaultTestClient()
 
   let error = null
 
@@ -57,7 +42,7 @@ test('with auth params', async () => {
 
   expect(error).toBeNull()
   expect(window.location.assign).toHaveBeenCalledWith(
-    'https://local.reach5.net/oauth/authorize?' + toQueryString({
+    `https://${domain}/oauth/authorize?` + toQueryString({
       'client_id': clientId,
       'response_type': 'code',
       'scope': 'openid profile email phone',
@@ -70,7 +55,7 @@ test('with auth params', async () => {
 
 test('with access token auth param', async () => {
   // Given
-  const api = coreApi()
+  const { api, clientId, domain } = createDefaultTestClient()
 
   const accessToken = 'myAccessToken'
 
@@ -83,7 +68,7 @@ test('with access token auth param', async () => {
   // Then
   expect(error).toBeNull()
   expect(window.location.assign).toHaveBeenCalledWith(
-    'https://local.reach5.net/oauth/authorize?' + toQueryString({
+    `https://${domain}/oauth/authorize?` + toQueryString({
       'client_id': clientId,
       'response_type': 'token',
       'scope': 'openid profile email phone',
@@ -96,7 +81,7 @@ test('with access token auth param', async () => {
 
 test('with popup mode', async () => {
   // Given
-  const api = coreApi()
+  const { api, clientId, domain } = createDefaultTestClient()
 
   const idToken = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.Pd6t82tPL3EZdkeYxw_DV2KimE1U2FvuLHmfR_mimJ5US3JFU4J2Gd94O7rwpSTGN1B9h-_lsTebo4ua4xHsTtmczZ9xa8a_kWKaSkqFjNFaFp6zcoD6ivCu03SlRqsQzSRHXo6TKbnqOt9D6Y2rNa3C4igSwoS0jUE4BgpXbc0'
   const accessToken = 'kjbsdfljndvlksndfv'
@@ -125,14 +110,14 @@ test('with popup mode', async () => {
   // Then
   expect(error).toBeNull()
   expect(winchanMocker.receivedParams).toEqual({
-    url: 'https://local.reach5.net/oauth/authorize?' + toQueryString({
+    url: `https://${domain}/oauth/authorize?` + toQueryString({
       'client_id': clientId,
       'response_type': 'token',
       'scope': 'openid profile email phone',
       'display': 'popup',
       'provider': 'facebook'
     }),
-    relay_url: 'https://local.reach5.net/popup/relay',
+    relay_url: `https://${domain}/popup/relay`,
     window_features: 'menubar=0,toolbar=0,resizable=1,scrollbars=1,width=0,height=0,top=0,left=0'
   })
 
@@ -152,7 +137,7 @@ test('with popup mode', async () => {
 
 test('with popup mode with expected failure', async () => {
   // Given
-  const api = coreApi()
+  const { api } = createDefaultTestClient()
 
   winchanMocker.mockOpenSuccess({
     success: false,
@@ -188,7 +173,7 @@ test('with popup mode with expected failure', async () => {
 
 test('with popup mode with unexpected failure', async () => {
   // Given
-  const api = coreApi()
+  const { api } = createDefaultTestClient()
 
   winchanMocker.mockOpenError('Saboteur !!!')
 

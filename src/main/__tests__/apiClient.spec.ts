@@ -10,6 +10,7 @@ import createUrlParser from '../urlParser'
 
 
 const clientId = 'zdfuh'
+const domain = 'local.reach5.net'
 
 function createServices(config = {}) {
   const eventManager = createEventManager()
@@ -17,7 +18,8 @@ function createServices(config = {}) {
   const client = new ApiClient({
     config: {
       clientId,
-      domain: 'local.reach5.net',
+      domain,
+      sso: false,
       ...config
     },
     eventManager,
@@ -56,7 +58,7 @@ describe('getSsoData', () => {
     const result = await client.getSsoData({ idTokenHint })
 
     // Then
-    expect(ssoDataCall).toHaveBeenCalledWith('https://local.reach5.net/identity/v1/sso/data?' + toQueryString({
+    expect(ssoDataCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/sso/data?` + toQueryString({
       'client_id': clientId,
       'id_token_hint': idTokenHint
     }), {
@@ -94,7 +96,7 @@ describe('getSsoData', () => {
     const result = await client.getSsoData({ loginHint })
 
     // Then
-    expect(ssoDataCall).toHaveBeenCalledWith('https://local.reach5.net/identity/v1/sso/data?' + toQueryString({
+    expect(ssoDataCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/sso/data?` + toQueryString({
       'client_id': clientId,
       'login_hint': loginHint
     }), {
@@ -128,7 +130,7 @@ describe('getSsoData', () => {
     const result = await client.getSsoData()
 
     // Then
-    expect(ssoDataCall).toHaveBeenCalledWith('https://local.reach5.net/identity/v1/sso/data?' + toQueryString({
+    expect(ssoDataCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/sso/data?` + toQueryString({
       'client_id': clientId
     }), {
         method: 'GET',
@@ -165,7 +167,7 @@ describe('getSsoData', () => {
     const result = await client.getSsoData({ idTokenHint })
 
     // Then
-    expect(ssoDataCall).toHaveBeenCalledWith('https://local.reach5.net/identity/v1/sso/data?' + toQueryString({
+    expect(ssoDataCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/sso/data?` + toQueryString({
       'client_id': clientId,
       'id_token_hint': idTokenHint
     }), {
@@ -208,7 +210,7 @@ describe('getSsoData', () => {
     })
 
     // Then
-    expect(ssoDataCall).toHaveBeenCalledWith('https://local.reach5.net/identity/v1/sso/data?' + toQueryString({
+    expect(ssoDataCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/sso/data?` + toQueryString({
       'client_id': clientId,
       'id_token_hint': idTokenHint
     }), {
@@ -240,7 +242,7 @@ describe('loginFromSession', () => {
 
     // Then
     expect(window.location.assign).toHaveBeenCalledWith(
-      'https://local.reach5.net/oauth/authorize?' + toQueryString({
+      `https://${domain}/oauth/authorize?` + toQueryString({
         'client_id': clientId,
         'response_type': 'token',
         'scope': 'openid profile email phone',
@@ -265,7 +267,7 @@ describe('loginFromSession', () => {
 
     // Then
     expect(window.location.assign).toHaveBeenCalledWith(
-      'https://local.reach5.net/oauth/authorize?' + toQueryString({
+      `https://${domain}/oauth/authorize?` + toQueryString({
         'client_id': clientId,
         'response_type': 'code',
         'scope': 'openid profile email phone',
@@ -286,7 +288,7 @@ describe('loginFromSession', () => {
 
     // Then
     expect(window.location.assign).toHaveBeenCalledWith(
-      'https://local.reach5.net/oauth/authorize?' + toQueryString({
+      `https://${domain}/oauth/authorize?` + toQueryString({
         'client_id': clientId,
         'response_type': 'token',
         'scope': 'openid profile email phone',
@@ -324,7 +326,7 @@ describe('loginFromSession', () => {
 
     // Then
     expect(window.location.assign).toHaveBeenCalledWith(
-      'https://local.reach5.net/oauth/authorize?' + toQueryString({
+      `https://${domain}/oauth/authorize?` + toQueryString({
         'client_id': clientId,
         'response_type': 'token',
         'scope': 'openid profile email phone',

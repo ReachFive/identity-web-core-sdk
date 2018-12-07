@@ -1,24 +1,9 @@
 import 'core-js/shim'
 import 'regenerator-runtime/runtime'
 import fetchMock from 'jest-fetch-mock'
-import { createClient } from '../main'
 import { toQueryString } from '../../lib/queryString'
 import { delay } from '../../lib/promise'
-
-
-const clientId = 'myclientid'
-
-function coreApi() {
-  const conf = {
-    clientId: clientId,
-    domain: 'local.reach5.net'
-  }
-
-  // Mocks the initial config fetching
-  fetchMock.mockResponseOnce(JSON.stringify(conf), { status: 200 })
-
-  return createClient(conf)
-}
+import { createDefaultTestClient, headers } from './testHelpers'
 
 beforeEach(() => {
   window.fetch = fetchMock
@@ -27,7 +12,7 @@ beforeEach(() => {
 
 test('with default auth', async () => {
   // Given
-  const api = coreApi()
+  const { api, clientId, domain } = createDefaultTestClient()
 
   const email = 'john.doe@example.com'
   const password = 'izDf8£Zd'
@@ -47,14 +32,14 @@ test('with default auth', async () => {
   // Then
   expect(error).toBeNull()
 
-  expect(passwordLoginCall).toHaveBeenCalledWith('https://local.reach5.net/identity/v1/password/login', {
+  expect(passwordLoginCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/password/login`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+    headers: headers.jsonAndDefaultLang,
     body: `{"client_id":"${clientId}","email":"${email}","password":"${password}"}`
   })
 
   expect(window.location.assign).toHaveBeenCalledWith(
-    'https://local.reach5.net/identity/v1/password/callback?' + toQueryString({
+    `https://${domain}/identity/v1/password/callback?` + toQueryString({
       'client_id': clientId,
       'response_type': 'token',
       'scope': 'openid profile email phone',
@@ -66,7 +51,7 @@ test('with default auth', async () => {
 
 test('popup mode is ignored', async () => {
   // Given
-  const api = coreApi()
+  const { api, clientId, domain } = createDefaultTestClient()
 
   const email = 'john.doe@example.com'
   const password = 't7k$kA6n'
@@ -97,7 +82,7 @@ test('popup mode is ignored', async () => {
   // Then
   expect(error).toBeNull()
   expect(window.location.assign).toHaveBeenCalledWith(
-    'https://local.reach5.net/identity/v1/password/callback?' + toQueryString({
+    `https://${domain}/identity/v1/password/callback?` + toQueryString({
       'client_id': clientId,
       'response_type': 'code',
       'scope': 'openid profile email phone',
@@ -110,7 +95,7 @@ test('popup mode is ignored', async () => {
 
 test('with default auth', async () => {
   // Given
-  const api = coreApi()
+  const { api, clientId, domain } = createDefaultTestClient()
 
   const email = 'john.doe@example.com'
   const password = 'izDf8£Zd'
@@ -140,14 +125,14 @@ test('with default auth', async () => {
   // Then
   expect(error).toBeNull()
 
-  expect(passwordLoginCall).toHaveBeenCalledWith('https://local.reach5.net/identity/v1/password/login', {
+  expect(passwordLoginCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/password/login`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+    headers: headers.jsonAndDefaultLang,
     body: `{"client_id":"${clientId}","email":"${email}","password":"${password}"}`
   })
 
   expect(window.location.assign).toHaveBeenCalledWith(
-    'https://local.reach5.net/identity/v1/password/callback?' + toQueryString({
+    `https://${domain}/identity/v1/password/callback?` + toQueryString({
       'client_id': clientId,
       'response_type': 'token',
       'scope': 'openid email',
@@ -159,7 +144,7 @@ test('with default auth', async () => {
 
 test('with user error', async () => {
   // Given
-  const api = coreApi()
+  const { api } = createDefaultTestClient()
 
   const loginFailedHandler = jest.fn()
   api.on('login_failed', loginFailedHandler)

@@ -6,15 +6,19 @@ import { delay } from '../../lib/promise'
 import { toQueryString } from '../../lib/queryString'
 import createEventManager from '../identityEventManager'
 import createUrlParser from '../urlParser'
+import { headers } from './testHelpers'
 
 const clientId = 'kqIJE'
+const domain = 'local.reach5.net'
 
 function apiClientAndEventManager() {
   const eventManager = createEventManager()
   const client = new ApiClient({
     config: {
       clientId: clientId,
-      domain: 'local.reach5.net'
+      domain,
+      language: 'en',
+      sso: false
     },
     eventManager,
     urlParser: createUrlParser(eventManager)
@@ -69,9 +73,9 @@ describe('signup', () => {
 
     // Then
 
-    expect(signupCall).toHaveBeenCalledWith('https://local.reach5.net/identity/v1/signup-token', {
+    expect(signupCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/signup-token`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+      headers: headers.jsonAndDefaultLang,
       body: JSON.stringify({
         'client_id': clientId,
         'scope': 'openid profile email phone',
@@ -137,9 +141,9 @@ describe('signup', () => {
     })
 
     // Then
-    expect(signupCall).toHaveBeenCalledWith('https://local.reach5.net/identity/v1/signup-token', {
+    expect(signupCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/signup-token`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+      headers: headers.jsonAndDefaultLang,
       body: JSON.stringify({
         'client_id': clientId,
         'scope': 'openid profile email phone',
@@ -268,9 +272,9 @@ describe('loginWithPassword', async () => {
 
     // Then
 
-    expect(passwordLoginCall).toHaveBeenCalledWith('https://local.reach5.net/oauth/token', {
+    expect(passwordLoginCall).toHaveBeenCalledWith(`https://${domain}/oauth/token`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+      headers: headers.jsonAndDefaultLang,
       body: JSON.stringify({
         client_id: clientId,
         grant_type: 'password',
@@ -327,9 +331,9 @@ describe('loginWithPassword', async () => {
 
     // Then
 
-    expect(passwordLoginCall).toHaveBeenCalledWith('https://local.reach5.net/oauth/token', {
+    expect(passwordLoginCall).toHaveBeenCalledWith(`https://${domain}/oauth/token`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+      headers: headers.jsonAndDefaultLang,
       body: JSON.stringify({
         client_id: clientId,
         grant_type: 'password',
@@ -385,9 +389,9 @@ describe('loginWithPassword', async () => {
 
     // Then
 
-    expect(passwordLoginCall).toHaveBeenCalledWith('https://local.reach5.net/oauth/token', {
+    expect(passwordLoginCall).toHaveBeenCalledWith(`https://${domain}/oauth/token`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+      headers: headers.jsonAndDefaultLang,
       body: JSON.stringify({
         client_id: clientId,
         grant_type: 'password',
@@ -474,7 +478,7 @@ describe('loginWithSocialProvider', () => {
     expect(window.cordova.plugins!.browsertab!.openUrl).toHaveBeenCalledTimes(1)
 
     expect(calledUrl).toEqual(
-      'https://local.reach5.net/oauth/authorize?' + toQueryString({
+      `https://${domain}/oauth/authorize?` + toQueryString({
         'client_id': clientId,
         'response_type': 'token',
         'scope': 'openid profile email phone',
@@ -513,7 +517,7 @@ describe('loginWithSocialProvider', () => {
     expect(window.cordova.plugins!.browsertab!.openUrl).not.toHaveBeenCalled()
 
     expect(window.cordova.InAppBrowser!.open).toHaveBeenCalledWith(
-      'https://local.reach5.net/oauth/authorize?' + toQueryString({
+      `https://${domain}/oauth/authorize?` + toQueryString({
         'client_id': clientId,
         'response_type': 'token',
         'scope': 'openid profile email phone',
@@ -541,7 +545,7 @@ describe('loginWithSocialProvider', () => {
 
     // Then
     expect(window.cordova.InAppBrowser!.open).toHaveBeenCalledWith(
-      'https://local.reach5.net/oauth/authorize?' + toQueryString({
+      `https://${domain}/oauth/authorize?` + toQueryString({
         'client_id': clientId,
         'response_type': 'token',
         'scope': 'openid profile email phone',
@@ -590,7 +594,7 @@ describe('loginWithSocialProvider', () => {
 
     // Then
     expect(window.cordova.InAppBrowser!.open).toHaveBeenCalledWith(
-      'https://local.reach5.net/oauth/authorize?' + toQueryString({
+      `https://${domain}/oauth/authorize?` + toQueryString({
         'client_id': clientId,
         'response_type': 'code',
         'scope': 'openid profile email phone',
@@ -621,7 +625,7 @@ describe('loginWithSocialProvider', () => {
 
     // Then
     expect(window.cordova.InAppBrowser!.open).toHaveBeenCalledWith(
-      'https://local.reach5.net/oauth/authorize?' + toQueryString({
+      `https://${domain}/oauth/authorize?` + toQueryString({
         'client_id': clientId,
         'response_type': 'token',
         'scope': 'openid profile email phone',

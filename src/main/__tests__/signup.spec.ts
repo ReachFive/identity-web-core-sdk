@@ -1,25 +1,9 @@
-
 import 'core-js/shim'
 import 'regenerator-runtime/runtime'
 import fetchMock from 'jest-fetch-mock'
-import { createClient } from '../main'
 import { delay } from '../../lib/promise'
 import { toQueryString } from '../../lib/queryString'
-
-
-const clientId = 'poefz'
-
-function coreApi() {
-  const conf = {
-    clientId: clientId,
-    domain: 'local.reach5.net'
-  }
-
-  // Mocks the initial config fetching
-  fetchMock.mockResponseOnce(JSON.stringify(conf), { status: 200 })
-
-  return createClient(conf)
-}
+import { createDefaultTestClient, headers } from './testHelpers'
 
 beforeEach(() => {
   window.fetch = fetchMock
@@ -28,7 +12,7 @@ beforeEach(() => {
 
 test('with default auth', async () => {
   // Given
-  const api = coreApi()
+  const { api, clientId, domain } = createDefaultTestClient()
 
   const signupToken = 'signupToken'
   
@@ -58,11 +42,9 @@ test('with default auth', async () => {
   // Then
 
   expect(error).toBeNull()
-  expect(fetch1).toHaveBeenCalledWith('https://local.reach5.net/identity/v1/signup', {
+  expect(fetch1).toHaveBeenCalledWith(`https://${domain}/identity/v1/signup`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json;charset=UTF-8'
-    },
+    headers: headers.jsonAndDefaultLang,
     body: JSON.stringify({
       'client_id': clientId,
       'data': {
@@ -74,7 +56,7 @@ test('with default auth', async () => {
     })
   })
   expect(window.location.assign).toHaveBeenCalledWith(
-    'https://local.reach5.net/identity/v1/password/callback?' + toQueryString({
+    `https://${domain}/identity/v1/password/callback?` + toQueryString({
       'client_id': clientId,
       'response_type': 'token',
       'scope': 'openid profile email phone',
@@ -86,7 +68,7 @@ test('with default auth', async () => {
 
 test('with auth param', async () => {
   // Given
-  const api = coreApi()
+  const { api, clientId, domain } = createDefaultTestClient()
 
   const signupToken = 'signupToken'
   const fetch1 = fetchMock.mockResponseOnce(
@@ -116,11 +98,9 @@ test('with auth param', async () => {
 
   // Then
   expect(error).toBeNull()
-  expect(fetch1).toHaveBeenCalledWith('https://local.reach5.net/identity/v1/signup', {
+  expect(fetch1).toHaveBeenCalledWith(`https://${domain}/identity/v1/signup`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json;charset=UTF-8'
-    },
+    headers: headers.jsonAndDefaultLang,
     body: JSON.stringify({
       'client_id': clientId,
       'data': {
@@ -130,7 +110,7 @@ test('with auth param', async () => {
     })
   })
   expect(window.location.assign).toHaveBeenCalledWith(
-    'https://local.reach5.net/identity/v1/password/callback?' + toQueryString({
+    `https://${domain}/identity/v1/password/callback?` + toQueryString({
       'client_id': clientId,
       'response_type': 'code',
       'scope': 'openid profile email phone',
@@ -143,7 +123,7 @@ test('with auth param', async () => {
 
 test('popup mode ignored', async () => {
   // Given
-  const api = coreApi()
+  const { api, clientId, domain } = createDefaultTestClient()
 
   const signupToken = 'signupToken'
   fetchMock.mockResponseOnce(
@@ -175,7 +155,7 @@ test('popup mode ignored', async () => {
   // Then
   expect(error).toBeNull()
   expect(window.location.assign).toHaveBeenCalledWith(
-    'https://local.reach5.net/identity/v1/password/callback?' + toQueryString({
+    `https://${domain}/identity/v1/password/callback?` + toQueryString({
       'client_id': clientId,
       'response_type': 'token',
       'scope': 'openid profile email phone',
@@ -187,7 +167,7 @@ test('popup mode ignored', async () => {
 
 test('with user error', async () => {
   // Given
-  const api = coreApi()
+  const { api } = createDefaultTestClient()
 
   const signupFailedHandler = jest.fn()
   api.on('signup_failed', signupFailedHandler)
@@ -227,7 +207,7 @@ test('with user error', async () => {
 
 test('with unexpected error', async () => {
   // Given
-  const api = coreApi()
+  const { api } = createDefaultTestClient()
 
   const signupFailedHandler = jest.fn()
   api.on('signup_failed', signupFailedHandler)
