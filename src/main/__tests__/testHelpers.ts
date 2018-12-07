@@ -33,11 +33,19 @@ export function createTestClient(config: Config, remoteSettings: Partial<RemoteS
   return createClient(config)
 }
 
+// HTTP Headers helpers
+// --------------------
+
 const jsonHeader = { 'Content-Type': 'application/json;charset=UTF-8' }
-const defaultLangHeader = { 'Accept-Language': 'en' }
+const langHeader = (lang: string) => ({ 'Accept-Language': lang })
+const defaultLangHeader = langHeader('en')
+const accessTokenHeader = (token: string) => ({ 'Authorization': `Bearer ${token}` })
+
 export const headers = {
   json: jsonHeader,
   defaultLang: defaultLangHeader,
+  lang: langHeader,
+  accessToken: accessTokenHeader,
   jsonAndDefaultLang: {
     ...jsonHeader,
     ...defaultLangHeader
