@@ -1,22 +1,7 @@
 import 'core-js/shim'
 import 'regenerator-runtime/runtime'
 import fetchMock from 'jest-fetch-mock'
-import { createClient } from '../main'
-
-
-const clientId = 'zidhjfiusbdvzef'
-
-function coreApi() {
-  const conf = {
-    clientId: clientId,
-    domain: 'local.reach5.net'
-  }
-
-  // Mocks the initial config fetching
-  fetchMock.mockResponseOnce(JSON.stringify(conf), { status: 200 })
-
-  return createClient(conf)
-}
+import { createDefaultTestClient, headers } from './testHelpers'
 
 beforeEach(() => {
   window.fetch = fetchMock
@@ -26,7 +11,7 @@ beforeEach(() => {
 test('simple', async () => {
 
   // Given
-  const api = coreApi()
+  const { api, clientId, domain } = createDefaultTestClient()
 
   const accessToken = '1234556789'
 
@@ -60,11 +45,9 @@ test('simple', async () => {
     tokenType
   })
 
-  expect(refreshCall).toHaveBeenCalledWith('https://local.reach5.net/identity/v1/token/access-token', {
+  expect(refreshCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/token/access-token`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json;charset=UTF-8'
-    },
+    headers: headers.jsonAndDefaultLang,
     body: JSON.stringify({
       'client_id': clientId,
       'access_token': accessToken

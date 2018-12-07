@@ -3,18 +3,20 @@ import { ProviderId } from '../shared/providers/providers'
 import { Profile } from '../shared/model'
 import ApiClient, { SignupParams, LoginWithPasswordParams, PasswordlessParams } from './apiClient'
 import { AuthOptions } from './authOptions'
-import { ApiClientConfig } from './apiClientConfig'
+import { RemoteSettings } from './remoteSettings'
 import { ajax } from './ajax'
 import { AuthResult } from './authResult'
 import createEventManager, { Events } from './identityEventManager'
 import createUrlParser from './urlParser'
+import { toQueryString } from '../lib/queryString'
 
 export { AuthResult } from './authResult'
 export { AuthOptions } from './authOptions'
 
 const configValidator = v.object({
   clientId: v.string,
-  domain: v.string
+  domain: v.string,
+  language: v.optional(v.string)
 })
 
 export type Config = typeof configValidator.T
@@ -47,15 +49,21 @@ export function createClient(creationConfig: Config): Client {
   configValidator.validate(creationConfig)
     .mapError(err => { throw `the reach5 creation config has errors:\n${v.errorDebugString(err)}` })
 
-  const { domain, clientId } = creationConfig
+  const { domain, clientId, language } = creationConfig
 
   const eventManager = createEventManager()
   const urlParser = createUrlParser(eventManager)
 
-  const apiClient = ajax<ApiClientConfig>({
-    url: `https://${domain}/identity/v1/config?client_id=${clientId}`,
-  })
-  .then(config => new ApiClient({ config, eventManager, urlParser }))
+  const apiClient = ajax<RemoteSettings>({
+    url: `https://${domain}/identity/v1/config?${toQueryString({ clientId, lang: language })}`
+  }).then(remoteConfig => new ApiClient({
+    config: {
+      ...creationConfig,
+      ...remoteConfig
+    },
+    eventManager,
+    urlParser
+  }))
 
 
   function signup(params: SignupParams) {

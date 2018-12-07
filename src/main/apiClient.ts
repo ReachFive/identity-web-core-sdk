@@ -3,14 +3,13 @@ import isEmpty from 'lodash-es/isEmpty'
 import pick from 'lodash-es/pick'
 
 import { logError } from '../lib/logger'
-import { toQueryString, QueryString } from '../lib/queryString'
+import { QueryString, toQueryString } from '../lib/queryString'
 import { camelCaseProperties, snakeCaseProperties } from '../lib/transformObjectProperties'
 
 import { ProviderId } from '../shared/providers/providers'
 import providerSizes from '../shared/providers/provider-window-sizes'
-import { Profile, ErrorResponse } from '../shared/model'
-import { ApiClientConfig } from './apiClientConfig'
-import { prepareAuthOptions, resolveScope, AuthOptions } from './authOptions'
+import { ErrorResponse, Profile } from '../shared/model'
+import { AuthOptions, prepareAuthOptions, resolveScope } from './authOptions'
 import { AuthResult, enrichAuthResult } from './authResult'
 import { ajax } from './ajax'
 import { IdentityEventManager } from './identityEventManager'
@@ -29,6 +28,13 @@ export type SignupParams = { data: Profile, auth?: AuthOptions }
 export type LoginWithPasswordParams = { email: string, password: string, auth?: AuthOptions }
 
 export type PasswordlessParams = { authType: 'magic_link' | 'sms', email?: string, phoneNumber?: string }
+
+export type ApiClientConfig = {
+  clientId: string
+  domain: string
+  language?: string
+  sso: boolean
+}
 
 /**
  * Identity Rest API Client

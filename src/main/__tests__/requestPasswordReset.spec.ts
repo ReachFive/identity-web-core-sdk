@@ -1,23 +1,7 @@
-
 import 'core-js/shim'
 import 'regenerator-runtime/runtime'
 import fetchMock from 'jest-fetch-mock'
-import { createClient } from '../main'
-
-
-const clientId = 'jzidvJ'
-
-function coreApi() {
-  const conf = {
-    clientId: clientId,
-    domain: 'local.reach5.net'
-  }
-
-  // Mocks the initial config fetching
-  fetchMock.mockResponseOnce(JSON.stringify(conf), { status: 200 })
-
-  return createClient(conf)
-}
+import { createDefaultTestClient, headers } from './testHelpers'
 
 beforeEach(() => {
   window.fetch = fetchMock
@@ -26,7 +10,7 @@ beforeEach(() => {
 
 test('simple', done => {
 
-  const api = coreApi()
+  const { api, clientId, domain } = createDefaultTestClient()
 
   const fetch1 = fetchMock.mockResponseOnce('', {
     status: 204
@@ -36,11 +20,9 @@ test('simple', done => {
 
   api.requestPasswordReset({ email })
     .then(_ => {
-      expect(fetch1).toHaveBeenCalledWith('https://local.reach5.net/identity/v1/forgot-password', {
+      expect(fetch1).toHaveBeenCalledWith(`https://${domain}/identity/v1/forgot-password`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json;charset=UTF-8'
-        },
+        headers: headers.jsonAndDefaultLang,
         body: JSON.stringify({
           'client_id': clientId,
           email
