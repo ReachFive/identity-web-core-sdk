@@ -86,7 +86,7 @@ export default class ApiClient {
     })
   }
 
-  logout(opts: { redirect_to?: string }) {
+  logout(opts: { redirect_to?: string }): void {
     window.location.assign(`${this.baseUrl}/logout?${toQueryString(opts)}`)
   }
 
@@ -136,7 +136,7 @@ export default class ApiClient {
     })
   }
 
-  private initCordovaCallbackIfNecessary() {
+  private initCordovaCallbackIfNecessary(): void {
     if (!window.cordova) return
     if (window.handleOpenURL) return
 
@@ -180,7 +180,7 @@ export default class ApiClient {
     return Promise.resolve()
   }
 
-  loginWithPassword(params: LoginWithPasswordParams) {
+  loginWithPassword(params: LoginWithPasswordParams): Promise<void> {
     const resultPromise = window.cordova
       ? this.loginWithPasswordByOAuth(params)
       : this.loginWithPasswordByRedirect(params)
@@ -193,7 +193,7 @@ export default class ApiClient {
     })
   }
 
-  private loginWithPasswordByOAuth({ email, password, auth }: LoginWithPasswordParams) {
+  private loginWithPasswordByOAuth({ email, password, auth }: LoginWithPasswordParams): Promise<void> {
     return this.http.post<AuthResult>(this.tokenUrl, {
       body: {
         clientId: this.config.clientId,
@@ -206,7 +206,7 @@ export default class ApiClient {
     }).then(result => this.eventManager.fireEvent('authenticated', result))
   }
 
-  private loginWithPasswordByRedirect({ auth = {}, ...rest }: LoginWithPasswordParams) {
+  private loginWithPasswordByRedirect({ auth = {}, ...rest }: LoginWithPasswordParams): Promise<void> {
     return this.http.post<{ tkn: string }>('/password/login', {
       body: {
         clientId: this.config.clientId,
@@ -215,7 +215,7 @@ export default class ApiClient {
     }).then(({ tkn }) => this.loginWithPasswordToken(tkn, auth))
   }
 
-  private loginWithPasswordToken(tkn: string, auth: AuthOptions = {}) {
+  private loginWithPasswordToken(tkn: string, auth: AuthOptions = {}): void {
     const authParams = this.authParams(auth)
 
     const queryString = toQueryString({
@@ -225,7 +225,7 @@ export default class ApiClient {
     window.location.assign(`${this.baseUrl}/password/callback?${queryString}`)
   }
 
-  startPasswordless(params: PasswordlessParams, opts: AuthOptions = {}) {
+  startPasswordless(params: PasswordlessParams, opts: AuthOptions = {}): Promise<void> {
     const { authType, email, phoneNumber } = params
 
     return this.http.post('/passwordless/start', {
@@ -238,7 +238,7 @@ export default class ApiClient {
     })
   }
 
-  private loginWithVerificationCode(params: PasswordlessParams, auth: AuthOptions) {
+  private loginWithVerificationCode(params: PasswordlessParams, auth: AuthOptions): void {
     const queryString = toQueryString({
       ...this.authParams(auth),
       ...params
@@ -246,7 +246,7 @@ export default class ApiClient {
     window.location.assign(`${this.baseUrl}/passwordless/verify?${queryString}`)
   }
 
-  verifyPasswordless(params: PasswordlessParams, auth = {}) {
+  verifyPasswordless(params: PasswordlessParams, auth = {}): Promise<void> {
     return this.http.post('/verify-auth-code', { body: params }).then(() =>
       this.loginWithVerificationCode(params, auth)
     ).catch(err => {
@@ -255,7 +255,7 @@ export default class ApiClient {
     })
   }
 
-  signup(params: SignupParams) {
+  signup(params: SignupParams): Promise<void> {
     const { data, auth } = params
     const acceptTos = auth && auth.acceptTos
 
@@ -288,7 +288,7 @@ export default class ApiClient {
     })
   }
 
-  requestPasswordReset({ email }: { email: string }) {
+  requestPasswordReset({ email }: { email: string }): Promise<void> {
     return this.http.post('/forgot-password', {
       body: {
         clientId: this.config.clientId,
@@ -297,7 +297,7 @@ export default class ApiClient {
     })
   }
 
-  updatePassword(params: { accessToken?: string, password: string, oldPasssord?: string, userId?: string }) {
+  updatePassword(params: { accessToken?: string, password: string, oldPasssord?: string, userId?: string }): Promise<void> {
     const { accessToken, ...data } = params
     return this.http.post('/update-password', {
       body: { clientId: this.config.clientId, ...data },
@@ -305,27 +305,27 @@ export default class ApiClient {
     })
   }
 
-  updateEmail(params: { accessToken: string, email: string }) {
+  updateEmail(params: { accessToken: string, email: string }): Promise<void> {
     const { accessToken, ...data } = params
     return this.http.post('/update-email', { body: data, accessToken })
   }
 
-  updatePhoneNumber(params: { accessToken: string, phoneNumber: string }) {
+  updatePhoneNumber(params: { accessToken: string, phoneNumber: string }): Promise<void> {
     const { accessToken, ...data } = params
     return this.http.post('/update-phone-number', { body: data, accessToken })
   }
 
-  verifyPhoneNumber({ accessToken, ...data }: { accessToken: string, phoneNumber: string, verificationCode: string }) {
+  verifyPhoneNumber({ accessToken, ...data }: { accessToken: string, phoneNumber: string, verificationCode: string }): Promise<void> {
     const { phoneNumber } = data
     return this.http.post('/verify-phone-number', { body: data, accessToken })
       .then(() => this.eventManager.fireEvent('profile_updated', { phoneNumber, phoneNumberVerified: true }))
   }
 
-  unlink({ accessToken, ...data }: { accessToken: string, identityId: string, fields?: string }) {
+  unlink({ accessToken, ...data }: { accessToken: string, identityId: string, fields?: string }): Promise<void> {
     return this.http.post('/unlink', { body: data, accessToken })
   }
 
-  refreshTokens({ accessToken }: { accessToken: string }) {
+  refreshTokens({ accessToken }: { accessToken: string }): Promise<AuthResult> {
     return this.http.post<AuthResult>('/token/access-token', {
       body: {
         clientId: this.config.clientId,
@@ -334,16 +334,16 @@ export default class ApiClient {
     }).then(enrichAuthResult)
   }
 
-  getUser({ accessToken, fields }: { accessToken: string, fields?: string }) {
-    return this.http.get('/me', { query: { fields }, accessToken })
+  getUser({ accessToken, fields }: { accessToken: string, fields?: string }): Promise<Profile> {
+    return this.http.get<Profile>('/me', { query: { fields }, accessToken })
   }
 
-  updateProfile({ accessToken, data }: { accessToken: string, data: Profile }) {
+  updateProfile({ accessToken, data }: { accessToken: string, data: Profile }): Promise<void> {
     return this.http.post('/update-profile', { body: data, accessToken })
       .then(() => this.eventManager.fireEvent('profile_updated', data))
   }
 
-  loginWithCustomToken({ token, auth }: { token: string, auth: AuthOptions }) {
+  loginWithCustomToken({ token, auth }: { token: string, auth: AuthOptions }): void {
     const queryString = toQueryString({
       ...this.authParams(auth),
       token
@@ -351,7 +351,7 @@ export default class ApiClient {
     window.location.assign(`${this.baseUrl}/custom-token/login?${queryString}`)
   }
 
-  getSsoData(auth = {}) {
+  getSsoData(auth = {}): Promise<any> {
     const hints = pick(auth, ['idTokenHint', 'loginHint'])
     return this.http.get('/sso/data', {
       query: { clientId: this.config.clientId, ...hints },
@@ -367,7 +367,7 @@ export default class ApiClient {
     }
   }
 
-  private computeProviderPopupOptions(provider: string) {
+  private computeProviderPopupOptions(provider: string): string {
     try {
       const opts = popupSize(provider)
       const left = Math.max(0, (screen.width - opts.width) / 2)
