@@ -6,7 +6,7 @@ import { logError } from '../lib/logger'
 import { QueryString, toQueryString } from '../lib/queryString'
 import { camelCaseProperties, snakeCaseProperties } from '../lib/transformObjectProperties'
 
-import { ErrorResponse, Profile } from '../shared/model'
+import { ErrorResponse, Profile } from './models'
 import { AuthOptions, prepareAuthOptions, resolveScope } from './authOptions'
 import { AuthResult, enrichAuthResult } from './authResult'
 import { ajax } from './ajax'

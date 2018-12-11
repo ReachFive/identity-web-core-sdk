@@ -1,5 +1,5 @@
 import * as v from 'validation.ts'
-import { Profile } from '../shared/model'
+import { Profile } from './models'
 import ApiClient, { SignupParams, LoginWithPasswordParams, PasswordlessParams } from './apiClient'
 import { AuthOptions } from './authOptions'
 import { RemoteSettings } from './remoteSettings'
