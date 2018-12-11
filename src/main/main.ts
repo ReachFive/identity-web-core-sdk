@@ -1,13 +1,13 @@
 import * as v from 'validation.ts'
 import { Profile } from './models'
-import ApiClient, { SignupParams, LoginWithPasswordParams, PasswordlessParams } from './apiClient'
+import ApiClient, { LoginWithPasswordParams, PasswordlessParams, SignupParams } from './apiClient'
 import { AuthOptions } from './authOptions'
 import { RemoteSettings } from './remoteSettings'
-import { ajax } from './ajax'
 import { AuthResult } from './authResult'
 import createEventManager, { Events } from './identityEventManager'
 import createUrlParser from './urlParser'
 import { toQueryString } from '../utils/queryString'
+import { rawRequest } from './httpClient'
 
 export { AuthResult } from './authResult'
 export { AuthOptions } from './authOptions'
@@ -53,9 +53,9 @@ export function createClient(creationConfig: Config): Client {
   const eventManager = createEventManager()
   const urlParser = createUrlParser(eventManager)
 
-  const apiClient = ajax<RemoteSettings>({
-    url: `https://${domain}/identity/v1/config?${toQueryString({ clientId, lang: language })}`
-  }).then(remoteConfig => new ApiClient({
+  const apiClient = rawRequest<RemoteSettings>(
+    `https://${domain}/identity/v1/config?${toQueryString({ clientId, lang: language })}`
+  ).then(remoteConfig => new ApiClient({
     config: {
       ...creationConfig,
       ...remoteConfig

@@ -1,26 +1,17 @@
 import WinChan from 'winchan'
-import isEmpty from 'lodash-es/isEmpty'
 import pick from 'lodash-es/pick'
 
 import { logError } from '../utils/logger'
 import { QueryString, toQueryString } from '../utils/queryString'
-import { camelCaseProperties, snakeCaseProperties } from '../utils/transformObjectProperties'
+import { camelCaseProperties } from '../utils/transformObjectProperties'
 
 import { ErrorResponse, Profile } from './models'
 import { AuthOptions, prepareAuthOptions, resolveScope } from './authOptions'
 import { AuthResult, enrichAuthResult } from './authResult'
-import { ajax } from './ajax'
 import { IdentityEventManager } from './identityEventManager'
 import { UrlParser } from './urlParser'
 import { popupSize } from './providerPopupSize'
-
-type RequestParams = {
-  method?: 'GET' | 'POST'
-  params?: QueryString
-  body?: {}
-  accessToken?: string
-  withCookies?: boolean
-}
+import { createHttpClient, HttpClient } from './httpClient'
 
 export type SignupParams = { data: Profile, auth?: AuthOptions }
 
@@ -45,6 +36,11 @@ export default class ApiClient {
     this.eventManager = props.eventManager
     this.urlParser = props.urlParser
     this.baseUrl = `https://${this.config.domain}/identity/v1`
+    this.http = createHttpClient({
+      baseUrl: this.baseUrl,
+      language: this.config.language,
+      acceptCookies: this.config.sso
+    })
     this.authorizeUrl = `https://${this.config.domain}/oauth/authorize`
     this.tokenUrl = `https://${this.config.domain}/oauth/token`
     this.popupRelayUrl = `https://${this.config.domain}/popup/relay`
@@ -53,6 +49,7 @@ export default class ApiClient {
   }
 
   private config: ApiClientConfig
+  private http: HttpClient
   private eventManager: IdentityEventManager
   private urlParser: UrlParser
   private baseUrl: string
@@ -197,23 +194,25 @@ export default class ApiClient {
   }
 
   private loginWithPasswordByOAuth({ email, password, auth }: LoginWithPasswordParams) {
-    return this.requestPost<AuthResult>(this.tokenUrl, {
-      clientId: this.config.clientId,
-      grantType: 'password',
-      username: email,
-      password,
-      scope: resolveScope(auth),
-      ...(pick(auth, 'origin'))
+    return this.http.post<AuthResult>(this.tokenUrl, {
+      body: {
+        clientId: this.config.clientId,
+        grantType: 'password',
+        username: email,
+        password,
+        scope: resolveScope(auth),
+        ...(pick(auth, 'origin'))
+      }
     }).then(result => this.eventManager.fireEvent('authenticated', result))
   }
 
   private loginWithPasswordByRedirect({ auth = {}, ...rest }: LoginWithPasswordParams) {
-    return this.requestPost<{ tkn: string }>('/password/login', {
-      clientId: this.config.clientId,
-      ...rest
-    }).then(
-      ({ tkn }) => this.loginWithPasswordToken(tkn, auth)
-    )
+    return this.http.post<{ tkn: string }>('/password/login', {
+      body: {
+        clientId: this.config.clientId,
+        ...rest
+      }
+    }).then(({ tkn }) => this.loginWithPasswordToken(tkn, auth))
   }
 
   private loginWithPasswordToken(tkn: string, auth: AuthOptions = {}) {
@@ -229,11 +228,13 @@ export default class ApiClient {
   startPasswordless(params: PasswordlessParams, opts: AuthOptions = {}) {
     const { authType, email, phoneNumber } = params
 
-    return this.requestPost('/passwordless/start', {
-      ...this.authParams(opts),
-      authType,
-      email,
-      phoneNumber
+    return this.http.post('/passwordless/start', {
+      body: {
+        ...this.authParams(opts),
+        authType,
+        email,
+        phoneNumber
+      }
     })
   }
 
@@ -246,7 +247,7 @@ export default class ApiClient {
   }
 
   verifyPasswordless(params: PasswordlessParams, auth = {}) {
-    return this.requestPost('/verify-auth-code', params).then(_ =>
+    return this.http.post('/verify-auth-code', { body: params }).then(() =>
       this.loginWithVerificationCode(params, auth)
     ).catch(err => {
       if (err.error) this.eventManager.fireEvent('login_failed', err)
@@ -260,16 +261,23 @@ export default class ApiClient {
 
     const result = window.cordova
       ? (
-        this.requestPost<AuthResult>(`${this.baseUrl}/signup-token`, {
-          clientId: this.config.clientId,
-          scope: resolveScope(auth),
-          ...(pick(auth, 'origin')),
-          data
+        this.http.post<AuthResult>(`${this.baseUrl}/signup-token`, {
+          body: {
+            clientId: this.config.clientId,
+            scope: resolveScope(auth),
+            ...(pick(auth, 'origin')),
+            data
+          }
         }).then(result => this.eventManager.fireEvent('authenticated', result))
       )
       : (
-        this.requestPost<{ tkn: string }>('/signup', { clientId: this.config.clientId, acceptTos, data })
-          .then(({ tkn }) => this.loginWithPasswordToken(tkn, auth))
+        this.http.post<{ tkn: string }>('/signup', {
+          body: {
+            clientId: this.config.clientId,
+            acceptTos,
+            data
+          }
+        }).then(({ tkn }) => this.loginWithPasswordToken(tkn, auth))
       )
 
     return result.catch(err => {
@@ -281,46 +289,44 @@ export default class ApiClient {
   }
 
   requestPasswordReset({ email }: { email: string }) {
-    return this.requestPost('/forgot-password', {
-      clientId: this.config.clientId,
-      email
+    return this.http.post('/forgot-password', {
+      body: {
+        clientId: this.config.clientId,
+        email
+      }
     })
   }
 
   updatePassword(params: { accessToken?: string, password: string, oldPasssord?: string, userId?: string }) {
     const { accessToken, ...data } = params
-    return this.requestPost(
-      '/update-password',
-      { clientId: this.config.clientId, ...data },
-      { accessToken }
-    )
+    return this.http.post('/update-password', {
+      body: { clientId: this.config.clientId, ...data },
+      accessToken
+    })
   }
 
   updateEmail(params: { accessToken: string, email: string }) {
     const { accessToken, ...data } = params
-    return this.requestPost('/update-email', data, { accessToken })
+    return this.http.post('/update-email', { body: data, accessToken })
   }
 
   updatePhoneNumber(params: { accessToken: string, phoneNumber: string }) {
     const { accessToken, ...data } = params
-    return this.requestPost('/update-phone-number', data, { accessToken })
+    return this.http.post('/update-phone-number', { body: data, accessToken })
   }
 
   verifyPhoneNumber({ accessToken, ...data }: { accessToken: string, phoneNumber: string, verificationCode: string }) {
     const { phoneNumber } = data
-    return this.requestPost('/verify-phone-number', data, { accessToken })
-      .then(() =>
-        this.eventManager.fireEvent('profile_updated', { phoneNumber, phoneNumberVerified: true })
-      )
+    return this.http.post('/verify-phone-number', { body: data, accessToken })
+      .then(() => this.eventManager.fireEvent('profile_updated', { phoneNumber, phoneNumberVerified: true }))
   }
 
   unlink({ accessToken, ...data }: { accessToken: string, identityId: string, fields?: string }) {
-    return this.requestPost('/unlink', data, { accessToken })
+    return this.http.post('/unlink', { body: data, accessToken })
   }
 
   refreshTokens({ accessToken }: { accessToken: string }) {
-    return this.request<AuthResult>('/token/access-token', {
-      method: 'POST',
+    return this.http.post<AuthResult>('/token/access-token', {
       body: {
         clientId: this.config.clientId,
         accessToken
@@ -328,16 +334,13 @@ export default class ApiClient {
     }).then(enrichAuthResult)
   }
 
-  getUser({ accessToken, ...params }: { accessToken: string, fields?: string }) {
-    return this.requestGet('/me', params, { accessToken })
+  getUser({ accessToken, fields }: { accessToken: string, fields?: string }) {
+    return this.http.get('/me', { query: { fields }, accessToken })
   }
 
   updateProfile({ accessToken, data }: { accessToken: string, data: Profile }) {
-    return this.requestPost(
-      '/update-profile',
-      data,
-      { accessToken }
-    ).then(() => this.eventManager.fireEvent('profile_updated', data))
+    return this.http.post('/update-profile', { body: data, accessToken })
+      .then(() => this.eventManager.fireEvent('profile_updated', data))
   }
 
   loginWithCustomToken({ token, auth }: { token: string, auth: AuthOptions }) {
@@ -350,11 +353,10 @@ export default class ApiClient {
 
   getSsoData(auth = {}) {
     const hints = pick(auth, ['idTokenHint', 'loginHint'])
-    return this.requestGet(
-      '/sso/data',
-      { clientId: this.config.clientId, ...hints },
-      { withCookies: true }
-    )
+    return this.http.get('/sso/data', {
+      query: { clientId: this.config.clientId, ...hints },
+      withCookies: true
+    })
   }
 
   private authenticatedHandler = ({ responseType, redirectUri }: AuthOptions, response: AuthResult) => {
@@ -363,37 +365,6 @@ export default class ApiClient {
     } else {
       this.eventManager.fireEvent('authenticated', response)
     }
-  }
-
-  private requestGet(path: string, params: {} = {}, options: Omit<RequestParams, 'params'>) {
-    return this.request(path, { params, ...options })
-  }
-
-  private requestPost<Data>(path: string, body: {}, options = {}, params = {}) {
-    return this.request<Data>(path, { method: 'POST', params, body, ...options })
-  }
-
-  private request<Data>(path: string, requestParams: RequestParams): Promise<Data> {
-    const { method = 'GET', params = {}, body, accessToken = null, withCookies = false } = requestParams
-
-    const fullPath = params && !isEmpty(params)
-      ? `${path}?${toQueryString(params)}`
-      : path
-
-    const url = fullPath.startsWith('http') ? fullPath : this.baseUrl + fullPath
-
-    const fetchOptions: RequestInit = {
-      method,
-      headers: {
-        ...(accessToken && { 'Authorization': 'Bearer ' + accessToken }),
-        ...(this.config.language && { 'Accept-Language': this.config.language }),
-        ...(body && { 'Content-Type': 'application/json;charset=UTF-8' })
-      },
-      ...(withCookies && this.config.sso && { credentials: 'include' }),
-      ...(body && { body: JSON.stringify(snakeCaseProperties(body)) })
-    }
-
-    return ajax<Data>({ url, ...fetchOptions })
   }
 
   private computeProviderPopupOptions(provider: string) {
