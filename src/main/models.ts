@@ -1,3 +1,5 @@
+export type Profile = Record<string, any>
+
 export type ErrorResponse = {
   error: string
   errorDescription?: string

@@ -1,6 +1,6 @@
 import { AuthResult, enrichAuthResult } from './authResult'
 import EventManager from '../lib/eventManager'
-import { ErrorResponse, Profile } from '../shared/model'
+import { ErrorResponse, Profile } from './models'
 
 export type Events = {
   'authenticated': AuthResult

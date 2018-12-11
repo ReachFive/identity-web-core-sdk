@@ -1,6 +1,6 @@
 import { AuthResult } from './authResult'
 import { parseQueryString } from '../lib/queryString'
-import { ErrorResponse } from '../shared/model'
+import { ErrorResponse } from './models'
 import { IdentityEventManager } from './identityEventManager'
 
 export type UrlParser = {
