@@ -1,8 +1,8 @@
 import 'core-js/shim'
 import 'regenerator-runtime/runtime'
 import fetchMock from 'jest-fetch-mock'
-import { toQueryString } from '../../lib/queryString'
-import { delay } from '../../lib/promise'
+import { toQueryString } from '../../utils/queryString'
+import { delay } from '../../utils/promise'
 import { createDefaultTestClient, headers } from './testHelpers'
 
 beforeEach(() => {

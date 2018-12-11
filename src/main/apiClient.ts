@@ -2,9 +2,9 @@ import WinChan from 'winchan'
 import isEmpty from 'lodash-es/isEmpty'
 import pick from 'lodash-es/pick'
 
-import { logError } from '../lib/logger'
-import { QueryString, toQueryString } from '../lib/queryString'
-import { camelCaseProperties, snakeCaseProperties } from '../lib/transformObjectProperties'
+import { logError } from '../utils/logger'
+import { QueryString, toQueryString } from '../utils/queryString'
+import { camelCaseProperties, snakeCaseProperties } from '../utils/transformObjectProperties'
 
 import { ErrorResponse, Profile } from './models'
 import { AuthOptions, prepareAuthOptions, resolveScope } from './authOptions'

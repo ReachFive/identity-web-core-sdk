@@ -1,6 +1,6 @@
 import * as v from 'validation.ts'
-import { idTokenPayload, parseJwtTokenPayload } from '../lib/jwt'
-import { logError } from '../lib/logger'
+import { idTokenPayload, parseJwtTokenPayload } from '../utils/jwt'
+import { logError } from '../utils/logger'
 
 
 export const authResult = v.object({

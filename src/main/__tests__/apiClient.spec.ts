@@ -1,10 +1,10 @@
 import 'core-js/shim'
 import 'regenerator-runtime/runtime'
 import ApiClient from '../apiClient'
-import { toQueryString } from '../../lib/queryString'
+import { toQueryString } from '../../utils/queryString'
 import fetchMock from 'jest-fetch-mock'
 import winchanMocker from './winchanMocker'
-import { delay } from '../../lib/promise'
+import { delay } from '../../utils/promise'
 import createEventManager from '../identityEventManager'
 import createUrlParser from '../urlParser'
 

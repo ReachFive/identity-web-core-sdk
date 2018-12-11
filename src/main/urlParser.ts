@@ -1,5 +1,5 @@
 import { AuthResult } from './authResult'
-import { parseQueryString } from '../lib/queryString'
+import { parseQueryString } from '../utils/queryString'
 import { ErrorResponse } from './models'
 import { IdentityEventManager } from './identityEventManager'
 
