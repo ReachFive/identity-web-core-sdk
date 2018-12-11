@@ -1,5 +1,4 @@
 import * as v from 'validation.ts'
-import { ProviderId } from '../shared/providers/providers'
 import { Profile } from '../shared/model'
 import ApiClient, { SignupParams, LoginWithPasswordParams, PasswordlessParams } from './apiClient'
 import { AuthOptions } from './authOptions'
@@ -28,7 +27,7 @@ export type Client = {
   loginWithPassword: (params: LoginWithPasswordParams) => Promise<void>
   startPasswordless: (params: PasswordlessParams, options?: AuthOptions) => Promise<any>
   verifyPasswordless: (params: PasswordlessParams) => Promise<void>
-  loginWithSocialProvider: (provider: ProviderId, options?: AuthOptions) => Promise<void>
+  loginWithSocialProvider: (provider: string, options?: AuthOptions) => Promise<void>
   requestPasswordReset: (params: { email: string }) => Promise<any>
   unlink: (params: { accessToken: string; identityId: string; fields?: string }) => Promise<any>
   refreshTokens: (params: { accessToken: string }) => Promise<AuthResult>
@@ -82,7 +81,7 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.verifyPasswordless(params))
   }
 
-  function loginWithSocialProvider(provider: ProviderId, options: AuthOptions = {}) {
+  function loginWithSocialProvider(provider: string, options: AuthOptions = {}) {
     return apiClient.then(api => api.loginWithSocialProvider(provider, options))
   }
 

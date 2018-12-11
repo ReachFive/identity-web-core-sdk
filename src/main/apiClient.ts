@@ -6,14 +6,13 @@ import { logError } from '../lib/logger'
 import { QueryString, toQueryString } from '../lib/queryString'
 import { camelCaseProperties, snakeCaseProperties } from '../lib/transformObjectProperties'
 
-import { ProviderId } from '../shared/providers/providers'
-import providerSizes from '../shared/providers/provider-window-sizes'
 import { ErrorResponse, Profile } from '../shared/model'
 import { AuthOptions, prepareAuthOptions, resolveScope } from './authOptions'
 import { AuthResult, enrichAuthResult } from './authResult'
 import { ajax } from './ajax'
 import { IdentityEventManager } from './identityEventManager'
 import { UrlParser } from './urlParser'
+import { popupSize } from './providerPopupSize'
 
 type RequestParams = {
   method?: 'GET' | 'POST'
@@ -62,7 +61,7 @@ export default class ApiClient {
   private popupRelayUrl: string
 
 
-  loginWithSocialProvider(provider: ProviderId, opts: AuthOptions = {}): Promise<void> {
+  loginWithSocialProvider(provider: string, opts: AuthOptions = {}): Promise<void> {
     const authParams = this.authParams(opts, { acceptPopupMode: true })
 
     const params = {
@@ -156,7 +155,7 @@ export default class ApiClient {
     }
   }
 
-  private loginWithPopup(opts: AuthOptions & { provider: ProviderId }): Promise<void> {
+  private loginWithPopup(opts: AuthOptions & { provider: string }): Promise<void> {
     type WinChanResponse<D> = { success: true, data: D } | { success: false, data: ErrorResponse }
 
     WinChan.open({
@@ -397,16 +396,13 @@ export default class ApiClient {
     return ajax<Data>({ url, ...fetchOptions })
   }
 
-  private computeProviderPopupOptions(provider: ProviderId) {
+  private computeProviderPopupOptions(provider: string) {
     try {
-      const windowOptions = (provider && providerSizes[provider]) || {
-        width: 400,
-        height: 550
-      }
-      const left = Math.max(0, (screen.width - windowOptions.width) / 2)
-      const top = Math.max(0, (screen.height - windowOptions.height) / 2)
-      const width = Math.min(screen.width, windowOptions.width)
-      const height = Math.min(screen.height, windowOptions.height)
+      const opts = popupSize(provider)
+      const left = Math.max(0, (screen.width - opts.width) / 2)
+      const top = Math.max(0, (screen.height - opts.height) / 2)
+      const width = Math.min(screen.width, opts.width)
+      const height = Math.min(screen.height, opts.height)
       return `menubar=0,toolbar=0,resizable=1,scrollbars=1,width=${width},height=${height},top=${top},left=${left}`
     } catch (e) {
       return 'menubar=0,toolbar=0,resizable=1,scrollbars=1,width=960,height=680'
