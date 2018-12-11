@@ -1,4 +1,4 @@
-import { camelCaseProperties } from '../lib/transformObjectProperties'
+import { camelCaseProperties } from '../utils/transformObjectProperties'
 
 export function ajax<DATA = undefined>(params: { url: string } & RequestInit): Promise<DATA> {
   const { url, ...options } = params

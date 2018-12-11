@@ -7,7 +7,7 @@ import { ajax } from './ajax'
 import { AuthResult } from './authResult'
 import createEventManager, { Events } from './identityEventManager'
 import createUrlParser from './urlParser'
-import { toQueryString } from '../lib/queryString'
+import { toQueryString } from '../utils/queryString'
 
 export { AuthResult } from './authResult'
 export { AuthOptions } from './authOptions'

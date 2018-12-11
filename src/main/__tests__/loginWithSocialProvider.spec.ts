@@ -1,5 +1,5 @@
-import { delay } from "../../lib/promise"
-import { toQueryString } from "../../lib/queryString"
+import { delay } from "../../utils/promise"
+import { toQueryString } from "../../utils/queryString"
 import winchanMocker from './winchanMocker'
 import fetchMock from 'jest-fetch-mock'
 import { createDefaultTestClient } from './testHelpers'
