@@ -1,6 +1,6 @@
 export type Profile = Record<string, any>
 
-export type SsoData = {
+export type SessionInfo = {
   isAuthenticated: true
   name?: string
   email?: string
