@@ -1,5 +1,14 @@
 export type Profile = Record<string, any>
 
+export type SsoData = {
+  isAuthenticated: true
+  name?: string
+  email?: string
+  lastLoginType?: string
+  hasPassword?: boolean
+  socialProviders?: string[]
+}
+
 export type ErrorResponse = {
   error: string
   errorDescription?: string
