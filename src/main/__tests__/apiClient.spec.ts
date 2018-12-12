@@ -35,11 +35,11 @@ beforeEach(() => {
   winchanMocker.reset()
 })
 
-describe('getSsoData', () => {
+describe('getSessionInfo', () => {
   test('basic', async () => {
     const { client } = createServices({ sso: true })
 
-    const ssoDataCall = fetchMock.mockResponseOnce(JSON.stringify({
+    const sessionInfoCall = fetchMock.mockResponseOnce(JSON.stringify({
       'name': 'John Doe',
       'email': 'john.doe@example.com',
       'last_login_type': 'password',
@@ -49,10 +49,10 @@ describe('getSsoData', () => {
     }))
 
     // When
-    const result = await client.getSsoData()
+    const result = await client.getSessionInfo()
 
     // Then
-    expect(ssoDataCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/sso/data?` + toQueryString({
+    expect(sessionInfoCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/sso/data?` + toQueryString({
       'client_id': clientId
     }), {
         method: 'GET',

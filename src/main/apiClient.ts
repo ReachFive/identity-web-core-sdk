@@ -5,7 +5,7 @@ import { logError } from '../utils/logger'
 import { QueryString, toQueryString } from '../utils/queryString'
 import { camelCaseProperties } from '../utils/transformObjectProperties'
 
-import { ErrorResponse, Profile, SsoData } from './models'
+import { ErrorResponse, Profile, SessionInfo } from './models'
 import { AuthOptions, prepareAuthOptions, resolveScope } from './authOptions'
 import { AuthResult, enrichAuthResult } from './authResult'
 import { IdentityEventManager } from './identityEventManager'
@@ -351,8 +351,8 @@ export default class ApiClient {
     window.location.assign(`${this.baseUrl}/custom-token/login?${queryString}`)
   }
 
-  getSsoData(): Promise<SsoData> {
-    return this.http.get<SsoData>('/sso/data', {
+  getSessionInfo(): Promise<SessionInfo> {
+    return this.http.get<SessionInfo>('/sso/data', {
       query: { clientId: this.config.clientId },
       withCookies: true
     })

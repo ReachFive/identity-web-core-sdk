@@ -1,5 +1,5 @@
 import * as v from 'validation.ts'
-import { Profile, SsoData } from './models'
+import { Profile, SessionInfo } from './models'
 import ApiClient, { LoginWithPasswordParams, PasswordlessParams, SignupParams } from './apiClient'
 import { AuthOptions } from './authOptions'
 import { RemoteSettings } from './remoteSettings'
@@ -11,7 +11,7 @@ import { rawRequest } from './httpClient'
 
 export { AuthResult } from './authResult'
 export { AuthOptions } from './authOptions'
-export { Profile, SsoData } from './models'
+export { Profile, SessionInfo } from './models'
 
 const configValidator = v.object({
   clientId: v.string,
@@ -41,7 +41,7 @@ export type Client = {
   updatePhoneNumber: (params: { accessToken: string; phoneNumber: string }) => Promise<void>
   verifyPhoneNumber: (params: { accessToken: string; phoneNumber: string; verificationCode: string }) => Promise<void>
   loginWithCustomToken: (params: { token: string; auth: AuthOptions }) => Promise<void>
-  getSsoData: (params?: {}) => Promise<SsoData>
+  getSessionInfo: (params?: {}) => Promise<SessionInfo>
   checkUrlFragment: (url: string) => boolean
 }
 
@@ -134,8 +134,8 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.loginWithCustomToken(params))
   }
 
-  function getSsoData() {
-    return apiClient.then(api => api.getSsoData())
+  function getSessionInfo() {
+    return apiClient.then(api => api.getSessionInfo())
   }
 
   function checkUrlFragment(url: string = window.location.href): boolean {
@@ -180,7 +180,7 @@ export function createClient(creationConfig: Config): Client {
     updatePhoneNumber,
     verifyPhoneNumber,
     loginWithCustomToken,
-    getSsoData,
+    getSessionInfo,
     checkUrlFragment
   }
 }
