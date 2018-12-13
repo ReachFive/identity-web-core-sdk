@@ -9,6 +9,14 @@ export type SessionInfo = {
   socialProviders?: string[]
 }
 
+/**
+ * This type represents the settings of a ReachFive account's stored in the backend.
+ */
+export type RemoteSettings = {
+  sso: boolean,
+  language: string
+}
+
 export type ErrorResponse = {
   error: string
   errorDescription?: string

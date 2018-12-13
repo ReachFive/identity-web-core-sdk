@@ -1,6 +1,6 @@
 import fetchMock from "jest-fetch-mock"
 import { Config, createClient } from '../main'
-import { RemoteSettings } from '../remoteSettings'
+import { RemoteSettings } from '../models'
 
 export function createDefaultTestClient(remoteSettings: Partial<RemoteSettings> = {}) {
 
