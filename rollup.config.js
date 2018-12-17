@@ -44,7 +44,8 @@ function createBundle({ file, format, name, external, withUglify = false }) {
 }
 
 export default [
-  createBundle({ file: 'umd/main.js', format: 'umd', name: 'reach5', withUglify: true }),
+  createBundle({ file: 'umd/identity-core.min.js', format: 'umd', name: 'reach5', withUglify: true }),
+  createBundle({ file: 'umd/identity-core.js', format: 'umd', name: 'reach5' }),
   createBundle({ file: pkg.main, format: 'cjs', external: isNpmDependency }),
   createBundle({ file: pkg.module, format: 'es', external: isNpmDependency })
 ]
