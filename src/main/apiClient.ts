@@ -86,21 +86,65 @@ export default class ApiClient {
     })
   }
 
-  logout(opts: { redirect_to?: string }): void {
+  checkSession(opts: AuthOptions = {}): Promise<AuthResult> {
+    if (!this.config.sso && !opts.idTokenHint) {
+      return Promise.reject(new Error("Cannot call 'loginFromSession' without 'idTokenHint' parameter if SSO is not enabled."))
+    }
+    const authorizationUrl = this.getAuthorizationUrl({
+      ...this.authParams(opts),
+      responseMode: 'web_message',
+      prompt: 'none'
+    })
+
+    const iframe = document.createElement('iframe')
+    iframe.setAttribute('width', '0')
+    iframe.setAttribute('height', '0')
+    iframe.setAttribute('src', authorizationUrl)
+    document.body.appendChild(iframe)
+
+    return new Promise<AuthResult>((resolve, reject) => {
+      // An error on timeout could be added, but the need is not obvious for this function.
+      const listener = (event: MessageEvent) => {
+        if (event.origin !== `https://${this.config.domain}`) return
+        const data = camelCaseProperties(event.data)
+        if (data.type === 'authorization_response') {
+          if (AuthResult.isAuthResult(data.response)) {
+            this.eventManager.fireEvent('authenticated', data.response)
+            resolve(enrichAuthResult(data.response))
+          } else if (ErrorResponse.isErrorResponse(data.response)) {
+            this.eventManager.fireEvent('authentication_failed', data.response)
+            reject(data.response)
+          } else {
+            reject({
+              error: 'unexpected_error',
+              errorDescription: 'Unexpected error occurred',
+            })
+          }
+          window.removeEventListener('message', listener)
+        }
+      }
+      window.addEventListener('message', listener, false)
+    })
+  }
+
+  logout(opts: { redirectTo?: string } = {}): void {
     window.location.assign(`${this.baseUrl}/logout?${toQueryString(opts)}`)
   }
 
   private loginWithRedirect(queryString: Record<string, string | boolean | undefined>): Promise<void> {
-    window.location.assign(`${this.authorizeUrl}?${toQueryString(queryString)}`)
+    window.location.assign(this.getAuthorizationUrl(queryString))
     return Promise.resolve()
   }
 
+  private getAuthorizationUrl(queryString: Record<string, string | boolean | undefined>): string {
+    return `${this.authorizeUrl}?${toQueryString(queryString)}`
+  }
+
   private loginWithCordovaInAppBrowser(opts: QueryString): Promise<void> {
-    const params = {
+    return this.openInCordovaSystemBrowser(this.getAuthorizationUrl({
       ...opts,
       display: 'page'
-    }
-    return this.openInCordovaSystemBrowser(`${this.authorizeUrl}?${toQueryString(params)}`)
+    }))
   }
 
   private openInCordovaSystemBrowser(url: string): Promise<void> {

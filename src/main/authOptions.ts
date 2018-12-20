@@ -18,6 +18,7 @@ export const authOptions = v.object({
   prompt: v.optional(v.string),
   origin: v.optional(v.string),
   state: v.optional(v.string),
+  nonce: v.optional(v.string),
   providerScope: v.optional(v.string),
   idTokenHint: v.optional(v.string),
   loginHint: v.optional(v.string),
@@ -39,6 +40,7 @@ type AuthParameters = {
   prompt?: string
   origin?: string
   state?: string
+  nonce?: string
   providerScope?: string
   idTokenHint?: string
   loginHint?: string
@@ -79,6 +81,7 @@ export function prepareAuthOptions(opts: AuthOptions = {}, { acceptPopupMode = f
       'prompt',
       'origin',
       'state',
+      'nonce',
       'providerScope',
       'idTokenHint',
       'loginHint',
