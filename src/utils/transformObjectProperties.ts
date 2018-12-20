@@ -10,7 +10,7 @@ export const camelCasePath = (path: string) => path.split('.').map(camelCase).jo
 export const camelCaseProperties = (object: object) => transformObjectProperties(object, camelCase)
 export const snakeCaseProperties = (object: object) => transformObjectProperties(object, snakeCase)
 
-function transformObjectProperties(object: object, transform: (path: string) => string): object {
+function transformObjectProperties(object: any, transform: (path: string) => string): any {
   if (isArray(object)) {
     return object.map(o => transformObjectProperties(o, transform))
   } else if (isObject(object)) {

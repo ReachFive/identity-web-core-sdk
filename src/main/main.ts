@@ -32,7 +32,8 @@ export type Client = {
   unlink: (params: { accessToken: string; identityId: string; fields?: string }) => Promise<void>
   refreshTokens: (params: { accessToken: string }) => Promise<AuthResult>
   loginFromSession: (options?: AuthOptions) => Promise<void>
-  logout: (params: { redirect_to?: string }) => Promise<void>
+  checkSession: (options?: AuthOptions) => Promise<AuthResult>
+  logout: (params?: { redirectTo?: string }) => Promise<void>
   getUser: (params: { accessToken: string; fields?: string }) => Promise<Profile>
   updateProfile: (params: { accessToken: string; data: Profile }) => Promise<void>
   updateEmail: (params: { accessToken: string; email: string }) => Promise<void>
@@ -101,7 +102,11 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.loginFromSession(options))
   }
 
-  function logout(params: { redirect_to?: string }) {
+  function checkSession(options: AuthOptions = {}) {
+    return apiClient.then(api => api.checkSession(options))
+  }
+
+  function logout(params: { redirectTo?: string } = {}) {
     return apiClient.then(api => api.logout(params))
   }
 
@@ -171,6 +176,7 @@ export function createClient(creationConfig: Config): Client {
     unlink,
     refreshTokens,
     loginFromSession,
+    checkSession,
     logout,
     getUser,
     updateProfile,
