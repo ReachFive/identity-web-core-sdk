@@ -8,6 +8,7 @@ import { delay } from '../../utils/promise'
 beforeEach(() => {
   window.fetch = fetchMock
   window.location.assign = jest.fn()
+  document.body.innerHTML = ''
 })
 
 describe("checkSession", () => {
