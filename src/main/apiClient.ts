@@ -112,7 +112,7 @@ export default class ApiClient {
             this.eventManager.fireEvent('authenticated', data.response)
             resolve(enrichAuthResult(data.response))
           } else if (ErrorResponse.isErrorResponse(data.response)) {
-            this.eventManager.fireEvent('authentication_failed', data.response)
+            // The 'authentication_failed' event must not be triggered because it is not a real authentication failure.
             reject(data.response)
           } else {
             reject({
