@@ -393,6 +393,48 @@ export default class ApiClient {
     )
   }
 
+  checkSession(opts: AuthOptions = {}): Promise<AuthResult> {
+    if (!this.config.sso && !opts.idTokenHint) {
+      return Promise.reject(new Error("Cannot call 'loginFromSession' without 'idTokenHint' parameter if SSO is not enabled."))
+    }
+    const qs = toQueryString({
+      ...this.authParams(opts),
+      responseMode: 'web_message',
+      prompt: 'none'
+    })
+    const authorizationUrl = `${this.authorizeUrl}?${qs}`
+
+    const iframe = document.createElement('iframe')
+    iframe.setAttribute('width', '0')
+    iframe.setAttribute('height', '0')
+    iframe.setAttribute('src', authorizationUrl)
+    document.body.appendChild(iframe)
+
+    return new Promise<AuthResult>((resolve, reject) => {
+      // An error on timeout could be added, but the need is not obvious for this function.
+      const listener = (event: MessageEvent) => {
+        if (event.origin !== `https://${this.config.domain}`) return
+        const data = camelCaseProperties(event.data) as any
+        if (data.type === 'authorization_response') {
+          if (AuthResult.isAuthResult(data.response)) {
+            this.fireAuthenticatedEvent(data.response)
+            resolve(this.enrichAuthResult(data.response))
+          } else if (ErrorResponse.isErrorResponse(data.response)) {
+            // The 'authentication_failed' event must not be triggered because it is not a real authentication failure.
+            reject(data.response)
+          } else {
+            reject({
+              error: 'unexpected_error',
+              errorDescription: 'Unexpected error occurred',
+            })
+          }
+          window.removeEventListener('message', listener)
+        }
+      }
+      window.addEventListener('message', listener, false)
+    })
+  }
+
   on<K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) {
     this.eventManager.on(eventName, listener)
   }

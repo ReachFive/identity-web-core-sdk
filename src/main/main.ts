@@ -86,6 +86,10 @@ export function createClient(config: ApiClientConfig) {
     return apiClient.then(api => api.getSsoData(params))
   }
 
+  function checkSession(options: AuthOptions = {}) {
+    return apiClient.then(api => api.checkSession(options))
+  }
+
   function parseUrlFragment(url: string) {
     return apiClient.then(api => api.parseUrlFragment(url))
   }
@@ -123,6 +127,7 @@ export function createClient(config: ApiClientConfig) {
     verifyPhoneNumber,
     loginWithCustomToken,
     getSsoData,
+    checkSession,
     parseUrlFragment,
     checkFragment
   }

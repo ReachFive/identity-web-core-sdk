@@ -5,7 +5,6 @@ import isString from 'lodash-es/isString'
 import isArray from 'lodash-es/isArray'
 import isUndefined from 'lodash-es/isUndefined'
 
-
 export const authOptions = v.object({
   responseType: v.optional(v.union('code', 'token')),
   redirectUri: v.optional(v.string),
@@ -13,6 +12,7 @@ export const authOptions = v.object({
   fetchBasicProfile: v.optional(v.boolean),
   popupMode: v.optional(v.boolean),
   prompt: v.optional(v.string),
+  nonce: v.optional(v.string),
   origin: v.optional(v.string),
   state: v.optional(v.string),
   providerScope: v.optional(v.string),
@@ -31,6 +31,7 @@ type AuthParameters = {
   display: string
   redirectUri?: string
   prompt?: string
+  nonce?: string
   origin?: string
   state?: string
   providerScope?: string
@@ -58,6 +59,7 @@ export function prepareAuthOptions(opts: AuthOptions = {}, { acceptPopupMode = f
       'responseType',
       'redirectUri',
       'prompt',
+      'nonce',
       'origin',
       'state',
       'providerScope',
