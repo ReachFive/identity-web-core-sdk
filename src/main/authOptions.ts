@@ -1,9 +1,9 @@
 import * as v from 'validation.ts'
-import uniq from 'lodash-es/uniq'
-import pick from 'lodash-es/pick'
-import isString from 'lodash-es/isString'
-import isArray from 'lodash-es/isArray'
-import isUndefined from 'lodash-es/isUndefined'
+import uniq from 'lodash/uniq'
+import pick from 'lodash/pick'
+import isString from 'lodash/isString'
+import isArray from 'lodash/isArray'
+import isUndefined from 'lodash/isUndefined'
 
 /**
  * Validator for authentication options.

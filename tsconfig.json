@@ -20,7 +20,7 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "types": [
-      "lodash-es",
+      "lodash",
       "jest",
       "node"
     ]

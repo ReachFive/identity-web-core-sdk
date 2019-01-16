@@ -21,7 +21,7 @@ const externalDependencies = Object.keys(pkg.dependencies)
 
 function isNpmDependency(name) {
   if (externalDependencies.includes(name)) return true
-  return /lodash-es/.test(name)
+  return /lodash/.test(name)
 }
 
 function createBundle({ file, format, name, external, withUglify = false }) {

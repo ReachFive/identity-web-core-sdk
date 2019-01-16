@@ -1,6 +1,6 @@
 
-import pickBy from 'lodash-es/pickBy'
-import map from 'lodash-es/map'
+import pickBy from 'lodash/pickBy'
+import map from 'lodash/map'
 
 import {
   camelCaseProperties,

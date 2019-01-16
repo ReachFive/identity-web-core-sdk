@@ -1,8 +1,8 @@
-import isObject from 'lodash-es/isObject'
-import isArray from 'lodash-es/isArray'
-import reduce from 'lodash-es/reduce'
-import camelCase from 'lodash-es/camelCase'
-import lodashSnakeCase from 'lodash-es/snakeCase'
+import isObject from 'lodash/isObject'
+import isArray from 'lodash/isArray'
+import reduce from 'lodash/reduce'
+import camelCase from 'lodash/camelCase'
+import lodashSnakeCase from 'lodash/snakeCase'
 
 export const snakeCasePath = (path: string) => path.split('.').map(snakeCase).join('.')
 export const camelCasePath = (path: string) => path.split('.').map(camelCase).join('.')

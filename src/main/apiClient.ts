@@ -1,5 +1,5 @@
 import WinChan from 'winchan'
-import pick from 'lodash-es/pick'
+import pick from 'lodash/pick'
 
 import { logError } from '../utils/logger'
 import { QueryString, toQueryString } from '../utils/queryString'

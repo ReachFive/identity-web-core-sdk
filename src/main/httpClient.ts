@@ -1,6 +1,6 @@
 import { QueryString, toQueryString } from '../utils/queryString'
 import { camelCaseProperties, snakeCaseProperties } from '../utils/transformObjectProperties'
-import isEmpty from 'lodash-es/isEmpty'
+import isEmpty from 'lodash/isEmpty'
 
 export type HttpConfig = {
   baseUrl: string

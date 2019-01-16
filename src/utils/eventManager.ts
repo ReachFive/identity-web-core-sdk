@@ -1,4 +1,4 @@
-import pull from 'lodash-es/pull'
+import pull from 'lodash/pull'
 import { logError } from './logger'
 
 
