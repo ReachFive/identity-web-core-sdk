@@ -24,7 +24,10 @@ export const authOptions = v.object({
   loginHint: v.optional(v.string),
   accessToken: v.optional(v.string),
   requireRefreshToken: v.optional(v.boolean),
-  acceptTos: v.optional(v.boolean)
+  acceptTos: v.optional(v.boolean),
+  codeChallenge: v.optional(v.string),
+  codeChallengeMethod: v.optional(v.string),
+  codeVerifier: v.optional(v.string),
 })
 
 export type AuthOptions = typeof authOptions.T
@@ -46,6 +49,9 @@ type AuthParameters = {
   loginHint?: string
   accessToken?: string
   acceptTos?: boolean
+  codeChallenge?: string
+  codeChallengeMethod?: string
+  codeVerifier?: string
 }
 
 /**
@@ -87,6 +93,9 @@ export function prepareAuthOptions(opts: AuthOptions = {}, { acceptPopupMode = f
       'loginHint',
       'accessToken',
       'acceptTos',
+      'codeChallenge',
+      'codeChallengeMethod',
+      'codeVerifier',
     ]),
   }
 }

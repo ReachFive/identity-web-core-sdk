@@ -7,6 +7,7 @@ import createEventManager, { Events } from './identityEventManager'
 import createUrlParser from './urlParser'
 import { toQueryString } from '../utils/queryString'
 import { rawRequest } from './httpClient'
+import { PkceCode, generatePkceCode } from './pkce'
 
 export { AuthResult } from './authResult'
 export { AuthOptions } from './authOptions'
@@ -43,6 +44,7 @@ export type Client = {
   loginWithCustomToken: (params: { token: string; auth: AuthOptions }) => Promise<void>
   getSessionInfo: (params?: {}) => Promise<SessionInfo>
   checkUrlFragment: (url: string) => boolean
+  generatePkceCode: (size?: number) => Promise<PkceCode>
 }
 
 export function createClient(creationConfig: Config): Client {
@@ -186,6 +188,7 @@ export function createClient(creationConfig: Config): Client {
     verifyPhoneNumber,
     loginWithCustomToken,
     getSessionInfo,
-    checkUrlFragment
+    checkUrlFragment,
+    generatePkceCode
   }
 }
