@@ -36,7 +36,7 @@ jobs:
           root: ~/repo
           paths: .
 
-  deploy:
+  deploy-alpha:
     <<: *defaults
     steps:
     - attach_workspace:
@@ -46,13 +46,13 @@ jobs:
         command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/repo/.npmrc
     - run:
         name: Publish package
-        command: npm publish --tag alpha
+        command: npm publish --tag alpha.$CIRCLE_BUILD_NUM
 
 workflows:
   version: 2
   build-deploy:
     jobs:
       - build
-      - deploy:
+      - deploy-alpha:
           requires:
             - build
