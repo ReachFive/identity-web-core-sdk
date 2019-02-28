@@ -71,7 +71,7 @@ workflows:
             tags:
               only: /^v.*-alpha.*/
             branches:
-              ignore: master
+              ignore: /.*/
       # - deploy:
       #   requires:
       #       - test
