@@ -5,13 +5,13 @@
 ## NPM Publish
 ```sh
 npm version [<newversion> | major | minor | patch]
-git push --tags
+git push --follow-tags
 ```
 
 ## NPM Publish alpha version
 ```sh
 npm version prerelease --preid=alpha
-git push --tags
+git push --follow-tags
 ```
 
 ## Documentation
