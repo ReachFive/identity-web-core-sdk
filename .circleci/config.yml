@@ -47,12 +47,3 @@ jobs:
     - run:
         name: Publish package
         command: npm publish --tag alpha.1
-
-workflows:
-  version: 2
-  test-deploy:
-    jobs:
-      - build:
-      - deploy:
-          requires:
-            - build
