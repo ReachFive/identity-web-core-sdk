@@ -4,16 +4,15 @@
 
 ## NPM Publish
 ```sh
-npm version
+npm version [<newversion> | major | minor | patch]
 git push
 ```
 
 ## NPM Publish alpha version
 ```sh
-npm version <version>-alpha.<number>
+npm version prerelease --preid=alpha
 git push
 ```
-
 
 ## Documentation
 
