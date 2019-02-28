@@ -45,7 +45,7 @@ jobs:
         command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/repo/.npmrc
     - run:
         name: Publish package
-        command: echo "npm fake publish"
+        command: npm publish --tag alpha
   
   # deploy:
   #   <<: *defaults
