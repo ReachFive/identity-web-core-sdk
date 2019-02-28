@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/ReachFive/identity-web-core-sdk.svg?style=svg)](https://circleci.com/gh/ReachFive/identity-web-core-sdk)
+
 # Reach5 Identity Web Core SDK
 
 ## Documentation

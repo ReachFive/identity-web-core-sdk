@@ -10,7 +10,7 @@ defaults: &defaults
     - image: circleci/node:10.15
 
 jobs:
-  build:
+  test:
     <<: *defaults
     steps:
       - checkout
@@ -30,7 +30,6 @@ jobs:
           key: v1-dependencies-{{ checksum "package.json" }}
 
       - run: npm test
-      - run: npm run build
     
       - persist_to_workspace:
           root: ~/repo
@@ -46,13 +45,13 @@ jobs:
         command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/repo/.npmrc
     - run:
         name: Publish package
-        command: npm publish --tag alpha.$CIRCLE_BUILD_NUM
+        command: npm publish --tag alpha
 
 workflows:
   version: 2
-  build-deploy:
+  npm-deploy:
     jobs:
-      - build
+      - test
       - deploy-alpha:
           requires:
-            - build
+            - test

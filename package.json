@@ -1,6 +1,6 @@
 {
   "name": "@reachfive/identity-core",
-  "version": "1.2.0",
+  "version": "1.2.0-alpha.2",
   "license": "MIT",
   "main": "cjs/main.js",
   "module": "es/main.js",
@@ -37,7 +37,7 @@
     "watch": "rollup -c -w",
     "test": "jest",
     "watch:test": "jest --watch",
-    "prepublish": "yarn build"
+    "prepublishOnly": "npm run build"
   },
   "jest": {
     "testURL": "http://localhost",
