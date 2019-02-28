@@ -70,6 +70,8 @@ workflows:
           filters:
             tags:
               only: /^v.*-alpha\.[0-9]/
+            branches:
+              ignore: master
       # - deploy:
       #   requires:
       #       - test
