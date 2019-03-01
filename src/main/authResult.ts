@@ -17,8 +17,6 @@ export type AuthResult = typeof authResult.T
 
 /**
  * Parse the id token, if present, and add the payload to the AuthResult
- * @param {AuthResult} response
- * @returns {AuthResult}
  */
 export function enrichAuthResult(response: AuthResult): AuthResult {
   if (response.idToken) {
@@ -29,7 +27,7 @@ export function enrichAuthResult(response: AuthResult): AuthResult {
         idTokenPayload
       }
     } catch (e) {
-      logError('id token parsing error: ' + e)
+      logError(`id token parsing error: ${e}`)
     }
   }
   return response

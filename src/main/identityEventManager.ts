@@ -33,6 +33,7 @@ export default function createEventManager(): IdentityEventManager {
 
     fireEvent<K extends keyof Events>(eventName: K, data: Events[K]) {
       if (eventName === 'authenticated') {
+        // tslint:disable-next-line: no-parameter-reassignment
         data = enrichAuthResult(data)
       }
       eventManager.fire(eventName, data)

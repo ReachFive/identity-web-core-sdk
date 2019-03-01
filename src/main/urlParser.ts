@@ -42,7 +42,7 @@ export default function createUrlParser(eventManager: IdentityEventManager): Url
         const parsed = parseQueryString(url.substr(separatorIndex + 1))
 
         const expiresIn = parsed.expiresIn
-          ? parseInt(parsed.expiresIn)
+          ? parseInt(parsed.expiresIn, 10)
           : undefined
 
         if (AuthResult.isAuthResult(parsed)) {

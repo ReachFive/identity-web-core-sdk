@@ -77,6 +77,8 @@
     "no-boolean-literal-compare": false,
     "no-unnecessary-qualifier": false,
     "return-undefined": false,
-    "no-default-import": false
+    "no-default-import": false,
+    "prefer-template": false,
+    "no-namespace": false
   }
 }
