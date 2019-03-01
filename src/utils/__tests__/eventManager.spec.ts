@@ -30,7 +30,7 @@ describe('EventManager', () => {
 
 
     // Wrong handler
-    em.off('myEvent', function () { })
+    em.off('myEvent', function() { })
 
     em.fire('myEvent', 3)
 

@@ -2,7 +2,7 @@ import pull from 'lodash/pull'
 import { logError } from './logger'
 
 
-type Listeners<K extends keyof EVENTS, EVENTS> = Array<(data: EVENTS[K]) => void>
+type Listeners<K extends keyof EVENTS, EVENTS> = ((data: EVENTS[K]) => void)[]
 
 
 export default class EventManager<EVENTS extends {}> {
@@ -23,12 +23,12 @@ export default class EventManager<EVENTS extends {}> {
     this.getListeners(name).push(listener)
   }
 
-  off<K extends keyof EVENTS>(name: K, listener: (data: EVENTS[K]) => void) {     
+  off<K extends keyof EVENTS>(name: K, listener: (data: EVENTS[K]) => void) {
     pull(this.getListeners(name), listener)
   }
 
-  private getListeners<K extends keyof EVENTS>(name: K): Array<(data: EVENTS[K]) => void> {
-    let listeners: Array<(data: EVENTS[K]) => void> | undefined = this.listeners[name]
+  private getListeners<K extends keyof EVENTS>(name: K): ((data: EVENTS[K]) => void)[] {
+    let listeners: ((data: EVENTS[K]) => void)[] | undefined = this.listeners[name]
 
     if (!listeners) {
       listeners = this.listeners[name] = []

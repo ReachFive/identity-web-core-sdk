@@ -56,8 +56,6 @@ type AuthParameters = {
 
 /**
  * Resolve the actual oauth2 scope according to the authentication options.
- * @param {AuthOptions} opts
- * @returns {string}
  */
 export function resolveScope(opts: AuthOptions = {}): string {
   const fetchBasicProfile = isUndefined(opts.fetchBasicProfile) || opts.fetchBasicProfile
@@ -70,11 +68,8 @@ export function resolveScope(opts: AuthOptions = {}): string {
 
 /**
  * Transform authentication options into authentication parameters
- * @param {AuthOptions} opts
- *    Authentication options
- * @param {boolean} acceptPopupMode
- *    Indicates if the popup mode is allowed (depends on the type of authentication or context)
- * @returns {AuthParameters}
+ * @param opts Authentication options
+ * @param acceptPopupMode Indicates if the popup mode is allowed (depends on the type of authentication or context)
  */
 export function prepareAuthOptions(opts: AuthOptions = {}, { acceptPopupMode = false }: { acceptPopupMode?: boolean } = {}): AuthParameters {
   return {
@@ -102,9 +97,8 @@ export function prepareAuthOptions(opts: AuthOptions = {}, { acceptPopupMode = f
 
 /**
  * Normalize the scope format (e.g. "openid email" => ["openid", "email"])
- * @param {string[] | string | undefined} scope
+ * @param scope
  *    Scope entered by the user
- * @returns {string[]}
  */
 function parseScope(scope: string[] | string | undefined): string[] {
   if (isUndefined(scope)) return []

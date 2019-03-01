@@ -10,16 +10,12 @@ export type UrlParser = {
    *
    * If a response is detected, trigger the corresponding event.
    *
-   * @param {string} url
-   * @returns {boolean} `true` if a response is detected
+   * @returns `true` if a response is detected
    */
   checkUrlFragment(url: string): boolean
 
   /**
    * Parse the URL fragment, and return the corresponding authentication response if exists.
-   *
-   * @param {string} url
-   * @returns {AuthResult | ErrorResponse | undefined}
    */
   parseUrlFragment(url?: string): (AuthResult | ErrorResponse | undefined)
 }
@@ -32,8 +28,7 @@ export default function createUrlParser(eventManager: IdentityEventManager): Url
       if (AuthResult.isAuthResult(authResult)) {
         eventManager.fireEvent('authenticated', authResult)
         return true
-      }
-      else if (ErrorResponse.isErrorResponse(authResult)) {
+      } else if (ErrorResponse.isErrorResponse(authResult)) {
         eventManager.fireEvent('authentication_failed', authResult)
         return true
       }

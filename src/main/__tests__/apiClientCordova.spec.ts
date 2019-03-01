@@ -15,7 +15,7 @@ function apiClientAndEventManager() {
   const eventManager = createEventManager()
   const client = new ApiClient({
     config: {
-      clientId: clientId,
+      clientId,
       domain,
       language: 'en',
       sso: false
@@ -188,7 +188,7 @@ describe('signup', () => {
     }
 
     fetchMock.mockResponseOnce(JSON.stringify({
-      error: error,
+      error,
       error_description: errorDescription,
       error_usr_msg: errorUsrMsg
     }), { status: 400 })
@@ -589,7 +589,7 @@ describe('loginWithSocialProvider', () => {
 
     // When
     await client.loginWithSocialProvider('facebook', {
-      redirectUri: redirectUri
+      redirectUri
     })
 
     // Then

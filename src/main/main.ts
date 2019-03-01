@@ -49,7 +49,7 @@ export type Client = {
 
 export function createClient(creationConfig: Config): Client {
   configValidator.validate(creationConfig)
-    .mapError(err => { throw `the reach5 creation config has errors:\n${v.errorDebugString(err)}` })
+    .mapError(err => { throw new Error(`the reach5 creation config has errors:\n${v.errorDebugString(err)}`) })
 
   const { domain, clientId, language } = creationConfig
 

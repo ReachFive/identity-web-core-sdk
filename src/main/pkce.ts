@@ -25,7 +25,7 @@ export function generatePkceCode(size: number = 100): Promise<PkceCode> {
 
 
 function bufferToString(buffer: Uint8Array): string {
-    const array = [];
+    const array = []
     for (let i = 0; i < buffer.byteLength; i += 1) {
         array.push(CHARSET[i])
     }
@@ -63,9 +63,9 @@ function generateCodeChallengeBuffer(codeVerifierBuffer: Uint8Array): Promise<Ui
         }
         // TODO fallback to lib
         if (!HAS_SUBTLE_CRYPTO) {
-            return Promise.reject(new Error('window.crypto.subtle is unavailable.'));
+            return Promise.reject(new Error('window.crypto.subtle is unavailable.'))
         }
         return crypto.subtle.digest('SHA-256', codeVerifierBuffer)
-            .then(buffer => resolve(   new Uint8Array(buffer)), reject)
+            .then(buffer => resolve(new Uint8Array(buffer)), reject)
     })
 }

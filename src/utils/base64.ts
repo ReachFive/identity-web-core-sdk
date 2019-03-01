@@ -10,7 +10,7 @@ export function encodeBase64UrlSafe(str: string) {
     return encodeBase64(str)
         .replace(/\+/g, '-') // Convert '+' to '-'
         .replace(/\//g, '_') // Convert '/' to '_'
-        .replace(/=+$/, ''); // Remove ending '='
+        .replace(/=+$/, '') // Remove ending '='
 
 }
 
@@ -20,8 +20,8 @@ export function encodeBase64UrlSafe(str: string) {
 export function encodeBase64(str: string) {
     // Cf: https://stackoverflow.com/questions/30106476/using-javascripts-atob-to-decode-base64-doesnt-properly-decode-utf-8-strings
     return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (_match, p1) => {
-        return String.fromCharCode(parseInt(p1, 16));
-    }));
+        return String.fromCharCode(parseInt(p1, 16))
+    }))
 }
 
 /**
@@ -34,8 +34,8 @@ export function decodeBase64UrlSafe(base64: string) {
 
     base64 = base64
         .replace(/\-/g, '+') // Convert '-' to '+'
-        .replace(/\_/g, '/'); // Convert '_' to '/'
-    return decodeBase64(base64); // Cf: https://developer.mozilla.org/fr/docs/D%C3%A9coder_encoder_en_base64
+        .replace(/\_/g, '/') // Convert '_' to '/'
+    return decodeBase64(base64) // Cf: https://developer.mozilla.org/fr/docs/D%C3%A9coder_encoder_en_base64
 }
 
 /**
@@ -44,6 +44,6 @@ export function decodeBase64UrlSafe(base64: string) {
 export function decodeBase64(str: string) {
     // Cf: https://stackoverflow.com/questions/30106476/using-javascripts-atob-to-decode-base64-doesnt-properly-decode-utf-8-strings
     return decodeURIComponent(Array.prototype.map.call(window.atob(str), (c: string) => {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+    }).join(''))
 }
