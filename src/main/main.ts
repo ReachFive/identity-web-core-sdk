@@ -12,6 +12,7 @@ import { PkceCode, generatePkceCode } from './pkce'
 export { AuthResult } from './authResult'
 export { AuthOptions } from './authOptions'
 export { Profile, SessionInfo } from './models'
+export { generatePkceCode } from './pkce'
 
 const configValidator = v.object({
   clientId: v.string,
