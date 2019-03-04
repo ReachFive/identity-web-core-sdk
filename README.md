@@ -3,6 +3,9 @@
 # Reach5 Identity Web Core SDK
 
 ## NPM Publish
+
+It should respect https://semver.org/ versionning
+
 ```sh
 npm version [<newversion> | major | minor | patch]
 git push --follow-tags
