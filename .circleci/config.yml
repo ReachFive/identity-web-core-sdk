@@ -71,8 +71,6 @@ workflows:
           filters:
             tags:
               only: /^v.*-alpha\.[0-9]/
-            branches:
-              ignore: /.*/
       # - deploy-release:
       #   requires:
       #       - test
