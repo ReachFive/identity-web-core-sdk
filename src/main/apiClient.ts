@@ -31,7 +31,17 @@ export interface OauthAuthorizationCode {
   code: string
   state?: string
   redirect_uri: string
+}
+
+export interface OauthAuthorizationCodePkce {
   code_verifier?: string
+}
+
+export interface UpdatePasswordParams {
+  accessToken?: string
+  userId?: string
+  password: string
+  oldPasssord?: string
 }
 
 /**
@@ -65,7 +75,7 @@ export default class ApiClient {
   private tokenUrl: string
   private popupRelayUrl: string
 
-  authorizationCode(options: OauthAuthorizationCode): Promise<any> {
+  authorizationCode(options: OauthAuthorizationCodePkce & OauthAuthorizationCode): Promise<any> {
     return this.http.post<AuthResult>(this.tokenUrl, {
       body: {
         clientId: this.config.clientId,
@@ -362,7 +372,7 @@ export default class ApiClient {
     })
   }
 
-  updatePassword(params: { accessToken?: string, password: string, oldPasssord?: string, userId?: string }): Promise<void> {
+  updatePassword(params: UpdatePasswordParams): Promise<void> {
     const { accessToken, ...data } = params
     return this.http.post('/update-password', {
       body: { clientId: this.config.clientId, ...data },

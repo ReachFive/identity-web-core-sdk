@@ -1,10 +1,10 @@
 import * as v from 'validation.ts'
 import { Profile, RemoteSettings, SessionInfo } from './models'
-import ApiClient, { LoginWithPasswordParams, PasswordlessParams, SignupParams, OauthAuthorizationCode } from './apiClient'
+import ApiClient, { LoginWithPasswordParams, PasswordlessParams, SignupParams, OauthAuthorizationCode, UpdatePasswordParams } from './apiClient'
 import { AuthOptions } from './authOptions'
 import { AuthResult } from './authResult'
-import createEventManager, { Events } from './identityEventManager'
-import createUrlParser from './urlParser'
+import createEventManager, { Events, IdentityEventManager } from './identityEventManager'
+import createUrlParser, { UrlParser } from './urlParser'
 import { toQueryString } from '../utils/queryString'
 import { rawRequest } from './httpClient'
 import { PkceCode, generatePkceCode } from './pkce'
@@ -12,7 +12,6 @@ import { PkceCode, generatePkceCode } from './pkce'
 export { AuthResult } from './authResult'
 export { AuthOptions } from './authOptions'
 export { Profile, SessionInfo } from './models'
-export { generatePkceCode } from './pkce'
 
 const configValidator = v.object({
   clientId: v.string,
@@ -22,180 +21,150 @@ const configValidator = v.object({
 
 export type Config = typeof configValidator.T
 
-export type Client = {
-  on: <K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) => void
-  off: <K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) => void
-  signup: (params: SignupParams) => Promise<void>
-  loginWithPassword: (params: LoginWithPasswordParams) => Promise<void>
-  startPasswordless: (params: PasswordlessParams, options?: AuthOptions) => Promise<void>
-  verifyPasswordless: (params: PasswordlessParams) => Promise<void>
-  loginWithSocialProvider: (provider: string, options?: AuthOptions) => Promise<void>
-  requestPasswordReset: (params: { email: string }) => Promise<void>
-  unlink: (params: { accessToken: string; identityId: string; fields?: string }) => Promise<void>
-  refreshTokens: (params: { accessToken: string }) => Promise<AuthResult>
-  loginFromSession: (options?: AuthOptions) => Promise<void>
-  checkSession: (options?: AuthOptions) => Promise<AuthResult>
-  logout: (params?: { redirectTo?: string }) => Promise<void>
-  getUser: (params: { accessToken: string; fields?: string }) => Promise<Profile>
-  updateProfile: (params: { accessToken: string; data: Profile }) => Promise<void>
-  updateEmail: (params: { accessToken: string; email: string }) => Promise<void>
-  updatePassword: (params: { accessToken?: string; password: string; oldPasssord?: string; userId?: string }) => Promise<void>
-  updatePhoneNumber: (params: { accessToken: string; phoneNumber: string }) => Promise<void>
-  verifyPhoneNumber: (params: { accessToken: string; phoneNumber: string; verificationCode: string }) => Promise<void>
-  loginWithCustomToken: (params: { token: string; auth: AuthOptions }) => Promise<void>
-  getSessionInfo: (params?: {}) => Promise<SessionInfo>
-  checkUrlFragment: (url: string) => boolean
-  generatePkceCode: (size?: number) => Promise<PkceCode>
-  authorizationCode: (options: OauthAuthorizationCode) => Promise<any>
-}
+export class Client {
+  private eventManager: IdentityEventManager
+  private urlParser: UrlParser
+  private apiClient: ApiClient
+  private pkceCode?: PkceCode
 
-export function createClient(creationConfig: Config): Client {
-  configValidator.validate(creationConfig)
-    .mapError(err => { throw new Error(`the reach5 creation config has errors:\n${v.errorDebugString(err)}`) })
-
-  const { domain, clientId, language } = creationConfig
-
-  const eventManager = createEventManager()
-  const urlParser = createUrlParser(eventManager)
-
-  const apiClient = rawRequest<RemoteSettings>(
-    `https://${domain}/identity/v1/config?${toQueryString({ clientId, lang: language })}`
-  ).then(remoteConfig => new ApiClient({
-    config: {
-      ...creationConfig,
-      ...remoteConfig
-    },
-    eventManager,
-    urlParser
-  }))
-
-
-  function signup(params: SignupParams) {
-    return apiClient.then(api => api.signup(params))
+  constructor(config: Config, remote: RemoteSettings) {
+    this.eventManager = createEventManager()
+    this.urlParser = createUrlParser(this.eventManager)
+    this.apiClient = new ApiClient({
+      config: {
+        ...config,
+        ...remote
+      },
+      eventManager: this.eventManager,
+      urlParser: this.urlParser,
+    })
   }
 
-  function loginWithPassword(params: LoginWithPasswordParams) {
-    return apiClient.then(api => api.loginWithPassword(params))
+  signup(params: SignupParams): Promise<void> {
+    return this.apiClient.signup(params)
   }
 
-  function startPasswordless(params: PasswordlessParams, options: AuthOptions = {}) {
-    return apiClient.then(api => api.startPasswordless(params, options))
+  loginWithPassword(params: LoginWithPasswordParams): Promise<void> {
+    return this.apiClient.loginWithPassword(params)
   }
 
-  function verifyPasswordless(params: PasswordlessParams) {
-    return apiClient.then(api => api.verifyPasswordless(params))
+  loginWithSocialProvider(provider: string, options?: AuthOptions, pkceEnabled: boolean = false, pkceSize: number = 100): Promise<void> {
+    if (pkceEnabled) {
+      return this.apiClient.loginWithSocialProvider(provider, options)
+    } else {
+      return generatePkceCode(pkceSize).then(pkce => {
+        this.pkceCode = pkce
+        return this.apiClient.loginWithSocialProvider(provider, {
+          ...options,
+          codeChallenge: pkce.codeChallenge,
+          codeChallengeMethod: pkce.codeChallengeMethod,
+        })
+      })
+    }
   }
 
-  function loginWithSocialProvider(provider: string, options: AuthOptions = {}) {
-    return apiClient.then(api => api.loginWithSocialProvider(provider, options))
+  loginFromSession(options?: AuthOptions): Promise<void> {
+    return this.apiClient.loginFromSession(options)
   }
 
-  function requestPasswordReset(params: { email: string }) {
-    return apiClient.then(api => api.requestPasswordReset(params))
+  loginWithCustomToken(params: { token: string; auth: AuthOptions }): Promise<void> {
+    return Promise.resolve(this.apiClient.loginWithCustomToken(params))
   }
 
-  function unlink(params: { accessToken: string, identityId: string, fields?: string }) {
-    return apiClient.then(api => api.unlink(params))
+  refreshTokens(params: { accessToken: string }): Promise<AuthResult> {
+    return this.apiClient.refreshTokens(params)
   }
 
-  function refreshTokens(params: { accessToken: string }) {
-    return apiClient.then(api => api.refreshTokens(params))
+  logout(params?: { redirectTo?: string }): Promise<void> {
+    return Promise.resolve(this.apiClient.logout(params))
   }
 
-  function loginFromSession(options: AuthOptions = {}) {
-    return apiClient.then(api => api.loginFromSession(options))
+  getUser(params: { accessToken: string; fields?: string }): Promise<Profile> {
+    return this.apiClient.getUser(params)
   }
 
-  function checkSession(options: AuthOptions = {}) {
-    return apiClient.then(api => api.checkSession(options))
+  getSessionInfo(): Promise<SessionInfo> {
+    return this.apiClient.getSessionInfo()
   }
 
-  function logout(params: { redirectTo?: string } = {}) {
-    return apiClient.then(api => api.logout(params))
+  checkSession(options?: AuthOptions): Promise<AuthResult> {
+    return this.apiClient.checkSession(options)
   }
 
-  function getUser(params: { accessToken: string, fields?: string }) {
-    return apiClient.then(api => api.getUser(params))
+  unlink(params: { accessToken: string; identityId: string; fields?: string }): Promise<void> {
+    return this.apiClient.unlink(params)
   }
 
-  function updateProfile(params: { accessToken: string, data: Profile }) {
-    return apiClient.then(api => api.updateProfile(params))
+  updateProfile(params: { accessToken: string; data: Profile }): Promise<void> {
+    return this.apiClient.updateProfile(params)
   }
 
-  function updateEmail(params: { accessToken: string, email: string }) {
-    return apiClient.then(api => api.updateEmail(params))
+  updateEmail(params: { accessToken: string; email: string }): Promise<void> {
+    return this.apiClient.updateEmail(params)
   }
 
-  function updatePassword(params: { accessToken?: string, password: string, oldPasssord?: string, userId?: string }) {
-    return apiClient.then(api => api.updatePassword(params))
+  updatePassword(params: UpdatePasswordParams): Promise<void> {
+    return this.apiClient.updatePassword(params)
   }
 
-  function updatePhoneNumber(params: { accessToken: string, phoneNumber: string }) {
-    return apiClient.then(api => api.updatePhoneNumber(params))
+  updatePhoneNumber(params: { accessToken: string; phoneNumber: string }): Promise<void> {
+    return this.apiClient.updatePhoneNumber(params)
   }
 
-  function verifyPhoneNumber(params: { accessToken: string, phoneNumber: string, verificationCode: string }) {
-    return apiClient.then(api => api.verifyPhoneNumber(params))
+  verifyPhoneNumber(params: { accessToken: string; phoneNumber: string; verificationCode: string }): Promise<void> {
+    return this.apiClient.verifyPhoneNumber(params)
   }
 
-  function loginWithCustomToken(params: { token: string, auth: AuthOptions }) {
-    return apiClient.then(api => api.loginWithCustomToken(params))
+  startPasswordless(params: PasswordlessParams, options?: AuthOptions): Promise<void> {
+    return this.apiClient.startPasswordless(params, options)
   }
 
-  function getSessionInfo() {
-    return apiClient.then(api => api.getSessionInfo())
+  verifyPasswordless(params: PasswordlessParams): Promise<void> {
+    return this.apiClient.verifyPasswordless(params)
   }
 
-  function checkUrlFragment(url: string = window.location.href): boolean {
-    const authResponseDetected = urlParser.checkUrlFragment(url)
+  requestPasswordReset(params: { email: string }): Promise<void> {
+    return this.apiClient.requestPasswordReset(params)
+  }
+
+  authorizationCode(options: OauthAuthorizationCode): Promise<any> {
+    return this.apiClient.authorizationCode({
+      ...options,
+      code_verifier: this.pkceCode && this.pkceCode.codeVerifier
+    })
+  }
+
+  on<K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void): void {
+    this.eventManager.on(eventName, listener)
+
+    if (eventName === 'authenticated' || eventName === 'authentication_failed') {
+      // This call must be asynchronous to ensure the listener cannot be called synchronously
+      // (this type of behavior is generally unexpected for the developer)
+      setTimeout(() => this.checkUrlFragment(), 0)
+    }
+  }
+
+  checkUrlFragment(url: string = window.location.href): boolean {
+    const authResponseDetected = this.urlParser.checkUrlFragment(url)
     if (authResponseDetected && url === window.location.href) {
       window.location.hash = ''
     }
     return authResponseDetected
   }
 
-  function on<K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void): void {
-    eventManager.on(eventName, listener)
-
-    if (eventName === 'authenticated' || eventName === 'authentication_failed') {
-      // This call must be asynchronous to ensure the listener cannot be called synchronously
-      // (this type of behavior is generally unexpected for the developer)
-      setTimeout(() => checkUrlFragment(), 0)
-    }
+  off<K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void): void {
+    return this.eventManager.off(eventName, listener)
   }
+}
 
-  function off<K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void): void {
-    return eventManager.off(eventName, listener)
-  }
+export function createClient(creationConfig: Config): Promise<Client> {
+  configValidator.validate(creationConfig).mapError(err => {
+    throw new Error(`the reach5 creation config has errors:\n${v.errorDebugString(err)}`)
+  })
 
-  function authorizationCode(options: OauthAuthorizationCode): Promise<any> {
-    return apiClient.then(api => api.authorizationCode(options))
-  }
+  const { domain, clientId, language } = creationConfig
 
-  return {
-    on,
-    off,
-    signup,
-    loginWithPassword,
-    startPasswordless,
-    verifyPasswordless,
-    loginWithSocialProvider,
-    requestPasswordReset,
-    unlink,
-    refreshTokens,
-    loginFromSession,
-    checkSession,
-    logout,
-    getUser,
-    updateProfile,
-    updateEmail,
-    updatePassword,
-    updatePhoneNumber,
-    verifyPhoneNumber,
-    loginWithCustomToken,
-    getSessionInfo,
-    checkUrlFragment,
-    generatePkceCode,
-    authorizationCode,
-  }
+  return rawRequest<RemoteSettings>(
+    `https://${domain}/identity/v1/config?${toQueryString({ clientId, lang: language })}`
+  ).then(remoteConfig => new Client(creationConfig, remoteConfig))
 }
