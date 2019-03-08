@@ -24,6 +24,14 @@ export type ApiClientConfig = {
   domain: string
   language?: string
   sso: boolean
+  pkceEnabled: boolean
+}
+
+export interface OauthAuthorizationCode {
+  code: string
+  state?: string
+  redirect_uri: string
+  code_verifier?: string
 }
 
 /**
@@ -57,6 +65,15 @@ export default class ApiClient {
   private tokenUrl: string
   private popupRelayUrl: string
 
+  authorizationCode(options: OauthAuthorizationCode): Promise<any> {
+    return this.http.post<AuthResult>(this.tokenUrl, {
+      body: {
+        clientId: this.config.clientId,
+        ...options
+      }
+
+    }).then(result => this.eventManager.fireEvent('authenticated', result))
+  }
 
   loginWithSocialProvider(provider: string, opts: AuthOptions = {}): Promise<void> {
     const authParams = this.authParams(opts, { acceptPopupMode: true })
@@ -218,6 +235,14 @@ export default class ApiClient {
       }
     })
     return Promise.resolve()
+  }
+
+  private authenticatedHandler = ({ responseType, redirectUri }: AuthOptions, response: AuthResult) => {
+    if (responseType === 'code') {
+      window.location.assign(`${redirectUri}?code=${response.code}`)
+    } else {
+      this.eventManager.fireEvent('authenticated', response)
+    }
   }
 
   loginWithPassword(params: LoginWithPasswordParams): Promise<void> {
@@ -396,14 +421,6 @@ export default class ApiClient {
       query: { clientId: this.config.clientId },
       withCookies: true
     })
-  }
-
-  private authenticatedHandler = ({ responseType, redirectUri }: AuthOptions, response: AuthResult) => {
-    if (responseType === 'code') {
-      window.location.assign(`${redirectUri}?code=${response.code}`)
-    } else {
-      this.eventManager.fireEvent('authenticated', response)
-    }
   }
 
   private computeProviderPopupOptions(provider: string): string {

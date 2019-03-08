@@ -1,6 +1,6 @@
 import * as v from 'validation.ts'
 import { Profile, RemoteSettings, SessionInfo } from './models'
-import ApiClient, { LoginWithPasswordParams, PasswordlessParams, SignupParams } from './apiClient'
+import ApiClient, { LoginWithPasswordParams, PasswordlessParams, SignupParams, OauthAuthorizationCode } from './apiClient'
 import { AuthOptions } from './authOptions'
 import { AuthResult } from './authResult'
 import createEventManager, { Events } from './identityEventManager'
@@ -46,6 +46,7 @@ export type Client = {
   getSessionInfo: (params?: {}) => Promise<SessionInfo>
   checkUrlFragment: (url: string) => boolean
   generatePkceCode: (size?: number) => Promise<PkceCode>
+  authorizationCode: (options: OauthAuthorizationCode) => Promise<any>
 }
 
 export function createClient(creationConfig: Config): Client {
@@ -167,6 +168,10 @@ export function createClient(creationConfig: Config): Client {
     return eventManager.off(eventName, listener)
   }
 
+  function authorizationCode(options: OauthAuthorizationCode): Promise<any> {
+    return apiClient.then(api => api.authorizationCode(options))
+  }
+
   return {
     on,
     off,
@@ -190,6 +195,7 @@ export function createClient(creationConfig: Config): Client {
     loginWithCustomToken,
     getSessionInfo,
     checkUrlFragment,
-    generatePkceCode
+    generatePkceCode,
+    authorizationCode,
   }
 }

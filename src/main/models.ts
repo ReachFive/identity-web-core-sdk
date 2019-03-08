@@ -14,7 +14,8 @@ export type SessionInfo = {
  */
 export type RemoteSettings = {
   sso: boolean,
-  language: string
+  language: string,
+  pkceEnabled: boolean
 }
 
 export type ErrorResponse = {
