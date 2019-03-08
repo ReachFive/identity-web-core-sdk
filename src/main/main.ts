@@ -24,114 +24,117 @@ export type Config = typeof configValidator.T
 export class Client {
   private eventManager: IdentityEventManager
   private urlParser: UrlParser
-  private apiClient: ApiClient
+  private apiClient: Promise<ApiClient>
   private pkceCode?: PkceCode
 
-  constructor(config: Config, remote: RemoteSettings) {
+  constructor(config: Config) {
     this.eventManager = createEventManager()
     this.urlParser = createUrlParser(this.eventManager)
-    this.apiClient = new ApiClient({
+    const { domain, clientId, language } = config
+    this.apiClient = rawRequest<RemoteSettings>(
+      `https://${domain}/identity/v1/config?${toQueryString({ clientId, lang: language })}`
+    ).then(remoteConfig => new ApiClient({
       config: {
         ...config,
-        ...remote
+        ...remoteConfig
       },
       eventManager: this.eventManager,
       urlParser: this.urlParser,
-    })
+    }))
   }
 
   signup(params: SignupParams): Promise<void> {
-    return this.apiClient.signup(params)
+    return this.apiClient.then(api => api.signup(params))
   }
 
   loginWithPassword(params: LoginWithPasswordParams): Promise<void> {
-    return this.apiClient.loginWithPassword(params)
+    return this.apiClient.then(api => api.loginWithPassword(params))
   }
 
   loginWithSocialProvider(provider: string, options?: AuthOptions, pkceEnabled: boolean = false, pkceSize: number = 100): Promise<void> {
     if (pkceEnabled) {
-      return this.apiClient.loginWithSocialProvider(provider, options)
+      return this.apiClient.then(api => api.loginWithSocialProvider(provider, options))
     } else {
       return generatePkceCode(pkceSize).then(pkce => {
         this.pkceCode = pkce
-        return this.apiClient.loginWithSocialProvider(provider, {
+        return this.apiClient.then(api => api.loginWithSocialProvider(provider, {
           ...options,
           codeChallenge: pkce.codeChallenge,
           codeChallengeMethod: pkce.codeChallengeMethod,
-        })
+        }))
       })
     }
   }
 
   loginFromSession(options?: AuthOptions): Promise<void> {
-    return this.apiClient.loginFromSession(options)
+    return this.apiClient.then(api => api.loginFromSession(options))
   }
 
   loginWithCustomToken(params: { token: string; auth: AuthOptions }): Promise<void> {
-    return Promise.resolve(this.apiClient.loginWithCustomToken(params))
+    return this.apiClient.then(api => api.loginWithCustomToken(params))
   }
 
   refreshTokens(params: { accessToken: string }): Promise<AuthResult> {
-    return this.apiClient.refreshTokens(params)
+    return this.apiClient.then(api => api.refreshTokens(params))
   }
 
   logout(params?: { redirectTo?: string }): Promise<void> {
-    return Promise.resolve(this.apiClient.logout(params))
+    return this.apiClient.then(api => api.logout(params))
   }
 
   getUser(params: { accessToken: string; fields?: string }): Promise<Profile> {
-    return this.apiClient.getUser(params)
+    return this.apiClient.then(api => api.getUser(params))
   }
 
   getSessionInfo(): Promise<SessionInfo> {
-    return this.apiClient.getSessionInfo()
+    return this.apiClient.then(api => api.getSessionInfo())
   }
 
   checkSession(options?: AuthOptions): Promise<AuthResult> {
-    return this.apiClient.checkSession(options)
+    return this.apiClient.then(api => api.checkSession(options))
   }
 
   unlink(params: { accessToken: string; identityId: string; fields?: string }): Promise<void> {
-    return this.apiClient.unlink(params)
+    return this.apiClient.then(api => api.unlink(params))
   }
 
   updateProfile(params: { accessToken: string; data: Profile }): Promise<void> {
-    return this.apiClient.updateProfile(params)
+    return this.apiClient.then(api => api.updateProfile(params))
   }
 
   updateEmail(params: { accessToken: string; email: string }): Promise<void> {
-    return this.apiClient.updateEmail(params)
+    return this.apiClient.then(api => api.updateEmail(params))
   }
 
   updatePassword(params: UpdatePasswordParams): Promise<void> {
-    return this.apiClient.updatePassword(params)
+    return this.apiClient.then(api => api.updatePassword(params))
   }
 
   updatePhoneNumber(params: { accessToken: string; phoneNumber: string }): Promise<void> {
-    return this.apiClient.updatePhoneNumber(params)
+    return this.apiClient.then(api => api.updatePhoneNumber(params))
   }
 
   verifyPhoneNumber(params: { accessToken: string; phoneNumber: string; verificationCode: string }): Promise<void> {
-    return this.apiClient.verifyPhoneNumber(params)
+    return this.apiClient.then(api => api.verifyPhoneNumber(params))
   }
 
   startPasswordless(params: PasswordlessParams, options?: AuthOptions): Promise<void> {
-    return this.apiClient.startPasswordless(params, options)
+    return this.apiClient.then(api => api.startPasswordless(params, options))
   }
 
   verifyPasswordless(params: PasswordlessParams): Promise<void> {
-    return this.apiClient.verifyPasswordless(params)
+    return this.apiClient.then(api => api.verifyPasswordless(params))
   }
 
   requestPasswordReset(params: { email: string }): Promise<void> {
-    return this.apiClient.requestPasswordReset(params)
+    return this.apiClient.then(api => api.requestPasswordReset(params))
   }
 
   authorizationCode(options: OauthAuthorizationCode): Promise<any> {
-    return this.apiClient.authorizationCode({
+    return this.apiClient.then(api => api.authorizationCode({
       ...options,
       code_verifier: this.pkceCode && this.pkceCode.codeVerifier
-    })
+    }))
   }
 
   on<K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void): void {
@@ -157,14 +160,10 @@ export class Client {
   }
 }
 
-export function createClient(creationConfig: Config): Promise<Client> {
+export function createClient(creationConfig: Config): Client {
   configValidator.validate(creationConfig).mapError(err => {
     throw new Error(`the reach5 creation config has errors:\n${v.errorDebugString(err)}`)
   })
 
-  const { domain, clientId, language } = creationConfig
-
-  return rawRequest<RemoteSettings>(
-    `https://${domain}/identity/v1/config?${toQueryString({ clientId, lang: language })}`
-  ).then(remoteConfig => new Client(creationConfig, remoteConfig))
+  return new Client(creationConfig)
 }
