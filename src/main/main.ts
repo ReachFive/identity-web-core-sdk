@@ -51,19 +51,19 @@ export class Client {
     return this.apiClient.then(api => api.loginWithPassword(params))
   }
 
-  loginWithSocialProvider(provider: string, options?: AuthOptions, pkceEnabled: boolean = false, pkceSize: number = 100): Promise<void> {
-    if (pkceEnabled) {
-      return this.apiClient.then(api => api.loginWithSocialProvider(provider, options))
-    } else {
-      return generatePkceCode(pkceSize).then(pkce => {
-        this.pkceCode = pkce
-        return this.apiClient.then(api => api.loginWithSocialProvider(provider, {
-          ...options,
-          codeChallenge: pkce.codeChallenge,
-          codeChallengeMethod: pkce.codeChallengeMethod,
-        }))
-      })
-    }
+  loginWithSocialProvider(provider: string, options?: AuthOptions): Promise<void> {
+    return this.apiClient.then(api => api.loginWithSocialProvider(provider, options))
+  }
+
+  loginWithSocialProviderPkce(provider: string, options?: AuthOptions, pkceSize: number = 130): Promise<PkceCode> {
+    return generatePkceCode(pkceSize).then(pkce => {
+      this.pkceCode = pkce
+      return this.apiClient.then(api => api.loginWithSocialProvider(provider, {
+        ...options,
+        codeChallenge: pkce.codeChallenge,
+        codeChallengeMethod: pkce.codeChallengeMethod,
+      })).then(() => pkce)
+    })
   }
 
   loginFromSession(options?: AuthOptions): Promise<void> {
