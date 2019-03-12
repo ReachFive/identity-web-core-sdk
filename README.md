@@ -4,7 +4,13 @@
 
 ## Documentation
 
-[developer.reach5.co](https://developer.reach5.co/api/identity-web/)
+- [Installation](https://developer.reach5.co/guides/installation/web/)
+- [API](https://developer.reach5.co/api/identity-web/)
+
+## Installation
+```sh
+npm install --save @reachfive/identity-core
+```
 
 ## NPM Publish
 
@@ -20,8 +26,3 @@ git push --follow-tags
 npm version prerelease --preid=alpha
 git push --follow-tags
 ```
-
-## Documentation
-
-- [Installation](https://developer.reach5.co/guides/installation/web/)
-- [API](https://developer.reach5.co/api/identity-web/)
