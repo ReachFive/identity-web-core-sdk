@@ -2,6 +2,10 @@
 
 # Reach5 Identity Web Core SDK
 
+## Documentation
+
+[developer.reach5.co](https://developer.reach5.co/api/identity-web/)
+
 ## NPM Publish
 
 It should respect https://semver.org/ versionning
