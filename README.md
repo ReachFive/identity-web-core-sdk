@@ -15,6 +15,7 @@ npm install --save @reachfive/identity-core
 ## NPM Publish
 
 It should respect https://semver.org/ versionning and update [CHANGELOG.md](CHANGELOG.md)
+it will be publish automaticaly by circleci
 
 ```sh
 npm version [<newversion> | major | minor | patch]
