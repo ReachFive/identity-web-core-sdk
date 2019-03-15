@@ -1,11 +1,17 @@
 # Changelog
 
-## <Version> - <Name>
+## 1.1.4 - Upgrade dependencies
 
-### <Date> ex: (15 Mars 2018)
-
-#### New features
+### 15 Mars 2019
 
 #### Fixes and improvements
+- Upgrade dependencies
+- Tslint
+- Remove yarn
 
-#### Breakings changes
+## 1.1.3 - Update password
+
+### 15 Mars 2019
+
+#### Fixes and improvements
+- Fix update password
