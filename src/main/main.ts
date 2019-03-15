@@ -37,7 +37,7 @@ export type Client = {
   getUser: (params: { accessToken: string; fields?: string }) => Promise<Profile>
   updateProfile: (params: { accessToken: string; data: Profile }) => Promise<void>
   updateEmail: (params: { accessToken: string; email: string }) => Promise<void>
-  updatePassword: (params: { accessToken?: string; password: string; oldPasssord?: string; userId?: string }) => Promise<void>
+  updatePassword: (params: { accessToken?: string; password: string; oldPassword?: string; userId?: string }) => Promise<void>
   updatePhoneNumber: (params: { accessToken: string; phoneNumber: string }) => Promise<void>
   verifyPhoneNumber: (params: { accessToken: string; phoneNumber: string; verificationCode: string }) => Promise<void>
   loginWithCustomToken: (params: { token: string; auth: AuthOptions }) => Promise<void>
@@ -122,7 +122,7 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.updateEmail(params))
   }
 
-  function updatePassword(params: { accessToken?: string, password: string, oldPasssord?: string, userId?: string }) {
+  function updatePassword(params: { accessToken?: string, password: string, oldPassword?: string, userId?: string }) {
     return apiClient.then(api => api.updatePassword(params))
   }
 

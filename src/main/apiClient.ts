@@ -341,7 +341,7 @@ export default class ApiClient {
     })
   }
 
-  updatePassword(params: { accessToken?: string, password: string, oldPasssord?: string, userId?: string }): Promise<void> {
+  updatePassword(params: { accessToken?: string, password: string, oldPassword?: string, userId?: string }): Promise<void> {
     const { accessToken, ...data } = params
     return this.http.post('/update-password', {
       body: { clientId: this.config.clientId, ...data },
