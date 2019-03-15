@@ -2,28 +2,16 @@
 
 # Reach5 Identity Web Core SDK
 
-## Documentation
-
-- [Installation](https://developer.reach5.co/guides/installation/web/)
-- [API](https://developer.reach5.co/api/identity-web/)
-
 ## Installation
+
+To get started with the SDK, install the dependency in your project:
+
 ```sh
 npm install --save @reachfive/identity-core
 ```
 
-## NPM Publish
+Refer to the [public documentation](https://developer.reach5.co/guides/installation/web) to see some examples and to configure the language.
 
-It should respect https://semver.org/ versionning and update [CHANGELOG.md](CHANGELOG.md)
-it will be publish automaticaly by circleci
+## Documentation
 
-```sh
-npm version [<newversion> | major | minor | patch]
-git push --follow-tags
-```
-
-## NPM Publish alpha version
-```sh
-npm version prerelease --preid=alpha
-git push --follow-tags
-```
+You'll find the API's documentation on https://developer.reach5.co/api/identity-web/.
