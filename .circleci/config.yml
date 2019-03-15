@@ -10,7 +10,7 @@ defaults: &defaults
     - image: circleci/node:10.15
 
 jobs:
-  build:
+  test:
     <<: *defaults
     steps:
       - checkout
@@ -28,9 +28,9 @@ jobs:
           paths:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
-
+      
+      - run: npm run tslint
       - run: npm test
-      - run: npm run build
     
       - persist_to_workspace:
           root: ~/repo
@@ -46,13 +46,30 @@ jobs:
         command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/repo/.npmrc
     - run:
         name: Publish package
-        command: npm publish --tag alpha.$CIRCLE_BUILD_NUM
+        command: npm publish --tag alpha
+  
+  deploy-release:
+    <<: *defaults
+    steps:
+    - attach_workspace:
+        at: ~/repo
+    - run:
+        name: Authenticate with registry
+        command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/repo/.npmrc
+    - run:
+        name: Publish package
+        command: npm publish
 
 workflows:
   version: 2
-  build-deploy:
+  npm-deploy:
     jobs:
-      - build
+      - test
       - deploy-alpha:
           requires:
-            - build
+            - test
+          filters:
+            tags:
+              only: /^v.*-alpha\.[0-9]/
+            branches:
+              ignore: /.*/
