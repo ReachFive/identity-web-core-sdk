@@ -66,7 +66,7 @@ export function createClient(config: ApiClientConfig) {
     return apiClient.then(api => api.updateEmail(params))
   }
 
-  function updatePassword(params: { accessToken?: string, password: string, oldPasssord?: string, userId?: string }) {
+  function updatePassword(params: { accessToken?: string, password: string, oldPassword?: string, userId?: string }) {
     return apiClient.then(api => api.updatePassword(params))
   }
 

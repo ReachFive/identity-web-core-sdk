@@ -323,7 +323,7 @@ export default class ApiClient {
     })
   }
 
-  updatePassword(params: { accessToken?: string, password: string, oldPasssord?: string, userId?: string }) {
+  updatePassword(params: { accessToken?: string, password: string, oldPassword?: string, userId?: string }) {
     const { accessToken, ...data } = params
     return this.requestPost(
       '/update-password',
