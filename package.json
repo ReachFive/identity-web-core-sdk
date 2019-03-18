@@ -40,7 +40,7 @@
   "jest": {
     "testURL": "http://localhost",
     "transform": {
-      "^.+\\.(j|t)sx?$": "ts-jest"
+      ".+\\.(j|t)sx?$": "ts-jest"
     },
     "transformIgnorePatterns": [
       "<rootDir>/node_modules/(?!lodash-es)"
@@ -56,7 +56,7 @@
     ],
     "globals": {
       "ts-jest": {
-        "tsConfig": "tsconfig.test.json",
+        "tsConfig": "<rootDir>/tsconfig.test.json",
         "babelConfig": false
       }
     }
