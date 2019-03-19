@@ -1,7 +1,5 @@
-# Reach5 Identity Web Core SDK
+# Reach5 Identity Web Core SDK (legacy)
 
-This compatibility branch should only contain `0.1.x` versions and mimicks the behavior of the historical <script> based API.
+This compatibility branch should mimicks the behavior of the historical <script> based API.
 
 For the up to date library, check the `master` branch.
-
-## How to use
