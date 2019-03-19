@@ -53,7 +53,10 @@ workflows:
   version: 2
   npm-deploy:
     jobs:
-      - test
+      - test:
+          filters:
+            tags:
+              only: /.*/
       - deploy-alpha:
           requires:
             - test
