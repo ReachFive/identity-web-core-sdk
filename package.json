@@ -33,7 +33,7 @@
   "scripts": {
     "build": "rollup -c",
     "watch": "rollup -c -w",
-    "test": "jest",
+    "test": "jest --runInBand",
     "watch:test": "jest --watch",
     "prepublish": "yarn build"
   },
