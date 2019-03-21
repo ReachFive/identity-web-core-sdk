@@ -1,4 +1,3 @@
-
 export type PopupSize = {
   width: number
   height: number

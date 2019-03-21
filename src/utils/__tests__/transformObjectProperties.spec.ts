@@ -1,4 +1,3 @@
-
 import {
   camelCaseProperties,
   snakeCaseProperties,

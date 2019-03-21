@@ -71,7 +71,7 @@ test('popup mode is ignored', async () => {
       email,
       password,
       auth: {
-        redirectUri: redirectUri,
+        redirectUri,
         popupMode: true
       }
     }

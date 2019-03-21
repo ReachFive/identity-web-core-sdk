@@ -51,7 +51,7 @@ test('with auth params', async () => {
       'provider': 'linkedin'
     })
   )
-});
+})
 
 test('with access token auth param', async () => {
   // Given

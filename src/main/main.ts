@@ -1,4 +1,3 @@
-import * as v from 'validation.ts'
 import { Profile, RemoteSettings, SessionInfo } from './models'
 import ApiClient, { LoginWithPasswordParams, PasswordlessParams, SignupParams } from './apiClient'
 import { AuthOptions } from './authOptions'
@@ -12,13 +11,11 @@ export { AuthResult } from './authResult'
 export { AuthOptions } from './authOptions'
 export { Profile, SessionInfo } from './models'
 
-const configValidator = v.object({
-  clientId: v.string,
-  domain: v.string,
-  language: v.optional(v.string)
-})
-
-export type Config = typeof configValidator.T
+interface Config {
+  clientId: string,
+  domain: string,
+  language?: string
+}
 
 export type Client = {
   on: <K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) => void
@@ -45,9 +42,16 @@ export type Client = {
   checkUrlFragment: (url: string) => boolean
 }
 
+function checkParam<T>(data: T, key: keyof T) {
+  const value = data[key]
+  if (value !== undefined && value !== null) {
+    throw new Error(`the reach5 creation config has errors: ${key} is not set`)
+  }
+}
+
 export function createClient(creationConfig: Config): Client {
-  configValidator.validate(creationConfig)
-    .mapError(err => { throw `the reach5 creation config has errors:\n${v.errorDebugString(err)}` })
+  checkParam(creationConfig, "clientId")
+  checkParam(creationConfig, "domain")
 
   const { domain, clientId, language } = creationConfig
 

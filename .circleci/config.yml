@@ -25,6 +25,7 @@ jobs:
           paths:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
+      - run: npm run tslint
       - run: npm run build
       - run: npm test
       - persist_to_workspace:

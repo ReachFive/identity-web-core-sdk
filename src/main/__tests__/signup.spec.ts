@@ -15,7 +15,7 @@ test('with default auth', async () => {
   const { api, clientId, domain } = createDefaultTestClient()
 
   const signupToken = 'signupToken'
-  
+
   const fetch1 = fetchMock.mockResponseOnce(
     JSON.stringify({
       id: '1234',
