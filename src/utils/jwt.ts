@@ -10,7 +10,7 @@ export interface IdTokenPayload {
   emailVerified?: boolean
   exp?: number
   familyName?: string
-  gender: Gender
+  gender?: Gender
   givenName?: string
   iat?: number
   iss?: string
