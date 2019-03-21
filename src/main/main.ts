@@ -44,7 +44,7 @@ export type Client = {
 
 function checkParam<T>(data: T, key: keyof T) {
   const value = data[key]
-  if (value !== undefined && value !== null) {
+  if (value === undefined && value === null) {
     throw new Error(`the reach5 creation config has errors: ${key} is not set`)
   }
 }
