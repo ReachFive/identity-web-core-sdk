@@ -11,7 +11,7 @@ export { AuthResult } from './authResult'
 export { AuthOptions } from './authOptions'
 export { Profile, SessionInfo } from './models'
 
-interface Config {
+export interface Config {
   clientId: string,
   domain: string,
   language?: string
