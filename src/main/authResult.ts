@@ -1,24 +1,20 @@
-import * as v from 'validation.ts'
-import { idTokenPayload, parseJwtTokenPayload } from '../utils/jwt'
+import { IdTokenPayload, parseJwtTokenPayload } from '../utils/jwt'
 import { logError } from '../utils/logger'
 
+export type TokenType = 'Bearer'
 
-export const authResult = v.object({
-  accessToken: v.optional(v.string),
-  expiresIn: v.optional(v.number),
-  tokenType: v.optional(v.literal('Bearer')),
-  idToken: v.optional(v.string),
-  idTokenPayload: v.optional(idTokenPayload),
-  code: v.optional(v.string),
-  state: v.optional(v.string)
-})
-
-export type AuthResult = typeof authResult.T
+export interface AuthResult {
+  accessToken?: string
+  expiresIn?: number
+  tokenType?: TokenType
+  idToken?: string
+  idTokenPayload?: IdTokenPayload
+  code?: string
+  state?: string
+}
 
 /**
  * Parse the id token, if present, and add the payload to the AuthResult
- * @param {AuthResult} response
- * @returns {AuthResult}
  */
 export function enrichAuthResult(response: AuthResult): AuthResult {
   if (response.idToken) {

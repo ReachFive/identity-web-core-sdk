@@ -41,7 +41,7 @@
     "prefer-method-signature": false,
     "no-irregular-whitespace": false,
     "semicolon": [true, "never"],
-    "array-type": [true, "array"],
+    "array-type": [false, "array"],
     "jsx-boolean-value": false,
     "no-unnecessary-callback-wrapper": false,
     "use-default-type-parameter": false,
@@ -79,6 +79,7 @@
     "return-undefined": false,
     "no-default-import": false,
     "prefer-template": false,
-    "no-namespace": false
+    "no-namespace": false,
+    "unnecessary-else": false
   }
 }

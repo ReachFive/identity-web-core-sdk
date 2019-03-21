@@ -68,13 +68,10 @@ export function createHttpClient(config: HttpConfig): HttpClient {
 
 /**
  * Low level HTTP client
- * @param {string} url
- * @param {RequestInit} fetchOptions
- * @returns {Promise<Data>}
  */
 export function rawRequest<Data>(url: string, fetchOptions?: RequestInit) {
   return fetch(url, fetchOptions).then(response => {
-    if (response.status != 204) {
+    if (response.status !== 204) {
       const dataP = response.json().then(camelCaseProperties) as any as Promise<Data>
       return response.ok ? dataP : dataP.then(data => Promise.reject(data))
     }

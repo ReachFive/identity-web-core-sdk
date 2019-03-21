@@ -26,5 +26,5 @@ test('loginFromSession', async () => {
       'redirect_uri': redirectUri,
       'prompt': 'none',
     })
-  );
-});
+  )
+})

@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.2.0
+
+### 21 Mars 2019
+
+#### Improvements
+- Remove validation.ts library
+- Fix tslint warnings
+
+#### Minors breaking changes
+- Error messages changes for sdk configuration
+
 ## v1.1.4
 
 ### 21 Mars 2019

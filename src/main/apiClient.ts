@@ -67,11 +67,9 @@ export default class ApiClient {
     }
     if ('cordova' in window) {
       return this.loginWithCordovaInAppBrowser(params)
-    }
-    else if (params.display === 'popup') {
+    } else if (params.display === 'popup') {
       return this.loginWithPopup(params)
-    }
-    else {
+    } else {
       return this.loginWithRedirect(params)
     }
   }
@@ -155,11 +153,9 @@ export default class ApiClient {
 
       if (maybeBrowserTab) {
         maybeBrowserTab.openUrl(url, () => {}, logError)
-      }
-      else if (window.cordova.InAppBrowser) {
+      } else if (window.cordova.InAppBrowser) {
         window.cordova.InAppBrowser.open(url, '_system')
-      }
-      else {
+      } else {
         throw new Error('Cordova plugin "inappbrowser" is required.')
       }
     })

@@ -23,7 +23,7 @@ export default class EventManager<EVENTS extends {}> {
     this.getListeners(name).push(listener)
   }
 
-  off<K extends keyof EVENTS>(name: K, listener: (data: EVENTS[K]) => void) {     
+  off<K extends keyof EVENTS>(name: K, listener: (data: EVENTS[K]) => void) {
     pull(this.getListeners(name), listener)
   }
 
