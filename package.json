@@ -1,10 +1,25 @@
 {
   "name": "@reachfive/identity-core",
   "version": "1.1.3",
+  "description": "Reach5 Identity Web Core SDK",
   "license": "MIT",
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/ReachFive/identity-web-core-sdk"
+  },
+  "author": "ReachFive",
   "main": "cjs/main.js",
   "module": "es/main.js",
   "types": "es/main/main.d.ts",
+  "scripts": {
+    "build": "rollup -c --environment BUILD:production",
+    "watch": "rollup -c -w",
+    "test": "jest",
+    "watch:test": "jest --watch",
+    "prepublishOnly": "npm run build",
+    "tslint": "tslint --format stylish --project tsconfig.json",
+    "tslint-fix": "npm run tslint -- --fix"
+  },
   "dependencies": {
     "lodash": "4.17.11",
     "validation.ts": "0.0.25",
@@ -31,15 +46,6 @@
     "es",
     "umd"
   ],
-  "scripts": {
-    "build": "rollup -c --environment BUILD:production",
-    "watch": "rollup -c -w",
-    "test": "jest",
-    "watch:test": "jest --watch",
-    "prepublishOnly": "npm run build",
-    "tslint": "tslint --format stylish --project tsconfig.json",
-    "tslint-fix": "npm run tslint -- --fix"
-  },
   "jest": {
     "testURL": "http://localhost",
     "transform": {
