@@ -22,7 +22,6 @@
   },
   "dependencies": {
     "lodash": "4.17.11",
-    "validation.ts": "0.0.25",
     "winchan": "0.2.1"
   },
   "devDependencies": {
@@ -39,7 +38,7 @@
     "ts-jest": "23.10.4",
     "tslib": "1.9.3",
     "tslint": "5.14.0",
-    "typescript": "3.3.3333"
+    "typescript": "3.3.4000"
   },
   "files": [
     "cjs",
