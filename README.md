@@ -1,6 +1,4 @@
-[![CircleCI](https://circleci.com/gh/ReachFive/identity-web-core-sdk/tree/master.svg?style=svg)](https://circleci.com/gh/ReachFive/identity-web-core-sdk/tree/master)
-
-[![npm](https://img.shields.io/npm/v/@reachfive/identity-core.svg?color=blue)](https://www.npmjs.com/package/@reachfive/identity-core)
+[![CircleCI](https://circleci.com/gh/ReachFive/identity-web-core-sdk/tree/master.svg?style=svg)](https://circleci.com/gh/ReachFive/identity-web-core-sdk/tree/master) [![npm](https://img.shields.io/npm/v/@reachfive/identity-core.svg?color=blue)](https://www.npmjs.com/package/@reachfive/identity-core)
 
 # ReachFive Identity Web Core SDK
 

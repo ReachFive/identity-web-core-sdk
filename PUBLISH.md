@@ -1,8 +1,10 @@
 # Guide for publication
 
-1. Describe the new features and bug fixes in the [CHANGELOG.md](CHANGELOG.md).
+1. Create a pull request named `Release vx.y.z` (add the Github tag `release`).
 
-2. Update the package's version with the command line below. It should respect the [semver](https://semver.org/) versioning.
+2. Describe the new features and bug fixes in the [CHANGELOG.md](CHANGELOG.md) file.
+
+3. Update the package's version with the command line below. It should respect the [semver](https://semver.org/) versioning.
 
     ```sh
     npm version [<newversion> | major | minor | patch]
@@ -16,13 +18,9 @@
 
     This commands will update the version in the [`package.json`](package.json) file and will create a new tag (eg: `v1.1.3`).
 
-3. Push the two latest commits.
+4. Submit your pull request.
 
-    ```sh
-    git push -u origin <branch_name>
-    ```
-
-    Push the new tag.
+5. Once the branch is merged into `master`, push the new tag.
    
     ```sh
     git push origin <tag_name> 
