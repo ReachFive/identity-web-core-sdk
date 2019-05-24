@@ -32,9 +32,7 @@ export function enrichAuthResult(response: AuthResult): AuthResult {
 }
 
 export namespace AuthResult {
-
   export function isAuthResult(thing: any): thing is AuthResult {
-    return thing && (thing.accessToken || thing.idToken)
+    return thing && (thing.accessToken || thing.idToken)
   }
-
 }

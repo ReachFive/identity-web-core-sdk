@@ -1,12 +1,9 @@
 import pull from 'lodash/pull'
 import { logError } from './logger'
 
-
 type Listeners<K extends keyof EVENTS, EVENTS> = Array<(data: EVENTS[K]) => void>
 
-
 export default class EventManager<EVENTS extends {}> {
-
   private listeners: { [K in keyof EVENTS]?: Listeners<K, EVENTS> } = {}
 
   fire<K extends keyof EVENTS>(name: K, data: EVENTS[K]) {

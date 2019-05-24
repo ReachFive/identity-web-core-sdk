@@ -9,7 +9,6 @@ beforeEach(() => {
 })
 
 test('simple', done => {
-
   const { api, clientId, domain } = createDefaultTestClient()
 
   const fetch1 = fetchMock.mockResponseOnce('', {
@@ -18,16 +17,15 @@ test('simple', done => {
 
   const email = 'john.doe@example.com'
 
-  api.requestPasswordReset({ email })
-    .then(_ => {
-      expect(fetch1).toHaveBeenCalledWith(`https://${domain}/identity/v1/forgot-password`, {
-        method: 'POST',
-        headers: headers.jsonAndDefaultLang,
-        body: JSON.stringify({
-          'client_id': clientId,
-          email
-        })
+  api.requestPasswordReset({ email }).then(_ => {
+    expect(fetch1).toHaveBeenCalledWith(`https://${domain}/identity/v1/forgot-password`, {
+      method: 'POST',
+      headers: headers.jsonAndDefaultLang,
+      body: JSON.stringify({
+        client_id: clientId,
+        email
       })
-      done()
     })
+    done()
+  })
 })

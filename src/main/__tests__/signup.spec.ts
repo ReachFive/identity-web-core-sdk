@@ -26,16 +26,16 @@ test('with default auth', async () => {
   let error = null
 
   // When
-  api.signup(
-    {
+  api
+    .signup({
       data: {
         givenName: 'John',
         familyName: 'Doe',
         email: 'john.doe@example.com',
         password: 'P@ssw0rd'
       }
-    }
-  ).catch(err => error = err)
+    })
+    .catch(err => (error = err))
 
   await delay(20)
 
@@ -46,23 +46,24 @@ test('with default auth', async () => {
     method: 'POST',
     headers: headers.jsonAndDefaultLang,
     body: JSON.stringify({
-      'client_id': clientId,
-      'data': {
-        'given_name': 'John',
-        'family_name': 'Doe',
-        'email': 'john.doe@example.com',
-        'password': 'P@ssw0rd'
+      client_id: clientId,
+      data: {
+        given_name: 'John',
+        family_name: 'Doe',
+        email: 'john.doe@example.com',
+        password: 'P@ssw0rd'
       }
     })
   })
   expect(window.location.assign).toHaveBeenCalledWith(
-    `https://${domain}/identity/v1/password/callback?` + toQueryString({
-      'client_id': clientId,
-      'response_type': 'token',
-      'scope': 'openid profile email phone',
-      'display': 'page',
-      'tkn': signupToken
-    })
+    `https://${domain}/identity/v1/password/callback?` +
+      toQueryString({
+        client_id: clientId,
+        response_type: 'token',
+        scope: 'openid profile email phone',
+        display: 'page',
+        tkn: signupToken
+      })
   )
 })
 
@@ -82,8 +83,8 @@ test('with auth param', async () => {
   let error = null
 
   // When
-  api.signup(
-    {
+  api
+    .signup({
       data: {
         email: 'john.doe@example.com',
         password: 'P@ssw0rd'
@@ -91,8 +92,8 @@ test('with auth param', async () => {
       auth: {
         redirectUri
       }
-    }
-  ).catch(err => error = err)
+    })
+    .catch(err => (error = err))
 
   await delay(20)
 
@@ -102,22 +103,23 @@ test('with auth param', async () => {
     method: 'POST',
     headers: headers.jsonAndDefaultLang,
     body: JSON.stringify({
-      'client_id': clientId,
-      'data': {
-        'email': 'john.doe@example.com',
-        'password': 'P@ssw0rd'
+      client_id: clientId,
+      data: {
+        email: 'john.doe@example.com',
+        password: 'P@ssw0rd'
       }
     })
   })
   expect(window.location.assign).toHaveBeenCalledWith(
-    `https://${domain}/identity/v1/password/callback?` + toQueryString({
-      'client_id': clientId,
-      'response_type': 'code',
-      'scope': 'openid profile email phone',
-      'display': 'page',
-      'redirect_uri': redirectUri,
-      'tkn': signupToken
-    })
+    `https://${domain}/identity/v1/password/callback?` +
+      toQueryString({
+        client_id: clientId,
+        response_type: 'code',
+        scope: 'openid profile email phone',
+        display: 'page',
+        redirect_uri: redirectUri,
+        tkn: signupToken
+      })
   )
 })
 
@@ -136,8 +138,8 @@ test('popup mode ignored', async () => {
   let error = null
 
   // When
-  api.signup(
-    {
+  api
+    .signup({
       data: {
         givenName: 'John',
         familyName: 'Doe',
@@ -147,21 +149,22 @@ test('popup mode ignored', async () => {
       auth: {
         popupMode: true
       }
-    }
-  ).catch(err => error = err)
+    })
+    .catch(err => (error = err))
 
   await delay(20)
 
   // Then
   expect(error).toBeNull()
   expect(window.location.assign).toHaveBeenCalledWith(
-    `https://${domain}/identity/v1/password/callback?` + toQueryString({
-      'client_id': clientId,
-      'response_type': 'token',
-      'scope': 'openid profile email phone',
-      'display': 'page', // Not popup
-      'tkn': signupToken
-    })
+    `https://${domain}/identity/v1/password/callback?` +
+      toQueryString({
+        client_id: clientId,
+        response_type: 'token',
+        scope: 'openid profile email phone',
+        display: 'page', // Not popup
+        tkn: signupToken
+      })
   )
 })
 
@@ -182,22 +185,25 @@ test('with user error', async () => {
     errorUsrMsg
   }
 
-  fetchMock.mockResponseOnce(JSON.stringify({
-    error: errorCode,
-    error_description: errorDescription,
-    error_usr_msg: errorUsrMsg
-  }), { status: 400 })
+  fetchMock.mockResponseOnce(
+    JSON.stringify({
+      error: errorCode,
+      error_description: errorDescription,
+      error_usr_msg: errorUsrMsg
+    }),
+    { status: 400 }
+  )
 
   // When
   let error = null
-  api.signup(
-    {
+  api
+    .signup({
       data: {
         email: 'john.doe@example.com',
         password: 'majefize'
       }
-    }
-  ).catch(err => error = err)
+    })
+    .catch(err => (error = err))
 
   await delay(1)
 
@@ -217,14 +223,14 @@ test('with unexpected error', async () => {
 
   // When
   let error = null
-  api.signup(
-    {
+  api
+    .signup({
       data: {
         email: 'john.doe@example.com',
         password: 'majefize'
       }
-    }
-  ).catch(err => error = err)
+    })
+    .catch(err => (error = err))
 
   await delay(1)
 

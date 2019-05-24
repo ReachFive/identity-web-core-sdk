@@ -1,5 +1,5 @@
-import { delay } from "../../utils/promise"
-import { toQueryString } from "../../utils/queryString"
+import { delay } from '../../utils/promise'
+import { toQueryString } from '../../utils/queryString'
 import winchanMocker from './winchanMocker'
 import fetchMock from 'jest-fetch-mock'
 import { createDefaultTestClient } from './testHelpers'
@@ -13,19 +13,20 @@ test('with default auth', async () => {
   const { api, clientId, domain } = createDefaultTestClient()
 
   let error = null
-  api.loginWithSocialProvider('google', {}).catch(err => error = err)
+  api.loginWithSocialProvider('google', {}).catch(err => (error = err))
 
   await delay(1)
 
   expect(error).toBeNull()
   expect(window.location.assign).toHaveBeenCalledWith(
-    `https://${domain}/oauth/authorize?` + toQueryString({
-      'client_id': clientId,
-      'response_type': 'token',
-      'scope': 'openid profile email phone',
-      'display': 'page',
-      'provider': 'google'
-    })
+    `https://${domain}/oauth/authorize?` +
+      toQueryString({
+        client_id: clientId,
+        response_type: 'token',
+        scope: 'openid profile email phone',
+        display: 'page',
+        provider: 'google'
+      })
   )
 })
 
@@ -36,20 +37,21 @@ test('with auth params', async () => {
 
   const redirectUri = 'http://mysite.com/login/callback'
 
-  api.loginWithSocialProvider('linkedin', { redirectUri }).catch(err => error = err)
+  api.loginWithSocialProvider('linkedin', { redirectUri }).catch(err => (error = err))
 
   await delay(1)
 
   expect(error).toBeNull()
   expect(window.location.assign).toHaveBeenCalledWith(
-    `https://${domain}/oauth/authorize?` + toQueryString({
-      'client_id': clientId,
-      'response_type': 'code',
-      'scope': 'openid profile email phone',
-      'display': 'page',
-      'redirect_uri': redirectUri,
-      'provider': 'linkedin'
-    })
+    `https://${domain}/oauth/authorize?` +
+      toQueryString({
+        client_id: clientId,
+        response_type: 'code',
+        scope: 'openid profile email phone',
+        display: 'page',
+        redirect_uri: redirectUri,
+        provider: 'linkedin'
+      })
   )
 })
 
@@ -61,21 +63,22 @@ test('with access token auth param', async () => {
 
   // When
   let error = null
-  api.loginWithSocialProvider('paypal', { accessToken }).catch(err => error = err)
+  api.loginWithSocialProvider('paypal', { accessToken }).catch(err => (error = err))
 
   await delay(1)
 
   // Then
   expect(error).toBeNull()
   expect(window.location.assign).toHaveBeenCalledWith(
-    `https://${domain}/oauth/authorize?` + toQueryString({
-      'client_id': clientId,
-      'response_type': 'token',
-      'scope': 'openid profile email phone',
-      'display': 'page',
-      'access_token': accessToken,
-      'provider': 'paypal'
-    })
+    `https://${domain}/oauth/authorize?` +
+      toQueryString({
+        client_id: clientId,
+        response_type: 'token',
+        scope: 'openid profile email phone',
+        display: 'page',
+        access_token: accessToken,
+        provider: 'paypal'
+      })
   )
 })
 
@@ -83,7 +86,8 @@ test('with popup mode', async () => {
   // Given
   const { api, clientId, domain } = createDefaultTestClient()
 
-  const idToken = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.Pd6t82tPL3EZdkeYxw_DV2KimE1U2FvuLHmfR_mimJ5US3JFU4J2Gd94O7rwpSTGN1B9h-_lsTebo4ua4xHsTtmczZ9xa8a_kWKaSkqFjNFaFp6zcoD6ivCu03SlRqsQzSRHXo6TKbnqOt9D6Y2rNa3C4igSwoS0jUE4BgpXbc0'
+  const idToken =
+    'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.Pd6t82tPL3EZdkeYxw_DV2KimE1U2FvuLHmfR_mimJ5US3JFU4J2Gd94O7rwpSTGN1B9h-_lsTebo4ua4xHsTtmczZ9xa8a_kWKaSkqFjNFaFp6zcoD6ivCu03SlRqsQzSRHXo6TKbnqOt9D6Y2rNa3C4igSwoS0jUE4BgpXbc0'
   const accessToken = 'kjbsdfljndvlksndfv'
   const expiresIn = 1800
   const tokenType = 'Bearer'
@@ -103,20 +107,22 @@ test('with popup mode', async () => {
 
   // When
   let error = null
-  await api.loginWithSocialProvider('facebook', { popupMode: true }).catch(err => error = err)
+  await api.loginWithSocialProvider('facebook', { popupMode: true }).catch(err => (error = err))
 
   await delay(1)
 
   // Then
   expect(error).toBeNull()
   expect(winchanMocker.receivedParams).toEqual({
-    url: `https://${domain}/oauth/authorize?` + toQueryString({
-      'client_id': clientId,
-      'response_type': 'token',
-      'scope': 'openid profile email phone',
-      'display': 'popup',
-      'provider': 'facebook'
-    }),
+    url:
+      `https://${domain}/oauth/authorize?` +
+      toQueryString({
+        client_id: clientId,
+        response_type: 'token',
+        scope: 'openid profile email phone',
+        display: 'popup',
+        provider: 'facebook'
+      }),
     relay_url: `https://${domain}/popup/relay`,
     window_features: 'menubar=0,toolbar=0,resizable=1,scrollbars=1,width=0,height=0,top=0,left=0'
   })
@@ -156,7 +162,7 @@ test('with popup mode with expected failure', async () => {
 
   // When
   let error = null
-  await api.loginWithSocialProvider('facebook', { popupMode: true }).catch(err => error = err)
+  await api.loginWithSocialProvider('facebook', { popupMode: true }).catch(err => (error = err))
 
   await delay(1)
 
@@ -185,7 +191,7 @@ test('with popup mode with unexpected failure', async () => {
 
   // When
   let error = null
-  await api.loginWithSocialProvider('facebook', { popupMode: true }).catch(err => error = err)
+  await api.loginWithSocialProvider('facebook', { popupMode: true }).catch(err => (error = err))
 
   await delay(1)
 

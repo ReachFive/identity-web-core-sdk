@@ -3,19 +3,19 @@ import EventManager from '../utils/eventManager'
 import { ErrorResponse, Profile } from './models'
 
 export type Events = {
-  'authenticated': AuthResult
-  'profile_updated': Partial<Profile>
-  'authentication_failed': ErrorResponse
-  'login_failed': ErrorResponse
-  'signup_failed': ErrorResponse
+  authenticated: AuthResult
+  profile_updated: Partial<Profile>
+  authentication_failed: ErrorResponse
+  login_failed: ErrorResponse
+  signup_failed: ErrorResponse
 }
 
 /**
  * Event manager dedicated to Identity SDK events
  */
 export type IdentityEventManager = {
-  on: <K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) => void;
-  off: <K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) => void;
+  on: <K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) => void
+  off: <K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) => void
   fireEvent: <K extends keyof Events>(eventName: K, data: Events[K]) => void
 }
 

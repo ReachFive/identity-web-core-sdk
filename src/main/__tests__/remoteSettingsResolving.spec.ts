@@ -1,5 +1,5 @@
 import { createTestClient, headers } from './testHelpers'
-import fetchMock from "jest-fetch-mock"
+import fetchMock from 'jest-fetch-mock'
 
 beforeEach(() => {
   window.fetch = fetchMock
@@ -14,17 +14,22 @@ test('remote settings language has priority over transmitted language', async ()
   const actualLanguage = 'en'
   const accessToken = 'W8ub2c0Lm1lIiwic3ViIjoiQVdYMmdFeWswOTB'
 
-  const api = createTestClient({
-    clientId,
-    domain,
-    language: submittedLanguage
-  }, {
-    language: actualLanguage
-  })
+  const api = createTestClient(
+    {
+      clientId,
+      domain,
+      language: submittedLanguage
+    },
+    {
+      language: actualLanguage
+    }
+  )
 
-  const passwordLoginCall = fetchMock.mockResponseOnce(JSON.stringify({
-    name: 'John Doe'
-  }))
+  const passwordLoginCall = fetchMock.mockResponseOnce(
+    JSON.stringify({
+      name: 'John Doe'
+    })
+  )
 
   // When
   await api.getUser({

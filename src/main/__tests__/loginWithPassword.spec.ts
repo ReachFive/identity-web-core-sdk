@@ -19,13 +19,15 @@ test('with default auth', async () => {
 
   const passwordToken = 'password_token'
 
-  const passwordLoginCall = fetchMock.mockResponseOnce(JSON.stringify({
-    tkn: passwordToken
-  }))
+  const passwordLoginCall = fetchMock.mockResponseOnce(
+    JSON.stringify({
+      tkn: passwordToken
+    })
+  )
 
   // When
   let error = null
-  api.loginWithPassword({ email, password }).catch(err => error = err)
+  api.loginWithPassword({ email, password }).catch(err => (error = err))
 
   await delay(1)
 
@@ -39,13 +41,14 @@ test('with default auth', async () => {
   })
 
   expect(window.location.assign).toHaveBeenCalledWith(
-    `https://${domain}/identity/v1/password/callback?` + toQueryString({
-      'client_id': clientId,
-      'response_type': 'token',
-      'scope': 'openid profile email phone',
-      'display': 'page',
-      'tkn': passwordToken
-    })
+    `https://${domain}/identity/v1/password/callback?` +
+      toQueryString({
+        client_id: clientId,
+        response_type: 'token',
+        scope: 'openid profile email phone',
+        display: 'page',
+        tkn: passwordToken
+      })
   )
 })
 
@@ -59,37 +62,40 @@ test('popup mode is ignored', async () => {
   const passwordToken = 'password_token_2'
   const redirectUri = 'http://mysite.com/login/callback'
 
-  fetchMock.mockResponseOnce(JSON.stringify({
-    tkn: passwordToken
-  }))
+  fetchMock.mockResponseOnce(
+    JSON.stringify({
+      tkn: passwordToken
+    })
+  )
 
   // When
   let error = null
 
-  api.loginWithPassword(
-    {
+  api
+    .loginWithPassword({
       email,
       password,
       auth: {
         redirectUri,
         popupMode: true
       }
-    }
-  ).catch(err => error = err)
+    })
+    .catch(err => (error = err))
 
   await delay(1)
 
   // Then
   expect(error).toBeNull()
   expect(window.location.assign).toHaveBeenCalledWith(
-    `https://${domain}/identity/v1/password/callback?` + toQueryString({
-      'client_id': clientId,
-      'response_type': 'code',
-      'scope': 'openid profile email phone',
-      'display': 'page',
-      'redirect_uri': redirectUri,
-      'tkn': passwordToken
-    })
+    `https://${domain}/identity/v1/password/callback?` +
+      toQueryString({
+        client_id: clientId,
+        response_type: 'code',
+        scope: 'openid profile email phone',
+        display: 'page',
+        redirect_uri: redirectUri,
+        tkn: passwordToken
+      })
   )
 })
 
@@ -102,23 +108,25 @@ test('with default auth', async () => {
 
   const passwordToken = 'password_token'
 
-  const passwordLoginCall = fetchMock.mockResponseOnce(JSON.stringify({
-    tkn: passwordToken
-  }))
+  const passwordLoginCall = fetchMock.mockResponseOnce(
+    JSON.stringify({
+      tkn: passwordToken
+    })
+  )
 
   // When
   let error = null
 
-  api.loginWithPassword(
-    {
+  api
+    .loginWithPassword({
       email,
       password,
       auth: {
         fetchBasicProfile: false,
         scope: ['openid', 'email']
       }
-    }
-  ).catch(err => error = err)
+    })
+    .catch(err => (error = err))
 
   await delay(1)
 
@@ -132,13 +140,14 @@ test('with default auth', async () => {
   })
 
   expect(window.location.assign).toHaveBeenCalledWith(
-    `https://${domain}/identity/v1/password/callback?` + toQueryString({
-      'client_id': clientId,
-      'response_type': 'token',
-      'scope': 'openid email',
-      'display': 'page',
-      'tkn': passwordToken
-    })
+    `https://${domain}/identity/v1/password/callback?` +
+      toQueryString({
+        client_id: clientId,
+        response_type: 'token',
+        scope: 'openid email',
+        display: 'page',
+        tkn: passwordToken
+      })
   )
 })
 
@@ -155,20 +164,23 @@ test('with user error', async () => {
     errorUsrMsg: 'Invalid email or password'
   }
 
-  fetchMock.mockResponseOnce(JSON.stringify({
-    'error': 'invalid_grant',
-    'error_description': 'Invalid email or password',
-    'error_usr_msg': 'Invalid email or password'
-  }), { status: 400 })
+  fetchMock.mockResponseOnce(
+    JSON.stringify({
+      error: 'invalid_grant',
+      error_description: 'Invalid email or password',
+      error_usr_msg: 'Invalid email or password'
+    }),
+    { status: 400 }
+  )
 
   // When
   let error = null
-  api.loginWithPassword(
-    {
+  api
+    .loginWithPassword({
       email: 'john.doe@example.com',
       password: 'majefize'
-    }
-  ).catch(err => error = err)
+    })
+    .catch(err => (error = err))
 
   await delay(1)
 

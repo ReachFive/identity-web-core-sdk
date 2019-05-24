@@ -54,7 +54,7 @@ export function resolveScope(opts: AuthOptions = {}): string {
   return uniq([
     ...(fetchBasicProfile ? ['openid', 'profile', 'email', 'phone'] : []),
     ...(opts.requireRefreshToken ? ['offline_access'] : []),
-    ...parseScope(opts.scope),
+    ...parseScope(opts.scope)
   ]).join(' ')
 }
 
@@ -65,7 +65,10 @@ export function resolveScope(opts: AuthOptions = {}): string {
  * @param acceptPopupMode
  *    Indicates if the popup mode is allowed (depends on the type of authentication or context)
  */
-export function prepareAuthOptions(opts: AuthOptions = {}, { acceptPopupMode = false }: { acceptPopupMode?: boolean } = {}): AuthParameters {
+export function prepareAuthOptions(
+  opts: AuthOptions = {},
+  { acceptPopupMode = false }: { acceptPopupMode?: boolean } = {}
+): AuthParameters {
   return {
     responseType: opts.redirectUri ? 'code' : 'token',
     scope: resolveScope(opts),
@@ -81,8 +84,8 @@ export function prepareAuthOptions(opts: AuthOptions = {}, { acceptPopupMode = f
       'idTokenHint',
       'loginHint',
       'accessToken',
-      'acceptTos',
-    ]),
+      'acceptTos'
+    ])
   }
 }
 

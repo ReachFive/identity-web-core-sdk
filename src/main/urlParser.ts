@@ -17,7 +17,7 @@ export type UrlParser = {
   /**
    * Parse the URL fragment, and return the corresponding authentication response if exists.
    */
-  parseUrlFragment(url?: string): (AuthResult | ErrorResponse | undefined)
+  parseUrlFragment(url?: string): AuthResult | ErrorResponse | undefined
 }
 
 export default function createUrlParser(eventManager: IdentityEventManager): UrlParser {
@@ -35,15 +35,13 @@ export default function createUrlParser(eventManager: IdentityEventManager): Url
       return false
     },
 
-    parseUrlFragment(url: string = ''): AuthResult | ErrorResponse | undefined {
+    parseUrlFragment(url: string = ''): AuthResult | ErrorResponse | undefined {
       const separatorIndex = url.indexOf('#')
 
       if (separatorIndex >= 0) {
         const parsed = parseQueryString(url.substr(separatorIndex + 1))
 
-        const expiresIn = parsed.expiresIn
-          ? parseInt(parsed.expiresIn, 10)
-          : undefined
+        const expiresIn = parsed.expiresIn ? parseInt(parsed.expiresIn, 10) : undefined
 
         if (AuthResult.isAuthResult(parsed)) {
           return {
@@ -52,9 +50,7 @@ export default function createUrlParser(eventManager: IdentityEventManager): Url
           }
         }
 
-        return ErrorResponse.isErrorResponse(parsed)
-          ? parsed
-          : undefined
+        return ErrorResponse.isErrorResponse(parsed) ? parsed : undefined
       }
 
       return undefined

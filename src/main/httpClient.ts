@@ -35,24 +35,16 @@ export function createHttpClient(config: HttpConfig): HttpClient {
   }
 
   function request<Data>(path: string, params: RequestParams): Promise<Data> {
-    const {
-      method = 'GET',
-      query = {},
-      body,
-      accessToken = null,
-      withCookies = false
-    } = params
+    const { method = 'GET', query = {}, body, accessToken = null, withCookies = false } = params
 
-    const fullPath = query && !isEmpty(query)
-      ? `${path}?${toQueryString(query)}`
-      : path
+    const fullPath = query && !isEmpty(query) ? `${path}?${toQueryString(query)}` : path
 
     const url = fullPath.startsWith('http') ? fullPath : config.baseUrl + fullPath
 
     const fetchOptions: RequestInit = {
       method,
       headers: {
-        ...(accessToken && { 'Authorization': 'Bearer ' + accessToken }),
+        ...(accessToken && { Authorization: 'Bearer ' + accessToken }),
         ...(config.language && { 'Accept-Language': config.language }),
         ...(body && { 'Content-Type': 'application/json;charset=UTF-8' })
       },
@@ -72,9 +64,9 @@ export function createHttpClient(config: HttpConfig): HttpClient {
 export function rawRequest<Data>(url: string, fetchOptions?: RequestInit) {
   return fetch(url, fetchOptions).then(response => {
     if (response.status !== 204) {
-      const dataP = response.json().then(camelCaseProperties) as any as Promise<Data>
+      const dataP = (response.json().then(camelCaseProperties) as any) as Promise<Data>
       return response.ok ? dataP : dataP.then(data => Promise.reject(data))
     }
-    return undefined as any as Data
+    return (undefined as any) as Data
   })
 }

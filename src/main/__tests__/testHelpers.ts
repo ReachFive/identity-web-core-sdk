@@ -1,9 +1,8 @@
-import fetchMock from "jest-fetch-mock"
+import fetchMock from 'jest-fetch-mock'
 import { Config, createClient } from '../main'
 import { RemoteSettings } from '../models'
 
 export function createDefaultTestClient(remoteSettings: Partial<RemoteSettings> = {}) {
-
   const actualRemoteSettings = {
     sso: false,
     language: 'en',
@@ -20,7 +19,6 @@ export function createDefaultTestClient(remoteSettings: Partial<RemoteSettings> 
 }
 
 export function createTestClient(config: Config, remoteSettings: Partial<RemoteSettings> = {}) {
-
   const actualRemoteSettings = {
     sso: false,
     language: config.language,
@@ -39,7 +37,7 @@ export function createTestClient(config: Config, remoteSettings: Partial<RemoteS
 const jsonHeader = { 'Content-Type': 'application/json;charset=UTF-8' }
 const langHeader = (lang: string) => ({ 'Accept-Language': lang })
 const defaultLangHeader = langHeader('en')
-const accessTokenHeader = (token: string) => ({ 'Authorization': `Bearer ${token}` })
+const accessTokenHeader = (token: string) => ({ Authorization: `Bearer ${token}` })
 
 export const headers = {
   json: jsonHeader,

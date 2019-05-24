@@ -8,7 +8,6 @@ import { delay } from '../../utils/promise'
 import createEventManager from '../identityEventManager'
 import createUrlParser from '../urlParser'
 
-
 const clientId = 'zdfuh'
 const domain = 'local.reach5.net'
 
@@ -39,26 +38,32 @@ describe('getSessionInfo', () => {
   test('basic', async () => {
     const { client } = createServices({ sso: true })
 
-    const sessionInfoCall = fetchMock.mockResponseOnce(JSON.stringify({
-      'name': 'John Doe',
-      'email': 'john.doe@example.com',
-      'last_login_type': 'password',
-      'is_authenticated': true,
-      'has_password': true,
-      'social_providers': []
-    }))
+    const sessionInfoCall = fetchMock.mockResponseOnce(
+      JSON.stringify({
+        name: 'John Doe',
+        email: 'john.doe@example.com',
+        last_login_type: 'password',
+        is_authenticated: true,
+        has_password: true,
+        social_providers: []
+      })
+    )
 
     // When
     const result = await client.getSessionInfo()
 
     // Then
-    expect(sessionInfoCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/sso/data?` + toQueryString({
-      'client_id': clientId
-    }), {
+    expect(sessionInfoCall).toHaveBeenCalledWith(
+      `https://${domain}/identity/v1/sso/data?` +
+        toQueryString({
+          client_id: clientId
+        }),
+      {
         method: 'GET',
         headers: {},
         credentials: 'include'
-      })
+      }
+    )
 
     expect(result).toEqual({
       name: 'John Doe',
@@ -84,14 +89,15 @@ describe('loginFromSession', () => {
 
     // Then
     expect(window.location.assign).toHaveBeenCalledWith(
-      `https://${domain}/oauth/authorize?` + toQueryString({
-        'client_id': clientId,
-        'response_type': 'token',
-        'scope': 'openid profile email phone',
-        'display': 'page',
-        'id_token_hint': idTokenHint,
-        'prompt': 'none'
-      })
+      `https://${domain}/oauth/authorize?` +
+        toQueryString({
+          client_id: clientId,
+          response_type: 'token',
+          scope: 'openid profile email phone',
+          display: 'page',
+          id_token_hint: idTokenHint,
+          prompt: 'none'
+        })
     )
   })
 
@@ -109,15 +115,16 @@ describe('loginFromSession', () => {
 
     // Then
     expect(window.location.assign).toHaveBeenCalledWith(
-      `https://${domain}/oauth/authorize?` + toQueryString({
-        'client_id': clientId,
-        'response_type': 'code',
-        'scope': 'openid profile email phone',
-        'display': 'page',
-        'redirect_uri': redirectUri,
-        'id_token_hint': idTokenHint,
-        'prompt': 'none'
-      })
+      `https://${domain}/oauth/authorize?` +
+        toQueryString({
+          client_id: clientId,
+          response_type: 'code',
+          scope: 'openid profile email phone',
+          display: 'page',
+          redirect_uri: redirectUri,
+          id_token_hint: idTokenHint,
+          prompt: 'none'
+        })
     )
   })
 
@@ -130,13 +137,14 @@ describe('loginFromSession', () => {
 
     // Then
     expect(window.location.assign).toHaveBeenCalledWith(
-      `https://${domain}/oauth/authorize?` + toQueryString({
-        'client_id': clientId,
-        'response_type': 'token',
-        'scope': 'openid profile email phone',
-        'display': 'page',
-        'prompt': 'none'
-      })
+      `https://${domain}/oauth/authorize?` +
+        toQueryString({
+          client_id: clientId,
+          response_type: 'token',
+          scope: 'openid profile email phone',
+          display: 'page',
+          prompt: 'none'
+        })
     )
   })
 
@@ -168,27 +176,28 @@ describe('loginFromSession', () => {
 
     // Then
     expect(window.location.assign).toHaveBeenCalledWith(
-      `https://${domain}/oauth/authorize?` + toQueryString({
-        'client_id': clientId,
-        'response_type': 'token',
-        'scope': 'openid profile email phone',
-        'display': 'page',
-        'id_token_hint': idTokenHint,
-        'prompt': 'none'
-      })
+      `https://${domain}/oauth/authorize?` +
+        toQueryString({
+          client_id: clientId,
+          response_type: 'token',
+          scope: 'openid profile email phone',
+          display: 'page',
+          id_token_hint: idTokenHint,
+          prompt: 'none'
+        })
     )
   })
 })
 
 describe('parseUrlFragment', () => {
-
   test('with success url', async () => {
     expect.assertions(3)
 
     // Given
     const { eventManager, urlParser } = createServices()
 
-    const idToken = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.Pd6t82tPL3EZdkeYxw_DV2KimE1U2FvuLHmfR_mimJ5US3JFU4J2Gd94O7rwpSTGN1B9h-_lsTebo4ua4xHsTtmczZ9xa8a_kWKaSkqFjNFaFp6zcoD6ivCu03SlRqsQzSRHXo6TKbnqOt9D6Y2rNa3C4igSwoS0jUE4BgpXbc0'
+    const idToken =
+      'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.Pd6t82tPL3EZdkeYxw_DV2KimE1U2FvuLHmfR_mimJ5US3JFU4J2Gd94O7rwpSTGN1B9h-_lsTebo4ua4xHsTtmczZ9xa8a_kWKaSkqFjNFaFp6zcoD6ivCu03SlRqsQzSRHXo6TKbnqOt9D6Y2rNa3C4igSwoS0jUE4BgpXbc0'
     const accessToken = 'kjbsdfljndvlksndfv'
     const expiresIn = 1800
     const tokenType = 'Bearer'
@@ -200,12 +209,15 @@ describe('parseUrlFragment', () => {
     eventManager.on('authentication_failed', authenticationFailedHandler)
 
     // When
-    const result = urlParser.checkUrlFragment('https://example.com/login/callback#' + [
-      `id_token=${idToken}`,
-      `access_token=${accessToken}`,
-      `expires_in=${expiresIn}`,
-      `token_type=${tokenType}`
-    ].join('&'))
+    const result = urlParser.checkUrlFragment(
+      'https://example.com/login/callback#' +
+        [
+          `id_token=${idToken}`,
+          `access_token=${accessToken}`,
+          `expires_in=${expiresIn}`,
+          `token_type=${tokenType}`
+        ].join('&')
+    )
 
     await delay(1)
 
@@ -241,11 +253,10 @@ describe('parseUrlFragment', () => {
     eventManager.on('authentication_failed', authenticationFailedHandler)
 
     // When
-    const result = urlParser.checkUrlFragment('https://example.com/login/callback#' + [
-      `error=${error}`,
-      `error_description=${errorDescription}`,
-      `error_usr_msg=${errorUsrMsg}`
-    ].join('&'))
+    const result = urlParser.checkUrlFragment(
+      'https://example.com/login/callback#' +
+        [`error=${error}`, `error_description=${errorDescription}`, `error_usr_msg=${errorUsrMsg}`].join('&')
+    )
 
     await delay(1)
 
