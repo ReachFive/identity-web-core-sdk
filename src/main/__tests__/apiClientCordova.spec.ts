@@ -29,7 +29,7 @@ function apiClientAndEventManager() {
 beforeEach(() => {
   window.fetch = fetchMock
   window.location.assign = jest.fn() as any
-  ; (window as any).cordova = {}
+  (window as any).cordova = {}
   delete window.handleOpenURL
   fetchMock.resetMocks()
 })
