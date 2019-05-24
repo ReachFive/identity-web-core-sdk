@@ -65,7 +65,7 @@ describe('checkSession', () => {
             response_type: 'token',
             scope: 'openid profile email phone',
             display: 'page',
-            nonce: nonce,
+            nonce,
             response_mode: 'web_message',
             prompt: 'none'
           })

@@ -29,7 +29,7 @@ function apiClientAndEventManager() {
 beforeEach(() => {
   window.fetch = fetchMock
   window.location.assign = jest.fn() as any
-  ;(window as any).cordova = {}
+  ; (window as any).cordova = {}
   delete window.handleOpenURL
   fetchMock.resetMocks()
 })
@@ -82,8 +82,8 @@ describe('signup', () => {
         client_id: clientId,
         scope: 'openid profile email phone',
         data: {
-          email: email,
-          password: password,
+          email,
+          password,
           given_name: givenName,
           family_name: familyName
         }
@@ -151,10 +151,10 @@ describe('signup', () => {
       body: JSON.stringify({
         client_id: clientId,
         scope: 'openid profile email phone',
-        origin: origin,
+        origin,
         data: {
-          email: email,
-          password: password,
+          email,
+          password,
           given_name: givenName,
           family_name: familyName
         }
