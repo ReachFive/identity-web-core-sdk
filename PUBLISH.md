@@ -1,6 +1,6 @@
 # Guide for publication
 
-1. Describe the new features and bug fixes in the [CHANGELOG.md](CHANGELOG.md).
+1. Describe the new features and bug fixes in the [CHANGELOG.md](CHANGELOG.md). Don't forget to create a pull request.
 
 2. Update the package's version with the command line below. It should only be `0.1.0-alpha.x` versions.
 
@@ -13,7 +13,7 @@
 3. Push the two latest commits.
 
     ```sh
-    git push -u origin <branch_name>
+    git push -u origin legacy
     ```
 
     Push the new tag.
