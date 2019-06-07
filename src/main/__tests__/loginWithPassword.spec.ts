@@ -9,10 +9,7 @@ import { delay } from '../../lib/promise'
 const clientId = 'myclientid'
 
 function coreApi() {
-  return createClient({
-    clientId: clientId,
-    domain: 'local.reach5.net'
-  })
+  return createClient({ clientId: clientId, domain: 'local.reach5.net' })
 }
 
 beforeEach(() => {
@@ -20,7 +17,7 @@ beforeEach(() => {
   window.location.assign = jest.fn()
 })
 
-test('with default auth', async () => {
+test('Login with default auth config (email/password)', async () => {
   // Given
   const api = coreApi()
 
@@ -28,10 +25,7 @@ test('with default auth', async () => {
   const password = 'izDf8£Zd'
 
   const passwordToken = 'password_token'
-
-  const passwordLoginCall = fetchMock.mockResponseOnce(JSON.stringify({
-    tkn: passwordToken
-  }))
+  const passwordLoginCall = fetchMock.mockResponseOnce(JSON.stringify({ tkn: passwordToken }))
 
   // When
   let error = null
@@ -59,7 +53,43 @@ test('with default auth', async () => {
   )
 })
 
-test('popup mode is ignored', async () => {
+test('Login with default auth config (phone/password)', async () => {
+  // Given
+  const api = coreApi()
+
+  const phoneNumber = '+33761331332'
+  const password = 'izDf8£Zd'
+
+  const passwordToken = 'password_token'
+  const passwordLoginCall = fetchMock.mockResponseOnce(JSON.stringify({ tkn: passwordToken }))
+
+  // When
+  let error = null
+  api.loginWithPassword({ phoneNumber, password }).catch(err => error = err)
+
+  await delay(1)
+
+  // Then
+  expect(error).toBeNull()
+
+  expect(passwordLoginCall).toHaveBeenCalledWith('https://local.reach5.net/identity/v1/password/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+    body: `{"client_id":"${clientId}","phone_number":"${phoneNumber}","password":"${password}"}`
+  })
+
+  expect(window.location.assign).toHaveBeenCalledWith(
+    'https://local.reach5.net/identity/v1/password/callback?' + toQueryString({
+      'client_id': clientId,
+      'response_type': 'token',
+      'scope': 'openid profile email phone',
+      'display': 'page',
+      'tkn': passwordToken
+    })
+  )
+})
+
+test('Login with popup mode (email/password)', async () => {
   // Given
   const api = coreApi()
 
@@ -69,9 +99,7 @@ test('popup mode is ignored', async () => {
   const passwordToken = 'password_token_2'
   const redirectUri = 'http://mysite.com/login/callback'
 
-  fetchMock.mockResponseOnce(JSON.stringify({
-    tkn: passwordToken
-  }))
+  fetchMock.mockResponseOnce(JSON.stringify({ tkn: passwordToken }))
 
   // When
   let error = null
@@ -103,7 +131,7 @@ test('popup mode is ignored', async () => {
   )
 })
 
-test('with default auth', async () => {
+test('Login with default auth (email/password)', async () => {
   // Given
   const api = coreApi()
 
@@ -111,10 +139,7 @@ test('with default auth', async () => {
   const password = 'izDf8£Zd'
 
   const passwordToken = 'password_token'
-
-  const passwordLoginCall = fetchMock.mockResponseOnce(JSON.stringify({
-    tkn: passwordToken
-  }))
+  const passwordLoginCall = fetchMock.mockResponseOnce(JSON.stringify({ tkn: passwordToken }))
 
   // When
   let error = null
@@ -152,7 +177,7 @@ test('with default auth', async () => {
   )
 })
 
-test('with user error', async () => {
+test('Don\'t login if the password is wrong (email/password)', async () => {
   // Given
   const api = coreApi()
 
@@ -173,12 +198,41 @@ test('with user error', async () => {
 
   // When
   let error = null
-  api.loginWithPassword(
-    {
-      email: 'john.doe@example.com',
-      password: 'majefize'
-    }
-  ).catch(err => error = err)
+  api
+    .loginWithPassword({ email: 'john.doe@example.com', password: 'majefize' })
+    .catch(err => error = err)
+
+  await delay(1)
+
+  // Then
+  expect(error).toEqual(expectedError)
+  expect(loginFailedHandler).toHaveBeenCalledWith(expectedError)
+})
+
+test('Don\'t login if the password is wrong (phone number/password)', async () => {
+  // Given
+  const api = coreApi()
+
+  const loginFailedHandler = jest.fn()
+  api.on('login_failed', loginFailedHandler)
+
+  const expectedError = {
+    error: 'invalid_grant',
+    errorDescription: 'Invalid phone number or password',
+    errorUsrMsg: 'Invalid phone_number or password'
+  }
+
+  fetchMock.mockResponseOnce(JSON.stringify({
+    'error': 'invalid_grant',
+    'error_description': 'Invalid phone number or password',
+    'error_usr_msg': 'Invalid phone_number or password'
+  }), { status: 400 })
+
+  // When
+  let error = null
+  api
+    .loginWithPassword({ phoneNumber: '+33761331332', password: 'kfjlrjfr' })
+    .catch(err => error = err)
 
   await delay(1)
 
