@@ -192,7 +192,7 @@ test('Don\'t login if the password is wrong (email/password)', async () => {
   // When
   let error = null
   api
-    .loginWithPassword( { email: 'john.doe@example.com', password: 'majefize' } )
+    .loginWithPassword({ email: 'john.doe@example.com', password: 'majefize' })
     .catch(err => error = err)
 
   await delay(1)
@@ -224,7 +224,7 @@ test('Don\'t login if the password is wrong (phone number/password)', async () =
   // When
   let error = null
   api
-    .loginWithPassword( { phoneNumber: '+33761331332', password: 'majefize' } )
+    .loginWithPassword({ phoneNumber: '+33761331332', password: 'majefize' })
     .catch(err => error = err)
 
   await delay(1)

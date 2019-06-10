@@ -432,6 +432,6 @@ export default class ApiClient {
   }
 }
 
-function hasLoggedWithEmail (params: LoginWithPasswordParams): params is EmailLoginWithPasswordParams {
-  return Boolean((<EmailLoginWithPasswordParams>params).email)
+function hasLoggedWithEmail(params: LoginWithPasswordParams): params is EmailLoginWithPasswordParams {
+  return Boolean((params as EmailLoginWithPasswordParams).email)
 }
