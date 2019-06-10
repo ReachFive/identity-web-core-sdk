@@ -15,7 +15,10 @@ import { createHttpClient, HttpClient } from './httpClient'
 
 export type SignupParams = { data: Profile, auth?: AuthOptions }
 
-export type LoginWithPasswordParams = { email: string, password: string, auth?: AuthOptions }
+type EmailLoginWithPasswordParams = { email: string, password: string, auth?: AuthOptions }
+type PhoneNumberLoginWithPasswordParams = { phoneNumber: string, password: string, auth?: AuthOptions }
+
+export type LoginWithPasswordParams = EmailLoginWithPasswordParams | PhoneNumberLoginWithPasswordParams
 
 export type PasswordlessParams = { authType: 'magic_link' | 'sms', email?: string, phoneNumber?: string }
 
@@ -233,13 +236,15 @@ export default class ApiClient {
     })
   }
 
-  private loginWithPasswordByOAuth({ email, password, auth }: LoginWithPasswordParams): Promise<void> {
+  private loginWithPasswordByOAuth(params: LoginWithPasswordParams): Promise<void> {
+    const auth = params.auth
+
     return this.http.post<AuthResult>(this.tokenUrl, {
       body: {
         clientId: this.config.clientId,
         grantType: 'password',
-        username: email,
-        password,
+        username: hasLoggedWithEmail(params) ? params.email : params.phoneNumber,
+        password: params.password,
         scope: resolveScope(auth),
         ...(pick(auth, 'origin'))
       }
@@ -425,4 +430,8 @@ export default class ApiClient {
       ...prepareAuthOptions(opts, { acceptPopupMode })
     }
   }
+}
+
+function hasLoggedWithEmail (params: LoginWithPasswordParams): params is EmailLoginWithPasswordParams {
+  return Boolean((<EmailLoginWithPasswordParams>params).email)
 }
