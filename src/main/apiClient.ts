@@ -15,12 +15,12 @@ import { createHttpClient, HttpClient } from './httpClient'
 
 export type SignupParams = { data: Profile; auth?: AuthOptions }
 
-type EmailLoginWithPasswordParams = { email: string, password: string, auth?: AuthOptions }
-type PhoneNumberLoginWithPasswordParams = { phoneNumber: string, password: string, auth?: AuthOptions }
+type EmailLoginWithPasswordParams = { email: string; password: string; auth?: AuthOptions }
+type PhoneNumberLoginWithPasswordParams = { phoneNumber: string; password: string; auth?: AuthOptions }
 
 export type LoginWithPasswordParams = EmailLoginWithPasswordParams | PhoneNumberLoginWithPasswordParams
 
-export type PasswordlessParams = { authType: 'magic_link' | 'sms', email?: string, phoneNumber?: string }
+export type PasswordlessParams = { authType: 'magic_link' | 'sms'; email?: string; phoneNumber?: string }
 
 export type ApiClientConfig = {
   clientId: string
@@ -243,16 +243,18 @@ export default class ApiClient {
   private loginWithPasswordByOAuth(params: LoginWithPasswordParams): Promise<void> {
     const auth = params.auth
 
-    return this.http.post<AuthResult>(this.tokenUrl, {
-      body: {
-        clientId: this.config.clientId,
-        grantType: 'password',
-        username: hasLoggedWithEmail(params) ? params.email : params.phoneNumber,
-        password: params.password,
-        scope: resolveScope(auth),
-        ...(pick(auth, 'origin'))
-      }
-    }).then(result => this.eventManager.fireEvent('authenticated', result))
+    return this.http
+      .post<AuthResult>(this.tokenUrl, {
+        body: {
+          clientId: this.config.clientId,
+          grantType: 'password',
+          username: hasLoggedWithEmail(params) ? params.email : params.phoneNumber,
+          password: params.password,
+          scope: resolveScope(auth),
+          ...pick(auth, 'origin')
+        }
+      })
+      .then(result => this.eventManager.fireEvent('authenticated', result))
   }
 
   private loginWithPasswordByRedirect({ auth = {}, ...rest }: LoginWithPasswordParams): Promise<void> {
@@ -456,5 +458,5 @@ export default class ApiClient {
 }
 
 function hasLoggedWithEmail(params: LoginWithPasswordParams): params is EmailLoginWithPasswordParams {
-  return ((params as EmailLoginWithPasswordParams).email) !== undefined
+  return (params as EmailLoginWithPasswordParams).email !== undefined
 }

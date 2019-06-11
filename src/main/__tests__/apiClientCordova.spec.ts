@@ -313,17 +313,20 @@ describe('loginWithPassword', async () => {
     const authenticatedHandler = jest.fn()
     eventManager.on('authenticated', authenticatedHandler)
 
-    const idToken = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.Pd6t82tPL3EZdkeYxw_DV2KimE1U2FvuLHmfR_mimJ5US3JFU4J2Gd94O7rwpSTGN1B9h-_lsTebo4ua4xHsTtmczZ9xa8a_kWKaSkqFjNFaFp6zcoD6ivCu03SlRqsQzSRHXo6TKbnqOt9D6Y2rNa3C4igSwoS0jUE4BgpXbc0'
+    const idToken =
+      'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.Pd6t82tPL3EZdkeYxw_DV2KimE1U2FvuLHmfR_mimJ5US3JFU4J2Gd94O7rwpSTGN1B9h-_lsTebo4ua4xHsTtmczZ9xa8a_kWKaSkqFjNFaFp6zcoD6ivCu03SlRqsQzSRHXo6TKbnqOt9D6Y2rNa3C4igSwoS0jUE4BgpXbc0'
     const accessToken = 'kjbsdfljndvlksndfv'
     const expiresIn = 1800
     const tokenType = 'Bearer'
 
-    const passwordLoginCall = fetchMock.mockResponseOnce(JSON.stringify({
-      'id_token': idToken,
-      'access_token': accessToken,
-      'expires_in': expiresIn,
-      'token_type': tokenType
-    }))
+    const passwordLoginCall = fetchMock.mockResponseOnce(
+      JSON.stringify({
+        id_token: idToken,
+        access_token: accessToken,
+        expires_in: expiresIn,
+        token_type: tokenType
+      })
+    )
 
     // When
     await client.loginWithPassword({ phoneNumber, password })

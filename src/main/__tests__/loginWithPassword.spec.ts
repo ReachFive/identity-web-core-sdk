@@ -59,7 +59,7 @@ test('with default auth config (phone/password)', async () => {
 
   // When
   let error = null
-  api.loginWithPassword({ phoneNumber, password }).catch(err => error = err)
+  api.loginWithPassword({ phoneNumber, password }).catch(err => (error = err))
 
   await delay(1)
 
@@ -73,13 +73,14 @@ test('with default auth config (phone/password)', async () => {
   })
 
   expect(window.location.assign).toHaveBeenCalledWith(
-    `https://${domain}/identity/v1/password/callback?` + toQueryString({
-      'client_id': clientId,
-      'response_type': 'token',
-      'scope': 'openid profile email phone',
-      'display': 'page',
-      'tkn': passwordToken
-    })
+    `https://${domain}/identity/v1/password/callback?` +
+      toQueryString({
+        client_id: clientId,
+        response_type: 'token',
+        scope: 'openid profile email phone',
+        display: 'page',
+        tkn: passwordToken
+      })
   )
 })
 
@@ -197,9 +198,7 @@ test('with error if the password is wrong (email/password)', async () => {
 
   // When
   let error = null
-  api
-    .loginWithPassword({ email: 'john.doe@example.com', password: 'majefize' })
-    .catch(err => error = err)
+  api.loginWithPassword({ email: 'john.doe@example.com', password: 'majefize' }).catch(err => (error = err))
 
   await delay(1)
 
@@ -221,17 +220,18 @@ test('with error if the password is wrong (phone number/password)', async () => 
     errorUsrMsg: 'Invalid phone number or password'
   }
 
-  fetchMock.mockResponseOnce(JSON.stringify({
-    'error': 'invalid_grant',
-    'error_description': 'Invalid phone number or password',
-    'error_usr_msg': 'Invalid phone number or password'
-  }), { status: 400 })
+  fetchMock.mockResponseOnce(
+    JSON.stringify({
+      error: 'invalid_grant',
+      error_description: 'Invalid phone number or password',
+      error_usr_msg: 'Invalid phone number or password'
+    }),
+    { status: 400 }
+  )
 
   // When
   let error = null
-  api
-    .loginWithPassword({ phoneNumber: '+33761331332', password: 'majefize' })
-    .catch(err => error = err)
+  api.loginWithPassword({ phoneNumber: '+33761331332', password: 'majefize' }).catch(err => (error = err))
 
   await delay(1)
 
