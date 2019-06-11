@@ -240,7 +240,7 @@ describe('signup', () => {
 })
 
 describe('loginWithPassword', async () => {
-  test('with default auth', async () => {
+  test('with default auth (email/password)', async () => {
     expect.assertions(2)
 
     // Given
@@ -265,13 +265,9 @@ describe('loginWithPassword', async () => {
     }))
 
     // When
-    await client.loginWithPassword({
-      email,
-      password
-    })
+    await client.loginWithPassword({ email, password })
 
     // Then
-
     expect(passwordLoginCall).toHaveBeenCalledWith(`https://${domain}/oauth/token`, {
       method: 'POST',
       headers: headers.jsonAndDefaultLang,
@@ -279,6 +275,58 @@ describe('loginWithPassword', async () => {
         client_id: clientId,
         grant_type: 'password',
         username: email,
+        password,
+        scope: 'openid profile email phone'
+      })
+    })
+
+    expect(authenticatedHandler).toHaveBeenCalledWith({
+      idToken,
+      idTokenPayload: {
+        sub: '1234567890',
+        name: 'John Doe'
+      },
+      accessToken,
+      expiresIn,
+      tokenType
+    })
+  })
+
+  test('with default auth (phone/password)', async () => {
+    expect.assertions(2)
+
+    // Given
+    const { client, eventManager } = apiClientAndEventManager()
+
+    const phoneNumber = '+336523601342'
+    const password = 'izDf8£Zd'
+
+    const authenticatedHandler = jest.fn()
+    eventManager.on('authenticated', authenticatedHandler)
+
+    const idToken = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.Pd6t82tPL3EZdkeYxw_DV2KimE1U2FvuLHmfR_mimJ5US3JFU4J2Gd94O7rwpSTGN1B9h-_lsTebo4ua4xHsTtmczZ9xa8a_kWKaSkqFjNFaFp6zcoD6ivCu03SlRqsQzSRHXo6TKbnqOt9D6Y2rNa3C4igSwoS0jUE4BgpXbc0'
+    const accessToken = 'kjbsdfljndvlksndfv'
+    const expiresIn = 1800
+    const tokenType = 'Bearer'
+
+    const passwordLoginCall = fetchMock.mockResponseOnce(JSON.stringify({
+      'id_token': idToken,
+      'access_token': accessToken,
+      'expires_in': expiresIn,
+      'token_type': tokenType
+    }))
+
+    // When
+    await client.loginWithPassword({ phoneNumber, password })
+
+    // Then
+    expect(passwordLoginCall).toHaveBeenCalledWith(`https://${domain}/oauth/token`, {
+      method: 'POST',
+      headers: headers.jsonAndDefaultLang,
+      body: JSON.stringify({
+        client_id: clientId,
+        grant_type: 'password',
+        username: phoneNumber,
         password,
         scope: 'openid profile email phone'
       })
@@ -330,7 +378,6 @@ describe('loginWithPassword', async () => {
     })
 
     // Then
-
     expect(passwordLoginCall).toHaveBeenCalledWith(`https://${domain}/oauth/token`, {
       method: 'POST',
       headers: headers.jsonAndDefaultLang,
