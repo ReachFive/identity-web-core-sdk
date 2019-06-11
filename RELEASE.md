@@ -1,8 +1,10 @@
 # Guide for publication
 
-1. Describe the new features and bug fixes in the [CHANGELOG.md](CHANGELOG.md). Don't forget to create a pull request.
+1. Create a pull request named `Release v0.1.0-alpha.x` (add the Github tag `release`).
 
-2. Update the package's version with the command line below. It should only be `0.1.0-alpha.x` versions.
+2. Describe the new features and bug fixes in the [CHANGELOG.md](CHANGELOG.md).
+
+3. Update the package's version with the command line below. It should only be `0.1.0-alpha.x` versions.
 
     ```sh
     npm version prerelease --preid=alpha
@@ -10,13 +12,9 @@
 
     This commands will update the version in the [`package.json`](package.json) file and will create a new tag (eg: `v0.1.0-alpha.15`).
 
-3. Push the two latest commits.
+4. Submit your pull request.
 
-    ```sh
-    git push -u origin legacy
-    ```
-
-    Push the new tag.
+5. Once the branch is merged into `legacy`, push the new tag.
    
     ```sh
     git push origin <tag_name> 
