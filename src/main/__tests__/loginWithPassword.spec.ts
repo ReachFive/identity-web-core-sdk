@@ -17,7 +17,7 @@ beforeEach(() => {
   window.location.assign = jest.fn()
 })
 
-test('Login with default auth config (email/password)', async () => {
+test('with default auth config (email/password)', async () => {
   // Given
   const api = coreApi()
 
@@ -53,7 +53,7 @@ test('Login with default auth config (email/password)', async () => {
   )
 })
 
-test('Login with default auth config (phone/password)', async () => {
+test('with default auth config (phone/password)', async () => {
   // Given
   const api = coreApi()
 
@@ -89,7 +89,7 @@ test('Login with default auth config (phone/password)', async () => {
   )
 })
 
-test('Login with popup mode (email/password)', async () => {
+test('with popup mode (email/password)', async () => {
   // Given
   const api = coreApi()
 
@@ -131,7 +131,7 @@ test('Login with popup mode (email/password)', async () => {
   )
 })
 
-test('Login with default auth (email/password)', async () => {
+test('with default auth (email/password)', async () => {
   // Given
   const api = coreApi()
 
@@ -177,7 +177,7 @@ test('Login with default auth (email/password)', async () => {
   )
 })
 
-test('Don\'t login if the password is wrong (email/password)', async () => {
+test('with error if the password is wrong (email/password)', async () => {
   // Given
   const api = coreApi()
 
@@ -209,7 +209,7 @@ test('Don\'t login if the password is wrong (email/password)', async () => {
   expect(loginFailedHandler).toHaveBeenCalledWith(expectedError)
 })
 
-test('Don\'t login if the password is wrong (phone number/password)', async () => {
+test('with error if the password is wrong (phone number/password)', async () => {
   // Given
   const api = coreApi()
 
