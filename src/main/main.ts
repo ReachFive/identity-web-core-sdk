@@ -12,8 +12,8 @@ export { AuthOptions } from './authOptions'
 export { Profile, SessionInfo } from './models'
 
 export interface Config {
-  clientId: string,
-  domain: string,
+  clientId: string
+  domain: string
   language?: string
 }
 
@@ -34,7 +34,12 @@ export type Client = {
   getUser: (params: { accessToken: string; fields?: string }) => Promise<Profile>
   updateProfile: (params: { accessToken: string; data: Profile }) => Promise<void>
   updateEmail: (params: { accessToken: string; email: string }) => Promise<void>
-  updatePassword: (params: { accessToken?: string; password: string; oldPassword?: string; userId?: string }) => Promise<void>
+  updatePassword: (params: {
+    accessToken?: string
+    password: string
+    oldPassword?: string
+    userId?: string
+  }) => Promise<void>
   updatePhoneNumber: (params: { accessToken: string; phoneNumber: string }) => Promise<void>
   verifyPhoneNumber: (params: { accessToken: string; phoneNumber: string; verificationCode: string }) => Promise<void>
   loginWithCustomToken: (params: { token: string; auth: AuthOptions }) => Promise<void>
@@ -50,8 +55,8 @@ function checkParam<T>(data: T, key: keyof T) {
 }
 
 export function createClient(creationConfig: Config): Client {
-  checkParam(creationConfig, "clientId")
-  checkParam(creationConfig, "domain")
+  checkParam(creationConfig, 'clientId')
+  checkParam(creationConfig, 'domain')
 
   const { domain, clientId, language } = creationConfig
 
@@ -60,15 +65,17 @@ export function createClient(creationConfig: Config): Client {
 
   const apiClient = rawRequest<RemoteSettings>(
     `https://${domain}/identity/v1/config?${toQueryString({ clientId, lang: language })}`
-  ).then(remoteConfig => new ApiClient({
-    config: {
-      ...creationConfig,
-      ...remoteConfig
-    },
-    eventManager,
-    urlParser
-  }))
-
+  ).then(
+    remoteConfig =>
+      new ApiClient({
+        config: {
+          ...creationConfig,
+          ...remoteConfig
+        },
+        eventManager,
+        urlParser
+      })
+  )
 
   function signup(params: SignupParams) {
     return apiClient.then(api => api.signup(params))
@@ -94,7 +101,7 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.requestPasswordReset(params))
   }
 
-  function unlink(params: { accessToken: string, identityId: string, fields?: string }) {
+  function unlink(params: { accessToken: string; identityId: string; fields?: string }) {
     return apiClient.then(api => api.unlink(params))
   }
 
@@ -114,31 +121,31 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.logout(params))
   }
 
-  function getUser(params: { accessToken: string, fields?: string }) {
+  function getUser(params: { accessToken: string; fields?: string }) {
     return apiClient.then(api => api.getUser(params))
   }
 
-  function updateProfile(params: { accessToken: string, data: Profile }) {
+  function updateProfile(params: { accessToken: string; data: Profile }) {
     return apiClient.then(api => api.updateProfile(params))
   }
 
-  function updateEmail(params: { accessToken: string, email: string }) {
+  function updateEmail(params: { accessToken: string; email: string }) {
     return apiClient.then(api => api.updateEmail(params))
   }
 
-  function updatePassword(params: { accessToken?: string, password: string, oldPassword?: string, userId?: string }) {
+  function updatePassword(params: { accessToken?: string; password: string; oldPassword?: string; userId?: string }) {
     return apiClient.then(api => api.updatePassword(params))
   }
 
-  function updatePhoneNumber(params: { accessToken: string, phoneNumber: string }) {
+  function updatePhoneNumber(params: { accessToken: string; phoneNumber: string }) {
     return apiClient.then(api => api.updatePhoneNumber(params))
   }
 
-  function verifyPhoneNumber(params: { accessToken: string, phoneNumber: string, verificationCode: string }) {
+  function verifyPhoneNumber(params: { accessToken: string; phoneNumber: string; verificationCode: string }) {
     return apiClient.then(api => api.verifyPhoneNumber(params))
   }
 
-  function loginWithCustomToken(params: { token: string, auth: AuthOptions }) {
+  function loginWithCustomToken(params: { token: string; auth: AuthOptions }) {
     return apiClient.then(api => api.loginWithCustomToken(params))
   }
 

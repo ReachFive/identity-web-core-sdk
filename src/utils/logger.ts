@@ -1,4 +1,3 @@
-
 export function log(msg: string) {
   if (window.console && window.console.log) window.console.log(msg)
 }

@@ -29,5 +29,4 @@ class WinChanMocker {
   }
 }
 
-
 export default new WinChanMocker()

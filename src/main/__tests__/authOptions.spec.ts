@@ -15,9 +15,11 @@ describe('prepareAuthOptions', () => {
   })
 
   test('with redirect uri', () => {
-    expect(prepareAuthOptions({
-      redirectUri: 'https://localhost/login.callback'
-    })).toEqual({
+    expect(
+      prepareAuthOptions({
+        redirectUri: 'https://localhost/login.callback'
+      })
+    ).toEqual({
       display: 'page',
       responseType: 'code',
       scope: 'openid profile email phone',
@@ -31,12 +33,16 @@ describe('prepareAuthOptions', () => {
       responseType: 'token',
       scope: 'openid profile email phone address'
     }
-    expect(prepareAuthOptions({
-      scope: ['address']
-    })).toEqual(result)
-    expect(prepareAuthOptions({
-      scope: 'address'
-    })).toEqual(result)
+    expect(
+      prepareAuthOptions({
+        scope: ['address']
+      })
+    ).toEqual(result)
+    expect(
+      prepareAuthOptions({
+        scope: 'address'
+      })
+    ).toEqual(result)
   })
 
   test('with specific scope', () => {
@@ -45,14 +51,18 @@ describe('prepareAuthOptions', () => {
       responseType: 'token',
       scope: 'openid profile'
     }
-    expect(prepareAuthOptions({
-      fetchBasicProfile: false,
-      scope: ['openid', 'profile']
-    })).toEqual(result)
-    expect(prepareAuthOptions({
-      fetchBasicProfile: false,
-      scope: 'openid profile'
-    })).toEqual(result)
+    expect(
+      prepareAuthOptions({
+        fetchBasicProfile: false,
+        scope: ['openid', 'profile']
+      })
+    ).toEqual(result)
+    expect(
+      prepareAuthOptions({
+        fetchBasicProfile: false,
+        scope: 'openid profile'
+      })
+    ).toEqual(result)
   })
 
   test('popup mode when accepted', () => {
@@ -72,9 +82,11 @@ describe('prepareAuthOptions', () => {
   })
 
   test('with refresh token required', () => {
-    expect(prepareAuthOptions({
-      requireRefreshToken: true
-    })).toEqual({
+    expect(
+      prepareAuthOptions({
+        requireRefreshToken: true
+      })
+    ).toEqual({
       display: 'page',
       responseType: 'token',
       scope: 'openid profile email phone offline_access'

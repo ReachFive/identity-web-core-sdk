@@ -13,7 +13,7 @@ export type SessionInfo = {
  * This type represents the settings of a ReachFive account's stored in the backend.
  */
 export type RemoteSettings = {
-  sso: boolean,
+  sso: boolean
   language: string
 }
 
@@ -31,9 +31,7 @@ export type FieldError = {
 }
 
 export namespace ErrorResponse {
-
   export function isErrorResponse(thing: any): thing is ErrorResponse {
     return thing && thing.error
   }
-
 }

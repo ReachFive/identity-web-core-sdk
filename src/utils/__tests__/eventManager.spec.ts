@@ -1,10 +1,9 @@
 import EventManager from '../eventManager'
 
 describe('EventManager', () => {
-
   test('can add and remove a listener', () => {
     type Events = {
-      myEvent: number,
+      myEvent: number
       myEvent2: number
     }
 
@@ -27,9 +26,8 @@ describe('EventManager', () => {
     expect(handler).toHaveBeenCalledTimes(2)
     expect(handler).toHaveBeenCalledWith(2)
 
-
     // Wrong handler
-    em.off('myEvent', function() { })
+    em.off('myEvent', function() {})
 
     em.fire('myEvent', 3)
 
@@ -43,5 +41,4 @@ describe('EventManager', () => {
 
     expect(handler).toHaveBeenCalledTimes(3)
   })
-
 })

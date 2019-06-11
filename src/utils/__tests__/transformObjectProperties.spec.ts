@@ -1,67 +1,55 @@
-import {
-  camelCaseProperties,
-  snakeCaseProperties,
-  camelCasePath,
-  snakeCasePath
-} from '../transformObjectProperties'
-
+import { camelCaseProperties, snakeCaseProperties, camelCasePath, snakeCasePath } from '../transformObjectProperties'
 
 const snakeCaseObject = {
-  'given_name': 'Robert',
-  'family_name': 'De Niro',
-  'age': 73,
-  'address': {
-    'street_address': 'Sunset Blvd',
-    'locality': 'Los Angeles',
-    'postal_code': 'CA 90028',
-    'country': 'United States'
+  given_name: 'Robert',
+  family_name: 'De Niro',
+  age: 73,
+  address: {
+    street_address: 'Sunset Blvd',
+    locality: 'Los Angeles',
+    postal_code: 'CA 90028',
+    country: 'United States'
   },
-  'phone_number': '+1 (123) 123-4567',
-  'friends': [
+  phone_number: '+1 (123) 123-4567',
+  friends: [
     {
-      'given_name': 'Martin',
-      'family_name': 'Scorsese',
+      given_name: 'Martin',
+      family_name: 'Scorsese'
     },
     {
-      'given_name': 'Al',
-      'family_name': 'Pacino',
+      given_name: 'Al',
+      family_name: 'Pacino'
     }
   ],
-  'tags': [
-    'actor',
-    'american'
-  ],
-  'is_alive': true,
-  'test3': true
+  tags: ['actor', 'american'],
+  is_alive: true,
+  test3: true
 }
 
 const camelCaseObject = {
-  'givenName': 'Robert',
-  'familyName': 'De Niro',
-  'age': 73,
-  'address': {
-    'streetAddress': 'Sunset Blvd',
-    'locality': 'Los Angeles',
-    'postalCode': 'CA 90028',
-    'country': 'United States'
+  givenName: 'Robert',
+  familyName: 'De Niro',
+  age: 73,
+  address: {
+    streetAddress: 'Sunset Blvd',
+    locality: 'Los Angeles',
+    postalCode: 'CA 90028',
+    country: 'United States'
   },
-  'phoneNumber': '+1 (123) 123-4567',
-  'friends': [
+  phoneNumber: '+1 (123) 123-4567',
+  friends: [
     {
-      'givenName': 'Martin',
-      'familyName': 'Scorsese',
+      givenName: 'Martin',
+      familyName: 'Scorsese'
     },
     {
-      'givenName': 'Al',
-      'familyName': 'Pacino',
+      givenName: 'Al',
+      familyName: 'Pacino'
     }
   ],
-  'tags': [
-    'actor',
-    'american'
-  ],
-  'isAlive': true,
-  'test3': true
+  tags: ['actor', 'american'],
+  isAlive: true,
+  test3: true
 }
 
 describe('camelCaseProperties', () => {

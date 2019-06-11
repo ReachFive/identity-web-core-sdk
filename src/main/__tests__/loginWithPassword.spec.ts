@@ -22,7 +22,7 @@ test('with default auth config (email/password)', async () => {
 
   // When
   let error = null
-  api.loginWithPassword({ email, password }).catch(err => error = err)
+  api.loginWithPassword({ email, password }).catch(err => (error = err))
 
   await delay(1)
 
@@ -36,13 +36,14 @@ test('with default auth config (email/password)', async () => {
   })
 
   expect(window.location.assign).toHaveBeenCalledWith(
-    `https://${domain}/identity/v1/password/callback?` + toQueryString({
-      'client_id': clientId,
-      'response_type': 'token',
-      'scope': 'openid profile email phone',
-      'display': 'page',
-      'tkn': passwordToken
-    })
+    `https://${domain}/identity/v1/password/callback?` +
+      toQueryString({
+        client_id: clientId,
+        response_type: 'token',
+        scope: 'openid profile email phone',
+        display: 'page',
+        tkn: passwordToken
+      })
   )
 })
 
@@ -58,7 +59,7 @@ test('with default auth config (phone/password)', async () => {
 
   // When
   let error = null
-  api.loginWithPassword({ phoneNumber, password }).catch(err => error = err)
+  api.loginWithPassword({ phoneNumber, password }).catch(err => (error = err))
 
   await delay(1)
 
@@ -72,13 +73,14 @@ test('with default auth config (phone/password)', async () => {
   })
 
   expect(window.location.assign).toHaveBeenCalledWith(
-    `https://${domain}/identity/v1/password/callback?` + toQueryString({
-      'client_id': clientId,
-      'response_type': 'token',
-      'scope': 'openid profile email phone',
-      'display': 'page',
-      'tkn': passwordToken
-    })
+    `https://${domain}/identity/v1/password/callback?` +
+      toQueryString({
+        client_id: clientId,
+        response_type: 'token',
+        scope: 'openid profile email phone',
+        display: 'page',
+        tkn: passwordToken
+      })
   )
 })
 
@@ -97,30 +99,31 @@ test('with popup mode (email/password)', async () => {
   // When
   let error = null
 
-  api.loginWithPassword(
-    {
+  api
+    .loginWithPassword({
       email,
       password,
       auth: {
         redirectUri,
         popupMode: true
       }
-    }
-  ).catch(err => error = err)
+    })
+    .catch(err => (error = err))
 
   await delay(1)
 
   // Then
   expect(error).toBeNull()
   expect(window.location.assign).toHaveBeenCalledWith(
-    `https://${domain}/identity/v1/password/callback?` + toQueryString({
-      'client_id': clientId,
-      'response_type': 'code',
-      'scope': 'openid profile email phone',
-      'display': 'page',
-      'redirect_uri': redirectUri,
-      'tkn': passwordToken
-    })
+    `https://${domain}/identity/v1/password/callback?` +
+      toQueryString({
+        client_id: clientId,
+        response_type: 'code',
+        scope: 'openid profile email phone',
+        display: 'page',
+        redirect_uri: redirectUri,
+        tkn: passwordToken
+      })
   )
 })
 
@@ -137,16 +140,16 @@ test('with default auth (email/password)', async () => {
   // When
   let error = null
 
-  api.loginWithPassword(
-    {
+  api
+    .loginWithPassword({
       email,
       password,
       auth: {
         fetchBasicProfile: false,
         scope: ['openid', 'email']
       }
-    }
-  ).catch(err => error = err)
+    })
+    .catch(err => (error = err))
 
   await delay(1)
 
@@ -160,13 +163,14 @@ test('with default auth (email/password)', async () => {
   })
 
   expect(window.location.assign).toHaveBeenCalledWith(
-    `https://${domain}/identity/v1/password/callback?` + toQueryString({
-      'client_id': clientId,
-      'response_type': 'token',
-      'scope': 'openid email',
-      'display': 'page',
-      'tkn': passwordToken
-    })
+    `https://${domain}/identity/v1/password/callback?` +
+      toQueryString({
+        client_id: clientId,
+        response_type: 'token',
+        scope: 'openid email',
+        display: 'page',
+        tkn: passwordToken
+      })
   )
 })
 
@@ -183,17 +187,18 @@ test('with error if the password is wrong (email/password)', async () => {
     errorUsrMsg: 'Invalid email or password'
   }
 
-  fetchMock.mockResponseOnce(JSON.stringify({
-    'error': 'invalid_grant',
-    'error_description': 'Invalid email or password',
-    'error_usr_msg': 'Invalid email or password'
-  }), { status: 400 })
+  fetchMock.mockResponseOnce(
+    JSON.stringify({
+      error: 'invalid_grant',
+      error_description: 'Invalid email or password',
+      error_usr_msg: 'Invalid email or password'
+    }),
+    { status: 400 }
+  )
 
   // When
   let error = null
-  api
-    .loginWithPassword({ email: 'john.doe@example.com', password: 'majefize' })
-    .catch(err => error = err)
+  api.loginWithPassword({ email: 'john.doe@example.com', password: 'majefize' }).catch(err => (error = err))
 
   await delay(1)
 
@@ -215,17 +220,18 @@ test('with error if the password is wrong (phone number/password)', async () => 
     errorUsrMsg: 'Invalid phone number or password'
   }
 
-  fetchMock.mockResponseOnce(JSON.stringify({
-    'error': 'invalid_grant',
-    'error_description': 'Invalid phone number or password',
-    'error_usr_msg': 'Invalid phone number or password'
-  }), { status: 400 })
+  fetchMock.mockResponseOnce(
+    JSON.stringify({
+      error: 'invalid_grant',
+      error_description: 'Invalid phone number or password',
+      error_usr_msg: 'Invalid phone number or password'
+    }),
+    { status: 400 }
+  )
 
   // When
   let error = null
-  api
-    .loginWithPassword({ phoneNumber: '+33761331332', password: 'majefize' })
-    .catch(err => error = err)
+  api.loginWithPassword({ phoneNumber: '+33761331332', password: 'majefize' }).catch(err => (error = err))
 
   await delay(1)
 

@@ -11,9 +11,8 @@ beforeEach(() => {
   document.body.innerHTML = ''
 })
 
-describe("checkSession", () => {
+describe('checkSession', () => {
   test('basic', async () => {
-
     const { api, domain, clientId } = createDefaultTestClient({ sso: true })
 
     api.checkSession().catch(err => console.log(err))
@@ -24,22 +23,25 @@ describe("checkSession", () => {
 
     expect(iframe).not.toBeNull()
 
-    if (iframe) { // Make Typescript happy
+    if (iframe) {
+      // Make Typescript happy
       expect(iframe.getAttribute('height')).toEqual('0')
       expect(iframe.getAttribute('width')).toEqual('0')
-      expect(iframe.getAttribute('src')).toEqual(`https://${domain}/oauth/authorize?` + toQueryString({
-        'client_id': clientId,
-        'response_type': 'token',
-        'scope': 'openid profile email phone',
-        'display': 'page',
-        'response_mode': 'web_message',
-        'prompt': 'none',
-      }))
+      expect(iframe.getAttribute('src')).toEqual(
+        `https://${domain}/oauth/authorize?` +
+          toQueryString({
+            client_id: clientId,
+            response_type: 'token',
+            scope: 'openid profile email phone',
+            display: 'page',
+            response_mode: 'web_message',
+            prompt: 'none'
+          })
+      )
     }
   })
 
   test('with nonce', async () => {
-
     const { api, domain, clientId } = createDefaultTestClient({ sso: true })
 
     const nonce = 'pizjfoihzefoiaef'
@@ -52,18 +54,22 @@ describe("checkSession", () => {
 
     expect(iframe).not.toBeNull()
 
-    if (iframe) { // Make Typescript happy
+    if (iframe) {
+      // Make Typescript happy
       expect(iframe.getAttribute('height')).toEqual('0')
       expect(iframe.getAttribute('width')).toEqual('0')
-      expect(iframe.getAttribute('src')).toEqual(`https://${domain}/oauth/authorize?` + toQueryString({
-        'client_id': clientId,
-        'response_type': 'token',
-        'scope': 'openid profile email phone',
-        'display': 'page',
-        'nonce': nonce,
-        'response_mode': 'web_message',
-        'prompt': 'none',
-      }))
+      expect(iframe.getAttribute('src')).toEqual(
+        `https://${domain}/oauth/authorize?` +
+          toQueryString({
+            client_id: clientId,
+            response_type: 'token',
+            scope: 'openid profile email phone',
+            display: 'page',
+            nonce,
+            response_mode: 'web_message',
+            prompt: 'none'
+          })
+      )
     }
   })
 })

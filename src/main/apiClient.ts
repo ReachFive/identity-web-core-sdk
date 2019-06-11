@@ -13,14 +13,14 @@ import { UrlParser } from './urlParser'
 import { popupSize } from './providerPopupSize'
 import { createHttpClient, HttpClient } from './httpClient'
 
-export type SignupParams = { data: Profile, auth?: AuthOptions }
+export type SignupParams = { data: Profile; auth?: AuthOptions }
 
-type EmailLoginWithPasswordParams = { email: string, password: string, auth?: AuthOptions }
-type PhoneNumberLoginWithPasswordParams = { phoneNumber: string, password: string, auth?: AuthOptions }
+type EmailLoginWithPasswordParams = { email: string; password: string; auth?: AuthOptions }
+type PhoneNumberLoginWithPasswordParams = { phoneNumber: string; password: string; auth?: AuthOptions }
 
 export type LoginWithPasswordParams = EmailLoginWithPasswordParams | PhoneNumberLoginWithPasswordParams
 
-export type PasswordlessParams = { authType: 'magic_link' | 'sms', email?: string, phoneNumber?: string }
+export type PasswordlessParams = { authType: 'magic_link' | 'sms'; email?: string; phoneNumber?: string }
 
 export type ApiClientConfig = {
   clientId: string
@@ -33,8 +33,7 @@ export type ApiClientConfig = {
  * Identity Rest API Client
  */
 export default class ApiClient {
-
-  constructor(props: { config: ApiClientConfig, eventManager: IdentityEventManager, urlParser: UrlParser }) {
+  constructor(props: { config: ApiClientConfig; eventManager: IdentityEventManager; urlParser: UrlParser }) {
     this.config = props.config
     this.eventManager = props.eventManager
     this.urlParser = props.urlParser
@@ -60,7 +59,6 @@ export default class ApiClient {
   private tokenUrl: string
   private popupRelayUrl: string
 
-
   loginWithSocialProvider(provider: string, opts: AuthOptions = {}): Promise<void> {
     const authParams = this.authParams(opts, { acceptPopupMode: true })
 
@@ -79,7 +77,9 @@ export default class ApiClient {
 
   loginFromSession(opts: AuthOptions = {}): Promise<void> {
     if (!this.config.sso && !opts.idTokenHint) {
-      return Promise.reject(new Error("Cannot call 'loginFromSession' without 'idTokenHint' parameter if SSO is not enabled."))
+      return Promise.reject(
+        new Error("Cannot call 'loginFromSession' without 'idTokenHint' parameter if SSO is not enabled.")
+      )
     }
     return this.loginWithRedirect({
       ...this.authParams(opts),
@@ -89,7 +89,9 @@ export default class ApiClient {
 
   checkSession(opts: AuthOptions = {}): Promise<AuthResult> {
     if (!this.config.sso && !opts.idTokenHint) {
-      return Promise.reject(new Error("Cannot call 'loginFromSession' without 'idTokenHint' parameter if SSO is not enabled."))
+      return Promise.reject(
+        new Error("Cannot call 'loginFromSession' without 'idTokenHint' parameter if SSO is not enabled.")
+      )
     }
     const authorizationUrl = this.getAuthorizationUrl({
       ...this.authParams(opts),
@@ -118,7 +120,7 @@ export default class ApiClient {
           } else {
             reject({
               error: 'unexpected_error',
-              errorDescription: 'Unexpected error occurred',
+              errorDescription: 'Unexpected error occurred'
             })
           }
           window.removeEventListener('message', listener)
@@ -142,10 +144,12 @@ export default class ApiClient {
   }
 
   private loginWithCordovaInAppBrowser(opts: QueryString): Promise<void> {
-    return this.openInCordovaSystemBrowser(this.getAuthorizationUrl({
-      ...opts,
-      display: 'page'
-    }))
+    return this.openInCordovaSystemBrowser(
+      this.getAuthorizationUrl({
+        ...opts,
+        display: 'page'
+      })
+    )
   }
 
   private openInCordovaSystemBrowser(url: string): Promise<void> {
@@ -168,14 +172,11 @@ export default class ApiClient {
     return new Promise((resolve, reject) => {
       const cordova = window.cordova
 
-      if (!cordova || !cordova.plugins || !cordova.plugins.browsertab)
-        return resolve(undefined)
+      if (!cordova || !cordova.plugins || !cordova.plugins.browsertab) return resolve(undefined)
 
       const plugin = cordova.plugins.browsertab
 
-      plugin.isAvailable(
-        isAvailable => resolve(isAvailable ? plugin : undefined),
-        reject)
+      plugin.isAvailable(isAvailable => resolve(isAvailable ? plugin : undefined), reject)
     })
   }
 
@@ -196,30 +197,33 @@ export default class ApiClient {
   }
 
   private loginWithPopup(opts: AuthOptions & { provider: string }): Promise<void> {
-    type WinChanResponse<D> = { success: true, data: D } | { success: false, data: ErrorResponse }
+    type WinChanResponse<D> = { success: true; data: D } | { success: false; data: ErrorResponse }
 
-    WinChan.open({
-      url: `${this.authorizeUrl}?${toQueryString(opts)}`,
-      relay_url: this.popupRelayUrl,
-      window_features: this.computeProviderPopupOptions(opts.provider)
-    }, (err: string, result: WinChanResponse<object>) => {
-      if (err) {
-        logError(err)
-        this.eventManager.fireEvent('authentication_failed', {
-          errorDescription: 'Unexpected error occurred',
-          error: 'server_error'
-        })
-        return
+    WinChan.open(
+      {
+        url: `${this.authorizeUrl}?${toQueryString(opts)}`,
+        relay_url: this.popupRelayUrl,
+        window_features: this.computeProviderPopupOptions(opts.provider)
+      },
+      (err: string, result: WinChanResponse<object>) => {
+        if (err) {
+          logError(err)
+          this.eventManager.fireEvent('authentication_failed', {
+            errorDescription: 'Unexpected error occurred',
+            error: 'server_error'
+          })
+          return
+        }
+
+        const r = camelCaseProperties(result) as WinChanResponse<AuthResult>
+
+        if (r.success) {
+          this.authenticatedHandler(opts, r.data)
+        } else {
+          this.eventManager.fireEvent('authentication_failed', r.data)
+        }
       }
-
-      const r = camelCaseProperties(result) as WinChanResponse<AuthResult>
-
-      if (r.success) {
-        this.authenticatedHandler(opts, r.data)
-      } else {
-        this.eventManager.fireEvent('authentication_failed', r.data)
-      }
-    })
+    )
     return Promise.resolve()
   }
 
@@ -239,25 +243,29 @@ export default class ApiClient {
   private loginWithPasswordByOAuth(params: LoginWithPasswordParams): Promise<void> {
     const auth = params.auth
 
-    return this.http.post<AuthResult>(this.tokenUrl, {
-      body: {
-        clientId: this.config.clientId,
-        grantType: 'password',
-        username: hasLoggedWithEmail(params) ? params.email : params.phoneNumber,
-        password: params.password,
-        scope: resolveScope(auth),
-        ...(pick(auth, 'origin'))
-      }
-    }).then(result => this.eventManager.fireEvent('authenticated', result))
+    return this.http
+      .post<AuthResult>(this.tokenUrl, {
+        body: {
+          clientId: this.config.clientId,
+          grantType: 'password',
+          username: hasLoggedWithEmail(params) ? params.email : params.phoneNumber,
+          password: params.password,
+          scope: resolveScope(auth),
+          ...pick(auth, 'origin')
+        }
+      })
+      .then(result => this.eventManager.fireEvent('authenticated', result))
   }
 
   private loginWithPasswordByRedirect({ auth = {}, ...rest }: LoginWithPasswordParams): Promise<void> {
-    return this.http.post<{ tkn: string }>('/password/login', {
-      body: {
-        clientId: this.config.clientId,
-        ...rest
-      }
-    }).then(({ tkn }) => this.loginWithPasswordToken(tkn, auth))
+    return this.http
+      .post<{ tkn: string }>('/password/login', {
+        body: {
+          clientId: this.config.clientId,
+          ...rest
+        }
+      })
+      .then(({ tkn }) => this.loginWithPasswordToken(tkn, auth))
   }
 
   private loginWithPasswordToken(tkn: string, auth: AuthOptions = {}): void {
@@ -292,12 +300,13 @@ export default class ApiClient {
   }
 
   verifyPasswordless(params: PasswordlessParams, auth = {}): Promise<void> {
-    return this.http.post('/verify-auth-code', { body: params }).then(() =>
-      this.loginWithVerificationCode(params, auth)
-    ).catch(err => {
-      if (err.error) this.eventManager.fireEvent('login_failed', err)
-      throw err
-    })
+    return this.http
+      .post('/verify-auth-code', { body: params })
+      .then(() => this.loginWithVerificationCode(params, auth))
+      .catch(err => {
+        if (err.error) this.eventManager.fireEvent('login_failed', err)
+        throw err
+      })
   }
 
   signup(params: SignupParams): Promise<void> {
@@ -305,25 +314,25 @@ export default class ApiClient {
     const acceptTos = auth && auth.acceptTos
 
     const result = window.cordova
-      ? (
-        this.http.post<AuthResult>(`${this.baseUrl}/signup-token`, {
-          body: {
-            clientId: this.config.clientId,
-            scope: resolveScope(auth),
-            ...(pick(auth, 'origin')),
-            data
-          }
-        }).then(result => this.eventManager.fireEvent('authenticated', result))
-      )
-      : (
-        this.http.post<{ tkn: string }>('/signup', {
-          body: {
-            clientId: this.config.clientId,
-            acceptTos,
-            data
-          }
-        }).then(({ tkn }) => this.loginWithPasswordToken(tkn, auth))
-      )
+      ? this.http
+          .post<AuthResult>(`${this.baseUrl}/signup-token`, {
+            body: {
+              clientId: this.config.clientId,
+              scope: resolveScope(auth),
+              ...pick(auth, 'origin'),
+              data
+            }
+          })
+          .then(result => this.eventManager.fireEvent('authenticated', result))
+      : this.http
+          .post<{ tkn: string }>('/signup', {
+            body: {
+              clientId: this.config.clientId,
+              acceptTos,
+              data
+            }
+          })
+          .then(({ tkn }) => this.loginWithPasswordToken(tkn, auth))
 
     return result.catch(err => {
       if (err.error) {
@@ -342,7 +351,12 @@ export default class ApiClient {
     })
   }
 
-  updatePassword(params: { accessToken?: string, password: string, oldPassword?: string, userId?: string }): Promise<void> {
+  updatePassword(params: {
+    accessToken?: string
+    password: string
+    oldPassword?: string
+    userId?: string
+  }): Promise<void> {
     const { accessToken, ...data } = params
     return this.http.post('/update-password', {
       body: { clientId: this.config.clientId, ...data },
@@ -350,45 +364,56 @@ export default class ApiClient {
     })
   }
 
-  updateEmail(params: { accessToken: string, email: string }): Promise<void> {
+  updateEmail(params: { accessToken: string; email: string }): Promise<void> {
     const { accessToken, ...data } = params
     return this.http.post('/update-email', { body: data, accessToken })
   }
 
-  updatePhoneNumber(params: { accessToken: string, phoneNumber: string }): Promise<void> {
+  updatePhoneNumber(params: { accessToken: string; phoneNumber: string }): Promise<void> {
     const { accessToken, ...data } = params
     return this.http.post('/update-phone-number', { body: data, accessToken })
   }
 
-  verifyPhoneNumber({ accessToken, ...data }: { accessToken: string, phoneNumber: string, verificationCode: string }): Promise<void> {
+  verifyPhoneNumber({
+    accessToken,
+    ...data
+  }: {
+    accessToken: string
+    phoneNumber: string
+    verificationCode: string
+  }): Promise<void> {
     const { phoneNumber } = data
-    return this.http.post('/verify-phone-number', { body: data, accessToken })
+    return this.http
+      .post('/verify-phone-number', { body: data, accessToken })
       .then(() => this.eventManager.fireEvent('profile_updated', { phoneNumber, phoneNumberVerified: true }))
   }
 
-  unlink({ accessToken, ...data }: { accessToken: string, identityId: string, fields?: string }): Promise<void> {
+  unlink({ accessToken, ...data }: { accessToken: string; identityId: string; fields?: string }): Promise<void> {
     return this.http.post('/unlink', { body: data, accessToken })
   }
 
   refreshTokens({ accessToken }: { accessToken: string }): Promise<AuthResult> {
-    return this.http.post<AuthResult>('/token/access-token', {
-      body: {
-        clientId: this.config.clientId,
-        accessToken
-      }
-    }).then(enrichAuthResult)
+    return this.http
+      .post<AuthResult>('/token/access-token', {
+        body: {
+          clientId: this.config.clientId,
+          accessToken
+        }
+      })
+      .then(enrichAuthResult)
   }
 
-  getUser({ accessToken, fields }: { accessToken: string, fields?: string }): Promise<Profile> {
+  getUser({ accessToken, fields }: { accessToken: string; fields?: string }): Promise<Profile> {
     return this.http.get<Profile>('/me', { query: { fields }, accessToken })
   }
 
-  updateProfile({ accessToken, data }: { accessToken: string, data: Profile }): Promise<void> {
-    return this.http.post('/update-profile', { body: data, accessToken })
+  updateProfile({ accessToken, data }: { accessToken: string; data: Profile }): Promise<void> {
+    return this.http
+      .post('/update-profile', { body: data, accessToken })
       .then(() => this.eventManager.fireEvent('profile_updated', data))
   }
 
-  loginWithCustomToken({ token, auth }: { token: string, auth: AuthOptions }): void {
+  loginWithCustomToken({ token, auth }: { token: string; auth: AuthOptions }): void {
     const queryString = toQueryString({
       ...this.authParams(auth),
       token
@@ -433,5 +458,5 @@ export default class ApiClient {
 }
 
 function hasLoggedWithEmail(params: LoginWithPasswordParams): params is EmailLoginWithPasswordParams {
-  return ((params as EmailLoginWithPasswordParams).email) !== undefined
+  return (params as EmailLoginWithPasswordParams).email !== undefined
 }

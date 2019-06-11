@@ -10,7 +10,6 @@ beforeEach(() => {
 })
 
 test('loginFromSession', async () => {
-
   const { api, clientId, domain } = createDefaultTestClient({ sso: true })
 
   const redirectUri = 'https://mysite.com/login/callback'
@@ -18,13 +17,14 @@ test('loginFromSession', async () => {
   await api.loginFromSession({ redirectUri })
 
   expect(window.location.assign).toHaveBeenCalledWith(
-    `https://${domain}/oauth/authorize?` + toQueryString({
-      'client_id': clientId,
-      'response_type': 'code',
-      'scope': 'openid profile email phone',
-      'display': 'page',
-      'redirect_uri': redirectUri,
-      'prompt': 'none',
-    })
+    `https://${domain}/oauth/authorize?` +
+      toQueryString({
+        client_id: clientId,
+        response_type: 'code',
+        scope: 'openid profile email phone',
+        display: 'page',
+        redirect_uri: redirectUri,
+        prompt: 'none'
+      })
   )
 })
