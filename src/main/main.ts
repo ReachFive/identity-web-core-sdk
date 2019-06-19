@@ -25,7 +25,7 @@ export type Client = {
   startPasswordless: (params: PasswordlessParams, options?: AuthOptions) => Promise<void>
   verifyPasswordless: (params: PasswordlessParams) => Promise<void>
   loginWithSocialProvider: (provider: string, options?: AuthOptions) => Promise<void>
-  requestPasswordReset: (params: { email: string, redirectLink?: string }) => Promise<void>
+  requestPasswordReset: (params: { email: string, redirectUrl?: string }) => Promise<void>
   unlink: (params: { accessToken: string; identityId: string; fields?: string }) => Promise<void>
   refreshTokens: (params: { accessToken: string }) => Promise<AuthResult>
   loginFromSession: (options?: AuthOptions) => Promise<void>
@@ -33,7 +33,7 @@ export type Client = {
   logout: (params?: { redirectTo?: string }) => Promise<void>
   getUser: (params: { accessToken: string; fields?: string }) => Promise<Profile>
   updateProfile: (params: { accessToken: string; data: Profile }) => Promise<void>
-  updateEmail: (params: { accessToken: string, email: string, redirectLink?: string }) => Promise<void>
+  updateEmail: (params: { accessToken: string, email: string, redirectUrl?: string }) => Promise<void>
   updatePassword: (params: {
     accessToken?: string
     password: string
