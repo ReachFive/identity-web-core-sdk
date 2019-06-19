@@ -25,7 +25,7 @@ export type Client = {
   startPasswordless: (params: PasswordlessParams, options?: AuthOptions) => Promise<void>
   verifyPasswordless: (params: PasswordlessParams) => Promise<void>
   loginWithSocialProvider: (provider: string, options?: AuthOptions) => Promise<void>
-  requestPasswordReset: (params: { email: string, redirectUrl?: string }) => Promise<void>
+  requestPasswordReset: (params: { email?: string, redirectUrl?: string, phoneNumber?: string }) => Promise<void>
   unlink: (params: { accessToken: string; identityId: string; fields?: string }) => Promise<void>
   refreshTokens: (params: { accessToken: string }) => Promise<AuthResult>
   loginFromSession: (options?: AuthOptions) => Promise<void>
@@ -39,6 +39,9 @@ export type Client = {
     password: string
     oldPassword?: string
     userId?: string
+    email?: string
+    phoneNumber?: string
+    verificationCode?: string
   }) => Promise<void>
   updatePhoneNumber: (params: { accessToken: string; phoneNumber: string }) => Promise<void>
   verifyPhoneNumber: (params: { accessToken: string; phoneNumber: string; verificationCode: string }) => Promise<void>
@@ -97,7 +100,7 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.loginWithSocialProvider(provider, options))
   }
 
-  function requestPasswordReset(params: { email: string }) {
+  function requestPasswordReset(params: { email?: string, phoneNumber?: string }) {
     return apiClient.then(api => api.requestPasswordReset(params))
   }
 
@@ -133,7 +136,15 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.updateEmail(params))
   }
 
-  function updatePassword(params: { accessToken?: string; password: string; oldPassword?: string; userId?: string }) {
+  function updatePassword(params: {
+    accessToken?: string
+    password: string
+    oldPassword?: string
+    userId?: string
+    email?: string
+    phoneNumber?: string
+    verificationCode?: string
+  }) {
     return apiClient.then(api => api.updatePassword(params))
   }
 

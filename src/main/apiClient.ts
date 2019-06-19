@@ -342,12 +342,11 @@ export default class ApiClient {
     })
   }
 
-  requestPasswordReset({ email, redirectUrl }: { email: string, redirectUrl?: string }): Promise<void> {
+  requestPasswordReset(params: { email?: string, redirectUrl?: string, phoneNumber?: string }): Promise<void> {
     return this.http.post('/forgot-password', {
       body: {
         clientId: this.config.clientId,
-        email,
-        redirectUrl
+        ...params
       }
     })
   }
@@ -357,6 +356,9 @@ export default class ApiClient {
     password: string
     oldPassword?: string
     userId?: string
+    email?: string
+    phoneNumber?: string
+    verificationCode?: string
   }): Promise<void> {
     const { accessToken, ...data } = params
     return this.http.post('/update-password', {
