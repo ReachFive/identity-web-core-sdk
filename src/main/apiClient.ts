@@ -321,10 +321,11 @@ export default class ApiClient {
     })
   }
 
-  requestPasswordReset({ email }: { email: string }) {
+  requestPasswordReset({ email, redirectUrl }: { email: string, redirectUrl?: string }) {
     return this.requestPost('/forgot-password', {
       clientId: this.config.clientId,
-      email
+      email,
+      redirectUrl
     })
   }
 
@@ -337,7 +338,7 @@ export default class ApiClient {
     )
   }
 
-  updateEmail(params: { accessToken: string, email: string }) {
+  updateEmail(params: { accessToken: string, email: string, redirectUrl?: string }) {
     const { accessToken, ...data } = params
     return this.requestPost('/update-email', data, { accessToken })
   }

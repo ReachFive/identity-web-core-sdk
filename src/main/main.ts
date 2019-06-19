@@ -34,7 +34,7 @@ export function createClient(config: ApiClientConfig) {
     return apiClient.then(api => api.loginWithSocialProvider(provider, options))
   }
 
-  function requestPasswordReset(params: { email: string }) {
+  function requestPasswordReset(params: { email: string, redirectUrl?: string }) {
     return apiClient.then(api => api.requestPasswordReset(params))
   }
 
@@ -62,7 +62,7 @@ export function createClient(config: ApiClientConfig) {
     return apiClient.then(api => api.updateProfile(params))
   }
 
-  function updateEmail(params: { accessToken: string, email: string }) {
+  function updateEmail(params: { accessToken: string, email: string, redirectUrl?: string }) {
     return apiClient.then(api => api.updateEmail(params))
   }
 
