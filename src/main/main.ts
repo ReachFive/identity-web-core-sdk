@@ -1,5 +1,5 @@
 import { Profile, RemoteSettings, SessionInfo } from './models'
-import ApiClient, { LoginWithPasswordParams, PasswordlessParams, SignupParams } from './apiClient'
+import ApiClient, { LoginWithPasswordParams, PasswordlessParams, RequestPasswordResetParams, SignupParams } from './apiClient'
 import { AuthOptions } from './authOptions'
 import { AuthResult } from './authResult'
 import createEventManager, { Events } from './identityEventManager'
@@ -25,7 +25,7 @@ export type Client = {
   startPasswordless: (params: PasswordlessParams, options?: AuthOptions) => Promise<void>
   verifyPasswordless: (params: PasswordlessParams) => Promise<void>
   loginWithSocialProvider: (provider: string, options?: AuthOptions) => Promise<void>
-  requestPasswordReset: (params: { email?: string, redirectUrl?: string, phoneNumber?: string }) => Promise<void>
+  requestPasswordReset: (params: RequestPasswordResetParams) => Promise<void>
   unlink: (params: { accessToken: string; identityId: string; fields?: string }) => Promise<void>
   refreshTokens: (params: { accessToken: string }) => Promise<AuthResult>
   loginFromSession: (options?: AuthOptions) => Promise<void>
@@ -100,7 +100,7 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.loginWithSocialProvider(provider, options))
   }
 
-  function requestPasswordReset(params: { email?: string, phoneNumber?: string }) {
+  function requestPasswordReset(params: RequestPasswordResetParams) {
     return apiClient.then(api => api.requestPasswordReset(params))
   }
 

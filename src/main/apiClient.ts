@@ -20,6 +20,9 @@ type PhoneNumberLoginWithPasswordParams = { phoneNumber: string; password: strin
 
 export type LoginWithPasswordParams = EmailLoginWithPasswordParams | PhoneNumberLoginWithPasswordParams
 
+type EmailRequestPasswordResetParams = { email: string, redirectUrl?: string }
+export type RequestPasswordResetParams = EmailRequestPasswordResetParams | { phoneNumber: string }
+
 export type PasswordlessParams = { authType: 'magic_link' | 'sms'; email?: string; phoneNumber?: string }
 
 export type ApiClientConfig = {
@@ -342,7 +345,7 @@ export default class ApiClient {
     })
   }
 
-  requestPasswordReset(params: { email?: string, redirectUrl?: string, phoneNumber?: string }): Promise<void> {
+  requestPasswordReset(params: RequestPasswordResetParams): Promise<void> {
     return this.http.post('/forgot-password', {
       body: {
         clientId: this.config.clientId,
