@@ -20,6 +20,34 @@ type PhoneNumberLoginWithPasswordParams = { phoneNumber: string; password: strin
 
 export type LoginWithPasswordParams = EmailLoginWithPasswordParams | PhoneNumberLoginWithPasswordParams
 
+type EmailRequestPasswordResetParams = { email: string, redirectUrl?: string }
+type SmsRequestPasswordResetParams = { phoneNumber: string }
+export type RequestPasswordResetParams = EmailRequestPasswordResetParams | SmsRequestPasswordResetParams
+
+type AccessTokenUpdatePasswordParams = {
+  accessToken?: string
+  password: string
+  oldPassword?: string
+  userId?: string
+}
+
+type EmailVerificationCodeUpdatePasswordParams = {
+  accessToken?: string
+  email: string
+  verificationCode: string
+  password: string
+}
+
+type SmsVerificationCodeUpdatePasswordParams = {
+  accessToken?: string
+  phoneNumber: string
+  verificationCode: string
+  password: string
+}
+
+export type UpdatePasswordParams =
+  AccessTokenUpdatePasswordParams | EmailVerificationCodeUpdatePasswordParams | SmsVerificationCodeUpdatePasswordParams
+
 export type PasswordlessParams = { authType: 'magic_link' | 'sms'; email?: string; phoneNumber?: string }
 
 export type ApiClientConfig = {
@@ -342,22 +370,16 @@ export default class ApiClient {
     })
   }
 
-  requestPasswordReset({ email, redirectUrl }: { email: string, redirectUrl?: string }): Promise<void> {
+  requestPasswordReset(params: RequestPasswordResetParams): Promise<void> {
     return this.http.post('/forgot-password', {
       body: {
         clientId: this.config.clientId,
-        email,
-        redirectUrl
+        ...params
       }
     })
   }
 
-  updatePassword(params: {
-    accessToken?: string
-    password: string
-    oldPassword?: string
-    userId?: string
-  }): Promise<void> {
+  updatePassword(params: UpdatePasswordParams): Promise<void> {
     const { accessToken, ...data } = params
     return this.http.post('/update-password', {
       body: { clientId: this.config.clientId, ...data },
