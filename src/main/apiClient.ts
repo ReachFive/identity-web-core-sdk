@@ -99,7 +99,7 @@ export default class ApiClient {
     const authParams = this.authParams(opts, { acceptPopupMode: true })
 
     if(this.config.pkce && authParams.responseType === 'token' ) {
-      throw new Error('Cannot use implicit flow when PKCE is enable')
+      throw new Error('Cannot use implicit flow when PKCE is enabled')
     }
 
     this.handlePkce().then(maybeChallenge => {
