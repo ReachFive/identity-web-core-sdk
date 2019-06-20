@@ -12,8 +12,9 @@ import { ProviderId } from '../shared/providers/providers'
 import providerSizes from '../shared/providers/provider-window-sizes'
 import { Profile, ErrorResponse } from '../shared/model'
 import { ApiClientConfig } from './apiClientConfig'
-import { prepareAuthOptions, resolveScope, AuthOptions } from './authOptions'
+import {prepareAuthOptions, resolveScope, AuthOptions, TokenRequestParameters} from './authOptions'
 import { AuthResult } from './authResult'
+import { encodeToBase64 } from '../lib/base64';
 
 
 export type Events = {
@@ -69,6 +70,8 @@ export type UpdatePasswordParams =
 
 export type PasswordlessParams = { authType: 'magic_link' | 'sms', email?: string, phoneNumber?: string }
 
+type PkceParams = { codeChallenge?: string, codeChallengeMethod?: string }
+
 
 export default class ApiClient {
 
@@ -89,24 +92,70 @@ export default class ApiClient {
   private authorizeUrl: string
   private tokenUrl: string
   private popupRelayUrl: string
-
+  private verifierKey: string = 'verifier_key'
+  private encoder = new TextEncoder();
 
   loginWithSocialProvider(provider: ProviderId, opts: AuthOptions = {}) {
     const authParams = this.authParams(opts, { acceptPopupMode: true })
 
-    const params = {
-      ...authParams,
-      provider
+    this.checkOauthFlow(opts)
+
+    this.handlePkce().then(maybeChallenge => {
+      const params = {
+        ...authParams,
+        provider,
+        ...maybeChallenge
+      }
+      if ('cordova' in window) {
+        return this.loginWithCordovaInAppBrowser(params)
+      }
+      else if (params.display === 'popup') {
+        return this.loginWithPopup(params)
+      }
+      else {
+        return this.loginWithRedirect(params)
+      }
+    })
+  }
+
+  private checkOauthFlow(opts: AuthOptions = {}) {
+    if(this.config.pkce && opts.responseType == 'token') {
+      throw new Error('Cannot use implicit flow when PKCE is enable')
     }
-    if ('cordova' in window) {
-      return this.loginWithCordovaInAppBrowser(params)
-    }
-    else if (params.display === 'popup') {
-      return this.loginWithPopup(params)
-    }
-    else {
-      return this.loginWithRedirect(params)
-    }
+  }
+
+  private handlePkce(): PromiseLike<PkceParams> {
+    if (this.config.pkce) {
+      return this.generateAndStorePkceChallenge()
+          .then(challenge => {
+            return {
+              codeChallenge: challenge,
+              codeChallengeMethod: 'S256'
+            }
+          })
+    } else return Promise.resolve({})
+  }
+
+  private generateAndStorePkceChallenge() : PromiseLike<string> {
+    const randomValues = window.crypto.getRandomValues(new Uint8Array(32))
+    const verifier = encodeToBase64(randomValues)
+    sessionStorage.setItem(this.verifierKey, verifier)
+    const binaryChallenge = this.encoder.encode(verifier);
+
+    const eventualDigest: PromiseLike<string> = window.crypto.subtle
+        .digest('SHA-256', binaryChallenge)
+        .then(hash => encodeToBase64(hash))
+    return eventualDigest;
+  }
+
+  exchangeAuthorizationCodeWithPkce(params: TokenRequestParameters) {
+    return this.requestPost<AuthResult>(this.tokenUrl, {
+      clientId: this.config.clientId,
+      grantType: 'authorization_code',
+      code: params.code,
+      redirectUri: params.redirectUri,
+      code_verifier: sessionStorage.getItem(this.verifierKey)
+    }).then(result => this.fireAuthenticatedEvent(result))
   }
 
   loginFromSession(opts: AuthOptions = {}) {

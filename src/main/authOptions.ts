@@ -25,6 +25,11 @@ export const authOptions = v.object({
 
 export type AuthOptions = typeof authOptions.T
 
+export type TokenRequestParameters = {
+  code: string
+  redirectUri: string
+}
+
 type AuthParameters = {
   responseType: 'code' | 'token'
   scope: string
