@@ -98,7 +98,9 @@ export default class ApiClient {
   loginWithSocialProvider(provider: ProviderId, opts: AuthOptions = {}) {
     const authParams = this.authParams(opts, { acceptPopupMode: true })
 
-    this.checkOauthFlow(opts)
+    if(this.config.pkce && authParams.responseType === 'token' ) {
+      throw new Error('Cannot use implicit flow when PKCE is enable')
+    }
 
     this.handlePkce().then(maybeChallenge => {
       const params = {
@@ -116,12 +118,6 @@ export default class ApiClient {
         return this.loginWithRedirect(params)
       }
     })
-  }
-
-  private checkOauthFlow(opts: AuthOptions = {}) {
-    if(this.config.pkce && opts.responseType == 'token') {
-      throw new Error('Cannot use implicit flow when PKCE is enable')
-    }
   }
 
   private handlePkce(): PromiseLike<PkceParams> {
