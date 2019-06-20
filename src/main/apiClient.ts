@@ -15,7 +15,7 @@ import { ApiClientConfig } from './apiClientConfig'
 import {prepareAuthOptions, resolveScope, AuthOptions, TokenRequestParameters} from './authOptions'
 import { AuthResult } from './authResult'
 import { encodeToBase64 } from '../lib/base64';
-
+import { convertFromString } from "../lib/binaryEncoder";
 
 export type Events = {
   'authenticated': AuthResult
@@ -93,7 +93,6 @@ export default class ApiClient {
   private tokenUrl: string
   private popupRelayUrl: string
   private verifierKey: string = 'verifier_key'
-  private encoder = new TextEncoder();
 
   loginWithSocialProvider(provider: ProviderId, opts: AuthOptions = {}) {
     const authParams = this.authParams(opts, { acceptPopupMode: true })
@@ -102,7 +101,7 @@ export default class ApiClient {
       throw new Error('Cannot use implicit flow when PKCE is enabled')
     }
 
-    this.handlePkce().then(maybeChallenge => {
+    return this.handlePkce().then(maybeChallenge => {
       const params = {
         ...authParams,
         provider,
@@ -136,7 +135,7 @@ export default class ApiClient {
     const randomValues = window.crypto.getRandomValues(new Uint8Array(32))
     const verifier = encodeToBase64(randomValues)
     sessionStorage.setItem(this.verifierKey, verifier)
-    const binaryChallenge = this.encoder.encode(verifier);
+    const binaryChallenge = convertFromString(verifier);
 
     const eventualDigest: PromiseLike<string> = window.crypto.subtle
         .digest('SHA-256', binaryChallenge)
@@ -223,7 +222,6 @@ export default class ApiClient {
   private openInCordovaSystemBrowser(url: string) {
     return this.getAvailableBrowserTabPlugin().then(maybeBrowserTab => {
       if (!window.cordova) return
-
       if (maybeBrowserTab) {
         maybeBrowserTab.openUrl(url, () => {}, logError)
       }

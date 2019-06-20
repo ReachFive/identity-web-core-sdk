@@ -6,7 +6,7 @@ export const apiClientConfig = v.object({
   domain: v.string,
   sso: v.optional(v.boolean),
   language: v.optional(v.string),
-  pkce: v.option(v.boolean)
+  pkce: v.optional(v.boolean)
 })
 
 export type ApiClientConfig = typeof apiClientConfig.T

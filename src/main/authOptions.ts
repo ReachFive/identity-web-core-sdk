@@ -30,7 +30,7 @@ export type TokenRequestParameters = {
   redirectUri: string
 }
 
-export type AuthParameters = {
+type AuthParameters = {
   responseType: 'code' | 'token'
   scope: string
   display: string
