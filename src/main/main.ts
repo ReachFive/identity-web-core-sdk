@@ -1,7 +1,7 @@
 import { errorDebugString } from 'validation.ts'
 import { ProviderId } from '../shared/providers/providers'
 import { Profile } from '../shared/model'
-import ApiClient, { SignupParams, LoginWithPasswordParams, PasswordlessParams, Events } from './apiClient'
+import ApiClient, { SignupParams, LoginWithPasswordParams, PasswordlessParams, Events, RequestPasswordResetParams, UpdatePasswordParams } from './apiClient'
 import { AuthOptions } from './authOptions'
 import { apiClientConfig, ApiClientConfig } from './apiClientConfig'
 import EventManager from '../lib/eventManager'
@@ -34,7 +34,7 @@ export function createClient(config: ApiClientConfig) {
     return apiClient.then(api => api.loginWithSocialProvider(provider, options))
   }
 
-  function requestPasswordReset(params: { email?: string, redirectUrl?: string, phoneNumber?: string }) {
+  function requestPasswordReset(params: RequestPasswordResetParams) {
     return apiClient.then(api => api.requestPasswordReset(params))
   }
 
@@ -66,15 +66,7 @@ export function createClient(config: ApiClientConfig) {
     return apiClient.then(api => api.updateEmail(params))
   }
 
-  function updatePassword(params: { 
-    accessToken?: string
-    password: string
-    oldPassword?: string
-    userId?: string
-    email?: string
-    phoneNumber?: string
-    verificationCode?: string
-  }) {
+  function updatePassword(params: UpdatePasswordParams) {
     return apiClient.then(api => api.updatePassword(params))
   }
 

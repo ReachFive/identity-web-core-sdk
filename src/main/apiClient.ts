@@ -39,6 +39,34 @@ type PhoneNumberLoginWithPasswordParams = { phoneNumber: string, password: strin
 
 export type LoginWithPasswordParams = EmailLoginWithPasswordParams | PhoneNumberLoginWithPasswordParams
 
+type EmailRequestPasswordResetParams = { email: string, redirectUrl?: string }
+type SmsRequestPasswordResetParams = { phoneNumber: string }
+export type RequestPasswordResetParams = EmailRequestPasswordResetParams | SmsRequestPasswordResetParams
+
+type AccessTokenUpdatePasswordParams = {
+  accessToken?: string
+  password: string
+  oldPassword?: string
+  userId?: string
+}
+
+type EmailVerificationCodeUpdatePasswordParams = {
+  accessToken?: string
+  email: string
+  verificationCode: string
+  password: string
+}
+
+type SmsVerificationCodeUpdatePasswordParams = {
+  accessToken?: string
+  phoneNumber: string
+  verificationCode: string
+  password: string
+}
+
+export type UpdatePasswordParams =
+  AccessTokenUpdatePasswordParams | EmailVerificationCodeUpdatePasswordParams | SmsVerificationCodeUpdatePasswordParams
+
 export type PasswordlessParams = { authType: 'magic_link' | 'sms', email?: string, phoneNumber?: string }
 
 
@@ -321,22 +349,14 @@ export default class ApiClient {
     })
   }
 
-  requestPasswordReset(params: { email?: string, redirectUrl?: string, phoneNumber?: string }) {
+  requestPasswordReset(params: RequestPasswordResetParams) {
     return this.requestPost('/forgot-password', {
       clientId: this.config.clientId,
       ...params
     })
   }
 
-  updatePassword(params: { 
-    accessToken?: string
-    password: string
-    oldPassword?: string
-    userId?: string
-    email?: string
-    phoneNumber?: string
-    verificationCode?: string
-  }) {
+  updatePassword(params: UpdatePasswordParams) {
     const { accessToken, ...data } = params
     return this.requestPost(
       '/update-password',
