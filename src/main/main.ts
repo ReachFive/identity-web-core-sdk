@@ -6,7 +6,7 @@ import createEventManager, { Events } from './identityEventManager'
 import createUrlParser from './urlParser'
 import { toQueryString } from '../utils/queryString'
 import { rawRequest } from './httpClient'
-import { TokenRequestParameters } from "./pkceService";
+import { TokenRequestParameters } from './pkceService'
 
 export { AuthResult } from './authResult'
 export { AuthOptions } from './authOptions'

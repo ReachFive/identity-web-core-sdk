@@ -46,7 +46,7 @@ export function encodeToBase64(array: ArrayBuffer | Uint8Array): string {
         .toString('base64')
         .replace(/\+/g, '-')
         .replace(/\//g, '_')
-        .replace(/=+$/, '');
+        .replace(/=+$/, '')
 }
 
 /**

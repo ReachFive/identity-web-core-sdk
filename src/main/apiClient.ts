@@ -12,7 +12,7 @@ import { IdentityEventManager } from './identityEventManager'
 import { UrlParser } from './urlParser'
 import { popupSize } from './providerPopupSize'
 import { createHttpClient, HttpClient } from './httpClient'
-import {computePkceParams, TokenRequestParameters} from "./pkceService";
+import { computePkceParams, TokenRequestParameters } from './pkceService'
 
 export type SignupParams = { data: Profile; auth?: AuthOptions }
 
@@ -88,7 +88,7 @@ export default class ApiClient {
   private authorizeUrl: string
   private tokenUrl: string
   private popupRelayUrl: string
-  private verifierKey: string = 'verifier_key'
+  private verifierKey = 'verifier_key'
 
   loginWithSocialProvider(provider: string, opts: AuthOptions = {}): Promise<void> {
     const authParams = this.authParams(opts, { acceptPopupMode: true })
@@ -105,11 +105,9 @@ export default class ApiClient {
       }
       if ('cordova' in window) {
         return this.loginWithCordovaInAppBrowser(params)
-      }
-      else if (params.display === 'popup') {
+      } else if (params.display === 'popup') {
         return this.loginWithPopup(params)
-      }
-      else {
+      } else {
         return this.loginWithRedirect(params)
       }
     })

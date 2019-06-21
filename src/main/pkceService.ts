@@ -1,4 +1,4 @@
-import { encodeToBase64 } from "../utils/base64";
+import { encodeToBase64 } from '../utils/base64'
 
 type PkceParams = { codeChallenge?: string, codeChallengeMethod?: string }
 
@@ -28,7 +28,7 @@ function generateCodeVerifier(): string {
 }
 
 function computeCodeChallenge(verifier: string): Promise<string> {
-    const binaryChallenge = Buffer.from(verifier,'utf-8');
+    const binaryChallenge = Buffer.from(verifier, 'utf-8')
 
     return new Promise(resolve => {
         window.crypto.subtle
