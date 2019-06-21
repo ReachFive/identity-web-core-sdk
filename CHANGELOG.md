@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.4.0
+
+### 21 juin 2019
+
+### Features
+- Update the signature of the `requestPasswordReset` method to handle a custom redirect url on the email sent.
+- Update the signature of the `requestPasswordReset` method to handle request password with a phone number.
+- Update the signature of the `updatePassword` method to handle update password with a phone number.
+
 ## v1.3.0
 
 ### 11 juin 2019
