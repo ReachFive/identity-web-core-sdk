@@ -12,6 +12,7 @@ import { IdentityEventManager } from './identityEventManager'
 import { UrlParser } from './urlParser'
 import { popupSize } from './providerPopupSize'
 import { createHttpClient, HttpClient } from './httpClient'
+import {computePkceParams, TokenRequestParameters} from "./pkceService";
 
 export type SignupParams = { data: Profile; auth?: AuthOptions }
 
@@ -55,6 +56,7 @@ export type ApiClientConfig = {
   domain: string
   language?: string
   sso: boolean
+  pkceEnabled?: boolean
 }
 
 /**
@@ -86,21 +88,44 @@ export default class ApiClient {
   private authorizeUrl: string
   private tokenUrl: string
   private popupRelayUrl: string
+  private verifierKey: string = 'verifier_key'
 
   loginWithSocialProvider(provider: string, opts: AuthOptions = {}): Promise<void> {
     const authParams = this.authParams(opts, { acceptPopupMode: true })
 
-    const params = {
-      ...authParams,
-      provider
+    if (this.config.pkceEnabled && authParams.responseType === 'token') {
+      throw new Error('Cannot use implicit flow when PKCE is enabled')
     }
-    if ('cordova' in window) {
-      return this.loginWithCordovaInAppBrowser(params)
-    } else if (params.display === 'popup') {
-      return this.loginWithPopup(params)
-    } else {
-      return this.loginWithRedirect(params)
-    }
+
+    return computePkceParams(this.config.pkceEnabled, this.verifierKey).then(maybeChallenge => {
+      const params = {
+        ...authParams,
+        provider,
+        ...maybeChallenge
+      }
+      if ('cordova' in window) {
+        return this.loginWithCordovaInAppBrowser(params)
+      }
+      else if (params.display === 'popup') {
+        return this.loginWithPopup(params)
+      }
+      else {
+        return this.loginWithRedirect(params)
+      }
+    })
+  }
+
+  exchangeAuthorizationCodeWithPkce(params: TokenRequestParameters): Promise<void> {
+    return this.http
+        .post<AuthResult>(this.tokenUrl, {
+          body: {
+            clientId: this.config.clientId,
+            grantType: 'authorization_code',
+            code: params.code,
+            redirectUri: params.redirectUri,
+            code_verifier: sessionStorage.getItem(this.verifierKey)
+          }
+        }).then(result => this.eventManager.fireEvent('authenticated', result))
   }
 
   loginFromSession(opts: AuthOptions = {}): Promise<void> {
