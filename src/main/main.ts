@@ -5,6 +5,7 @@ import ApiClient, { SignupParams, LoginWithPasswordParams, PasswordlessParams, E
 import { AuthOptions } from './authOptions'
 import { apiClientConfig, ApiClientConfig } from './apiClientConfig'
 import EventManager from '../lib/eventManager'
+import { TokenRequestParameters } from "./pkceService";
 
 
 export function createClient(config: ApiClientConfig) {
@@ -32,6 +33,10 @@ export function createClient(config: ApiClientConfig) {
 
   function loginWithSocialProvider(provider: ProviderId, options: AuthOptions = {}) {
     return apiClient.then(api => api.loginWithSocialProvider(provider, options))
+  }
+
+  function exchangeAuthorizationCodeWithPkce(params: TokenRequestParameters) {
+    return apiClient.then(api => api.exchangeAuthorizationCodeWithPkce(params))
   }
 
   function requestPasswordReset(params: RequestPasswordResetParams) {
@@ -114,6 +119,7 @@ export function createClient(config: ApiClientConfig) {
     startPasswordless,
     verifyPasswordless,
     loginWithSocialProvider,
+    exchangeAuthorizationCodeWithPkce,
     requestPasswordReset,
     unlink,
     refreshTokens,

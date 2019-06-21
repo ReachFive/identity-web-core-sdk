@@ -25,6 +25,17 @@ export function encodeBase64(str: string) {
 }
 
 /**
+ * Encode an array into Base64 url safe - Used for PKCE random/hash functions.
+ */
+export function encodeToBase64(array: ArrayBuffer | Uint8Array): string {
+    return Buffer.from(array)
+        .toString('base64')
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=+$/, '');
+}
+
+/**
  * return an decoded URL Safe Base64 as UTF-8 encoded string
  */
 export function decodeBase64UrlSafe(base64: string) {

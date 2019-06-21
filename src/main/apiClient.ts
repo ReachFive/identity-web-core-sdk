@@ -14,7 +14,7 @@ import { Profile, ErrorResponse } from '../shared/model'
 import { ApiClientConfig } from './apiClientConfig'
 import { prepareAuthOptions, resolveScope, AuthOptions } from './authOptions'
 import { AuthResult } from './authResult'
-
+import { computePkceParams, TokenRequestParameters } from './pkceService'
 
 export type Events = {
   'authenticated': AuthResult
@@ -89,24 +89,41 @@ export default class ApiClient {
   private authorizeUrl: string
   private tokenUrl: string
   private popupRelayUrl: string
-
+  private verifierKey: string = 'verifier_key'
 
   loginWithSocialProvider(provider: ProviderId, opts: AuthOptions = {}) {
-    const authParams = this.authParams(opts, { acceptPopupMode: true })
+    const authParams = this.authParams(opts, {acceptPopupMode: true})
 
-    const params = {
-      ...authParams,
-      provider
+    if (this.config.pkce && authParams.responseType === 'token') {
+      throw new Error('Cannot use implicit flow when PKCE is enabled')
     }
-    if ('cordova' in window) {
-      return this.loginWithCordovaInAppBrowser(params)
-    }
-    else if (params.display === 'popup') {
-      return this.loginWithPopup(params)
-    }
-    else {
-      return this.loginWithRedirect(params)
-    }
+
+    return computePkceParams(this.config.pkce, this.verifierKey).then(maybeChallenge => {
+          const params = {
+            ...authParams,
+            provider,
+            ...maybeChallenge
+          }
+          if ('cordova' in window) {
+            return this.loginWithCordovaInAppBrowser(params)
+          }
+          else if (params.display === 'popup') {
+            return this.loginWithPopup(params)
+          }
+          else {
+            return this.loginWithRedirect(params)
+          }
+        })
+  }
+
+  exchangeAuthorizationCodeWithPkce(params: TokenRequestParameters) {
+    return this.requestPost<AuthResult>(this.tokenUrl, {
+      clientId: this.config.clientId,
+      grantType: 'authorization_code',
+      code: params.code,
+      redirectUri: params.redirectUri,
+      code_verifier: sessionStorage.getItem(this.verifierKey)
+    }).then(result => this.fireAuthenticatedEvent(result))
   }
 
   loginFromSession(opts: AuthOptions = {}) {
@@ -178,7 +195,6 @@ export default class ApiClient {
   private openInCordovaSystemBrowser(url: string) {
     return this.getAvailableBrowserTabPlugin().then(maybeBrowserTab => {
       if (!window.cordova) return
-
       if (maybeBrowserTab) {
         maybeBrowserTab.openUrl(url, () => {}, logError)
       }
