@@ -2,9 +2,10 @@ import { errorDebugString } from 'validation.ts'
 import { ProviderId } from '../shared/providers/providers'
 import { Profile } from '../shared/model'
 import ApiClient, { SignupParams, LoginWithPasswordParams, PasswordlessParams, Events, RequestPasswordResetParams, UpdatePasswordParams } from './apiClient'
-import { AuthOptions, TokenRequestParameters } from './authOptions'
+import { AuthOptions } from './authOptions'
 import { apiClientConfig, ApiClientConfig } from './apiClientConfig'
 import EventManager from '../lib/eventManager'
+import { TokenRequestParameters } from "./pkceService";
 
 
 export function createClient(config: ApiClientConfig) {

@@ -12,10 +12,9 @@ import { ProviderId } from '../shared/providers/providers'
 import providerSizes from '../shared/providers/provider-window-sizes'
 import { Profile, ErrorResponse } from '../shared/model'
 import { ApiClientConfig } from './apiClientConfig'
-import {prepareAuthOptions, resolveScope, AuthOptions, TokenRequestParameters} from './authOptions'
+import { prepareAuthOptions, resolveScope, AuthOptions } from './authOptions'
 import { AuthResult } from './authResult'
-import { encodeToBase64 } from '../lib/base64';
-import { convertFromString } from "../lib/binaryEncoder";
+import { computePkceParams, TokenRequestParameters } from './pkceService'
 
 export type Events = {
   'authenticated': AuthResult
@@ -70,8 +69,6 @@ export type UpdatePasswordParams =
 
 export type PasswordlessParams = { authType: 'magic_link' | 'sms', email?: string, phoneNumber?: string }
 
-type PkceParams = { codeChallenge?: string, codeChallengeMethod?: string }
-
 
 export default class ApiClient {
 
@@ -95,52 +92,28 @@ export default class ApiClient {
   private verifierKey: string = 'verifier_key'
 
   loginWithSocialProvider(provider: ProviderId, opts: AuthOptions = {}) {
-    const authParams = this.authParams(opts, { acceptPopupMode: true })
+    const authParams = this.authParams(opts, {acceptPopupMode: true})
 
-    if(this.config.pkce && authParams.responseType === 'token' ) {
+    if (this.config.pkce && authParams.responseType === 'token') {
       throw new Error('Cannot use implicit flow when PKCE is enabled')
     }
 
-    return this.handlePkce().then(maybeChallenge => {
-      const params = {
-        ...authParams,
-        provider,
-        ...maybeChallenge
-      }
-      if ('cordova' in window) {
-        return this.loginWithCordovaInAppBrowser(params)
-      }
-      else if (params.display === 'popup') {
-        return this.loginWithPopup(params)
-      }
-      else {
-        return this.loginWithRedirect(params)
-      }
-    })
-  }
-
-  private handlePkce(): PromiseLike<PkceParams> {
-    if (this.config.pkce) {
-      return this.generateAndStorePkceChallenge()
-          .then(challenge => {
-            return {
-              codeChallenge: challenge,
-              codeChallengeMethod: 'S256'
-            }
-          })
-    } else return Promise.resolve({})
-  }
-
-  private generateAndStorePkceChallenge() : PromiseLike<string> {
-    const randomValues = window.crypto.getRandomValues(new Uint8Array(32))
-    const verifier = encodeToBase64(randomValues)
-    sessionStorage.setItem(this.verifierKey, verifier)
-    const binaryChallenge = convertFromString(verifier);
-
-    const eventualDigest: PromiseLike<string> = window.crypto.subtle
-        .digest('SHA-256', binaryChallenge)
-        .then(hash => encodeToBase64(hash))
-    return eventualDigest;
+    return computePkceParams(this.config.pkce, this.verifierKey).then(maybeChallenge => {
+          const params = {
+            ...authParams,
+            provider,
+            ...maybeChallenge
+          }
+          if ('cordova' in window) {
+            return this.loginWithCordovaInAppBrowser(params)
+          }
+          else if (params.display === 'popup') {
+            return this.loginWithPopup(params)
+          }
+          else {
+            return this.loginWithRedirect(params)
+          }
+        })
   }
 
   exchangeAuthorizationCodeWithPkce(params: TokenRequestParameters) {
