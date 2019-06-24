@@ -7,6 +7,7 @@ import { delay } from '../../lib/promise'
 
 
 const clientId = 'myclientid'
+const scope = 'openid profile email phone'
 
 function coreApi() {
   return createClient({ clientId: clientId, domain: 'local.reach5.net' })
@@ -29,7 +30,7 @@ test('with default auth config (email/password)', async () => {
 
   // When
   let error = null
-  api.loginWithPassword({ email, password }).catch(err => error = err)
+  api.loginWithPassword({ email, password, auth: { scope } }).catch(err => error = err)
 
   await delay(1)
 
@@ -39,14 +40,14 @@ test('with default auth config (email/password)', async () => {
   expect(passwordLoginCall).toHaveBeenCalledWith('https://local.reach5.net/identity/v1/password/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json;charset=UTF-8' },
-    body: `{"client_id":"${clientId}","email":"${email}","password":"${password}"}`
+    body: `{"client_id":"${clientId}","scope":"${scope}","email":"${email}","password":"${password}"}`
   })
 
   expect(window.location.assign).toHaveBeenCalledWith(
     'https://local.reach5.net/identity/v1/password/callback?' + toQueryString({
       'client_id': clientId,
       'response_type': 'token',
-      'scope': 'openid profile email phone',
+      'scope': scope,
       'display': 'page',
       'tkn': passwordToken
     })
@@ -65,7 +66,7 @@ test('with default auth config (phone/password)', async () => {
 
   // When
   let error = null
-  api.loginWithPassword({ phoneNumber, password }).catch(err => error = err)
+  api.loginWithPassword({ phoneNumber, password, auth: { scope } }).catch(err => error = err)
 
   await delay(1)
 
@@ -75,14 +76,14 @@ test('with default auth config (phone/password)', async () => {
   expect(passwordLoginCall).toHaveBeenCalledWith('https://local.reach5.net/identity/v1/password/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json;charset=UTF-8' },
-    body: `{"client_id":"${clientId}","phone_number":"${phoneNumber}","password":"${password}"}`
+    body: `{"client_id":"${clientId}","scope":"${scope}","phone_number":"${phoneNumber}","password":"${password}"}`
   })
 
   expect(window.location.assign).toHaveBeenCalledWith(
     'https://local.reach5.net/identity/v1/password/callback?' + toQueryString({
       'client_id': clientId,
       'response_type': 'token',
-      'scope': 'openid profile email phone',
+      'scope': scope,
       'display': 'page',
       'tkn': passwordToken
     })
@@ -123,7 +124,7 @@ test('with popup mode (email/password)', async () => {
     'https://local.reach5.net/identity/v1/password/callback?' + toQueryString({
       'client_id': clientId,
       'response_type': 'code',
-      'scope': 'openid profile email phone',
+      'scope': scope,
       'display': 'page',
       'redirect_uri': redirectUri,
       'tkn': passwordToken
@@ -163,7 +164,7 @@ test('with default auth (email/password)', async () => {
   expect(passwordLoginCall).toHaveBeenCalledWith('https://local.reach5.net/identity/v1/password/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json;charset=UTF-8' },
-    body: `{"client_id":"${clientId}","email":"${email}","password":"${password}"}`
+    body: `{"client_id":"${clientId}","scope":"openid email","email":"${email}","password":"${password}"}`
   })
 
   expect(window.location.assign).toHaveBeenCalledWith(
