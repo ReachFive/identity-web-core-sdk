@@ -6,6 +6,7 @@ import createEventManager, { Events } from './identityEventManager'
 import createUrlParser from './urlParser'
 import { toQueryString } from '../utils/queryString'
 import { rawRequest } from './httpClient'
+import { TokenRequestParameters } from './pkceService'
 
 export { AuthResult } from './authResult'
 export { AuthOptions } from './authOptions'
@@ -25,6 +26,7 @@ export type Client = {
   startPasswordless: (params: PasswordlessParams, options?: AuthOptions) => Promise<void>
   verifyPasswordless: (params: PasswordlessParams) => Promise<void>
   loginWithSocialProvider: (provider: string, options?: AuthOptions) => Promise<void>
+  exchangeAuthorizationCodeWithPkce: (params: TokenRequestParameters) => Promise<void>
   requestPasswordReset: (params: RequestPasswordResetParams) => Promise<void>
   unlink: (params: { accessToken: string; identityId: string; fields?: string }) => Promise<void>
   refreshTokens: (params: { accessToken: string }) => Promise<AuthResult>
@@ -90,6 +92,10 @@ export function createClient(creationConfig: Config): Client {
 
   function loginWithSocialProvider(provider: string, options: AuthOptions = {}) {
     return apiClient.then(api => api.loginWithSocialProvider(provider, options))
+  }
+
+  function exchangeAuthorizationCodeWithPkce(params: TokenRequestParameters) {
+    return apiClient.then(api => api.exchangeAuthorizationCodeWithPkce(params))
   }
 
   function requestPasswordReset(params: RequestPasswordResetParams) {
@@ -178,6 +184,7 @@ export function createClient(creationConfig: Config): Client {
     startPasswordless,
     verifyPasswordless,
     loginWithSocialProvider,
+    exchangeAuthorizationCodeWithPkce,
     requestPasswordReset,
     unlink,
     refreshTokens,
