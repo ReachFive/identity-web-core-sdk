@@ -9,7 +9,6 @@ export type TokenRequestParameters = {
 
 export function computePkceParams(pkceEnabled: boolean = false, verifierKey: string): Promise<PkceParams> {
     if (pkceEnabled) {
-        console.log('PKCE enabled')
         const verifier = generateCodeVerifier()
         sessionStorage.setItem(verifierKey, verifier)
         return computeCodeChallenge(verifier)
