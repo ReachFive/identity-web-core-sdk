@@ -10,6 +10,8 @@ beforeEach(() => {
   window.location.assign = jest.fn()
 })
 
+const defaultScope = 'openid profile email phone'
+
 test('with default auth', async () => {
   // Given
   const { api, clientId, domain } = createDefaultTestClient()
@@ -47,6 +49,7 @@ test('with default auth', async () => {
     headers: headers.jsonAndDefaultLang,
     body: JSON.stringify({
       client_id: clientId,
+      scope: defaultScope,
       data: {
         given_name: 'John',
         family_name: 'Doe',
@@ -60,7 +63,7 @@ test('with default auth', async () => {
       toQueryString({
         client_id: clientId,
         response_type: 'token',
-        scope: 'openid profile email phone',
+        scope: defaultScope,
         display: 'page',
         tkn: signupToken
       })
@@ -104,6 +107,7 @@ test('with auth param', async () => {
     headers: headers.jsonAndDefaultLang,
     body: JSON.stringify({
       client_id: clientId,
+      scope: defaultScope,
       data: {
         email: 'john.doe@example.com',
         password: 'P@ssw0rd'
@@ -115,7 +119,7 @@ test('with auth param', async () => {
       toQueryString({
         client_id: clientId,
         response_type: 'code',
-        scope: 'openid profile email phone',
+        scope: defaultScope,
         display: 'page',
         redirect_uri: redirectUri,
         tkn: signupToken
@@ -161,7 +165,7 @@ test('popup mode ignored', async () => {
       toQueryString({
         client_id: clientId,
         response_type: 'token',
-        scope: 'openid profile email phone',
+        scope: defaultScope,
         display: 'page', // Not popup
         tkn: signupToken
       })

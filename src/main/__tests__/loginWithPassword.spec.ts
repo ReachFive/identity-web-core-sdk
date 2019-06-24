@@ -10,6 +10,8 @@ beforeEach(() => {
   window.location.assign = jest.fn()
 })
 
+const defaultScope = 'openid profile email phone'
+
 test('with default auth config (email/password)', async () => {
   // Given
   const { api, clientId, domain } = createDefaultTestClient()
@@ -32,7 +34,7 @@ test('with default auth config (email/password)', async () => {
   expect(passwordLoginCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/password/login`, {
     method: 'POST',
     headers: headers.jsonAndDefaultLang,
-    body: `{"client_id":"${clientId}","email":"${email}","password":"${password}"}`
+    body: `{"client_id":"${clientId}","scope":"${defaultScope}",email":"${email}","password":"${password}"}`
   })
 
   expect(window.location.assign).toHaveBeenCalledWith(
@@ -40,7 +42,7 @@ test('with default auth config (email/password)', async () => {
       toQueryString({
         client_id: clientId,
         response_type: 'token',
-        scope: 'openid profile email phone',
+        scope: defaultScope,
         display: 'page',
         tkn: passwordToken
       })
@@ -69,7 +71,7 @@ test('with default auth config (phone/password)', async () => {
   expect(passwordLoginCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/password/login`, {
     method: 'POST',
     headers: headers.jsonAndDefaultLang,
-    body: `{"client_id":"${clientId}","phone_number":"${phoneNumber}","password":"${password}"}`
+    body: `{"client_id":"${clientId}","scope":"${defaultScope}","phone_number":"${phoneNumber}","password":"${password}"}`
   })
 
   expect(window.location.assign).toHaveBeenCalledWith(
@@ -77,7 +79,7 @@ test('with default auth config (phone/password)', async () => {
       toQueryString({
         client_id: clientId,
         response_type: 'token',
-        scope: 'openid profile email phone',
+        scope: defaultScope,
         display: 'page',
         tkn: passwordToken
       })
@@ -119,7 +121,7 @@ test('with popup mode (email/password)', async () => {
       toQueryString({
         client_id: clientId,
         response_type: 'code',
-        scope: 'openid profile email phone',
+        scope: defaultScope,
         display: 'page',
         redirect_uri: redirectUri,
         tkn: passwordToken
@@ -159,7 +161,7 @@ test('with default auth (email/password)', async () => {
   expect(passwordLoginCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/password/login`, {
     method: 'POST',
     headers: headers.jsonAndDefaultLang,
-    body: `{"client_id":"${clientId}","email":"${email}","password":"${password}"}`
+    body: `{"client_id":"${clientId}","scope":"openid email","email":"${email}","password":"${password}"}`
   })
 
   expect(window.location.assign).toHaveBeenCalledWith(
