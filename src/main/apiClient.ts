@@ -295,6 +295,7 @@ export default class ApiClient {
   private loginWithPasswordByRedirect({ auth = {}, ...rest }: LoginWithPasswordParams) {
     return this.requestPost<{ tkn: string }>('/password/login', {
       clientId: this.config.clientId,
+      scope: resolveScope(auth),
       ...rest
     }).then(
       ({ tkn }) => this.loginWithPasswordToken(tkn, auth)
@@ -353,7 +354,7 @@ export default class ApiClient {
         }).then(result => this.fireAuthenticatedEvent(result))
       )
       : (
-        this.requestPost<{ tkn: string }>('/signup', { clientId: this.config.clientId, acceptTos, data })
+        this.requestPost<{ tkn: string }>('/signup', { clientId: this.config.clientId, scope: resolveScope(auth), acceptTos, data })
           .then(({ tkn }) => this.loginWithPasswordToken(tkn, auth))
       )
 
