@@ -313,6 +313,7 @@ export default class ApiClient {
       .post<{ tkn: string }>('/password/login', {
         body: {
           clientId: this.config.clientId,
+          scope: resolveScope(auth),
           ...rest
         }
       })
@@ -379,6 +380,7 @@ export default class ApiClient {
           .post<{ tkn: string }>('/signup', {
             body: {
               clientId: this.config.clientId,
+              scope: resolveScope(auth),
               acceptTos,
               data
             }
