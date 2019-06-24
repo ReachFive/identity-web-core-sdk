@@ -34,7 +34,7 @@ test('with default auth config (email/password)', async () => {
   expect(passwordLoginCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/password/login`, {
     method: 'POST',
     headers: headers.jsonAndDefaultLang,
-    body: `{"client_id":"${clientId}","scope":"${defaultScope}",email":"${email}","password":"${password}"}`
+    body: `{"client_id":"${clientId}","scope":"${defaultScope}","email":"${email}","password":"${password}"}`
   })
 
   expect(window.location.assign).toHaveBeenCalledWith(
