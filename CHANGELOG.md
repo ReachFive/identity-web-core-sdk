@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.0-alpha.17
+
+### 21 juin 2019
+
+### Fixes
+- Pass auth options `scope` used by `loginWithPassword` and `signup` to the Identity API calls.
+
 ## 0.1.0-alpha.16
 
 ### 21 juin 2019
