@@ -457,9 +457,9 @@ export default class ApiClient {
     return this.http.get<Profile>('/me', { query: { fields }, accessToken })
   }
 
-  updateProfile({ accessToken, data }: { accessToken: string; data: Profile }): Promise<void> {
+  updateProfile({ accessToken, redirectUrl, data }: { accessToken: string, redirectUrl?: string, data: Profile }): Promise<void> {
     return this.http
-      .post('/update-profile', { body: data, accessToken })
+      .post('/update-profile', { body: {...data, redirectUrl}, accessToken })
       .then(() => this.eventManager.fireEvent('profile_updated', data))
   }
 
