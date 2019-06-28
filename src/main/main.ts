@@ -34,7 +34,7 @@ export type Client = {
   checkSession: (options?: AuthOptions) => Promise<AuthResult>
   logout: (params?: { redirectTo?: string }) => Promise<void>
   getUser: (params: { accessToken: string; fields?: string }) => Promise<Profile>
-  updateProfile: (params: { accessToken: string; data: Profile }) => Promise<void>
+  updateProfile: (params: { accessToken: string, redirectUrl?: string, data: Profile }) => Promise<void>
   updateEmail: (params: { accessToken: string, email: string, redirectUrl?: string }) => Promise<void>
   updatePassword: (params: UpdatePasswordParams) => Promise<void>
   updatePhoneNumber: (params: { accessToken: string; phoneNumber: string }) => Promise<void>
@@ -126,7 +126,7 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.getUser(params))
   }
 
-  function updateProfile(params: { accessToken: string; data: Profile }) {
+  function updateProfile(params: { accessToken: string, redirectUrl?: string, data: Profile }) {
     return apiClient.then(api => api.updateProfile(params))
   }
 

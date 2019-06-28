@@ -14,7 +14,7 @@ import { popupSize } from './providerPopupSize'
 import { createHttpClient, HttpClient } from './httpClient'
 import { computePkceParams, TokenRequestParameters } from './pkceService'
 
-export type SignupParams = { data: Profile; auth?: AuthOptions }
+export type SignupParams = { data: Profile; auth?: AuthOptions, redirectUrl?: string }
 
 type EmailLoginWithPasswordParams = { email: string; password: string; auth?: AuthOptions }
 type PhoneNumberLoginWithPasswordParams = { phoneNumber: string; password: string; auth?: AuthOptions }
@@ -362,7 +362,7 @@ export default class ApiClient {
   }
 
   signup(params: SignupParams): Promise<void> {
-    const { data, auth } = params
+    const { data, auth, redirectUrl } = params
     const acceptTos = auth && auth.acceptTos
 
     const result = window.cordova
@@ -370,6 +370,7 @@ export default class ApiClient {
           .post<AuthResult>(`${this.baseUrl}/signup-token`, {
             body: {
               clientId: this.config.clientId,
+              redirectUrl,
               scope: resolveScope(auth),
               ...pick(auth, 'origin'),
               data
@@ -380,6 +381,7 @@ export default class ApiClient {
           .post<{ tkn: string }>('/signup', {
             body: {
               clientId: this.config.clientId,
+              redirectUrl,
               scope: resolveScope(auth),
               acceptTos,
               data
@@ -455,9 +457,9 @@ export default class ApiClient {
     return this.http.get<Profile>('/me', { query: { fields }, accessToken })
   }
 
-  updateProfile({ accessToken, data }: { accessToken: string; data: Profile }): Promise<void> {
+  updateProfile({ accessToken, redirectUrl, data }: { accessToken: string, redirectUrl?: string, data: Profile }): Promise<void> {
     return this.http
-      .post('/update-profile', { body: data, accessToken })
+      .post('/update-profile', { body: {...data, redirectUrl}, accessToken })
       .then(() => this.eventManager.fireEvent('profile_updated', data))
   }
 
