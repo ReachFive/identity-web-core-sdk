@@ -32,7 +32,7 @@ type RequestParams = {
   withCookies?: boolean
 }
 
-export type SignupParams = { data: Profile, auth?: AuthOptions }
+export type SignupParams = { data: Profile, auth?: AuthOptions, redirectUrl?: string }
 
 type EmailLoginWithPasswordParams = { email: string, password: string, auth?: AuthOptions }
 type PhoneNumberLoginWithPasswordParams = { phoneNumber: string, password: string, auth?: AuthOptions }
@@ -296,7 +296,7 @@ export default class ApiClient {
   }
 
   signup(params: SignupParams) {
-    const { data, auth } = params
+    const { data, auth, redirectUrl } = params
     const acceptTos = auth && auth.acceptTos
 
     const result = window.cordova
@@ -305,11 +305,12 @@ export default class ApiClient {
           clientId: this.config.clientId,
           scope: resolveScope(auth),
           ...(pick(auth, 'origin')),
+          redirectUrl,
           data
         }).then(result => this.fireAuthenticatedEvent(result))
       )
       : (
-        this.requestPost<{ tkn: string }>('/signup', { clientId: this.config.clientId, acceptTos, data })
+        this.requestPost<{ tkn: string }>('/signup', { clientId: this.config.clientId, acceptTos, data, redirectUrl })
           .then(({ tkn }) => this.loginWithPasswordToken(tkn, auth))
       )
 
@@ -373,10 +374,10 @@ export default class ApiClient {
     return this.requestGet('/me', params, { accessToken })
   }
 
-  updateProfile({ accessToken, data }: { accessToken: string, data: Profile }) {
+  updateProfile({ accessToken, data, redirectUrl }: { accessToken: string, data: Profile, redirectUrl?: string }) {
     return this.requestPost(
       '/update-profile',
-      data,
+      {...data, redirectUrl },
       { accessToken }
     ).then(() => this.fireEvent('profile_updated', data))
   }
