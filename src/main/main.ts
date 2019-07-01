@@ -1,10 +1,11 @@
 import { errorDebugString } from 'validation.ts'
 import { ProviderId } from '../shared/providers/providers'
 import { Profile } from '../shared/model'
-import ApiClient, { SignupParams, LoginWithPasswordParams, PasswordlessParams, Events } from './apiClient'
+import ApiClient, { SignupParams, LoginWithPasswordParams, PasswordlessParams, Events, RequestPasswordResetParams, UpdatePasswordParams } from './apiClient'
 import { AuthOptions } from './authOptions'
 import { apiClientConfig, ApiClientConfig } from './apiClientConfig'
 import EventManager from '../lib/eventManager'
+import { TokenRequestParameters } from "./pkceService";
 
 
 export function createClient(config: ApiClientConfig) {
@@ -34,7 +35,11 @@ export function createClient(config: ApiClientConfig) {
     return apiClient.then(api => api.loginWithSocialProvider(provider, options))
   }
 
-  function requestPasswordReset(params: { email: string }) {
+  function exchangeAuthorizationCodeWithPkce(params: TokenRequestParameters) {
+    return apiClient.then(api => api.exchangeAuthorizationCodeWithPkce(params))
+  }
+
+  function requestPasswordReset(params: RequestPasswordResetParams) {
     return apiClient.then(api => api.requestPasswordReset(params))
   }
 
@@ -62,11 +67,11 @@ export function createClient(config: ApiClientConfig) {
     return apiClient.then(api => api.updateProfile(params))
   }
 
-  function updateEmail(params: { accessToken: string, email: string }) {
+  function updateEmail(params: { accessToken: string, email: string, redirectUrl?: string }) {
     return apiClient.then(api => api.updateEmail(params))
   }
 
-  function updatePassword(params: { accessToken?: string, password: string, oldPassword?: string, userId?: string }) {
+  function updatePassword(params: UpdatePasswordParams) {
     return apiClient.then(api => api.updatePassword(params))
   }
 
@@ -114,6 +119,7 @@ export function createClient(config: ApiClientConfig) {
     startPasswordless,
     verifyPasswordless,
     loginWithSocialProvider,
+    exchangeAuthorizationCodeWithPkce,
     requestPasswordReset,
     unlink,
     refreshTokens,

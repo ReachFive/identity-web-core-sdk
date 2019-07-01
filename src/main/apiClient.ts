@@ -14,7 +14,7 @@ import { Profile, ErrorResponse } from '../shared/model'
 import { ApiClientConfig } from './apiClientConfig'
 import { prepareAuthOptions, resolveScope, AuthOptions } from './authOptions'
 import { AuthResult } from './authResult'
-
+import { computePkceParams, TokenRequestParameters } from './pkceService'
 
 export type Events = {
   'authenticated': AuthResult
@@ -39,6 +39,34 @@ type PhoneNumberLoginWithPasswordParams = { phoneNumber: string, password: strin
 
 export type LoginWithPasswordParams = EmailLoginWithPasswordParams | PhoneNumberLoginWithPasswordParams
 
+type EmailRequestPasswordResetParams = { email: string, redirectUrl?: string }
+type SmsRequestPasswordResetParams = { phoneNumber: string }
+export type RequestPasswordResetParams = EmailRequestPasswordResetParams | SmsRequestPasswordResetParams
+
+type AccessTokenUpdatePasswordParams = {
+  accessToken?: string
+  password: string
+  oldPassword?: string
+  userId?: string
+}
+
+type EmailVerificationCodeUpdatePasswordParams = {
+  accessToken?: string
+  email: string
+  verificationCode: string
+  password: string
+}
+
+type SmsVerificationCodeUpdatePasswordParams = {
+  accessToken?: string
+  phoneNumber: string
+  verificationCode: string
+  password: string
+}
+
+export type UpdatePasswordParams =
+  AccessTokenUpdatePasswordParams | EmailVerificationCodeUpdatePasswordParams | SmsVerificationCodeUpdatePasswordParams
+
 export type PasswordlessParams = { authType: 'magic_link' | 'sms', email?: string, phoneNumber?: string }
 
 
@@ -61,24 +89,41 @@ export default class ApiClient {
   private authorizeUrl: string
   private tokenUrl: string
   private popupRelayUrl: string
-
+  private verifierKey: string = 'verifier_key'
 
   loginWithSocialProvider(provider: ProviderId, opts: AuthOptions = {}) {
-    const authParams = this.authParams(opts, { acceptPopupMode: true })
+    const authParams = this.authParams(opts, {acceptPopupMode: true})
 
-    const params = {
-      ...authParams,
-      provider
+    if (this.config.pkce && authParams.responseType === 'token') {
+      throw new Error('Cannot use implicit flow when PKCE is enabled')
     }
-    if ('cordova' in window) {
-      return this.loginWithCordovaInAppBrowser(params)
-    }
-    else if (params.display === 'popup') {
-      return this.loginWithPopup(params)
-    }
-    else {
-      return this.loginWithRedirect(params)
-    }
+
+    return computePkceParams(this.config.pkce, this.verifierKey).then(maybeChallenge => {
+          const params = {
+            ...authParams,
+            provider,
+            ...maybeChallenge
+          }
+          if ('cordova' in window) {
+            return this.loginWithCordovaInAppBrowser(params)
+          }
+          else if (params.display === 'popup') {
+            return this.loginWithPopup(params)
+          }
+          else {
+            return this.loginWithRedirect(params)
+          }
+        })
+  }
+
+  exchangeAuthorizationCodeWithPkce(params: TokenRequestParameters) {
+    return this.requestPost<AuthResult>(this.tokenUrl, {
+      clientId: this.config.clientId,
+      grantType: 'authorization_code',
+      code: params.code,
+      redirectUri: params.redirectUri,
+      code_verifier: sessionStorage.getItem(this.verifierKey)
+    }).then(result => this.fireAuthenticatedEvent(result))
   }
 
   loginFromSession(opts: AuthOptions = {}) {
@@ -150,7 +195,6 @@ export default class ApiClient {
   private openInCordovaSystemBrowser(url: string) {
     return this.getAvailableBrowserTabPlugin().then(maybeBrowserTab => {
       if (!window.cordova) return
-
       if (maybeBrowserTab) {
         maybeBrowserTab.openUrl(url, () => {}, logError)
       }
@@ -251,6 +295,7 @@ export default class ApiClient {
   private loginWithPasswordByRedirect({ auth = {}, ...rest }: LoginWithPasswordParams) {
     return this.requestPost<{ tkn: string }>('/password/login', {
       clientId: this.config.clientId,
+      scope: resolveScope(auth),
       ...rest
     }).then(
       ({ tkn }) => this.loginWithPasswordToken(tkn, auth)
@@ -310,7 +355,7 @@ export default class ApiClient {
         }).then(result => this.fireAuthenticatedEvent(result))
       )
       : (
-        this.requestPost<{ tkn: string }>('/signup', { clientId: this.config.clientId, acceptTos, data, redirectUrl })
+        this.requestPost<{ tkn: string }>('/signup', { clientId: this.config.clientId, scope: resolveScope(auth), acceptTos, data, redirectUrl })
           .then(({ tkn }) => this.loginWithPasswordToken(tkn, auth))
       )
 
@@ -322,14 +367,14 @@ export default class ApiClient {
     })
   }
 
-  requestPasswordReset({ email }: { email: string }) {
+  requestPasswordReset(params: RequestPasswordResetParams) {
     return this.requestPost('/forgot-password', {
       clientId: this.config.clientId,
-      email
+      ...params
     })
   }
 
-  updatePassword(params: { accessToken?: string, password: string, oldPassword?: string, userId?: string }) {
+  updatePassword(params: UpdatePasswordParams) {
     const { accessToken, ...data } = params
     return this.requestPost(
       '/update-password',
@@ -338,7 +383,7 @@ export default class ApiClient {
     )
   }
 
-  updateEmail(params: { accessToken: string, email: string }) {
+  updateEmail(params: { accessToken: string, email: string, redirectUrl?: string }) {
     const { accessToken, ...data } = params
     return this.requestPost('/update-email', data, { accessToken })
   }

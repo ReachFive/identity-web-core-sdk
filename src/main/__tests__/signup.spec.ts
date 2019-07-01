@@ -8,6 +8,7 @@ import { toQueryString } from '../../lib/queryString'
 
 
 const clientId = 'poefz'
+const scope = 'openid profile email phone'
 
 function coreApi() {
   return createClient({
@@ -60,6 +61,7 @@ test('with default auth', async () => {
     },
     body: JSON.stringify({
       'client_id': clientId,
+      'scope': scope,
       'data': {
         'given_name': 'John',
         'family_name': 'Doe',
@@ -72,7 +74,7 @@ test('with default auth', async () => {
     'https://local.reach5.net/identity/v1/password/callback?' + toQueryString({
       'client_id': clientId,
       'response_type': 'token',
-      'scope': 'openid profile email phone',
+      'scope': scope,
       'display': 'page',
       'tkn': signupToken
     })
@@ -118,6 +120,7 @@ test('with auth param', async () => {
     },
     body: JSON.stringify({
       'client_id': clientId,
+      'scope': scope,
       'data': {
         'email': 'john.doe@example.com',
         'password': 'P@ssw0rd'
@@ -128,7 +131,7 @@ test('with auth param', async () => {
     'https://local.reach5.net/identity/v1/password/callback?' + toQueryString({
       'client_id': clientId,
       'response_type': 'code',
-      'scope': 'openid profile email phone',
+      'scope': scope,
       'display': 'page',
       'redirect_uri': redirectUri,
       'tkn': signupToken
@@ -173,7 +176,7 @@ test('popup mode ignored', async () => {
     'https://local.reach5.net/identity/v1/password/callback?' + toQueryString({
       'client_id': clientId,
       'response_type': 'token',
-      'scope': 'openid profile email phone',
+      'scope': scope,
       'display': 'page', // Not popup
       'tkn': signupToken
     })
