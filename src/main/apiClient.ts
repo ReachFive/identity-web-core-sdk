@@ -55,6 +55,7 @@ export type ApiClientConfig = {
   clientId: string
   domain: string
   language?: string
+  scope?: string
   sso: boolean
   pkceEnabled?: boolean
 }
@@ -301,7 +302,7 @@ export default class ApiClient {
           grantType: 'password',
           username: hasLoggedWithEmail(params) ? params.email : params.phoneNumber,
           password: params.password,
-          scope: resolveScope(auth),
+          scope: this.resolveScope(auth),
           ...pick(auth, 'origin')
         }
       })
@@ -313,7 +314,7 @@ export default class ApiClient {
       .post<{ tkn: string }>('/password/login', {
         body: {
           clientId: this.config.clientId,
-          scope: resolveScope(auth),
+          scope: this.resolveScope(auth),
           ...rest
         }
       })
@@ -371,7 +372,7 @@ export default class ApiClient {
             body: {
               clientId: this.config.clientId,
               redirectUrl,
-              scope: resolveScope(auth),
+              scope: this.resolveScope(auth),
               ...pick(auth, 'origin'),
               data
             }
@@ -382,7 +383,7 @@ export default class ApiClient {
             body: {
               clientId: this.config.clientId,
               redirectUrl,
-              scope: resolveScope(auth),
+              scope: this.resolveScope(auth),
               acceptTos,
               data
             }
@@ -499,10 +500,14 @@ export default class ApiClient {
     }
   }
 
+  private resolveScope(opts: AuthOptions = {}) {
+    return resolveScope(opts, this.config.scope)
+  }
+
   private authParams(opts: AuthOptions, { acceptPopupMode = false } = {}) {
     return {
       clientId: this.config.clientId,
-      ...prepareAuthOptions(opts, { acceptPopupMode })
+      ...prepareAuthOptions(opts, { acceptPopupMode }, this.config.scope)
     }
   }
 }
