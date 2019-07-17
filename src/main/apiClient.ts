@@ -279,6 +279,10 @@ export default class ApiClient {
     })
   }
 
+  private resolveScope(opts: AuthOptions = {}) {
+    return resolveScope(opts, this.config.scope)
+  }
+
   private loginWithPasswordByOAuth(params: LoginWithPasswordParams) {
     const auth = params.auth
 
@@ -287,7 +291,7 @@ export default class ApiClient {
       grantType: 'password',
       username: hasLoggedWithEmail(params) ? params.email : params.phoneNumber,
       password: params.password,
-      scope: resolveScope(auth),
+      scope: this.resolveScope(auth),
       ...(pick(auth, 'origin'))
     }).then(result => this.fireAuthenticatedEvent(result))
   }
@@ -295,7 +299,7 @@ export default class ApiClient {
   private loginWithPasswordByRedirect({ auth = {}, ...rest }: LoginWithPasswordParams) {
     return this.requestPost<{ tkn: string }>('/password/login', {
       clientId: this.config.clientId,
-      scope: resolveScope(auth),
+      scope: this.resolveScope(auth),
       ...rest
     }).then(
       ({ tkn }) => this.loginWithPasswordToken(tkn, auth)
@@ -348,13 +352,13 @@ export default class ApiClient {
       ? (
         this.requestPost<AuthResult>(`${this.baseUrl}/signup-token`, {
           clientId: this.config.clientId,
-          scope: resolveScope(auth),
+          scope: this.resolveScope(auth),
           ...(pick(auth, 'origin')),
           data
         }).then(result => this.fireAuthenticatedEvent(result))
       )
       : (
-        this.requestPost<{ tkn: string }>('/signup', { clientId: this.config.clientId, scope: resolveScope(auth), acceptTos, data })
+        this.requestPost<{ tkn: string }>('/signup', { clientId: this.config.clientId, scope: this.resolveScope(auth), acceptTos, data })
           .then(({ tkn }) => this.loginWithPasswordToken(tkn, auth))
       )
 
@@ -581,7 +585,7 @@ export default class ApiClient {
   private authParams(opts: AuthOptions, { acceptPopupMode = false } = {}) {
     return {
       clientId: this.config.clientId,
-      ...prepareAuthOptions(opts, { acceptPopupMode })
+      ...prepareAuthOptions(opts, { acceptPopupMode }, this.config.scope)
     }
   }
 }
