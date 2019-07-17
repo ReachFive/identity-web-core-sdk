@@ -41,7 +41,7 @@ type AuthParameters = {
   acceptTos?: boolean
 }
 
-export function resolveScope(opts: AuthOptions = {}, defaultScopes: string | undefined): string {
+export function resolveScope(opts: AuthOptions = {}, defaultScopes?: string): string {
   const fetchBasicProfile = isUndefined(opts.fetchBasicProfile) || opts.fetchBasicProfile
   const scopes = isUndefined(opts.scope) ? defaultScopes : opts.scope
   return uniq([
@@ -51,7 +51,7 @@ export function resolveScope(opts: AuthOptions = {}, defaultScopes: string | und
   ]).join(' ')
 }
 
-export function prepareAuthOptions(opts: AuthOptions = {}, { acceptPopupMode = false } = {}, defaultScopes: string | undefined): AuthParameters {
+export function prepareAuthOptions(opts: AuthOptions = {}, { acceptPopupMode = false } = {}, defaultScopes?: string): AuthParameters {
   return {
     responseType: opts.redirectUri ? 'code' : 'token',
     scope: resolveScope(opts, defaultScopes),
