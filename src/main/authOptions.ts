@@ -49,12 +49,13 @@ type AuthParameters = {
 /**
  * Resolve the actual oauth2 scope according to the authentication options.
  */
-export function resolveScope(opts: AuthOptions = {}): string {
+export function resolveScope(opts: AuthOptions = {}, defaultScopes: string | undefined): string {
   const fetchBasicProfile = isUndefined(opts.fetchBasicProfile) || opts.fetchBasicProfile
+  const scopes = isUndefined(opts.scope) ? defaultScopes : opts.scope
   return uniq([
     ...(fetchBasicProfile ? ['openid', 'profile', 'email', 'phone'] : []),
     ...(opts.requireRefreshToken ? ['offline_access'] : []),
-    ...parseScope(opts.scope)
+    ...parseScope(scopes)
   ]).join(' ')
 }
 
@@ -67,11 +68,12 @@ export function resolveScope(opts: AuthOptions = {}): string {
  */
 export function prepareAuthOptions(
   opts: AuthOptions = {},
-  { acceptPopupMode = false }: { acceptPopupMode?: boolean } = {}
+  { acceptPopupMode = false }: { acceptPopupMode?: boolean } = {},
+  defaultScopes: string | undefined
 ): AuthParameters {
   return {
     responseType: opts.redirectUri ? 'code' : 'token',
-    scope: resolveScope(opts),
+    scope: resolveScope(opts, defaultScopes),
     display: opts.popupMode && acceptPopupMode ? 'popup' : 'page',
     ...pick(opts, [
       'responseType',
