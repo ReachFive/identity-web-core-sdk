@@ -49,7 +49,7 @@ type AuthParameters = {
 /**
  * Resolve the actual oauth2 scope according to the authentication options.
  */
-export function resolveScope(opts: AuthOptions = {}, defaultScopes: string | undefined): string {
+export function resolveScope(opts: AuthOptions = {}, defaultScopes?: string): string {
   const fetchBasicProfile = isUndefined(opts.fetchBasicProfile) || opts.fetchBasicProfile
   const scopes = isUndefined(opts.scope) ? defaultScopes : opts.scope
   return uniq([
@@ -69,7 +69,7 @@ export function resolveScope(opts: AuthOptions = {}, defaultScopes: string | und
 export function prepareAuthOptions(
   opts: AuthOptions = {},
   { acceptPopupMode = false }: { acceptPopupMode?: boolean } = {},
-  defaultScopes: string | undefined
+  defaultScopes?: string
 ): AuthParameters {
   return {
     responseType: opts.redirectUri ? 'code' : 'token',
