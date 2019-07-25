@@ -1,5 +1,6 @@
 import WinChan from 'winchan'
 import pick from 'lodash/pick'
+import isUndefined from 'lodash/isUndefined'
 
 import { logError } from '../utils/logger'
 import { QueryString, toQueryString } from '../utils/queryString'
@@ -16,8 +17,9 @@ import { computePkceParams, TokenRequestParameters } from './pkceService'
 
 export type SignupParams = { data: Profile; auth?: AuthOptions, redirectUrl?: string }
 
-type EmailLoginWithPasswordParams = { email: string; password: string; auth?: AuthOptions }
-type PhoneNumberLoginWithPasswordParams = { phoneNumber: string; password: string; auth?: AuthOptions }
+type LoginWithPasswordOptions = { password: string, saveCredentials?: boolean; auth?: AuthOptions }
+type EmailLoginWithPasswordParams =  LoginWithPasswordOptions & { email: string }
+type PhoneNumberLoginWithPasswordParams = LoginWithPasswordOptions & { phoneNumber: string }
 
 export type LoginWithPasswordParams = EmailLoginWithPasswordParams | PhoneNumberLoginWithPasswordParams
 
@@ -280,15 +282,38 @@ export default class ApiClient {
   }
 
   loginWithPassword(params: LoginWithPasswordParams): Promise<void> {
-    const resultPromise = window.cordova
+    const saveCredentials = !isUndefined(params.saveCredentials) && params.saveCredentials
+
+    const loginPromise = window.cordova
       ? this.loginWithPasswordByOAuth(params)
       : this.loginWithPasswordByRedirect(params)
+
+    const resultPromise = saveCredentials
+      ? loginPromise.then(() => this.storeCredentials(params))
+      : loginPromise
 
     return resultPromise.catch((err: any) => {
       if (err.error) {
         this.eventManager.fireEvent('login_failed', err)
       }
       throw err
+    })
+  }
+
+  private storeCredentials(params: LoginWithPasswordParams): Promise<void> {
+    const credentialParams = {
+      password: {
+        password: params.password,
+        id: hasLoggedWithEmail(params) ? params.email : params.phoneNumber
+      }
+    }
+
+    return navigator.credentials.create(credentialParams).then(credentials => {
+      if (!isUndefined(credentials) && credentials) {
+        return navigator.credentials.store(credentials).then(() => {})
+      } else {
+        return Promise.resolve()
+      }
     })
   }
 
