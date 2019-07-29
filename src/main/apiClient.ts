@@ -284,7 +284,7 @@ export default class ApiClient {
   loginWithPassword(params: LoginWithPasswordParams): Promise<void> {
     const saveCredentials = !isUndefined(params.saveCredentials) && params.saveCredentials
 
-    const loginPromise = window.cordova
+    const loginPromise = window.cordova || saveCredentials
       ? this.loginWithPasswordByOAuth(params)
       : this.loginWithPasswordByRedirect(params)
 
