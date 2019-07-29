@@ -497,6 +497,23 @@ export default class ApiClient {
     window.location.assign(`${this.baseUrl}/custom-token/login?${queryString}`)
   }
 
+  loginWithCredentials(): Promise<void> {
+    const request: CredentialRequestOptions = {
+      password: true,
+      mediation: 'silent'
+    }
+    return navigator.credentials.get(request).then(credentials => {
+      if (!isUndefined(credentials) && credentials instanceof PasswordCredential && credentials.password) {
+        const loginParams: EmailLoginWithPasswordParams = {
+          email: credentials.id,
+          password: credentials.password
+        }
+        return this.loginWithPasswordByOAuth(loginParams)
+      }
+      return Promise.reject(new Error('Invalid credentials'))
+    })
+  }
+
   getSessionInfo(): Promise<SessionInfo> {
     return this.http.get<SessionInfo>('/sso/data', {
       query: { clientId: this.config.clientId },
