@@ -308,13 +308,13 @@ export default class ApiClient {
       }
     }
 
-    return navigator.credentials.create(credentialParams).then(credentials => {
-      if (!isUndefined(credentials) && credentials) {
-        return navigator.credentials.store(credentials).then(() => {})
-      } else {
-        return Promise.resolve()
-      }
-    })
+    return navigator
+      .credentials
+      .create(credentialParams)
+      .then(credentials => !isUndefined(credentials) && credentials
+        ? navigator.credentials.store(credentials).then(() => {})
+        : Promise.resolve()
+      )
   }
 
   private loginWithPasswordByOAuth(params: LoginWithPasswordParams): Promise<void> {
