@@ -306,20 +306,25 @@ export default class ApiClient {
   }
 
   private storeCredentials(params: LoginWithPasswordParams): Promise<void> {
-    const credentialParams = {
-      password: {
-        password: params.password,
-        id: hasLoggedWithEmail(params) ? params.email : params.phoneNumber
+    if (navigator.credentials.create && navigator.credentials.store) {
+      const credentialParams = {
+        password: {
+          password: params.password,
+          id: hasLoggedWithEmail(params) ? params.email : params.phoneNumber
+        }
       }
-    }
 
-    return navigator
-      .credentials
-      .create(credentialParams)
-      .then(credentials => !isUndefined(credentials) && credentials
-        ? navigator.credentials.store(credentials).then(() => {})
-        : Promise.resolve()
-      )
+      return navigator
+        .credentials
+        .create(credentialParams)
+        .then(credentials => !isUndefined(credentials) && credentials
+          ? navigator.credentials.store(credentials).then(() => {})
+          : Promise.resolve()
+        )
+    } else {
+      logError("Unsupported Credentials Management API")
+      return Promise.resolve()
+    }
   }
 
   private loginWithPasswordByOAuth(params: LoginWithPasswordParams): Promise<void> {
@@ -503,21 +508,25 @@ export default class ApiClient {
   }
 
   loginWithCredentials(params: LoginWithCredentialsParams): Promise<void> {
-    const request: CredentialRequestOptions = {
-      password: true,
-      mediation: params.mediation || 'silent'
-    }
-    return navigator.credentials.get(request).then(credentials => {
-      if (!isUndefined(credentials) && credentials instanceof PasswordCredential && credentials.password) {
-        const loginParams: EmailLoginWithPasswordParams = {
-          email: credentials.id,
-          password: credentials.password,
-          auth: params.auth
-        }
-        return this.loginWithPasswordByOAuth(loginParams)
+    if (navigator.credentials.get) {
+      const request: CredentialRequestOptions = {
+        password: true,
+        mediation: params.mediation || 'silent'
       }
-      return Promise.reject(new Error('Invalid credentials'))
-    })
+      return navigator.credentials.get(request).then(credentials => {
+        if (!isUndefined(credentials) && credentials instanceof PasswordCredential && credentials.password) {
+          const loginParams: EmailLoginWithPasswordParams = {
+            email: credentials.id,
+            password: credentials.password,
+            auth: params.auth
+          }
+          return this.loginWithPasswordByOAuth(loginParams)
+        }
+        return Promise.reject(new Error('Invalid credentials'))
+      })
+    } else {
+      return Promise.reject(new Error('Unsupported Credentials Management API'))
+    }
   }
 
   getSessionInfo(): Promise<SessionInfo> {
