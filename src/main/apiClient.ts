@@ -23,6 +23,11 @@ type PhoneNumberLoginWithPasswordParams = LoginWithPasswordOptions & { phoneNumb
 
 export type LoginWithPasswordParams = EmailLoginWithPasswordParams | PhoneNumberLoginWithPasswordParams
 
+export type LoginWithCredentialsParams = {
+  mediation?: 'silent' | 'optional' | 'required'
+  auth?: AuthOptions
+}
+
 type EmailRequestPasswordResetParams = { email: string, redirectUrl?: string }
 type SmsRequestPasswordResetParams = { phoneNumber: string }
 export type RequestPasswordResetParams = EmailRequestPasswordResetParams | SmsRequestPasswordResetParams
@@ -497,16 +502,17 @@ export default class ApiClient {
     window.location.assign(`${this.baseUrl}/custom-token/login?${queryString}`)
   }
 
-  loginWithCredentials(): Promise<void> {
+  loginWithCredentials(params: LoginWithCredentialsParams): Promise<void> {
     const request: CredentialRequestOptions = {
       password: true,
-      mediation: 'silent'
+      mediation: params.mediation || 'silent'
     }
     return navigator.credentials.get(request).then(credentials => {
       if (!isUndefined(credentials) && credentials instanceof PasswordCredential && credentials.password) {
         const loginParams: EmailLoginWithPasswordParams = {
           email: credentials.id,
-          password: credentials.password
+          password: credentials.password,
+          auth: params.auth
         }
         return this.loginWithPasswordByOAuth(loginParams)
       }

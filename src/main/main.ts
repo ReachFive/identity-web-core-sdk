@@ -1,5 +1,5 @@
 import { Profile, RemoteSettings, SessionInfo } from './models'
-import ApiClient, { LoginWithPasswordParams, PasswordlessParams, RequestPasswordResetParams, SignupParams, UpdatePasswordParams } from './apiClient'
+import ApiClient, { LoginWithPasswordParams, LoginWithCredentialsParams, PasswordlessParams, RequestPasswordResetParams, SignupParams, UpdatePasswordParams } from './apiClient'
 import { AuthOptions } from './authOptions'
 import { AuthResult } from './authResult'
 import createEventManager, { Events } from './identityEventManager'
@@ -40,7 +40,7 @@ export type Client = {
   updatePhoneNumber: (params: { accessToken: string; phoneNumber: string }) => Promise<void>
   verifyPhoneNumber: (params: { accessToken: string; phoneNumber: string; verificationCode: string }) => Promise<void>
   loginWithCustomToken: (params: { token: string; auth: AuthOptions }) => Promise<void>
-  loginWithCredentials: () => Promise<void>
+  loginWithCredentials: (params: LoginWithCredentialsParams) => Promise<void>
   getSessionInfo: (params?: {}) => Promise<SessionInfo>
   checkUrlFragment: (url: string) => boolean
 }
@@ -151,8 +151,8 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.loginWithCustomToken(params))
   }
 
-  function loginWithCredentials() {
-    return apiClient.then(api => api.loginWithCredentials())
+  function loginWithCredentials(params: LoginWithCredentialsParams) {
+    return apiClient.then(api => api.loginWithCredentials(params))
   }
 
   function getSessionInfo() {
