@@ -22,7 +22,8 @@
     "types": [
       "lodash",
       "jest",
-      "node"
+      "node",
+      "webappsec-credential-management"
     ]
   },
   "include": [

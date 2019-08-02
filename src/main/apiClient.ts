@@ -1,5 +1,6 @@
 import WinChan from 'winchan'
 import pick from 'lodash/pick'
+import isUndefined from 'lodash/isUndefined'
 
 import { logError } from '../utils/logger'
 import { QueryString, toQueryString } from '../utils/queryString'
@@ -16,10 +17,16 @@ import { computePkceParams, TokenRequestParameters } from './pkceService'
 
 export type SignupParams = { data: Profile; auth?: AuthOptions, redirectUrl?: string }
 
-type EmailLoginWithPasswordParams = { email: string; password: string; auth?: AuthOptions }
-type PhoneNumberLoginWithPasswordParams = { phoneNumber: string; password: string; auth?: AuthOptions }
+type LoginWithPasswordOptions = { password: string, saveCredentials?: boolean; auth?: AuthOptions }
+type EmailLoginWithPasswordParams =  LoginWithPasswordOptions & { email: string }
+type PhoneNumberLoginWithPasswordParams = LoginWithPasswordOptions & { phoneNumber: string }
 
 export type LoginWithPasswordParams = EmailLoginWithPasswordParams | PhoneNumberLoginWithPasswordParams
+
+export type LoginWithCredentialsParams = {
+  mediation?: 'silent' | 'optional' | 'required'
+  auth?: AuthOptions
+}
 
 type EmailRequestPasswordResetParams = { email: string, redirectUrl?: string }
 type SmsRequestPasswordResetParams = { phoneNumber: string }
@@ -182,7 +189,10 @@ export default class ApiClient {
     })
   }
 
-  logout(opts: { redirectTo?: string } = {}): void {
+  logout(opts: { redirectTo?: string, removeCredentials?: boolean } = {}): void {
+    if (navigator.credentials.preventSilentAccess && opts.removeCredentials === true) {
+      navigator.credentials.preventSilentAccess()
+    }
     window.location.assign(`${this.baseUrl}/logout?${toQueryString(opts)}`)
   }
 
@@ -280,9 +290,15 @@ export default class ApiClient {
   }
 
   loginWithPassword(params: LoginWithPasswordParams): Promise<void> {
-    const resultPromise = window.cordova
+    const saveCredentials = !isUndefined(params.saveCredentials) && params.saveCredentials
+
+    const loginPromise = window.cordova || saveCredentials
       ? this.loginWithPasswordByOAuth(params)
       : this.loginWithPasswordByRedirect(params)
+
+    const resultPromise = saveCredentials
+      ? loginPromise.then(() => this.storeCredentials(params))
+      : loginPromise
 
     return resultPromise.catch((err: any) => {
       if (err.error) {
@@ -290,6 +306,28 @@ export default class ApiClient {
       }
       throw err
     })
+  }
+
+  private storeCredentials(params: LoginWithPasswordParams): Promise<void> {
+    if (navigator.credentials.create && navigator.credentials.store) {
+      const credentialParams = {
+        password: {
+          password: params.password,
+          id: hasLoggedWithEmail(params) ? params.email : params.phoneNumber
+        }
+      }
+
+      return navigator
+        .credentials
+        .create(credentialParams)
+        .then(credentials => !isUndefined(credentials) && credentials
+          ? navigator.credentials.store(credentials).then(() => {})
+          : Promise.resolve()
+        )
+    } else {
+      logError("Unsupported Credentials Management API")
+      return Promise.resolve()
+    }
   }
 
   private loginWithPasswordByOAuth(params: LoginWithPasswordParams): Promise<void> {
@@ -470,6 +508,28 @@ export default class ApiClient {
       token
     })
     window.location.assign(`${this.baseUrl}/custom-token/login?${queryString}`)
+  }
+
+  loginWithCredentials(params: LoginWithCredentialsParams): Promise<void> {
+    if (navigator.credentials.get) {
+      const request: CredentialRequestOptions = {
+        password: true,
+        mediation: params.mediation || 'silent'
+      }
+      return navigator.credentials.get(request).then(credentials => {
+        if (!isUndefined(credentials) && credentials instanceof PasswordCredential && credentials.password) {
+          const loginParams: EmailLoginWithPasswordParams = {
+            email: credentials.id,
+            password: credentials.password,
+            auth: params.auth
+          }
+          return this.loginWithPasswordByOAuth(loginParams)
+        }
+        return Promise.reject(new Error('Invalid credentials'))
+      })
+    } else {
+      return Promise.reject(new Error('Unsupported Credentials Management API'))
+    }
   }
 
   getSessionInfo(): Promise<SessionInfo> {

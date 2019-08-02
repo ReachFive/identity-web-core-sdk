@@ -1,5 +1,5 @@
 import { Profile, RemoteSettings, SessionInfo } from './models'
-import ApiClient, { LoginWithPasswordParams, PasswordlessParams, RequestPasswordResetParams, SignupParams, UpdatePasswordParams } from './apiClient'
+import ApiClient, { LoginWithPasswordParams, LoginWithCredentialsParams, PasswordlessParams, RequestPasswordResetParams, SignupParams, UpdatePasswordParams } from './apiClient'
 import { AuthOptions } from './authOptions'
 import { AuthResult } from './authResult'
 import createEventManager, { Events } from './identityEventManager'
@@ -32,7 +32,7 @@ export type Client = {
   refreshTokens: (params: { accessToken: string }) => Promise<AuthResult>
   loginFromSession: (options?: AuthOptions) => Promise<void>
   checkSession: (options?: AuthOptions) => Promise<AuthResult>
-  logout: (params?: { redirectTo?: string }) => Promise<void>
+  logout: (params?: { redirectTo?: string, removeCredentials?: boolean }) => Promise<void>
   getUser: (params: { accessToken: string; fields?: string }) => Promise<Profile>
   updateProfile: (params: { accessToken: string, redirectUrl?: string, data: Profile }) => Promise<void>
   updateEmail: (params: { accessToken: string, email: string, redirectUrl?: string }) => Promise<void>
@@ -40,6 +40,7 @@ export type Client = {
   updatePhoneNumber: (params: { accessToken: string; phoneNumber: string }) => Promise<void>
   verifyPhoneNumber: (params: { accessToken: string; phoneNumber: string; verificationCode: string }) => Promise<void>
   loginWithCustomToken: (params: { token: string; auth: AuthOptions }) => Promise<void>
+  loginWithCredentials: (params: LoginWithCredentialsParams) => Promise<void>
   getSessionInfo: (params?: {}) => Promise<SessionInfo>
   checkUrlFragment: (url: string) => boolean
 }
@@ -118,7 +119,7 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.checkSession(options))
   }
 
-  function logout(params: { redirectTo?: string } = {}) {
+  function logout(params: { redirectTo?: string, removeCredentials?: boolean } = {}) {
     return apiClient.then(api => api.logout(params))
   }
 
@@ -148,6 +149,10 @@ export function createClient(creationConfig: Config): Client {
 
   function loginWithCustomToken(params: { token: string; auth: AuthOptions }) {
     return apiClient.then(api => api.loginWithCustomToken(params))
+  }
+
+  function loginWithCredentials(params: LoginWithCredentialsParams) {
+    return apiClient.then(api => api.loginWithCredentials(params))
   }
 
   function getSessionInfo() {
@@ -198,6 +203,7 @@ export function createClient(creationConfig: Config): Client {
     updatePhoneNumber,
     verifyPhoneNumber,
     loginWithCustomToken,
+    loginWithCredentials,
     getSessionInfo,
     checkUrlFragment
   }
