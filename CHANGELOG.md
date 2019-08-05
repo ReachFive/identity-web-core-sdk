@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.6.0
+
+### 05 août 2019
+
+### Features
+- You can now redirect a profile to a specific URL after [signup]((https://developer.reach5.co/api/identity-web/#signup)) or [profile update]((https://developer.reach5.co/api/identity-web/#updateprofile)) with the new `redirectUrl` argument.
+- The [Credentials Management API](https://www.w3.org/TR/credential-management/) is now supported by the SDK. It will remove friction from sign-in flows by allowing users to be automatically signed back into a site even if their session has expired or they saved credentials on another device. Thus a new [`loginWithCredentials`](https://developer.reach5.co/api/identity-web/#loginWithCredentials) method was added and new arguments are passed to the [`loginWithPassword`](https://developer.reach5.co/api/identity-web/#loginwithpassword) and [`logout`](https://developer.reach5.co/api/identity-web/#logout) methods.
+  However it's still an experimental feature, so check first your browser compatibility.
+
+### Changes
+- The new default is to use the scopes defined for your client via the ReachFive console.
+
 ## v1.5.0
 
 ### 24 juin 2019
