@@ -1,15 +1,29 @@
 # Changelog
 
+## 0.1.0-alpha.19
+
+### 05/08/2019
+
+## Features
+- You can now redirect a profile to a specific URL after [signup](https://developer.reach5.co/api/identity-web-legacy/#signup) or [profile update](https://developer.reach5.co/api/identity-web-legacy/#updateprofile) with the new `redirectUrl` argument.
+
+## 0.1.0-alpha.18
+
+### 25/07/2019
+
+## Changes
+- The new default is to use the scopes defined for your client via the ReachFive console.
+
 ## 0.1.0-alpha.17
 
-### 24 juin 2019
+### 24/06/2019
 
 ### Fixes
 - Pass auth options `scope` used by `loginWithPassword` and `signup` to the Identity API calls.
 
 ## 0.1.0-alpha.16
 
-### 21 juin 2019
+### 21/06/2019
 
 ### Features
 - Update the signature of the `requestPasswordReset` method to handle a custom redirect url on the email sent.
@@ -19,14 +33,14 @@
 
 ## 0.1.0-alpha.15
 
-### 07 juin 2019
+### 07/06/2019
 
 ### Features
 - Update the signature of the `loginWithPassword` method to handle login with a phone number.
 
 ## 0.1.0-alpha.14
 
-### 18 mars 2019
+### 18/03/2019
 
 #### Fixes
 - Fix the typography of the `oldPassword` argument of the [`updatePassword`](src/main/apiClient.ts) method.
