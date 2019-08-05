@@ -63,7 +63,7 @@ export function createClient(config: ApiClientConfig) {
     return apiClient.then(api => api.getUser(params))
   }
 
-  function updateProfile(params: { accessToken: string, data: Profile }) {
+  function updateProfile(params: { accessToken: string, data: Profile, redirectUrl?: string }) {
     return apiClient.then(api => api.updateProfile(params))
   }
 
