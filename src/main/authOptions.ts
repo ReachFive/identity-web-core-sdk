@@ -41,19 +41,20 @@ type AuthParameters = {
   acceptTos?: boolean
 }
 
-export function resolveScope(opts: AuthOptions = {}): string {
+export function resolveScope(opts: AuthOptions = {}, defaultScopes?: string): string {
   const fetchBasicProfile = isUndefined(opts.fetchBasicProfile) || opts.fetchBasicProfile
+  const scopes = isUndefined(opts.scope) ? defaultScopes : opts.scope
   return uniq([
     ...(fetchBasicProfile ? ['openid', 'profile', 'email', 'phone'] : []),
     ...(opts.requireRefreshToken ? ['offline_access'] : []),
-    ...parseScope(opts.scope),
+    ...parseScope(scopes),
   ]).join(' ')
 }
 
-export function prepareAuthOptions(opts: AuthOptions = {}, { acceptPopupMode = false } = {}): AuthParameters {
+export function prepareAuthOptions(opts: AuthOptions = {}, { acceptPopupMode = false } = {}, defaultScopes?: string): AuthParameters {
   return {
     responseType: opts.redirectUri ? 'code' : 'token',
-    scope: resolveScope(opts),
+    scope: resolveScope(opts, defaultScopes),
     display: opts.popupMode && acceptPopupMode ? 'popup' : 'page',
     ...pick(opts, [
       'responseType',
