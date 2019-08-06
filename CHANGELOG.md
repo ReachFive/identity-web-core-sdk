@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.0-alpha.20
+
+### 06/08/2019
+
+### Fixes
+- The `lodash` dependency was temporary downgraded since it broke tests.
+
 ## 0.1.0-alpha.19
 
 ### 05/08/2019
