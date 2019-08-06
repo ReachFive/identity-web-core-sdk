@@ -1,6 +1,6 @@
 {
   "name": "@reachfive/identity-core",
-  "version": "0.1.0-alpha.19",
+  "version": "0.1.0-alpha.20",
   "license": "MIT",
   "main": "cjs/main.js",
   "module": "es/main.js",
