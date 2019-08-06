@@ -6,7 +6,7 @@
   "module": "es/main.js",
   "typings": "es/main/main.d.ts",
   "dependencies": {
-    "lodash": "^4.17.11",
+    "lodash": "4.17.11",
     "lodash-es": "4.17.10",
     "validation.ts": "0.0.23",
     "winchan": "0.2.0"
