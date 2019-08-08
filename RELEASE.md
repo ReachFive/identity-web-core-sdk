@@ -7,22 +7,30 @@
 3. Update the package's version with the command line below. It should respect the [semver](https://semver.org/) versioning.
 
     ```sh
-    npm version [<newversion> | major | minor | patch]
+    npm --no-git-tag-version version [<newversion> | major | minor | patch]
     ```
 
     If you want to release an _alpha_ version, launch: 
 
     ```sh
-    npm version prerelease --preid=alpha
+    npm version --no-git-tag-version prerelease --preid=alpha
     ```
 
-    This commands will update the version in the [`package.json`](package.json) file and will create a new tag (eg: `v1.1.3`).
+    This commands will update the version in the [`package.json`](package.json) file. 
+
+    Commit and push the change with the version.
+
+    ```sh
+    git add .
+    git commit -m "vx.y.z"
+    ```
 
 4. Submit your pull request.
 
-5. Once the branch is merged into `master`, push the new tag.
+5. Once the branch is merged into `master`, create the new tag.
    
     ```sh
+    git tag <vx.y.z> 
     git push origin <tag_name> 
     ```
 
