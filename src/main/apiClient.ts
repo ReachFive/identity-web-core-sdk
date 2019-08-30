@@ -433,7 +433,7 @@ export default class ApiClient {
     const loginParams: LoginWithPasswordParams | undefined =
       !isUndefined(data.phoneNumber)
       ? {password: data.password, phoneNumber: data.phoneNumber}
-      : data.email !== undefined
+      : !isUndefined(data.email)
       ? {password: data.password, email: data.email}
       : undefined
 
