@@ -6,7 +6,7 @@ import { logError } from '../utils/logger'
 import { QueryString, toQueryString } from '../utils/queryString'
 import { camelCaseProperties } from '../utils/transformObjectProperties'
 
-import { ErrorResponse, Profile, SessionInfo } from './models'
+import { ErrorResponse, Profile, SessionInfo, SignupProfile } from './models'
 import { AuthOptions, prepareAuthOptions, resolveScope } from './authOptions'
 import { AuthResult, enrichAuthResult } from './authResult'
 import { IdentityEventManager } from './identityEventManager'
@@ -15,7 +15,7 @@ import { popupSize } from './providerPopupSize'
 import { createHttpClient, HttpClient } from './httpClient'
 import { computePkceParams, TokenRequestParameters } from './pkceService'
 
-export type SignupParams = { data: Profile; auth?: AuthOptions, redirectUrl?: string }
+export type SignupParams = { data: SignupProfile; auth?: AuthOptions, redirectUrl?: string }
 
 type LoginWithPasswordOptions = { password: string, saveCredentials?: boolean; auth?: AuthOptions }
 type EmailLoginWithPasswordParams =  LoginWithPasswordOptions & { email: string }
