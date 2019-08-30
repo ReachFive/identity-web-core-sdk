@@ -15,7 +15,7 @@ import { popupSize } from './providerPopupSize'
 import { createHttpClient, HttpClient } from './httpClient'
 import { computePkceParams, TokenRequestParameters } from './pkceService'
 
-export type SignupParams = { data: SignupProfile; auth?: AuthOptions, redirectUrl?: string }
+export type SignupParams = { data: SignupProfile; saveCredentials?: boolean, auth?: AuthOptions, redirectUrl?: string }
 
 type LoginWithPasswordOptions = { password: string, saveCredentials?: boolean; auth?: AuthOptions }
 type EmailLoginWithPasswordParams =  LoginWithPasswordOptions & { email: string }
@@ -404,7 +404,7 @@ export default class ApiClient {
     const { data, auth, redirectUrl } = params
     const acceptTos = auth && auth.acceptTos
 
-    const result = window.cordova
+    const signupPromise = window.cordova
       ? this.http
           .post<AuthResult>(`${this.baseUrl}/signup-token`, {
             body: {
@@ -428,7 +428,20 @@ export default class ApiClient {
           })
           .then(({ tkn }) => this.loginWithPasswordToken(tkn, auth))
 
-    return result.catch(err => {
+    const saveCredentials = !isUndefined(params.saveCredentials) && params.saveCredentials
+
+    const loginParams: LoginWithPasswordParams | undefined =
+      !isUndefined(data.phoneNumber)
+      ? {password: data.password, phoneNumber: data.phoneNumber}
+      : data.email !== undefined
+      ? {password: data.password, email: data.email}
+      : undefined
+
+    const resultPromise = saveCredentials && loginParams != undefined
+      ? signupPromise.then(() => this.storeCredentials(loginParams))
+      : signupPromise
+
+    return resultPromise.catch(err => {
       if (err.error) {
         this.eventManager.fireEvent('signup_failed', err)
       }
