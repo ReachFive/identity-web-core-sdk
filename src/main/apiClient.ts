@@ -437,7 +437,7 @@ export default class ApiClient {
       ? {password: data.password, email: data.email}
       : undefined
 
-    const resultPromise = saveCredentials && loginParams != undefined
+    const resultPromise = saveCredentials && !isUndefined(loginParams)
       ? signupPromise.then(() => this.storeCredentials(loginParams))
       : signupPromise
 
