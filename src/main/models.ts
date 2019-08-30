@@ -3,7 +3,7 @@ export type Profile = Record<string, any>
 export type ProfileAddress = {
   title?: string
   isDefault?: boolean
-  addressType?: string
+  addressType?: 'billing' | 'delivery'
   streetAddress?: string
   locality?: string
   region?: string
