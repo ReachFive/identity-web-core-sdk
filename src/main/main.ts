@@ -1,5 +1,5 @@
 import { Profile, RemoteSettings, SessionInfo } from './models'
-import ApiClient, { LoginWithPasswordParams, LoginWithCredentialsParams, PasswordlessParams, RequestPasswordResetParams, SignupParams, UpdatePasswordParams } from './apiClient'
+import ApiClient, { LoginWithPasswordParams, LoginWithCredentialsParams, PasswordlessParams, RequestPasswordResetParams, SignupParams, UpdatePasswordParams, UpdateEmailParams } from './apiClient'
 import { AuthOptions } from './authOptions'
 import { AuthResult } from './authResult'
 import createEventManager, { Events } from './identityEventManager'
@@ -35,7 +35,7 @@ export type Client = {
   logout: (params?: { redirectTo?: string, removeCredentials?: boolean }) => Promise<void>
   getUser: (params: { accessToken: string; fields?: string }) => Promise<Profile>
   updateProfile: (params: { accessToken: string, redirectUrl?: string, data: Profile }) => Promise<void>
-  updateEmail: (params: { accessToken: string, email: string, redirectUrl?: string }) => Promise<void>
+  updateEmail: (params: UpdateEmailParams) => Promise<void>
   updatePassword: (params: UpdatePasswordParams) => Promise<void>
   updatePhoneNumber: (params: { accessToken: string; phoneNumber: string }) => Promise<void>
   verifyPhoneNumber: (params: { accessToken: string; phoneNumber: string; verificationCode: string }) => Promise<void>
@@ -131,7 +131,7 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.updateProfile(params))
   }
 
-  function updateEmail(params: { accessToken: string; email: string }) {
+  function updateEmail(params: UpdateEmailParams) {
     return apiClient.then(api => api.updateEmail(params))
   }
 
