@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.7.0
+
+### 06 septembre 2019
+
+### Features
+- The [Credentials Management API](https://www.w3.org/TR/credential-management/) is now supported for the [signup]((https://developer.reach5.co/api/identity-web/#signup)).
+
+### Fixes
+- Fix `redirectUrl` argument for [update email]((https://developer.reach5.co/api/identity-web/#updateemail)) function.
+
+
 ## v1.6.0
 
 ### 05 août 2019
