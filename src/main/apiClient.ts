@@ -16,6 +16,7 @@ import { createHttpClient, HttpClient } from './httpClient'
 import { computePkceParams, TokenRequestParameters } from './pkceService'
 
 export type SignupParams = { data: SignupProfile; saveCredentials?: boolean, auth?: AuthOptions, redirectUrl?: string }
+export type UpdateEmailParams = { accessToken: string; email: string, redirectUrl?: string }
 
 type LoginWithPasswordOptions = { password: string, saveCredentials?: boolean; auth?: AuthOptions }
 type EmailLoginWithPasswordParams =  LoginWithPasswordOptions & { email: string }
