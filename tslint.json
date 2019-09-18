@@ -80,6 +80,11 @@
     "no-default-import": false,
     "prefer-template": false,
     "no-namespace": false,
-    "unnecessary-else": false
+    "unnecessary-else": false,
+    "strict-comparisons": false,
+    "strict-string-expressions": false,
+    "whitespace": false,
+    "no-async-without-await": false,
+    "invalid-void": false
   }
 }

@@ -15,11 +15,11 @@ import { popupSize } from './providerPopupSize'
 import { createHttpClient, HttpClient } from './httpClient'
 import { computePkceParams, TokenRequestParameters } from './pkceService'
 
-export type SignupParams = { data: SignupProfile; saveCredentials?: boolean, auth?: AuthOptions, redirectUrl?: string }
-export type UpdateEmailParams = { accessToken: string; email: string, redirectUrl?: string }
+export type SignupParams = { data: SignupProfile; saveCredentials?: boolean; auth?: AuthOptions; redirectUrl?: string }
+export type UpdateEmailParams = { accessToken: string; email: string; redirectUrl?: string }
 
-type LoginWithPasswordOptions = { password: string, saveCredentials?: boolean; auth?: AuthOptions }
-type EmailLoginWithPasswordParams =  LoginWithPasswordOptions & { email: string }
+type LoginWithPasswordOptions = { password: string; saveCredentials?: boolean; auth?: AuthOptions }
+type EmailLoginWithPasswordParams = LoginWithPasswordOptions & { email: string }
 type PhoneNumberLoginWithPasswordParams = LoginWithPasswordOptions & { phoneNumber: string }
 
 export type LoginWithPasswordParams = EmailLoginWithPasswordParams | PhoneNumberLoginWithPasswordParams
@@ -29,7 +29,7 @@ export type LoginWithCredentialsParams = {
   auth?: AuthOptions
 }
 
-type EmailRequestPasswordResetParams = { email: string, redirectUrl?: string }
+type EmailRequestPasswordResetParams = { email: string; redirectUrl?: string }
 type SmsRequestPasswordResetParams = { phoneNumber: string }
 export type RequestPasswordResetParams = EmailRequestPasswordResetParams | SmsRequestPasswordResetParams
 
@@ -55,7 +55,9 @@ type SmsVerificationCodeUpdatePasswordParams = {
 }
 
 export type UpdatePasswordParams =
-  AccessTokenUpdatePasswordParams | EmailVerificationCodeUpdatePasswordParams | SmsVerificationCodeUpdatePasswordParams
+  | AccessTokenUpdatePasswordParams
+  | EmailVerificationCodeUpdatePasswordParams
+  | SmsVerificationCodeUpdatePasswordParams
 
 export type PasswordlessParams = { authType: 'magic_link' | 'sms'; email?: string; phoneNumber?: string }
 
@@ -124,15 +126,16 @@ export default class ApiClient {
 
   exchangeAuthorizationCodeWithPkce(params: TokenRequestParameters): Promise<void> {
     return this.http
-        .post<AuthResult>(this.tokenUrl, {
-          body: {
-            clientId: this.config.clientId,
-            grantType: 'authorization_code',
-            code: params.code,
-            redirectUri: params.redirectUri,
-            code_verifier: sessionStorage.getItem(this.verifierKey)
-          }
-        }).then(result => this.eventManager.fireEvent('authenticated', result))
+      .post<AuthResult>(this.tokenUrl, {
+        body: {
+          clientId: this.config.clientId,
+          grantType: 'authorization_code',
+          code: params.code,
+          redirectUri: params.redirectUri,
+          code_verifier: sessionStorage.getItem(this.verifierKey)
+        }
+      })
+      .then(result => this.eventManager.fireEvent('authenticated', result))
   }
 
   loginFromSession(opts: AuthOptions = {}): Promise<void> {
@@ -190,7 +193,7 @@ export default class ApiClient {
     })
   }
 
-  logout(opts: { redirectTo?: string, removeCredentials?: boolean } = {}): void {
+  logout(opts: { redirectTo?: string; removeCredentials?: boolean } = {}): void {
     if (navigator.credentials.preventSilentAccess && opts.removeCredentials === true) {
       navigator.credentials.preventSilentAccess()
     }
@@ -293,13 +296,12 @@ export default class ApiClient {
   loginWithPassword(params: LoginWithPasswordParams): Promise<void> {
     const saveCredentials = !isUndefined(params.saveCredentials) && params.saveCredentials
 
-    const loginPromise = window.cordova || saveCredentials
-      ? this.loginWithPasswordByOAuth(params)
-      : this.loginWithPasswordByRedirect(params)
+    const loginPromise =
+      window.cordova || saveCredentials
+        ? this.loginWithPasswordByOAuth(params)
+        : this.loginWithPasswordByRedirect(params)
 
-    const resultPromise = saveCredentials
-      ? loginPromise.then(() => this.storeCredentials(params))
-      : loginPromise
+    const resultPromise = saveCredentials ? loginPromise.then(() => this.storeCredentials(params)) : loginPromise
 
     return resultPromise.catch((err: any) => {
       if (err.error) {
@@ -318,15 +320,15 @@ export default class ApiClient {
         }
       }
 
-      return navigator
-        .credentials
+      return navigator.credentials
         .create(credentialParams)
-        .then(credentials => !isUndefined(credentials) && credentials
-          ? navigator.credentials.store(credentials).then(() => {})
-          : Promise.resolve()
+        .then(credentials =>
+          !isUndefined(credentials) && credentials
+            ? navigator.credentials.store(credentials).then(() => {})
+            : Promise.resolve()
         )
     } else {
-      logError("Unsupported Credentials Management API")
+      logError('Unsupported Credentials Management API')
       return Promise.resolve()
     }
   }
@@ -431,16 +433,16 @@ export default class ApiClient {
 
     const saveCredentials = !isUndefined(params.saveCredentials) && params.saveCredentials
 
-    const loginParams: LoginWithPasswordParams | undefined =
-      !isUndefined(data.phoneNumber)
-      ? {password: data.password, phoneNumber: data.phoneNumber}
+    const loginParams: LoginWithPasswordParams | undefined = !isUndefined(data.phoneNumber)
+      ? { password: data.password, phoneNumber: data.phoneNumber }
       : !isUndefined(data.email)
-      ? {password: data.password, email: data.email}
+      ? { password: data.password, email: data.email }
       : undefined
 
-    const resultPromise = saveCredentials && !isUndefined(loginParams)
-      ? signupPromise.then(() => this.storeCredentials(loginParams))
-      : signupPromise
+    const resultPromise =
+      saveCredentials && !isUndefined(loginParams)
+        ? signupPromise.then(() => this.storeCredentials(loginParams))
+        : signupPromise
 
     return resultPromise.catch(err => {
       if (err.error) {
@@ -467,7 +469,7 @@ export default class ApiClient {
     })
   }
 
-  updateEmail(params: { accessToken: string, email: string, redirectUrl?: string }): Promise<void> {
+  updateEmail(params: { accessToken: string; email: string; redirectUrl?: string }): Promise<void> {
     const { accessToken, email, redirectUrl } = params
     return this.http.post('/update-email', { body: { email, redirectUrl }, accessToken })
   }
@@ -510,9 +512,17 @@ export default class ApiClient {
     return this.http.get<Profile>('/me', { query: { fields }, accessToken })
   }
 
-  updateProfile({ accessToken, redirectUrl, data }: { accessToken: string, redirectUrl?: string, data: Profile }): Promise<void> {
+  updateProfile({
+    accessToken,
+    redirectUrl,
+    data
+  }: {
+    accessToken: string
+    redirectUrl?: string
+    data: Profile
+  }): Promise<void> {
     return this.http
-      .post('/update-profile', { body: {...data, redirectUrl}, accessToken })
+      .post('/update-profile', { body: { ...data, redirectUrl }, accessToken })
       .then(() => this.eventManager.fireEvent('profile_updated', data))
   }
 

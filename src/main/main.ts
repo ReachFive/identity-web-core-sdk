@@ -1,5 +1,13 @@
 import { Profile, RemoteSettings, SessionInfo } from './models'
-import ApiClient, { LoginWithPasswordParams, LoginWithCredentialsParams, PasswordlessParams, RequestPasswordResetParams, SignupParams, UpdatePasswordParams, UpdateEmailParams } from './apiClient'
+import ApiClient, {
+  LoginWithPasswordParams,
+  LoginWithCredentialsParams,
+  PasswordlessParams,
+  RequestPasswordResetParams,
+  SignupParams,
+  UpdatePasswordParams,
+  UpdateEmailParams
+} from './apiClient'
 import { AuthOptions } from './authOptions'
 import { AuthResult } from './authResult'
 import createEventManager, { Events } from './identityEventManager'
@@ -32,9 +40,9 @@ export type Client = {
   refreshTokens: (params: { accessToken: string }) => Promise<AuthResult>
   loginFromSession: (options?: AuthOptions) => Promise<void>
   checkSession: (options?: AuthOptions) => Promise<AuthResult>
-  logout: (params?: { redirectTo?: string, removeCredentials?: boolean }) => Promise<void>
+  logout: (params?: { redirectTo?: string; removeCredentials?: boolean }) => Promise<void>
   getUser: (params: { accessToken: string; fields?: string }) => Promise<Profile>
-  updateProfile: (params: { accessToken: string, redirectUrl?: string, data: Profile }) => Promise<void>
+  updateProfile: (params: { accessToken: string; redirectUrl?: string; data: Profile }) => Promise<void>
   updateEmail: (params: UpdateEmailParams) => Promise<void>
   updatePassword: (params: UpdatePasswordParams) => Promise<void>
   updatePhoneNumber: (params: { accessToken: string; phoneNumber: string }) => Promise<void>
@@ -119,7 +127,7 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.checkSession(options))
   }
 
-  function logout(params: { redirectTo?: string, removeCredentials?: boolean } = {}) {
+  function logout(params: { redirectTo?: string; removeCredentials?: boolean } = {}) {
     return apiClient.then(api => api.logout(params))
   }
 
@@ -127,7 +135,7 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.getUser(params))
   }
 
-  function updateProfile(params: { accessToken: string, redirectUrl?: string, data: Profile }) {
+  function updateProfile(params: { accessToken: string; redirectUrl?: string; data: Profile }) {
     return apiClient.then(api => api.updateProfile(params))
   }
 
