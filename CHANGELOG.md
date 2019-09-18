@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.7.1
+
+### 19 septembre 2019
+
+### Fixes
+- Customs fields and consents snake_case conversion
+
 ## v1.7.0
 
 ### 06 septembre 2019
