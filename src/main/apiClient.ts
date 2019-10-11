@@ -7,13 +7,13 @@ import { QueryString, toQueryString } from '../utils/queryString'
 import { camelCaseProperties } from '../utils/transformObjectProperties'
 
 import { ErrorResponse, Profile, SessionInfo, SignupProfile } from './models'
-import { AuthOptions, prepareAuthOptions, resolveScope } from './authOptions'
+import { AuthOptions, AuthParameters, prepareAuthOptions, resolveScope } from './authOptions'
 import { AuthResult, enrichAuthResult } from './authResult'
 import { IdentityEventManager } from './identityEventManager'
 import { UrlParser } from './urlParser'
 import { popupSize } from './providerPopupSize'
 import { createHttpClient, HttpClient } from './httpClient'
-import { computePkceParams, TokenRequestParameters } from './pkceService'
+import { computePkceParams, PkceParams } from './pkceService'
 
 export type SignupParams = { data: SignupProfile; saveCredentials?: boolean, auth?: AuthOptions, redirectUrl?: string }
 export type UpdateEmailParams = { accessToken: string; email: string, redirectUrl?: string }
@@ -68,6 +68,11 @@ export type ApiClientConfig = {
   pkceEnabled?: boolean
 }
 
+export type TokenRequestParameters = {
+  code: string
+  redirectUri: string
+}
+
 /**
  * Identity Rest API Client
  */
@@ -97,16 +102,11 @@ export default class ApiClient {
   private authorizeUrl: string
   private tokenUrl: string
   private popupRelayUrl: string
-  private verifierKey = 'verifier_key'
 
   loginWithSocialProvider(provider: string, opts: AuthOptions = {}): Promise<void> {
     const authParams = this.authParams(opts, { acceptPopupMode: true })
 
-    if (this.config.pkceEnabled && authParams.responseType === 'token') {
-      throw new Error('Cannot use implicit flow when PKCE is enabled')
-    }
-
-    return computePkceParams(this.config.pkceEnabled, this.verifierKey).then(maybeChallenge => {
+    return this.getPkceParams(authParams).then(maybeChallenge => {
       const params = {
         ...authParams,
         provider,
@@ -130,7 +130,7 @@ export default class ApiClient {
             grantType: 'authorization_code',
             code: params.code,
             redirectUri: params.redirectUri,
-            code_verifier: sessionStorage.getItem(this.verifierKey)
+            code_verifier: sessionStorage.getItem('verifier_key')
           }
         }).then(result => this.eventManager.fireEvent('authenticated', result))
   }
@@ -363,11 +363,14 @@ export default class ApiClient {
   private loginWithPasswordToken(tkn: string, auth: AuthOptions = {}): void {
     const authParams = this.authParams(auth)
 
-    const queryString = toQueryString({
-      ...authParams,
-      tkn
+    this.getPkceParams(authParams).then(maybeChallenge => {
+      const queryString = toQueryString({
+        ...authParams,
+        tkn,
+        ...maybeChallenge
+      })
+      window.location.assign(`${this.baseUrl}/password/callback?${queryString}`)
     })
-    window.location.assign(`${this.baseUrl}/password/callback?${queryString}`)
   }
 
   startPasswordless(params: PasswordlessParams, opts: AuthOptions = {}): Promise<void> {
@@ -551,6 +554,16 @@ export default class ApiClient {
       query: { clientId: this.config.clientId },
       withCookies: true
     })
+  }
+
+  private getPkceParams(authParams: AuthParameters): Promise<PkceParams | {}> {
+    if (this.config.pkceEnabled) {
+      if (authParams.responseType === 'token')
+        throw new Error('Cannot use implicit flow when PKCE is enabled')
+      else
+        return computePkceParams()
+    } else
+      return Promise.resolve({})
   }
 
   private authenticatedHandler = ({ responseType, redirectUri }: AuthOptions, response: AuthResult) => {

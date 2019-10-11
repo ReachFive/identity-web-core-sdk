@@ -1,12 +1,20 @@
 import { Profile, RemoteSettings, SessionInfo } from './models'
-import ApiClient, { LoginWithPasswordParams, LoginWithCredentialsParams, PasswordlessParams, RequestPasswordResetParams, SignupParams, UpdatePasswordParams, UpdateEmailParams } from './apiClient'
+import ApiClient, {
+  LoginWithPasswordParams,
+  LoginWithCredentialsParams,
+  PasswordlessParams,
+  RequestPasswordResetParams,
+  SignupParams,
+  UpdatePasswordParams,
+  UpdateEmailParams,
+  TokenRequestParameters
+} from './apiClient'
 import { AuthOptions } from './authOptions'
 import { AuthResult } from './authResult'
 import createEventManager, { Events } from './identityEventManager'
 import createUrlParser from './urlParser'
 import { toQueryString } from '../utils/queryString'
 import { rawRequest } from './httpClient'
-import { TokenRequestParameters } from './pkceService'
 
 export { AuthResult } from './authResult'
 export { AuthOptions } from './authOptions'
