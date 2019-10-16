@@ -12,9 +12,9 @@ import { ProviderId } from '../shared/providers/providers'
 import providerSizes from '../shared/providers/provider-window-sizes'
 import { Profile, ErrorResponse } from '../shared/model'
 import { ApiClientConfig } from './apiClientConfig'
-import { prepareAuthOptions, resolveScope, AuthOptions } from './authOptions'
+import { prepareAuthOptions, resolveScope, AuthOptions, AuthParameters } from './authOptions'
 import { AuthResult } from './authResult'
-import { computePkceParams, TokenRequestParameters } from './pkceService'
+import { computePkceParams, PkceParams } from './pkceService'
 
 export type Events = {
   'authenticated': AuthResult
@@ -69,6 +69,10 @@ export type UpdatePasswordParams =
 
 export type PasswordlessParams = { authType: 'magic_link' | 'sms', email?: string, phoneNumber?: string }
 
+export type TokenRequestParameters = {
+  code: string
+  redirectUri: string
+}
 
 export default class ApiClient {
 
@@ -94,11 +98,7 @@ export default class ApiClient {
   loginWithSocialProvider(provider: ProviderId, opts: AuthOptions = {}) {
     const authParams = this.authParams(opts, {acceptPopupMode: true})
 
-    if (this.config.pkce && authParams.responseType === 'token') {
-      throw new Error('Cannot use implicit flow when PKCE is enabled')
-    }
-
-    return computePkceParams(this.config.pkce, this.verifierKey).then(maybeChallenge => {
+    return computePkceParams().then(maybeChallenge => {
           const params = {
             ...authParams,
             provider,
@@ -309,11 +309,14 @@ export default class ApiClient {
   private loginWithPasswordToken(tkn: string, auth: AuthOptions = {}) {
     const authParams = this.authParams(auth)
 
-    const queryString = toQueryString({
-      ...authParams,
-      tkn
+    this.getPkceParams(authParams).then(maybeChallenge => {
+      const queryString = toQueryString({
+        ...authParams,
+        tkn,
+        ...maybeChallenge
+      })
+      window.location.assign(`${this.baseUrl}/password/callback?${queryString}`)
     })
-    window.location.assign(`${this.baseUrl}/password/callback?${queryString}`)
   }
 
   startPasswordless(params: PasswordlessParams, opts: AuthOptions = {}) {
@@ -347,6 +350,9 @@ export default class ApiClient {
   signup(params: SignupParams) {
     const { data, auth, redirectUrl } = params
     const acceptTos = auth && auth.acceptTos
+
+    console.log("DEBUGAH", params)
+    console.log("DEBUGAH", redirectUrl)
 
     const result = window.cordova
       ? (
@@ -565,6 +571,16 @@ export default class ApiClient {
       }
       return undefined as any as Data
     })
+  }
+
+  private getPkceParams(authParams: AuthParameters): Promise<PkceParams | {}> {
+    if (this.config.pkce) {
+      if (authParams.responseType === 'token')
+        throw new Error('Cannot use implicit flow when PKCE is enabled')
+      else
+        return computePkceParams()
+    } else
+      return Promise.resolve({})
   }
 
   private computeProviderPopupOptions(provider: ProviderId) {

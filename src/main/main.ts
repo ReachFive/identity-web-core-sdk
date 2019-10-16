@@ -1,12 +1,18 @@
 import { errorDebugString } from 'validation.ts'
 import { ProviderId } from '../shared/providers/providers'
 import { Profile } from '../shared/model'
-import ApiClient, { SignupParams, LoginWithPasswordParams, PasswordlessParams, Events, RequestPasswordResetParams, UpdatePasswordParams } from './apiClient'
+import ApiClient, {
+  SignupParams,
+  LoginWithPasswordParams,
+  PasswordlessParams,
+  Events,
+  RequestPasswordResetParams,
+  UpdatePasswordParams,
+  TokenRequestParameters
+} from './apiClient'
 import { AuthOptions } from './authOptions'
 import { apiClientConfig, ApiClientConfig } from './apiClientConfig'
 import EventManager from '../lib/eventManager'
-import { TokenRequestParameters } from "./pkceService";
-
 
 export function createClient(config: ApiClientConfig) {
   apiClientConfig.validate(config).mapError(err => { throw `the reach5 creation config has errors:\n${errorDebugString(err)}` })
