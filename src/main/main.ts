@@ -10,7 +10,7 @@ import { TokenRequestParameters } from './pkceService'
 
 export { AuthResult } from './authResult'
 export { AuthOptions } from './authOptions'
-export { Profile, SessionInfo } from './models'
+export { ErrorResponse, Profile, SessionInfo } from './models'
 
 export interface Config {
   clientId: string
