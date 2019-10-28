@@ -4,13 +4,13 @@ import isString from 'lodash/isString'
 import isArray from 'lodash/isArray'
 import isUndefined from 'lodash/isUndefined'
 
-export type AuthOptionsResponseType = 'code' | 'token'
+export type ResponseType = 'code' | 'token'
 
 /**
  * More infos here: https://developer.reach5.co/api/identity-web-legacy/#authentication-options
  */
 export interface AuthOptions {
-  responseType?: AuthOptionsResponseType
+  responseType?: ResponseType
   redirectUri?: string
   scope?: string | string[]
   fetchBasicProfile?: boolean
@@ -30,8 +30,8 @@ export interface AuthOptions {
 /**
  * This type represents the parameters that are actually sent to the HTTP API
  */
-type AuthParameters = {
-  responseType: 'code' | 'token'
+export type AuthParameters = {
+  responseType: ResponseType
   scope: string
   display: string
   redirectUri?: string

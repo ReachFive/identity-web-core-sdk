@@ -1,5 +1,3 @@
-import 'core-js/shim'
-import 'regenerator-runtime/runtime'
 import ApiClient from '../apiClient'
 import { toQueryString } from '../../utils/queryString'
 import fetchMock from 'jest-fetch-mock'

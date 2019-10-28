@@ -21,8 +21,8 @@ export type PostRequestParams = Omit<RequestParams, 'method'>
 
 export interface HttpClient {
   get<Data>(path: string, options: GetRequestParams): Promise<Data>
-  post<Data = void>(path: string, options: PostRequestParams): Promise<Data>
-  request<Data = void>(path: string, options: RequestParams): Promise<Data>
+  post<Data>(path: string, options: PostRequestParams): Promise<Data>
+  request<Data>(path: string, options: RequestParams): Promise<Data>
 }
 
 export function createHttpClient(config: HttpConfig): HttpClient {
