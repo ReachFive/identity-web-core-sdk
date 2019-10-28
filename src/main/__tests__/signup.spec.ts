@@ -1,5 +1,3 @@
-import 'core-js/shim'
-import 'regenerator-runtime/runtime'
 import fetchMock from 'jest-fetch-mock'
 import { delay } from '../../utils/promise'
 import { toQueryString } from '../../utils/queryString'

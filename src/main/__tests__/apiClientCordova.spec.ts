@@ -1,5 +1,3 @@
-import 'core-js/shim'
-import 'regenerator-runtime/runtime'
 import fetchMock from 'jest-fetch-mock'
 import ApiClient from '../apiClient'
 import { delay } from '../../utils/promise'
@@ -245,7 +243,7 @@ describe('signup', () => {
   })
 })
 
-describe('loginWithPassword', async () => {
+describe('loginWithPassword', () => {
   test('with default auth (email/password)', async () => {
     expect.assertions(2)
 

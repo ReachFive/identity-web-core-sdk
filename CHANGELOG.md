@@ -1,8 +1,22 @@
 # Changelog
 
+## v.1.8.0
+
+### 21/10/2019
+
+### Features
+- Export the remote settings and the `ErrorResponse` model.
+
+## v1.7.1
+
+### 19/09/2019
+
+### Fixes
+- Customs fields and consents snake_case conversion
+
 ## v1.7.0
 
-### 06 septembre 2019
+### 06/09/2019
 
 ### Features
 - The [Credentials Management API](https://www.w3.org/TR/credential-management/) is now supported for the [signup]((https://developer.reach5.co/api/identity-web/#signup)).
@@ -10,10 +24,9 @@
 ### Fixes
 - Fix `redirectUrl` argument for [update email]((https://developer.reach5.co/api/identity-web/#updateemail)) function.
 
-
 ## v1.6.0
 
-### 05 août 2019
+### 05/08/2019
 
 ### Features
 - You can now redirect a profile to a specific URL after [signup]((https://developer.reach5.co/api/identity-web/#signup)) or [profile update]((https://developer.reach5.co/api/identity-web/#updateprofile)) with the new `redirectUrl` argument.
@@ -25,7 +38,7 @@
 
 ## v1.5.0
 
-### 24 juin 2019
+### 24/06/2019
 
 ### Features
 - Update the signature of the `loginWithSocialProvider` method to handle pkce support.
@@ -35,7 +48,7 @@
 
 ## v1.4.0
 
-### 21 juin 2019
+### 21/06/2019
 
 ### Features
 - Update the signature of the `requestPasswordReset` method to handle a custom redirect url on the email sent.
@@ -44,14 +57,14 @@
 
 ## v1.3.0
 
-### 11 juin 2019
+### 11/06/2019
 
 ### Features
 - Update the signature of the `loginWithPassword` method to handle login with a phone number.
 
 ## v1.2.1
 
-### 21 mars 2019
+### 21/03/2019
 
 #### Improvements
 - Remove validation.ts library
@@ -62,7 +75,7 @@
 
 ## v1.1.4
 
-### 21 mars 2019
+### 21/03/2019
 
 #### Improvements
 
@@ -70,7 +83,7 @@ Automatise the deployment of a new release with `circleci`.
 
 ## v1.1.3
 
-### 15 mars 2019
+### 15/03/2019
 
 #### Fixes and improvements
 - Fix the typography of the `oldPassword` argument of the [`updatePassword`](src/main/apiClient.ts) method.

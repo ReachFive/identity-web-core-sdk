@@ -6,7 +6,8 @@ import ApiClient, {
   RequestPasswordResetParams,
   SignupParams,
   UpdatePasswordParams,
-  UpdateEmailParams
+  UpdateEmailParams,
+  TokenRequestParameters
 } from './apiClient'
 import { AuthOptions } from './authOptions'
 import { AuthResult } from './authResult'
@@ -14,11 +15,10 @@ import createEventManager, { Events } from './identityEventManager'
 import createUrlParser from './urlParser'
 import { toQueryString } from '../utils/queryString'
 import { rawRequest } from './httpClient'
-import { TokenRequestParameters } from './pkceService'
 
 export { AuthResult } from './authResult'
 export { AuthOptions } from './authOptions'
-export { Profile, SessionInfo } from './models'
+export { ErrorResponse, Profile, SessionInfo } from './models'
 
 export interface Config {
   clientId: string
@@ -27,6 +27,7 @@ export interface Config {
 }
 
 export type Client = {
+  remoteSettings: Promise<RemoteSettings>
   on: <K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) => void
   off: <K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) => void
   signup: (params: SignupParams) => Promise<void>
@@ -56,7 +57,7 @@ export type Client = {
 function checkParam<T>(data: T, key: keyof T) {
   const value = data[key]
   if (value === undefined || value === null) {
-    throw new Error(`the reach5 creation config has errors: ${key} is not set`)
+    throw new Error(`the reach5 creation config has errors: ${key as string} is not set`)
   }
 }
 
@@ -69,9 +70,11 @@ export function createClient(creationConfig: Config): Client {
   const eventManager = createEventManager()
   const urlParser = createUrlParser(eventManager)
 
-  const apiClient = rawRequest<RemoteSettings>(
+  const remoteSettings = rawRequest<RemoteSettings>(
     `https://${domain}/identity/v1/config?${toQueryString({ clientId, lang: language })}`
-  ).then(
+  )
+
+  const apiClient = remoteSettings.then(
     remoteConfig =>
       new ApiClient({
         config: {
@@ -178,7 +181,7 @@ export function createClient(creationConfig: Config): Client {
   function on<K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void): void {
     eventManager.on(eventName, listener)
 
-    if (eventName === 'authenticated' || eventName === 'authentication_failed') {
+    if ((eventName as string) === 'authenticated' || (eventName as string) === 'authentication_failed') {
       // This call must be asynchronous to ensure the listener cannot be called synchronously
       // (this type of behavior is generally unexpected for the developer)
       setTimeout(() => checkUrlFragment(), 0)
@@ -190,6 +193,7 @@ export function createClient(creationConfig: Config): Client {
   }
 
   return {
+    remoteSettings,
     on,
     off,
     signup,

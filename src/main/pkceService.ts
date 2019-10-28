@@ -1,23 +1,16 @@
 import { encodeToBase64 } from '../utils/base64'
 
-type PkceParams = { codeChallenge?: string; codeChallengeMethod?: string }
+export type PkceParams = { codeChallenge: string; codeChallengeMethod: string }
 
-export type TokenRequestParameters = {
-  code: string
-  redirectUri: string
-}
-
-export function computePkceParams(pkceEnabled: boolean = false, verifierKey: string): Promise<PkceParams> {
-  if (pkceEnabled) {
-    const verifier = generateCodeVerifier()
-    sessionStorage.setItem(verifierKey, verifier)
-    return computeCodeChallenge(verifier).then(challenge => {
-      return {
-        codeChallenge: challenge,
-        codeChallengeMethod: 'S256'
-      }
-    })
-  } else return Promise.resolve({})
+export function computePkceParams(): Promise<PkceParams> {
+  const verifier = generateCodeVerifier()
+  sessionStorage.setItem('verifier_key', verifier)
+  return computeCodeChallenge(verifier).then(challenge => {
+    return {
+      codeChallenge: challenge,
+      codeChallengeMethod: 'S256'
+    }
+  })
 }
 
 function generateCodeVerifier(): string {
