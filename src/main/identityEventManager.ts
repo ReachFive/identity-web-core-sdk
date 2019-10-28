@@ -32,7 +32,7 @@ export default function createEventManager(): IdentityEventManager {
     },
 
     fireEvent<K extends keyof Events>(eventName: K, data: Events[K]) {
-      if (eventName === 'authenticated') {
+      if ((eventName as string) === 'authenticated') {
         const ar: AuthResult = enrichAuthResult(data as AuthResult)
         eventManager.fire(eventName, ar as Events[K])
       } else {
