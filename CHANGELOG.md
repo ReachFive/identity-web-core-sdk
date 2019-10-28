@@ -1,5 +1,12 @@
 # Changelog
 
+## v.1.9.0
+
+### 28/10/2019
+
+### Features
+- Support PKCE in login with password
+
 ## v.1.8.0
 
 ### 21/10/2019
