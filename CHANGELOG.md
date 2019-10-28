@@ -5,7 +5,6 @@
 ### 28/10/2019
 
 ### Features
-- Dependencies upgrades
 - Support PKCE in login with password
 
 ## v.1.8.0
