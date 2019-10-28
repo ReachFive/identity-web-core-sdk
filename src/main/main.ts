@@ -18,7 +18,7 @@ import { rawRequest } from './httpClient'
 
 export { AuthResult } from './authResult'
 export { AuthOptions } from './authOptions'
-export { Profile, SessionInfo } from './models'
+export { ErrorResponse, Profile, SessionInfo } from './models'
 
 export interface Config {
   clientId: string
@@ -27,6 +27,7 @@ export interface Config {
 }
 
 export type Client = {
+  remoteSettings: Promise<RemoteSettings>
   on: <K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) => void
   off: <K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) => void
   signup: (params: SignupParams) => Promise<void>
@@ -69,9 +70,11 @@ export function createClient(creationConfig: Config): Client {
   const eventManager = createEventManager()
   const urlParser = createUrlParser(eventManager)
 
-  const apiClient = rawRequest<RemoteSettings>(
+  const remoteSettings = rawRequest<RemoteSettings>(
     `https://${domain}/identity/v1/config?${toQueryString({ clientId, lang: language })}`
-  ).then(
+  )
+
+  const apiClient = remoteSettings.then(
     remoteConfig =>
       new ApiClient({
         config: {
@@ -190,6 +193,7 @@ export function createClient(creationConfig: Config): Client {
   }
 
   return {
+    remoteSettings,
     on,
     off,
     signup,

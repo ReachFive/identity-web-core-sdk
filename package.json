@@ -1,6 +1,6 @@
 {
   "name": "@reachfive/identity-core",
-  "version": "1.7.1",
+  "version": "1.8.0",
   "description": "Reach5 Identity Web Core SDK",
   "license": "MIT",
   "repository": {
@@ -22,12 +22,12 @@
     "format": "prettier --write \"src/**/{*.ts,*.tsx}\""
   },
   "dependencies": {
-    "lodash": "4.17.13",
+    "lodash": "4.17.15",
     "winchan": "0.2.1"
   },
   "devDependencies": {
     "@types/jest": "23.3.1",
-    "@types/lodash": "4.14.132",
+    "@types/lodash": "4.14.144",
     "@types/webappsec-credential-management": "0.5.1",
     "jest": "^25.0.0",
     "jest-fetch-mock": "1.6.6",
@@ -36,7 +36,7 @@
     "rollup-plugin-commonjs": "10.0.0",
     "rollup-plugin-node-resolve": "5.0.0",
     "rollup-plugin-typescript2": "0.21.1",
-    "rollup-plugin-uglify": "6.0.2",
+    "rollup-plugin-uglify": "6.0.3",
     "rollup-watch": "4.3.1",
     "ts-jest": "23.10.4",
     "tslib": "1.10.0",
