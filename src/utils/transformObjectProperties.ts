@@ -31,8 +31,9 @@ function transformObjectProperties(object: any, transform: (path: string) => str
     return reduce(
       object,
       (acc, value, key) => {
-        acc[transform(key)] = fieldsNotToConvert.find(s => s === snakeCase(key)) ?
-          value : transformObjectProperties(value, transform)
+        acc[transform(key)] = fieldsNotToConvert.find(s => s === snakeCase(key))
+          ? value
+          : transformObjectProperties(value, transform)
         return acc
       },
       {} as Record<string, unknown>

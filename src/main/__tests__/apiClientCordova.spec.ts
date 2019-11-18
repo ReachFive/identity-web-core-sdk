@@ -243,7 +243,7 @@ describe('signup', () => {
   })
 })
 
-describe('loginWithPassword',  () => {
+describe('loginWithPassword', () => {
   test('with default auth (email/password)', async () => {
     expect.assertions(2)
 

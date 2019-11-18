@@ -41,9 +41,9 @@ export type Client = {
   refreshTokens: (params: { accessToken: string }) => Promise<AuthResult>
   loginFromSession: (options?: AuthOptions) => Promise<void>
   checkSession: (options?: AuthOptions) => Promise<AuthResult>
-  logout: (params?: { redirectTo?: string, removeCredentials?: boolean }) => Promise<void>
+  logout: (params?: { redirectTo?: string; removeCredentials?: boolean }) => Promise<void>
   getUser: (params: { accessToken: string; fields?: string }) => Promise<Profile>
-  updateProfile: (params: { accessToken: string, redirectUrl?: string, data: Profile }) => Promise<void>
+  updateProfile: (params: { accessToken: string; redirectUrl?: string; data: Profile }) => Promise<void>
   updateEmail: (params: UpdateEmailParams) => Promise<void>
   updatePassword: (params: UpdatePasswordParams) => Promise<void>
   updatePhoneNumber: (params: { accessToken: string; phoneNumber: string }) => Promise<void>
@@ -130,7 +130,7 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.checkSession(options))
   }
 
-  function logout(params: { redirectTo?: string, removeCredentials?: boolean } = {}) {
+  function logout(params: { redirectTo?: string; removeCredentials?: boolean } = {}) {
     return apiClient.then(api => api.logout(params))
   }
 
@@ -138,7 +138,7 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.getUser(params))
   }
 
-  function updateProfile(params: { accessToken: string, redirectUrl?: string, data: Profile }) {
+  function updateProfile(params: { accessToken: string; redirectUrl?: string; data: Profile }) {
     return apiClient.then(api => api.updateProfile(params))
   }
 
@@ -181,7 +181,7 @@ export function createClient(creationConfig: Config): Client {
   function on<K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void): void {
     eventManager.on(eventName, listener)
 
-    if (eventName as string === 'authenticated' || eventName as string === 'authentication_failed') {
+    if ((eventName as string) === 'authenticated' || (eventName as string) === 'authentication_failed') {
       // This call must be asynchronous to ensure the listener cannot be called synchronously
       // (this type of behavior is generally unexpected for the developer)
       setTimeout(() => checkUrlFragment(), 0)

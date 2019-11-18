@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "lodash": "4.17.15",
-    "winchan": "0.2.1"
+    "winchan": "0.2.2"
   },
   "devDependencies": {
     "@types/jest": "24.0.20",
@@ -31,11 +31,11 @@
     "@types/webappsec-credential-management": "0.5.1",
     "jest": "24.9.0",
     "jest-fetch-mock": "1.7.5",
-    "prettier": "1.17.1",
-    "rollup": "1.12.3",
-    "rollup-plugin-commonjs": "10.0.0",
-    "rollup-plugin-node-resolve": "5.0.0",
-    "rollup-plugin-typescript2": "0.21.1",
+    "prettier": "1.18.2",
+    "rollup": "1.26.0",
+    "rollup-plugin-commonjs": "10.1.0",
+    "rollup-plugin-node-resolve": "5.2.0",
+    "rollup-plugin-typescript2": "0.24.3",
     "rollup-plugin-uglify": "6.0.3",
     "rollup-watch": "4.3.1",
     "ts-jest": "24.1.0",
