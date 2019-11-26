@@ -27,7 +27,7 @@ beforeEach(() => {
 })
 
 describe('signup', () => {
-  test('with default auth', async () => {
+  test('with default authentication options', async () => {
 
     // Given
     const client = apiClient()
@@ -92,7 +92,7 @@ describe('signup', () => {
     })
   })
 
-  test('with origin', async () => {
+  test('with the origin option', async () => {
 
     // Given
     const client = apiClient()
@@ -161,7 +161,7 @@ describe('signup', () => {
     })
   })
 
-  test('with user error', async () => {
+  test('with a user error', async () => {
 
     // Given
     const client = apiClient()
@@ -201,7 +201,7 @@ describe('signup', () => {
     expect(signupFailedHandler).toHaveBeenCalledWith(expectedError)
   })
 
-  test('with unexpected error', async () => {
+  test('with an unexpected error', async () => {
     expect.assertions(2)
 
     // Given
@@ -232,7 +232,7 @@ describe('signup', () => {
 })
 
 describe('loginWithPassword', async () => {
-  test('with default auth (email/password)', async () => {
+  test('with default authentication options (email/password)', async () => {
     expect.assertions(2)
 
     // Given
@@ -284,7 +284,7 @@ describe('loginWithPassword', async () => {
     })
   })
 
-  test('with default auth (phone/password)', async () => {
+  test('with default authentication options (phone/password)', async () => {
     expect.assertions(2)
 
     // Given
@@ -336,7 +336,7 @@ describe('loginWithPassword', async () => {
     })
   })
 
-  test('with origin', async () => {
+  test('with the origin option', async () => {
     expect.assertions(2)
 
     // Given
@@ -395,7 +395,7 @@ describe('loginWithPassword', async () => {
     })
   })
 
-  test('redirect uri ignored', async () => {
+  test('with the redirect uri ignored', async () => {
     // Given
     const client = apiClient()
 
@@ -453,7 +453,7 @@ describe('loginWithPassword', async () => {
 
   })
 
-  test('with user error', async () => {
+  test('with a user error', async () => {
     // Given
     const client = apiClient()
 
@@ -488,7 +488,7 @@ describe('loginWithPassword', async () => {
 
 describe('loginWithSocialProvider', () => {
 
-  test('with browsertab plugin present and available', async () => {
+  test('with the browsertab plugin present and available', async () => {
     expect.assertions(3)
 
     // Given
@@ -527,7 +527,7 @@ describe('loginWithSocialProvider', () => {
     )
   })
 
-  test('error when InAppBrowser plugin is not present', async () => {
+  test('error when the InAppBrowser plugin is not present', async () => {
     expect.assertions(1)
 
     // Given
@@ -544,7 +544,7 @@ describe('loginWithSocialProvider', () => {
     }
   })
 
-  test('with browsertab plugin present and but not available (on Android)', async () => {
+  test('with the browsertab plugin present but not available (on Android)', async () => {
     expect.assertions(3)
 
     // Given
@@ -585,7 +585,7 @@ describe('loginWithSocialProvider', () => {
     )
   })
 
-  test('with browsertab plugin present and but not available (on iOS)', async () => {
+  test('with the browsertab plugin present but not available (on iOS)', async () => {
     expect.assertions(3)
 
     // Given
@@ -626,7 +626,7 @@ describe('loginWithSocialProvider', () => {
     )
   })
 
-  test('with browsertab plugin not present (on Android)', async () => {
+  test('with the browsertab plugin not present (on Android)', async () => {
     expect.assertions(1)
 
     // Given
@@ -655,7 +655,7 @@ describe('loginWithSocialProvider', () => {
     )
   })
 
-  test('with browsertab plugin not present (on iOS)', async () => {
+  test('with the browsertab plugin not present (on iOS)', async () => {
     expect.assertions(1)
 
     // Given
@@ -752,7 +752,7 @@ describe('loginWithSocialProvider', () => {
     )
   })
 
-  test('popup mode is ignored (on Android)', async () => {
+  test('with popup mode ignored (on Android)', async () => {
     expect.assertions(1)
 
     // Given
@@ -783,7 +783,7 @@ describe('loginWithSocialProvider', () => {
     )
   })
 
-  test('popup mode is ignored (on iOS)', async () => {
+  test('with popup mode ignored (on iOS)', async () => {
     expect.assertions(1)
 
     // Given
@@ -884,7 +884,7 @@ describe('handleOpenURL', () => {
     expect(authenticatedHandler).not.toHaveBeenCalled()
   })
 
-  test('with browsertab plugin', async () => {
+  test('with the browsertab plugin', async () => {
     expect.assertions(2)
 
     // Given
