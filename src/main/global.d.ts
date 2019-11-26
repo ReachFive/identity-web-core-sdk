@@ -23,7 +23,8 @@ interface Window {
     }
     InAppBrowser?: {
       open(url: string, target: '_self' | '_blank' | '_system') : void
-    }
+    },
+    platformId?: 'ios' | 'android'
   } 
   handleOpenURL?: (url: string) => void
 }
