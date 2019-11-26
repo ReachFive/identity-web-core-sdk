@@ -27,7 +27,7 @@ beforeEach(() => {
 })
 
 describe('signup', () => {
-  test('with default auth', async () => {
+  test('with default authentication options', async () => {
 
     // Given
     const client = apiClient()
@@ -92,7 +92,7 @@ describe('signup', () => {
     })
   })
 
-  test('with origin', async () => {
+  test('with the origin option', async () => {
 
     // Given
     const client = apiClient()
@@ -161,7 +161,7 @@ describe('signup', () => {
     })
   })
 
-  test('with user error', async () => {
+  test('with a user error', async () => {
 
     // Given
     const client = apiClient()
@@ -201,7 +201,7 @@ describe('signup', () => {
     expect(signupFailedHandler).toHaveBeenCalledWith(expectedError)
   })
 
-  test('with unexpected error', async () => {
+  test('with an unexpected error', async () => {
     expect.assertions(2)
 
     // Given
@@ -232,7 +232,7 @@ describe('signup', () => {
 })
 
 describe('loginWithPassword', async () => {
-  test('with default auth (email/password)', async () => {
+  test('with default authentication options (email/password)', async () => {
     expect.assertions(2)
 
     // Given
@@ -284,7 +284,7 @@ describe('loginWithPassword', async () => {
     })
   })
 
-  test('with default auth (phone/password)', async () => {
+  test('with default authentication options (phone/password)', async () => {
     expect.assertions(2)
 
     // Given
@@ -336,7 +336,7 @@ describe('loginWithPassword', async () => {
     })
   })
 
-  test('with origin', async () => {
+  test('with the origin option', async () => {
     expect.assertions(2)
 
     // Given
@@ -395,7 +395,7 @@ describe('loginWithPassword', async () => {
     })
   })
 
-  test('redirect uri ignored', async () => {
+  test('with the redirect uri ignored', async () => {
     // Given
     const client = apiClient()
 
@@ -453,7 +453,7 @@ describe('loginWithPassword', async () => {
 
   })
 
-  test('with user error', async () => {
+  test('with a user error', async () => {
     // Given
     const client = apiClient()
 
@@ -488,7 +488,7 @@ describe('loginWithPassword', async () => {
 
 describe('loginWithSocialProvider', () => {
 
-  test('with browsertab plugin present and available', async () => {
+  test('with the browsertab plugin present and available', async () => {
     expect.assertions(3)
 
     // Given
@@ -527,7 +527,24 @@ describe('loginWithSocialProvider', () => {
     )
   })
 
-  test('with browsertab plugin present and but not available', async () => {
+  test('error when the InAppBrowser plugin is not present', async () => {
+    expect.assertions(1)
+
+    // Given
+    const client = apiClient()
+
+    // When
+    try {
+      await client.loginWithSocialProvider('facebook')
+    } catch (e) {
+      // Then
+      expect(e).toEqual(
+        new Error('Cordova plugin "inappbrowser" is required.')
+      )
+    }
+  })
+
+  test('with the browsertab plugin present but not available (on Android)', async () => {
     expect.assertions(3)
 
     // Given
@@ -545,7 +562,8 @@ describe('loginWithSocialProvider', () => {
       },
       InAppBrowser: {
         open: jest.fn()
-      }
+      },
+      platformId: 'android'
     }
 
     // When
@@ -567,7 +585,48 @@ describe('loginWithSocialProvider', () => {
     )
   })
 
-  test('with browsertab plugin not present', async () => {
+  test('with the browsertab plugin present but not available (on iOS)', async () => {
+    expect.assertions(3)
+
+    // Given
+    const client = apiClient()
+
+    window.cordova = {
+      plugins: {
+        browsertab: {
+          openUrl: jest.fn().mockImplementation((_url, _success, error) => {
+            error(new Error('Not available'))
+          }),
+          close() {},
+          isAvailable: jest.fn().mockImplementation(resolve => resolve(false))
+        }
+      },
+      InAppBrowser: {
+        open: jest.fn()
+      },
+      platformId: 'ios'
+    }
+
+    // When
+    await client.loginWithSocialProvider('facebook')
+
+    // Then
+    expect(window.cordova.plugins!.browsertab!.isAvailable).toHaveBeenCalledTimes(1)
+    expect(window.cordova.plugins!.browsertab!.openUrl).not.toHaveBeenCalled()
+
+    expect(window.cordova.InAppBrowser!.open).toHaveBeenCalledWith(
+      'https://local.reach5.net/oauth/authorize?' + toQueryString({
+        'client_id': clientId,
+        'response_type': 'token',
+        'scope': 'openid profile email phone',
+        'display': 'page',
+        'provider': 'facebook'
+      }),
+      '_blank'
+    )
+  })
+
+  test('with the browsertab plugin not present (on Android)', async () => {
     expect.assertions(1)
 
     // Given
@@ -576,7 +635,8 @@ describe('loginWithSocialProvider', () => {
     window.cordova = {
       InAppBrowser: {
         open: jest.fn()
-      }
+      },
+      platformId: 'android'
     }
 
     // When
@@ -595,24 +655,36 @@ describe('loginWithSocialProvider', () => {
     )
   })
 
-  test('error when InAppBrowser plugin is not present', async () => {
+  test('with the browsertab plugin not present (on iOS)', async () => {
     expect.assertions(1)
 
     // Given
     const client = apiClient()
 
-    // When
-    try {
-      await client.loginWithSocialProvider('facebook')
-    } catch (e) {
-      // Then
-      expect(e).toEqual(
-        new Error('Cordova plugin "inappbrowser" is required.')
-      )
+    window.cordova = {
+      InAppBrowser: {
+        open: jest.fn()
+      },
+      platformId: 'ios'
     }
+
+    // When
+    await client.loginWithSocialProvider('facebook')
+
+    // Then
+    expect(window.cordova.InAppBrowser!.open).toHaveBeenCalledWith(
+      'https://local.reach5.net/oauth/authorize?' + toQueryString({
+        'client_id': clientId,
+        'response_type': 'token',
+        'scope': 'openid profile email phone',
+        'display': 'page',
+        'provider': 'facebook'
+      }),
+      '_blank'
+    )
   })
 
-  test('with specified auth params', async () => {
+  test('with specified auth params (on Android)', async () => {
     expect.assertions(1)
 
     // Given
@@ -623,7 +695,8 @@ describe('loginWithSocialProvider', () => {
     window.cordova = {
       InAppBrowser: {
         open: jest.fn()
-      }
+      },
+      platformId: 'android'
     }
 
     // When
@@ -645,7 +718,41 @@ describe('loginWithSocialProvider', () => {
     )
   })
 
-  test('popup mode is ignored', async () => {
+  test('with specified auth params (on iOS)', async () => {
+    expect.assertions(1)
+
+    // Given
+    const client = apiClient()
+
+    const redirectUri = 'myapp://login/callback'
+
+    window.cordova = {
+      InAppBrowser: {
+        open: jest.fn()
+      },
+      platformId: 'ios'
+    }
+
+    // When
+    await client.loginWithSocialProvider('facebook', {
+      redirectUri: redirectUri
+    })
+
+    // Then
+    expect(window.cordova.InAppBrowser!.open).toHaveBeenCalledWith(
+      'https://local.reach5.net/oauth/authorize?' + toQueryString({
+        'client_id': clientId,
+        'response_type': 'code',
+        'scope': 'openid profile email phone',
+        'display': 'page',
+        'redirect_uri': redirectUri,
+        'provider': 'facebook'
+      }),
+      '_blank'
+    )
+  })
+
+  test('with popup mode ignored (on Android)', async () => {
     expect.assertions(1)
 
     // Given
@@ -654,7 +761,8 @@ describe('loginWithSocialProvider', () => {
     window.cordova = {
       InAppBrowser: {
         open: jest.fn()
-      }
+      },
+      platformId: 'android'
     }
 
     // When
@@ -672,6 +780,37 @@ describe('loginWithSocialProvider', () => {
         'provider': 'facebook'
       }),
       '_system'
+    )
+  })
+
+  test('with popup mode ignored (on iOS)', async () => {
+    expect.assertions(1)
+
+    // Given
+    const client = apiClient()
+
+    window.cordova = {
+      InAppBrowser: {
+        open: jest.fn()
+      },
+      platformId: 'ios'
+    }
+
+    // When
+    await client.loginWithSocialProvider('facebook', {
+      popupMode: true
+    })
+
+    // Then
+    expect(window.cordova.InAppBrowser!.open).toHaveBeenCalledWith(
+      'https://local.reach5.net/oauth/authorize?' + toQueryString({
+        'client_id': clientId,
+        'response_type': 'token',
+        'scope': 'openid profile email phone',
+        'display': 'page',
+        'provider': 'facebook'
+      }),
+      '_blank'
     )
   })
 })
@@ -745,7 +884,7 @@ describe('handleOpenURL', () => {
     expect(authenticatedHandler).not.toHaveBeenCalled()
   })
 
-  test('with browsertab plugin', async () => {
+  test('with the browsertab plugin', async () => {
     expect.assertions(2)
 
     // Given
