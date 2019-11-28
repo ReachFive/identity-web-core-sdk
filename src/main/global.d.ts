@@ -22,8 +22,9 @@ interface Window {
       browsertab?: BrowserTab
     }
     InAppBrowser?: {
-      open(url: string, target: '_self' | '_blank' | '_system'): void
-    }
-  }
+      open(url: string, target: '_self' | '_blank' | '_system') : void
+    },
+    platformId?: 'ios' | 'android'
+  } 
   handleOpenURL?: (url: string) => void
 }
