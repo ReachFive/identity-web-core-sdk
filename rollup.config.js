@@ -1,15 +1,20 @@
 import typescript from 'typescript'
-import typescriptPlugin from 'rollup-plugin-typescript2'
+
+import babel from 'rollup-plugin-babel'
 import commonjs from 'rollup-plugin-commonjs'
-import nodeResolve from 'rollup-plugin-node-resolve'
+import resolve from 'rollup-plugin-node-resolve'
+import typescriptPlugin from 'rollup-plugin-typescript2'
 import { uglify } from 'rollup-plugin-uglify'
+
 import pkg from './package.json'
 
-
 const plugins = [
-  nodeResolve(),
+  resolve(),
   commonjs({
     namedExports: { 'node_modules/winchan/winchan.js': ['open'] }
+  }),
+  babel({ 
+    exclude: [/\/core-js\//]
   }),
   typescriptPlugin({
     typescript,
@@ -26,7 +31,7 @@ function isNpmDependency(name) {
 
 function createBundle({ file, format, name, external, withUglify = false }) {
   return {
-		input: 'src/main/main.ts',
+		input: 'src/main/index.ts',
 		output: { file, format, name },
     plugins: withUglify ? [uglify(), ...plugins] : plugins,
     external,
