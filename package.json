@@ -22,6 +22,7 @@
     "format": "prettier --write \"src/**/{*.ts,*.tsx}\""
   },
   "dependencies": {
+    "buffer": "5.4.3",
     "lodash": "4.17.15",
     "winchan": "0.2.2"
   },

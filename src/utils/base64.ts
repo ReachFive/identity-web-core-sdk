@@ -1,3 +1,5 @@
+import { Buffer } from 'buffer/'
+
 /**
  * return an UTF-8 encoded string as URL Safe Base64
  *
