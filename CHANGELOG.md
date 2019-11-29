@@ -1,5 +1,13 @@
 # Changelog
 
+## v.1.9.1
+
+### 29/11/2019
+
+### Fixes
+- Open a webview for social login if the Cordova platform is iOS.
+- Support compatibility with IE11.
+  
 ## v.1.9.0
 
 ### 28/10/2019
