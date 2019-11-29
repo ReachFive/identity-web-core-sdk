@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.0-alpha.21
+
+### 29/11/2019
+
+### Fixes
+- Open a webview for social login if the Cordova platform is iOS.
+
 ## 0.1.0-alpha.20
 
 ### 06/08/2019
