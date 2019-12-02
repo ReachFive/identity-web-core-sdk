@@ -1,3 +1,5 @@
+import { Buffer } from 'buffer/'
+
 import { encodeToBase64 } from '../utils/base64'
 
 export type PkceParams = { codeChallenge: string; codeChallengeMethod: string }
