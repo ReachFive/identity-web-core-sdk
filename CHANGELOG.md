@@ -1,5 +1,12 @@
 # Changelog
 
+## v.1.9.2
+
+### 02/12/2019
+
+### Fixes
+- Add the missing implementation of `Buffer` to address an issue with the UMD bundle when PKCE is enabled.
+
 ## v.1.9.1
 
 ### 29/11/2019
