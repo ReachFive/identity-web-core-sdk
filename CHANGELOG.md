@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.0-alpha.22
+
+### 05/12/2019
+
+### Fixes
+- Snake_case transformation for consents and custom fields.
+
 ## 0.1.0-alpha.21
 
 ### 29/11/2019
