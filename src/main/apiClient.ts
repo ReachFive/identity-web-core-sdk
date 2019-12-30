@@ -194,7 +194,7 @@ export default class ApiClient {
   }
 
   logout(opts: { redirectTo?: string; removeCredentials?: boolean } = {}): void {
-    if (navigator.credentials.preventSilentAccess && opts.removeCredentials === true) {
+    if (navigator.credentials && navigator.credentials.preventSilentAccess && opts.removeCredentials === true) {
       navigator.credentials.preventSilentAccess()
     }
     window.location.assign(`${this.baseUrl}/logout?${toQueryString(opts)}`)
@@ -318,7 +318,7 @@ export default class ApiClient {
   }
 
   private storeCredentials(params: LoginWithPasswordParams): Promise<void> {
-    if (navigator.credentials.create && navigator.credentials.store) {
+    if (navigator.credentials && navigator.credentials.create && navigator.credentials.store) {
       const credentialParams = {
         password: {
           password: params.password,
@@ -544,7 +544,7 @@ export default class ApiClient {
   }
 
   loginWithCredentials(params: LoginWithCredentialsParams): Promise<void> {
-    if (navigator.credentials.get) {
+    if (navigator.credentials && navigator.credentials.get) {
       const request: CredentialRequestOptions = {
         password: true,
         mediation: params.mediation || 'silent'
