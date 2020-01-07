@@ -1,5 +1,12 @@
 # Changelog
 
+## v.1.9.3
+
+### 07/01/2020
+
+### Fixes
+- The [`logout`](https://developer.reach5.co/api/identity-web/#logout) method was fixed on Safari and IE11.
+
 ## v.1.9.2
 
 ### 02/12/2019
