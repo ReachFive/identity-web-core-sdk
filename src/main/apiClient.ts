@@ -15,8 +15,14 @@ import { popupSize } from './providerPopupSize'
 import { createHttpClient, HttpClient } from './httpClient'
 import { computePkceParams, PkceParams } from './pkceService'
 
-export type SignupParams = { data: SignupProfile; saveCredentials?: boolean; auth?: AuthOptions; redirectUrl?: string }
-export type UpdateEmailParams = { accessToken: string; email: string; redirectUrl?: string }
+export type SignupParams = {
+  data: SignupProfile
+  returnToAfterConfirmEmail?: string
+  saveCredentials?: boolean
+  auth?: AuthOptions
+  redirectUrl?: string
+}
+export type UpdateEmailParams = { accessToken: string; email: string, redirectUrl?: string }
 
 type LoginWithPasswordOptions = { password: string; saveCredentials?: boolean; auth?: AuthOptions }
 type EmailLoginWithPasswordParams = LoginWithPasswordOptions & { email: string }
@@ -29,7 +35,7 @@ export type LoginWithCredentialsParams = {
   auth?: AuthOptions
 }
 
-type EmailRequestPasswordResetParams = { email: string; redirectUrl?: string }
+type EmailRequestPasswordResetParams = { email: string, redirectUrl?: string, loginLink?: string }
 type SmsRequestPasswordResetParams = { phoneNumber: string }
 export type RequestPasswordResetParams = EmailRequestPasswordResetParams | SmsRequestPasswordResetParams
 
@@ -413,7 +419,7 @@ export default class ApiClient {
   }
 
   signup(params: SignupParams): Promise<void> {
-    const { data, auth, redirectUrl } = params
+    const { data, auth, redirectUrl, returnToAfterConfirmEmail } = params
     const acceptTos = auth && auth.acceptTos
 
     const signupPromise = window.cordova
@@ -424,7 +430,8 @@ export default class ApiClient {
               redirectUrl,
               scope: this.resolveScope(auth),
               ...pick(auth, 'origin'),
-              data
+              data,
+              returnToAfterConfirmEmail,
             }
           })
           .then(result => this.eventManager.fireEvent('authenticated', result))
@@ -435,7 +442,8 @@ export default class ApiClient {
               redirectUrl,
               scope: this.resolveScope(auth),
               acceptTos,
-              data
+              data,
+              returnToAfterConfirmEmail,
             }
           })
           .then(({ tkn }) => this.loginWithPasswordToken(tkn, auth))
