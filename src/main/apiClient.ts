@@ -22,7 +22,7 @@ export type SignupParams = {
   auth?: AuthOptions
   redirectUrl?: string
 }
-export type UpdateEmailParams = { accessToken: string; email: string, redirectUrl?: string }
+export type UpdateEmailParams = { accessToken: string; email: string; redirectUrl?: string }
 
 type LoginWithPasswordOptions = { password: string; saveCredentials?: boolean; auth?: AuthOptions }
 type EmailLoginWithPasswordParams = LoginWithPasswordOptions & { email: string }
@@ -35,7 +35,12 @@ export type LoginWithCredentialsParams = {
   auth?: AuthOptions
 }
 
-type EmailRequestPasswordResetParams = { email: string, redirectUrl?: string, loginLink?: string }
+type EmailRequestPasswordResetParams = {
+  email: string
+  redirectUrl?: string
+  loginLink?: string
+  returnToAfterResetPassword?: string
+}
 type SmsRequestPasswordResetParams = { phoneNumber: string }
 export type RequestPasswordResetParams = EmailRequestPasswordResetParams | SmsRequestPasswordResetParams
 
