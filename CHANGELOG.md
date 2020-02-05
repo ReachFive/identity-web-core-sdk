@@ -1,5 +1,8 @@
 # Changelog
 
+## v.1.10.0
+- add paramaters `returnToAfterPasswordReset` for reset password and parameter `returnToAfterEmailConfirmation` for signup.
+
 ## v.1.9.3
 
 ### 07/01/2020
