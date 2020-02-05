@@ -17,7 +17,7 @@ import { computePkceParams, PkceParams } from './pkceService'
 
 export type SignupParams = {
   data: SignupProfile
-  returnToAfterConfirmEmail?: string
+  returnToAfterEmailConfirmation?: string
   saveCredentials?: boolean
   auth?: AuthOptions
   redirectUrl?: string
@@ -39,7 +39,7 @@ type EmailRequestPasswordResetParams = {
   email: string
   redirectUrl?: string
   loginLink?: string
-  returnToAfterResetPassword?: string
+  returnToAfterPasswordReset?: string
 }
 type SmsRequestPasswordResetParams = { phoneNumber: string }
 export type RequestPasswordResetParams = EmailRequestPasswordResetParams | SmsRequestPasswordResetParams
@@ -424,7 +424,7 @@ export default class ApiClient {
   }
 
   signup(params: SignupParams): Promise<void> {
-    const { data, auth, redirectUrl, returnToAfterConfirmEmail } = params
+    const { data, auth, redirectUrl, returnToAfterEmailConfirmation } = params
     const acceptTos = auth && auth.acceptTos
 
     const signupPromise = window.cordova
@@ -436,7 +436,7 @@ export default class ApiClient {
               scope: this.resolveScope(auth),
               ...pick(auth, 'origin'),
               data,
-              returnToAfterConfirmEmail,
+              returnToAfterEmailConfirmation,
             }
           })
           .then(result => this.eventManager.fireEvent('authenticated', result))
@@ -448,7 +448,7 @@ export default class ApiClient {
               scope: this.resolveScope(auth),
               acceptTos,
               data,
-              returnToAfterConfirmEmail,
+              returnToAfterEmailConfirmation,
             }
           })
           .then(({ tkn }) => this.loginWithPasswordToken(tkn, auth))
