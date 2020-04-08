@@ -25,6 +25,7 @@ export interface AuthOptions {
   accessToken?: string
   requireRefreshToken?: boolean
   acceptTos?: boolean
+  persistent?: boolean
 }
 
 /**
@@ -44,6 +45,7 @@ export type AuthParameters = {
   loginHint?: string
   accessToken?: string
   acceptTos?: boolean
+  persistent?: boolean
 }
 
 /**
@@ -66,7 +68,7 @@ export function resolveScope(opts: AuthOptions = {}, defaultScopes?: string): st
  * @param acceptPopupMode
  *    Indicates if the popup mode is allowed (depends on the type of authentication or context)
  */
-export function prepareAuthOptions(
+export function computeAuthOptions(
   opts: AuthOptions = {},
   { acceptPopupMode = false }: { acceptPopupMode?: boolean } = {},
   defaultScopes?: string
@@ -86,7 +88,8 @@ export function prepareAuthOptions(
       'idTokenHint',
       'loginHint',
       'accessToken',
-      'acceptTos'
+      'acceptTos',
+      'persistent'
     ])
   }
 }

@@ -7,7 +7,7 @@ import { QueryString, toQueryString } from '../utils/queryString'
 import { camelCaseProperties } from '../utils/transformObjectProperties'
 
 import { ErrorResponse, Profile, SessionInfo, SignupProfile } from './models'
-import { AuthOptions, AuthParameters, prepareAuthOptions, resolveScope } from './authOptions'
+import { AuthOptions, AuthParameters, computeAuthOptions, resolveScope } from './authOptions'
 import { AuthResult, enrichAuthResult } from './authResult'
 import { IdentityEventManager } from './identityEventManager'
 import { UrlParser } from './urlParser'
@@ -24,7 +24,7 @@ export type SignupParams = {
 }
 export type UpdateEmailParams = { accessToken: string; email: string; redirectUrl?: string }
 
-type LoginWithPasswordOptions = { password: string; saveCredentials?: boolean; auth?: AuthOptions }
+type LoginWithPasswordOptions = { password: string; saveCredentials?: boolean; auth?: AuthOptions; persistent?: boolean }
 type EmailLoginWithPasswordParams = LoginWithPasswordOptions & { email: string }
 type PhoneNumberLoginWithPasswordParams = LoginWithPasswordOptions & { phoneNumber: string }
 
@@ -84,6 +84,7 @@ export type ApiClientConfig = {
 export type TokenRequestParameters = {
   code: string
   redirectUri: string
+  persistent?: boolean
 }
 
 /**
@@ -141,9 +142,8 @@ export default class ApiClient {
         body: {
           clientId: this.config.clientId,
           grantType: 'authorization_code',
-          code: params.code,
-          redirectUri: params.redirectUri,
-          code_verifier: sessionStorage.getItem('verifier_key')
+          code_verifier: sessionStorage.getItem('verifier_key'),
+          ...params
         }
       })
       .then(result => this.eventManager.fireEvent('authenticated', result))
@@ -311,14 +311,17 @@ export default class ApiClient {
   }
 
   loginWithPassword(params: LoginWithPasswordParams): Promise<void> {
-    const saveCredentials = !isUndefined(params.saveCredentials) && params.saveCredentials
+    const storeCredentialsInBrowser = !isUndefined(params.saveCredentials) && params.saveCredentials
 
     const loginPromise =
-      window.cordova || saveCredentials
+      window.cordova || storeCredentialsInBrowser
         ? this.loginWithPasswordByOAuth(params)
         : this.loginWithPasswordByRedirect(params)
 
-    const resultPromise = saveCredentials ? loginPromise.then(() => this.storeCredentials(params)) : loginPromise
+    const resultPromise =
+      storeCredentialsInBrowser
+        ? loginPromise.then(() => this.storeCredentialsInBrowser(params))
+        : loginPromise
 
     return resultPromise.catch((err: any) => {
       if (err.error) {
@@ -328,7 +331,7 @@ export default class ApiClient {
     })
   }
 
-  private storeCredentials(params: LoginWithPasswordParams): Promise<void> {
+  private storeCredentialsInBrowser(params: LoginWithPasswordParams): Promise<void> {
     if (navigator.credentials && navigator.credentials.create && navigator.credentials.store) {
       const credentialParams = {
         password: {
@@ -376,17 +379,18 @@ export default class ApiClient {
           ...rest
         }
       })
-      .then(({ tkn }) => this.loginWithPasswordToken(tkn, auth))
+      .then(({ tkn }) => this.loginWithPasswordCallback(tkn, auth, rest.persistent))
   }
 
-  private loginWithPasswordToken(tkn: string, auth: AuthOptions = {}): void {
+  private loginWithPasswordCallback(tkn: string, auth: AuthOptions = {}, persistent?: boolean): void {
     const authParams = this.authParams(auth)
 
     this.getPkceParams(authParams).then(maybeChallenge => {
       const queryString = toQueryString({
         ...authParams,
         tkn,
-        ...maybeChallenge
+        ...maybeChallenge,
+        persistent
       })
       window.location.assign(`${this.baseUrl}/password/callback?${queryString}`)
     })
@@ -451,7 +455,7 @@ export default class ApiClient {
               returnToAfterEmailConfirmation,
             }
           })
-          .then(({ tkn }) => this.loginWithPasswordToken(tkn, auth))
+          .then(({ tkn }) => this.loginWithPasswordCallback(tkn, auth))
 
     const saveCredentials = !isUndefined(params.saveCredentials) && params.saveCredentials
 
@@ -463,7 +467,7 @@ export default class ApiClient {
 
     const resultPromise =
       saveCredentials && !isUndefined(loginParams)
-        ? signupPromise.then(() => this.storeCredentials(loginParams))
+        ? signupPromise.then(() => this.storeCredentialsInBrowser(loginParams))
         : signupPromise
 
     return resultPromise.catch(err => {
@@ -620,7 +624,7 @@ export default class ApiClient {
   private authParams(opts: AuthOptions, { acceptPopupMode = false } = {}) {
     return {
       clientId: this.config.clientId,
-      ...prepareAuthOptions(opts, { acceptPopupMode }, this.config.scope)
+      ...computeAuthOptions(opts, { acceptPopupMode }, this.config.scope)
     }
   }
 }
