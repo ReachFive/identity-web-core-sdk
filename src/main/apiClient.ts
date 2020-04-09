@@ -84,7 +84,7 @@ export type ApiClientConfig = {
 export type TokenRequestParameters = {
   code: string
   redirectUri: string
-  persistent?: boolean
+  persistent?: boolean // Whether the remember me is enabled
 }
 
 /**
@@ -142,7 +142,7 @@ export default class ApiClient {
         body: {
           clientId: this.config.clientId,
           grantType: 'authorization_code',
-          code_verifier: sessionStorage.getItem('verifier_key'),
+          codeVerifier: sessionStorage.getItem('verifier_key'),
           ...params
         }
       })
@@ -311,15 +311,16 @@ export default class ApiClient {
   }
 
   loginWithPassword(params: LoginWithPasswordParams): Promise<void> {
-    const storeCredentialsInBrowser = !isUndefined(params.saveCredentials) && params.saveCredentials
+    // Whether the credentials will be stored in the browser
+    const saveCredentials = !isUndefined(params.saveCredentials) && params.saveCredentials
 
     const loginPromise =
-      window.cordova || storeCredentialsInBrowser
+      window.cordova || saveCredentials
         ? this.loginWithPasswordByOAuth(params)
         : this.loginWithPasswordByRedirect(params)
 
     const resultPromise =
-      storeCredentialsInBrowser
+      saveCredentials
         ? loginPromise.then(() => this.storeCredentialsInBrowser(params))
         : loginPromise
 
