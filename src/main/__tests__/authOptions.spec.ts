@@ -1,13 +1,13 @@
-import { prepareAuthOptions } from '../authOptions'
+import { computeAuthOptions } from '../authOptions'
 
-describe('prepareAuthOptions', () => {
+describe('computeAuthOptions', () => {
   test('responseType defaults', () => {
-    expect(prepareAuthOptions()).toEqual({
+    expect(computeAuthOptions()).toEqual({
       display: 'page',
       responseType: 'token',
       scope: 'openid profile email phone'
     })
-    expect(prepareAuthOptions({})).toEqual({
+    expect(computeAuthOptions({})).toEqual({
       display: 'page',
       responseType: 'token',
       scope: 'openid profile email phone'
@@ -16,7 +16,7 @@ describe('prepareAuthOptions', () => {
 
   test('with redirect uri', () => {
     expect(
-      prepareAuthOptions({
+      computeAuthOptions({
         redirectUri: 'https://localhost/login.callback'
       })
     ).toEqual({
@@ -34,12 +34,12 @@ describe('prepareAuthOptions', () => {
       scope: 'openid profile email phone address'
     }
     expect(
-      prepareAuthOptions({
+      computeAuthOptions({
         scope: ['address']
       })
     ).toEqual(result)
     expect(
-      prepareAuthOptions({
+      computeAuthOptions({
         scope: 'address'
       })
     ).toEqual(result)
@@ -52,13 +52,13 @@ describe('prepareAuthOptions', () => {
       scope: 'openid profile'
     }
     expect(
-      prepareAuthOptions({
+      computeAuthOptions({
         fetchBasicProfile: false,
         scope: ['openid', 'profile']
       })
     ).toEqual(result)
     expect(
-      prepareAuthOptions({
+      computeAuthOptions({
         fetchBasicProfile: false,
         scope: 'openid profile'
       })
@@ -66,7 +66,7 @@ describe('prepareAuthOptions', () => {
   })
 
   test('popup mode when accepted', () => {
-    expect(prepareAuthOptions({ popupMode: true }, { acceptPopupMode: true })).toEqual({
+    expect(computeAuthOptions({ popupMode: true }, { acceptPopupMode: true })).toEqual({
       display: 'popup',
       responseType: 'token',
       scope: 'openid profile email phone'
@@ -74,7 +74,7 @@ describe('prepareAuthOptions', () => {
   })
 
   test('popup mode when refused', () => {
-    expect(prepareAuthOptions({ popupMode: true })).toEqual({
+    expect(computeAuthOptions({ popupMode: true })).toEqual({
       display: 'page',
       responseType: 'token',
       scope: 'openid profile email phone'
@@ -83,7 +83,7 @@ describe('prepareAuthOptions', () => {
 
   test('with refresh token required', () => {
     expect(
-      prepareAuthOptions({
+      computeAuthOptions({
         requireRefreshToken: true
       })
     ).toEqual({
