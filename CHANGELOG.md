@@ -1,6 +1,14 @@
 # Changelog
 
+## v.1.11.0
+
+### 16/04/2020
+
+### Features
+- Add the `persistent` parameter to the [`loginWithPassword`](https://developer.reachfive.com/sdk-core/loginWithPassword.html) method to choose whether the user session is persisted if the SSO feature is enabled.
+
 ## v.1.10.0
+
 ### 05/02/2020
 
 ### Features
