@@ -24,7 +24,7 @@ export type SignupParams = {
 }
 export type UpdateEmailParams = { accessToken: string; email: string; redirectUrl?: string }
 
-type LoginWithPasswordOptions = { password: string; saveCredentials?: boolean; auth?: AuthOptions; persistent?: boolean }
+type LoginWithPasswordOptions = { password: string; saveCredentials?: boolean; auth?: AuthOptions }
 type EmailLoginWithPasswordParams = LoginWithPasswordOptions & { email: string }
 type PhoneNumberLoginWithPasswordParams = LoginWithPasswordOptions & { phoneNumber: string }
 
@@ -380,10 +380,10 @@ export default class ApiClient {
           ...rest
         }
       })
-      .then(({ tkn }) => this.loginWithPasswordCallback(tkn, auth, rest.persistent))
+      .then(({ tkn }) => this.loginWithPasswordCallback(tkn, auth))
   }
 
-  private loginWithPasswordCallback(tkn: string, auth: AuthOptions = {}, persistent?: boolean): void {
+  private loginWithPasswordCallback(tkn: string, auth: AuthOptions = {}): void {
     const authParams = this.authParams(auth)
 
     this.getPkceParams(authParams).then(maybeChallenge => {
@@ -391,7 +391,6 @@ export default class ApiClient {
         ...authParams,
         tkn,
         ...maybeChallenge,
-        persistent
       })
       window.location.assign(`${this.baseUrl}/password/callback?${queryString}`)
     })
