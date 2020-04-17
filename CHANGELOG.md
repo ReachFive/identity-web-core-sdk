@@ -1,5 +1,12 @@
 # Changelog
 
+## v.1.12.0
+
+### 17/04/2020
+
+### Features
+- Move the `persistent` parameter from the [`loginWithPassword`](https://developer.reachfive.com/sdk-core/loginWithPassword.html) method to `AuthOptions` payload object to make it available in every login method.
+
 ## v.1.11.0
 
 ### 16/04/2020
