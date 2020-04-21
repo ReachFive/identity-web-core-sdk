@@ -3,6 +3,7 @@ import ApiClient, {
   LoginWithPasswordParams,
   LoginWithCredentialsParams,
   PasswordlessParams,
+  VerifyPasswordlessParams,
   RequestPasswordResetParams,
   SignupParams,
   UpdatePasswordParams,
@@ -33,7 +34,7 @@ export type Client = {
   signup: (params: SignupParams) => Promise<void>
   loginWithPassword: (params: LoginWithPasswordParams) => Promise<void>
   startPasswordless: (params: PasswordlessParams, options?: AuthOptions) => Promise<void>
-  verifyPasswordless: (params: PasswordlessParams) => Promise<void>
+  verifyPasswordless: (params: VerifyPasswordlessParams) => Promise<void>
   loginWithSocialProvider: (provider: string, options?: AuthOptions) => Promise<void>
   exchangeAuthorizationCodeWithPkce: (params: TokenRequestParameters) => Promise<void>
   requestPasswordReset: (params: RequestPasswordResetParams) => Promise<void>
@@ -98,7 +99,7 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.startPasswordless(params, options))
   }
 
-  function verifyPasswordless(params: PasswordlessParams) {
+  function verifyPasswordless(params: VerifyPasswordlessParams) {
     return apiClient.then(api => api.verifyPasswordless(params))
   }
 
