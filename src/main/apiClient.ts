@@ -70,7 +70,13 @@ export type UpdatePasswordParams =
   | EmailVerificationCodeUpdatePasswordParams
   | SmsVerificationCodeUpdatePasswordParams
 
-export type PasswordlessParams = { authType: 'magic_link' | 'sms'; email?: string; phoneNumber?: string }
+export type PasswordlessParams = {
+  authType: 'magic_link' | 'sms'
+  email?: string
+  phoneNumber?: string
+}
+
+export type VerifyPasswordlessParams = PasswordlessParams & { verificationCode: string }
 
 export type ApiClientConfig = {
   clientId: string
@@ -396,12 +402,12 @@ export default class ApiClient {
     })
   }
 
-  startPasswordless(params: PasswordlessParams, opts: AuthOptions = {}): Promise<void> {
+  startPasswordless(params: PasswordlessParams, auth: AuthOptions = {}): Promise<void> {
     const { authType, email, phoneNumber } = params
 
     return this.http.post('/passwordless/start', {
       body: {
-        ...this.authParams(opts),
+        ...this.authParams(auth),
         authType,
         email,
         phoneNumber
@@ -409,7 +415,7 @@ export default class ApiClient {
     })
   }
 
-  private loginWithVerificationCode(params: PasswordlessParams, auth: AuthOptions): void {
+  private loginWithVerificationCode(params: VerifyPasswordlessParams, auth: AuthOptions): void {
     const queryString = toQueryString({
       ...this.authParams(auth),
       ...params
@@ -417,7 +423,7 @@ export default class ApiClient {
     window.location.assign(`${this.baseUrl}/passwordless/verify?${queryString}`)
   }
 
-  verifyPasswordless(params: PasswordlessParams, auth = {}): Promise<void> {
+  verifyPasswordless(params: VerifyPasswordlessParams, auth: AuthOptions = {}): Promise<void> {
     return this.http
       .post('/verify-auth-code', { body: params })
       .then(() => this.loginWithVerificationCode(params, auth))
