@@ -1,5 +1,12 @@
 # Changelog
 
+## v.1.12.1
+
+### 11/05/2020
+
+### Fixes
+- Correct the signature of the [`verifyPasswordless`](https://developer.reachfive.com/sdk-core/verifyPasswordless.html) method.
+
 ## v.1.12.0
 
 ### 17/04/2020
