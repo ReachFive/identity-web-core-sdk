@@ -8,7 +8,8 @@ import ApiClient, {
   SignupParams,
   UpdatePasswordParams,
   UpdateEmailParams,
-  TokenRequestParameters
+  TokenRequestParameters,
+  EmailVerificationParams
 } from './apiClient'
 import { AuthOptions } from './authOptions'
 import { AuthResult } from './authResult'
@@ -33,6 +34,8 @@ export type Client = {
   off: <K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) => void
   signup: (params: SignupParams) => Promise<void>
   loginWithPassword: (params: LoginWithPasswordParams) => Promise<void>
+  sendVerificationEmail: (params: EmailVerificationParams) => Promise<void>
+  sendVerificationSms: (params: { accessToken: string }) => Promise<void>
   startPasswordless: (params: PasswordlessParams, options?: AuthOptions) => Promise<void>
   verifyPasswordless: (params: VerifyPasswordlessParams) => Promise<void>
   loginWithSocialProvider: (provider: string, options?: AuthOptions) => Promise<void>
@@ -93,6 +96,14 @@ export function createClient(creationConfig: Config): Client {
 
   function loginWithPassword(params: LoginWithPasswordParams) {
     return apiClient.then(api => api.loginWithPassword(params))
+  }
+
+  function sendVerificationEmail(params: EmailVerificationParams) {
+    return apiClient.then(api => api.sendVerificationEmail(params))
+  }
+
+  function sendVerificationSms(params: { accessToken: string }) {
+    return apiClient.then(api => api.sendVerificationSms(params))
   }
 
   function startPasswordless(params: PasswordlessParams, options: AuthOptions = {}) {
@@ -199,6 +210,8 @@ export function createClient(creationConfig: Config): Client {
     off,
     signup,
     loginWithPassword,
+    sendVerificationEmail,
+    sendVerificationSms,
     startPasswordless,
     verifyPasswordless,
     loginWithSocialProvider,
