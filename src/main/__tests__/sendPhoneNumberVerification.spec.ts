@@ -11,10 +11,10 @@ test('send sms', done => {
 
   const fetch1 = fetchMock.mockResponseOnce(JSON.stringify(''))
 
-  const accessToken = '123';
+  const accessToken = '123'
   const params = {
-    accessToken: accessToken
-  };
+    accessToken
+  }
 
   api.sendVerificationSms(params).then(_ => {
     expect(fetch1).toHaveBeenCalledWith(`https://${domain}/identity/v1/send-phone-number-verification`, {

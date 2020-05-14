@@ -11,17 +11,17 @@ test('send mail', done => {
 
   const fetch1 = fetchMock.mockResponseOnce(JSON.stringify(''))
 
-  const accessToken = '456';
+  const accessToken = '456'
   const params = {
-    accessToken: accessToken,
+    accessToken,
     redirectUrl: 'http://toto.com',
     returnToAfterEmailConfirmation: 'http://confirmation.com'
-  };
+  }
 
   const body = {
     redirect_url: 'http://toto.com',
     return_to_after_email_confirmation: 'http://confirmation.com'
-  };
+  }
 
   api.sendVerificationEmail(params).then(_ => {
     expect(fetch1).toHaveBeenCalledWith(`https://${domain}/identity/v1/send-email-verification`, {
