@@ -6,7 +6,7 @@ beforeEach(() => {
   window.location.assign = jest.fn()
 })
 
-test('send sms', done => {
+test('send verification for phone number', done => {
   const { api, domain } = createDefaultTestClient()
 
   const fetch1 = fetchMock.mockResponseOnce(JSON.stringify(''))
@@ -16,7 +16,7 @@ test('send sms', done => {
     accessToken
   }
 
-  api.sendVerificationSms(params).then(_ => {
+  api.sendPhoneNumberVerification(params).then(_ => {
     expect(fetch1).toHaveBeenCalledWith(`https://${domain}/identity/v1/send-phone-number-verification`, {
       method: 'POST',
       headers: {

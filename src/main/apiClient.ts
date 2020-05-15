@@ -24,6 +24,7 @@ export type SignupParams = {
 }
 export type UpdateEmailParams = { accessToken: string; email: string; redirectUrl?: string }
 export type EmailVerificationParams = { accessToken: string; redirectUrl?: string; returnToAfterEmailConfirmation?: string }
+export type PhoneNumberVerificationParams = { accessToken: string }
 
 type LoginWithPasswordOptions = { password: string; saveCredentials?: boolean; auth?: AuthOptions }
 type EmailLoginWithPasswordParams = LoginWithPasswordOptions & { email: string }
@@ -485,12 +486,12 @@ export default class ApiClient {
     })
   }
 
-  sendVerificationEmail(params: EmailVerificationParams): Promise<void> {
+  sendEmailVerification(params: EmailVerificationParams): Promise<void> {
     const { accessToken, ...data } = params
     return this.http.post('/send-email-verification', { body: { ...data }, accessToken })
   }
 
-  sendVerificationSms(params: { accessToken: string }): Promise<void> {
+  sendPhoneNumberVerification(params: PhoneNumberVerificationParams): Promise<void> {
     const { accessToken } = params
     return this.http.post('/send-phone-number-verification', { accessToken })
   }

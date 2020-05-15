@@ -9,7 +9,8 @@ import ApiClient, {
   UpdatePasswordParams,
   UpdateEmailParams,
   TokenRequestParameters,
-  EmailVerificationParams
+  EmailVerificationParams,
+  PhoneNumberVerificationParams
 } from './apiClient'
 import { AuthOptions } from './authOptions'
 import { AuthResult } from './authResult'
@@ -34,8 +35,8 @@ export type Client = {
   off: <K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) => void
   signup: (params: SignupParams) => Promise<void>
   loginWithPassword: (params: LoginWithPasswordParams) => Promise<void>
-  sendVerificationEmail: (params: EmailVerificationParams) => Promise<void>
-  sendVerificationSms: (params: { accessToken: string }) => Promise<void>
+  sendEmailVerification: (params: EmailVerificationParams) => Promise<void>
+  sendPhoneNumberVerification: (params: PhoneNumberVerificationParams) => Promise<void>
   startPasswordless: (params: PasswordlessParams, options?: AuthOptions) => Promise<void>
   verifyPasswordless: (params: VerifyPasswordlessParams) => Promise<void>
   loginWithSocialProvider: (provider: string, options?: AuthOptions) => Promise<void>
@@ -98,12 +99,12 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.loginWithPassword(params))
   }
 
-  function sendVerificationEmail(params: EmailVerificationParams) {
-    return apiClient.then(api => api.sendVerificationEmail(params))
+  function sendEmailVerification(params: EmailVerificationParams) {
+    return apiClient.then(api => api.sendEmailVerification(params))
   }
 
-  function sendVerificationSms(params: { accessToken: string }) {
-    return apiClient.then(api => api.sendVerificationSms(params))
+  function sendPhoneNumberVerification(params: PhoneNumberVerificationParams) {
+    return apiClient.then(api => api.sendPhoneNumberVerification(params))
   }
 
   function startPasswordless(params: PasswordlessParams, options: AuthOptions = {}) {
@@ -210,8 +211,8 @@ export function createClient(creationConfig: Config): Client {
     off,
     signup,
     loginWithPassword,
-    sendVerificationEmail,
-    sendVerificationSms,
+    sendEmailVerification,
+    sendPhoneNumberVerification,
     startPasswordless,
     verifyPasswordless,
     loginWithSocialProvider,

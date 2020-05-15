@@ -23,7 +23,7 @@ test('send mail', done => {
     return_to_after_email_confirmation: 'http://confirmation.com'
   }
 
-  api.sendVerificationEmail(params).then(_ => {
+  api.sendEmailVerification(params).then(_ => {
     expect(fetch1).toHaveBeenCalledWith(`https://${domain}/identity/v1/send-email-verification`, {
       method: 'POST',
       headers: {
