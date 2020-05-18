@@ -1,5 +1,12 @@
 # Changelog
 
+## v.1.13.0
+
+### 18/05/2020
+
+### Features
+- Add two new methods to request the verification of the phone number and email address: [sendPhoneNumberVerification](https://developer.reachfive.com/api/identity.html#operation/sendPhoneNumberVerification) & [sendEmailVerification](https://developer.reachfive.com/api/identity.html#operation/sendEmailVerification)
+
 ## v.1.12.1
 
 ### 11/05/2020
