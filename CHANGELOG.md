@@ -5,7 +5,7 @@
 ### 18/05/2020
 
 ### Features
-- Add two new methods to request the verification of the phone number and email address: [sendPhoneNumberVerification](https://developer.reachfive.com/api/identity.html#operation/sendPhoneNumberVerification) & [sendEmailVerification](https://developer.reachfive.com/api/identity.html#operation/sendEmailVerification)
+- Add two new methods to request the verification of the phone number and email address: [sendPhoneNumberVerification](https://developer.reachfive.com/sdk-core/sendPhoneNumberVerification.html) & [sendEmailVerification](https://developer.reachfive.com/sdk-core/sendEmailVerification.html)
 
 ## v.1.12.1
 
