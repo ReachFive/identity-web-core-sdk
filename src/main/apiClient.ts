@@ -607,14 +607,14 @@ export default class ApiClient {
     return this.http
       .post<PublicKeyCredentialCreationOptionsSerialized>('/webauthn/makeCredentials', { accessToken })
       .then(serialiedOptions => {
-        const publicKey = encodePublicKeyCredentialCreationOptions(serialiedOptions) 
+        const publicKey = encodePublicKeyCredentialCreationOptions(serialiedOptions)
 
         return navigator.credentials.create({ publicKey })
       })
       .then(credentials => {
         if (!credentials || credentials.type !== publicKeyCredentialType) {
           throw new Error('Unable to register invalid public key crendentials.')
-        } 
+        }
 
         const serializedCredentials = serializePublicKeyCredential(credentials)
 
