@@ -55,6 +55,7 @@ export type Client = {
   verifyPhoneNumber: (params: { accessToken: string; phoneNumber: string; verificationCode: string }) => Promise<void>
   loginWithCustomToken: (params: { token: string; auth: AuthOptions }) => Promise<void>
   loginWithCredentials: (params: LoginWithCredentialsParams) => Promise<void>
+  addNewWebAuthnDevice: (accessToken: string) => Promise<void>
   getSessionInfo: (params?: {}) => Promise<SessionInfo>
   checkUrlFragment: (url: string) => boolean
 }
@@ -179,6 +180,10 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.loginWithCredentials(params))
   }
 
+  function addNewWebAuthnDevice(accessToken: string) {
+    return apiClient.then(api => api.addNewWebAuthnDevice(accessToken))
+  }
+
   function getSessionInfo() {
     return apiClient.then(api => api.getSessionInfo())
   }
@@ -231,6 +236,7 @@ export function createClient(creationConfig: Config): Client {
     verifyPhoneNumber,
     loginWithCustomToken,
     loginWithCredentials,
+    addNewWebAuthnDevice,
     getSessionInfo,
     checkUrlFragment
   }

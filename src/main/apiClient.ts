@@ -14,6 +14,7 @@ import { UrlParser } from './urlParser'
 import { popupSize } from './providerPopupSize'
 import { createHttpClient, HttpClient } from './httpClient'
 import { computePkceParams, PkceParams } from './pkceService'
+import { encodePublicKeyCredentialCreationOptions, serializePublicKeyCredential, publicKeyCredentialType, PublicKeyCredentialCreationOptionsSerialized } from './webAuthnService'
 
 export type SignupParams = {
   data: SignupProfile
@@ -94,6 +95,8 @@ export type TokenRequestParameters = {
   redirectUri: string
   persistent?: boolean // Whether the remember me is enabled
 }
+
+export type InternalToken = { tkn: string }
 
 /**
  * Identity Rest API Client
@@ -598,6 +601,33 @@ export default class ApiClient {
     } else {
       return Promise.reject(new Error('Unsupported Credentials Management API'))
     }
+  }
+
+  addNewWebAuthnDevice(accessToken: string, auth?: AuthOptions): Promise<void> {
+    return this.http
+      .post<PublicKeyCredentialCreationOptionsSerialized>('/webauthn/makeCredentials', { accessToken })
+      .then(serialiedOptions => {
+        const publicKey = encodePublicKeyCredentialCreationOptions(serialiedOptions) 
+
+        return navigator.credentials.create({ publicKey })
+      })
+      .then(credentials => {
+        if (!credentials || credentials.type !== publicKeyCredentialType) {
+          throw new Error('Unable to register invalid public key crendentials.')
+        } 
+
+        const serializedCredentials = serializePublicKeyCredential(credentials)
+
+        return this.http
+          .post<InternalToken>('/webauthn/credentials', { body: { ...serializedCredentials }, accessToken })
+          .then(token => this.loginWithPasswordCallback(token.tkn, auth))
+          .catch(error => { throw error })
+      })
+      .catch(error => {
+        if (error.error) this.eventManager.fireEvent('login_failed', error)
+
+        throw error
+      })
   }
 
   getSessionInfo(): Promise<SessionInfo> {
