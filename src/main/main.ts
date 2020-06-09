@@ -1,4 +1,4 @@
-import { Profile, RemoteSettings, SessionInfo } from './models'
+import { Profile, RemoteSettings, SessionInfo, UserInfo } from './models'
 import ApiClient, {
   LoginWithPasswordParams,
   LoginWithCredentialsParams,
@@ -34,6 +34,7 @@ export type Client = {
   on: <K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) => void
   off: <K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) => void
   signup: (params: SignupParams) => Promise<void>
+  getSignupData: (signupToken: string) => Promise<UserInfo>
   loginWithPassword: (params: LoginWithPasswordParams) => Promise<void>
   sendEmailVerification: (params: EmailVerificationParams) => Promise<void>
   sendPhoneNumberVerification: (params: PhoneNumberVerificationParams) => Promise<void>
@@ -93,6 +94,10 @@ export function createClient(creationConfig: Config): Client {
 
   function signup(params: SignupParams) {
     return apiClient.then(api => api.signup(params))
+  }
+
+  function getSignupData(signupToken: string) {
+    return apiClient.then(api => api.getSignupData(signupToken))
   }
 
   function loginWithPassword(params: LoginWithPasswordParams) {
@@ -210,6 +215,7 @@ export function createClient(creationConfig: Config): Client {
     on,
     off,
     signup,
+    getSignupData,
     loginWithPassword,
     sendEmailVerification,
     sendPhoneNumberVerification,
