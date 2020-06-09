@@ -40,7 +40,7 @@ export type SignupProfile = {
   liteOnly?: boolean
 }
 
-export type UserInfo = {
+export type OpenIdUser = {
   sub: string
   name?: string
   givenName?: string

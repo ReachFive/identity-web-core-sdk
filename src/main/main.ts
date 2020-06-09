@@ -1,4 +1,4 @@
-import { Profile, RemoteSettings, SessionInfo, UserInfo } from './models'
+import { Profile, RemoteSettings, SessionInfo, OpenIdUser } from './models'
 import ApiClient, {
   LoginWithPasswordParams,
   LoginWithCredentialsParams,
@@ -34,7 +34,7 @@ export type Client = {
   on: <K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) => void
   off: <K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) => void
   signup: (params: SignupParams) => Promise<void>
-  getSignupData: (signupToken: string) => Promise<UserInfo>
+  getSignupData: (signupToken: string) => Promise<OpenIdUser>
   loginWithPassword: (params: LoginWithPasswordParams) => Promise<void>
   sendEmailVerification: (params: EmailVerificationParams) => Promise<void>
   sendPhoneNumberVerification: (params: PhoneNumberVerificationParams) => Promise<void>
