@@ -60,7 +60,7 @@ export type UserInfo = {
   phoneNumber?: string
   phoneNumberVerified?: boolean
   address?: ProfileAddress[]
-  updateAt?: ProfileAddress
+  updatedAt?: number
   customFields?: Record<string, any>
 }
 
