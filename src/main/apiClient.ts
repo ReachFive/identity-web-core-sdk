@@ -14,7 +14,7 @@ import { UrlParser } from './urlParser'
 import { popupSize } from './providerPopupSize'
 import { createHttpClient, HttpClient } from './httpClient'
 import { computePkceParams, PkceParams } from './pkceService'
-import { encodePublicKeyCredentialCreationOptions, serializePublicKeyCredential, publicKeyCredentialType, PublicKeyCredentialCreationOptionsSerialized } from './webAuthnService'
+import { encodePublicKeyCredentialCreationOptions, serializePublicKeyCredential, publicKeyCredentialType, PublicKey } from './webAuthnService'
 
 export type SignupParams = {
   data: SignupProfile
@@ -603,9 +603,14 @@ export default class ApiClient {
     }
   }
 
-  addNewWebAuthnDevice(accessToken: string, auth?: AuthOptions): Promise<void> {
+  addNewWebAuthnDevice(accessToken: string): Promise<void> {
+    const body = {
+      origin: window.location.hostname,
+      friendlyName: window.navigator.platform
+    }
+
     return this.http
-      .post<{ publicKey: PublicKeyCredentialCreationOptionsSerialized }>('/webauthn/makeCredentials', { accessToken })
+      .post<PublicKey>('/webauthn/makeCredentials', { body, accessToken })
       .then(response => {
         const options = encodePublicKeyCredentialCreationOptions(response.publicKey)
 
@@ -619,8 +624,7 @@ export default class ApiClient {
         const serializedCredentials = serializePublicKeyCredential(credentials)
 
         return this.http
-          .post<InternalToken>('/webauthn/credentials', { body: { ...serializedCredentials }, accessToken })
-          .then(token => this.loginWithPasswordCallback(token.tkn, auth))
+          .post<void>('/webauthn/credentials', { body: { ...serializedCredentials }, accessToken })
           .catch(error => { throw error })
       })
       .catch(error => {

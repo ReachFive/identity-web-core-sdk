@@ -4,7 +4,9 @@ import { encodeToBase64 } from '../utils/base64'
 
 export const publicKeyCredentialType = 'public-key'
 
-export type PublicKeyCredentialCreationOptionsSerialized = {
+export type PublicKey = { publicKey: PublicKeyCredentialCreationOptionsSerialized }
+
+type PublicKeyCredentialCreationOptionsSerialized = {
     rp: PublicKeyCredentialRpEntity
     user: {
         id: string
@@ -37,10 +39,6 @@ export function encodePublicKeyCredentialCreationOptions(serializedOptions: Publ
         user: {
             ...serializedOptions.user,
             id:  Buffer.from(serializedOptions.user.id, 'base64')
-        },
-        rp: {
-            id: window.location.hostname,
-            name: window.location.hostname
         }
     }
 }
