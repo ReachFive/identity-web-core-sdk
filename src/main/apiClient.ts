@@ -96,8 +96,6 @@ export type TokenRequestParameters = {
   persistent?: boolean // Whether the remember me is enabled
 }
 
-export type InternalToken = { tkn: string }
-
 /**
  * Identity Rest API Client
  */
