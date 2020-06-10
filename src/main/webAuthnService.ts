@@ -21,8 +21,9 @@ export type PublicKeyCredentialCreationOptionsSerialized = {
 }
 
 export type PublicKeyCredentialSerialized = {
-    id: string;
-    type: 'public-key';
+    id: string
+    rawId: string
+    type: 'public-key'
     response: {
         attestationObject: string
         clientDataJSON: string
@@ -49,6 +50,7 @@ export function serializePublicKeyCredential(encodedPublicKey: PublicKeyCredenti
 
     return {
         id: encodedPublicKey.id,
+        rawId: encodeToBase64(encodedPublicKey.rawId),
         type: encodedPublicKey.type,
         response: {
             clientDataJSON: encodeToBase64(response.clientDataJSON),

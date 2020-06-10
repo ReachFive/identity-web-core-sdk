@@ -605,11 +605,11 @@ export default class ApiClient {
 
   addNewWebAuthnDevice(accessToken: string, auth?: AuthOptions): Promise<void> {
     return this.http
-      .post<PublicKeyCredentialCreationOptionsSerialized>('/webauthn/makeCredentials', { accessToken })
-      .then(serialiedOptions => {
-        const publicKey = encodePublicKeyCredentialCreationOptions(serialiedOptions)
+      .post<{ publicKey: PublicKeyCredentialCreationOptionsSerialized }>('/webauthn/makeCredentials', { accessToken })
+      .then(response => {
+        const options = encodePublicKeyCredentialCreationOptions(response.publicKey)
 
-        return navigator.credentials.create({ publicKey })
+        return navigator.credentials.create({ publicKey: options })
       })
       .then(credentials => {
         if (!credentials || credentials.type !== publicKeyCredentialType) {
