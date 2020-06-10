@@ -603,7 +603,7 @@ export default class ApiClient {
 
   addNewWebAuthnDevice(accessToken: string): Promise<void> {
     const body = {
-      origin: window.location.hostname,
+      origin: window.location.origin,
       friendlyName: window.navigator.platform
     }
 
