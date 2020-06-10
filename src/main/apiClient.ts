@@ -14,7 +14,7 @@ import { UrlParser } from './urlParser'
 import { popupSize } from './providerPopupSize'
 import { createHttpClient, HttpClient } from './httpClient'
 import { computePkceParams, PkceParams } from './pkceService'
-import {
+import { 
   encodePublicKeyCredentialCreationOptions, encodePublicKeyCredentialRequestOptions,
   serializeRegistrationPublicKeyCredential, serializeAuthenticationPublicKeyCredential,
   CredentialCreationOptionsSerialized, CredentialRequestOptionsSerialized,
@@ -653,7 +653,7 @@ export default class ApiClient {
     }
 
     return this.http
-      .post<CredentialRequestOptionsSerialized>('/webauthn/authentication-options', { body })
+      .post<CredentialRequestOptionsSerialized>('/webauth/authentication-options', { body })
       .then(response => {
         const options = encodePublicKeyCredentialRequestOptions(response.publicKey)
 
