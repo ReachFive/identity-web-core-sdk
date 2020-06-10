@@ -14,7 +14,7 @@ import { UrlParser } from './urlParser'
 import { popupSize } from './providerPopupSize'
 import { createHttpClient, HttpClient } from './httpClient'
 import { computePkceParams, PkceParams } from './pkceService'
-import { encodePublicKeyCredentialCreationOptions, serializePublicKeyCredential, publicKeyCredentialType, PublicKey } from './webAuthnService'
+import { encodePublicKeyCredentialCreationOptions, serializePublicKeyCredential, publicKeyCredentialType, CredentialCreationOptions } from './webAuthnService'
 
 export type SignupParams = {
   data: SignupProfile
@@ -608,7 +608,7 @@ export default class ApiClient {
     }
 
     return this.http
-      .post<PublicKey>('/webauthn/registration-options', { body, accessToken })
+      .post<CredentialCreationOptions>('/webauthn/registration-options', { body, accessToken })
       .then(response => {
         const options = encodePublicKeyCredentialCreationOptions(response.publicKey)
 

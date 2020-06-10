@@ -4,7 +4,7 @@ import { encodeToBase64 } from '../utils/base64'
 
 export const publicKeyCredentialType = 'public-key'
 
-export type PublicKey = { publicKey: PublicKeyCredentialCreationOptionsSerialized }
+export type CredentialCreationOptions = { publicKey: PublicKeyCredentialCreationOptionsSerialized }
 
 type PublicKeyCredentialCreationOptionsSerialized = {
     rp: PublicKeyCredentialRpEntity
@@ -22,7 +22,7 @@ type PublicKeyCredentialCreationOptionsSerialized = {
     extensions?: AuthenticationExtensionsClientInputs
 }
 
-export type PublicKeyCredentialSerialized = {
+export type RegistrationPublicKeyCredentialSerialized = {
     id: string
     rawId: string
     type: 'public-key'
@@ -43,7 +43,7 @@ export function encodePublicKeyCredentialCreationOptions(serializedOptions: Publ
     }
 }
 
-export function serializePublicKeyCredential(encodedPublicKey: PublicKeyCredential): PublicKeyCredentialSerialized {
+export function serializePublicKeyCredential(encodedPublicKey: PublicKeyCredential): RegistrationPublicKeyCredentialSerialized {
     const response = encodedPublicKey.response as AuthenticatorAttestationResponse
 
     return {
