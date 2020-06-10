@@ -4,7 +4,7 @@ import { encodeToBase64 } from '../utils/base64'
 
 export const publicKeyCredentialType = 'public-key'
 
-export type CredentialCreationOptions = { publicKey: PublicKeyCredentialCreationOptionsSerialized }
+export type CredentialCreationOptionsSerialized = { publicKey: PublicKeyCredentialCreationOptionsSerialized }
 
 type PublicKeyCredentialCreationOptionsSerialized = {
     rp: PublicKeyCredentialRpEntity
