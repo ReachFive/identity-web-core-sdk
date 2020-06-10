@@ -608,7 +608,7 @@ export default class ApiClient {
     }
 
     return this.http
-      .post<PublicKey>('/webauthn/makeCredentials', { body, accessToken })
+      .post<PublicKey>('/webauthn/registration-options', { body, accessToken })
       .then(response => {
         const options = encodePublicKeyCredentialCreationOptions(response.publicKey)
 
@@ -622,7 +622,7 @@ export default class ApiClient {
         const serializedCredentials = serializePublicKeyCredential(credentials)
 
         return this.http
-          .post<void>('/webauthn/credentials', { body: { ...serializedCredentials }, accessToken })
+          .post<void>('/webauthn/registration', { body: { ...serializedCredentials }, accessToken })
           .catch(error => { throw error })
       })
       .catch(error => {
