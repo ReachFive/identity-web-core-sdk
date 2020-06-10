@@ -43,7 +43,7 @@ export function encodePublicKeyCredentialCreationOptions(serializedOptions: Publ
     }
 }
 
-export function serializePublicKeyCredential(encodedPublicKey: PublicKeyCredential): RegistrationPublicKeyCredentialSerialized {
+export function serializeRegistrationPublicKeyCredential(encodedPublicKey: PublicKeyCredential): RegistrationPublicKeyCredentialSerialized {
     const response = encodedPublicKey.response as AuthenticatorAttestationResponse
 
     return {

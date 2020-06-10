@@ -14,7 +14,7 @@ import { UrlParser } from './urlParser'
 import { popupSize } from './providerPopupSize'
 import { createHttpClient, HttpClient } from './httpClient'
 import { computePkceParams, PkceParams } from './pkceService'
-import { encodePublicKeyCredentialCreationOptions, serializePublicKeyCredential, publicKeyCredentialType, CredentialCreationOptions } from './webAuthnService'
+import { encodePublicKeyCredentialCreationOptions, serializeRegistrationPublicKeyCredential, publicKeyCredentialType, CredentialCreationOptions } from './webAuthnService'
 
 export type SignupParams = {
   data: SignupProfile
@@ -619,7 +619,7 @@ export default class ApiClient {
           throw new Error('Unable to register invalid public key crendentials.')
         }
 
-        const serializedCredentials = serializePublicKeyCredential(credentials)
+        const serializedCredentials = serializeRegistrationPublicKeyCredential(credentials)
 
         return this.http
           .post<void>('/webauthn/registration', { body: { ...serializedCredentials }, accessToken })
