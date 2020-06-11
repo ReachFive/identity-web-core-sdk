@@ -653,7 +653,7 @@ export default class ApiClient {
     }
 
     return this.http
-      .post<CredentialRequestOptionsSerialized>('/webauth/authentication-options', { body })
+      .post<CredentialRequestOptionsSerialized>('/webauthn/authentication-options', { body })
       .then(response => {
         const options = encodePublicKeyCredentialRequestOptions(response.publicKey)
 
