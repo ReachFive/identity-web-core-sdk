@@ -22,7 +22,11 @@ type PublicKeyCredentialCreationOptionsSerialized = {
     challenge: string
     pubKeyCredParams: PublicKeyCredentialParameters[]
     timeout?: number
-    excludeCredentials?: PublicKeyCredentialDescriptor[]
+    excludeCredentials?: {
+        type: "public-key"
+        id: string
+        transports?: Array<"usb" | "nfc" | "ble" | "internal">
+    }[]
     authenticatorSelection?: AuthenticatorSelectionCriteria
     attestation?: 'none'|  'indirect' | 'direct'
     extensions?: AuthenticationExtensionsClientInputs
@@ -69,7 +73,11 @@ export function encodePublicKeyCredentialCreationOptions(serializedOptions: Publ
         user: {
             ...serializedOptions.user,
             id:  Buffer.from(serializedOptions.user.id, 'base64')
-        }
+        },
+        excludeCredentials: serializedOptions.excludeCredentials!.map(excludeCredential => ({
+            ...excludeCredential,
+            id: Buffer.from(excludeCredential.id, 'base64')
+        }))
     }
 }
 
