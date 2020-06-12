@@ -17,7 +17,7 @@ import { computePkceParams, PkceParams } from './pkceService'
 import {
   encodePublicKeyCredentialCreationOptions, encodePublicKeyCredentialRequestOptions,
   serializeRegistrationPublicKeyCredential, serializeAuthenticationPublicKeyCredential,
-  CredentialCreationOptionsSerialized, CredentialRequestOptionsSerialized,
+  RegistrationOptions, CredentialRequestOptionsSerialized,
   publicKeyCredentialType
 } from './webAuthnService'
 
@@ -619,11 +619,11 @@ export default class ApiClient {
     }
 
     return this.http
-      .post<CredentialCreationOptionsSerialized>('/webauthn/registration-options', { body, accessToken })
+      .post<RegistrationOptions>('/webauthn/registration-options', { body, accessToken })
       .then(response => {
-        const options = encodePublicKeyCredentialCreationOptions(response.publicKey)
+        const publicKey = encodePublicKeyCredentialCreationOptions(response.options.publicKey)
 
-        return navigator.credentials.create({ publicKey: options })
+        return navigator.credentials.create({ publicKey })
       })
       .then(credentials => {
         if (!credentials || credentials.type !== publicKeyCredentialType) {
