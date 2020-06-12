@@ -14,6 +14,7 @@ import { UrlParser } from './urlParser'
 import { popupSize } from './providerPopupSize'
 import { createHttpClient, HttpClient } from './httpClient'
 import { computePkceParams, PkceParams } from './pkceService'
+import { encodePublicKeyCredentialCreationOptions, serializeRegistrationPublicKeyCredential, publicKeyCredentialType, CredentialCreationOptionsSerialized } from './webAuthnService'
 
 export type SignupParams = {
   data: SignupProfile
@@ -598,6 +599,37 @@ export default class ApiClient {
     } else {
       return Promise.reject(new Error('Unsupported Credentials Management API'))
     }
+  }
+
+  addNewWebAuthnDevice(accessToken: string): Promise<void> {
+    const body = {
+      origin: window.location.origin,
+      friendlyName: window.navigator.platform
+    }
+
+    return this.http
+      .post<CredentialCreationOptionsSerialized>('/webauthn/registration-options', { body, accessToken })
+      .then(response => {
+        const options = encodePublicKeyCredentialCreationOptions(response.publicKey)
+
+        return navigator.credentials.create({ publicKey: options })
+      })
+      .then(credentials => {
+        if (!credentials || credentials.type !== publicKeyCredentialType) {
+          throw new Error('Unable to register invalid public key crendentials.')
+        }
+
+        const serializedCredentials = serializeRegistrationPublicKeyCredential(credentials)
+
+        return this.http
+          .post<void>('/webauthn/registration', { body: { ...serializedCredentials }, accessToken })
+          .catch(error => { throw error })
+      })
+      .catch(error => {
+        if (error.error) this.eventManager.fireEvent('login_failed', error)
+
+        throw error
+      })
   }
 
   getSessionInfo(): Promise<SessionInfo> {
