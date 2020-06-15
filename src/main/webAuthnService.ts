@@ -74,7 +74,7 @@ export function encodePublicKeyCredentialCreationOptions(serializedOptions: Publ
             ...serializedOptions.user,
             id:  Buffer.from(serializedOptions.user.id, 'base64')
         },
-        excludeCredentials: serializedOptions.excludeCredentials!.map(excludeCredential => ({
+        excludeCredentials: serializedOptions.excludeCredentials && serializedOptions.excludeCredentials!.map(excludeCredential => ({
             ...excludeCredential,
             id: Buffer.from(excludeCredential.id, 'base64')
         }))
