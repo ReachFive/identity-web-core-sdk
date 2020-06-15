@@ -627,7 +627,7 @@ export default class ApiClient {
       })
       .then(credentials => {
         if (!credentials || credentials.type !== publicKeyCredentialType) {
-          throw new Error('Unable to register invalid public key crendentials.')
+          throw new Error('Unable to register invalid public key credentials.')
         }
 
         const serializedCredentials = serializeRegistrationPublicKeyCredential(credentials)
