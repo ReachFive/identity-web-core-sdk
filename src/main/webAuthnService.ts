@@ -7,7 +7,7 @@ export const publicKeyCredentialType = 'public-key'
 export type RegistrationOptions = {
     friendlyName: string
     options: {
-        publicKey: PublicKeyCredentialCreationOptionsSerialized 
+        publicKey: PublicKeyCredentialCreationOptionsSerialized
     }
 }
 export type CredentialRequestOptionsSerialized = { publicKey: PublicKeyCredentialRequestOptionsSerialized }
