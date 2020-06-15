@@ -1,5 +1,12 @@
 # Changelog
 
+## v.1.14.0-beta.1
+
+### 15/06/2020
+
+### Features
+- Add new methods to allow implementation of login with biometrics: [addNewWebAuthnDevice](https://developer.reachfive.com/sdk-core/addNewWebAuthnDevice.html) & [loginWithWebAuthn](https://developer.reachfive.com/sdk-core/loginWithWebAuthn.html).
+
 ## v.1.13.0
 
 ### 18/05/2020
