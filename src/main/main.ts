@@ -2,6 +2,7 @@ import { Profile, RemoteSettings, SessionInfo } from './models'
 import ApiClient, {
   LoginWithPasswordParams,
   LoginWithCredentialsParams,
+  LoginWithWebAuthnParams,
   PasswordlessParams,
   VerifyPasswordlessParams,
   RequestPasswordResetParams,
@@ -56,6 +57,7 @@ export type Client = {
   loginWithCustomToken: (params: { token: string; auth: AuthOptions }) => Promise<void>
   loginWithCredentials: (params: LoginWithCredentialsParams) => Promise<void>
   addNewWebAuthnDevice: (accessToken: string) => Promise<void>
+  loginWithWebAuthn: (params: LoginWithWebAuthnParams) => Promise<void>
   getSessionInfo: (params?: {}) => Promise<SessionInfo>
   checkUrlFragment: (url: string) => boolean
 }
@@ -184,6 +186,10 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.addNewWebAuthnDevice(accessToken))
   }
 
+  function loginWithWebAuthn(params: LoginWithWebAuthnParams) {
+    return apiClient.then(api => api.loginWithWebAuthn(params))
+  }
+
   function getSessionInfo() {
     return apiClient.then(api => api.getSessionInfo())
   }
@@ -237,6 +243,7 @@ export function createClient(creationConfig: Config): Client {
     loginWithCustomToken,
     loginWithCredentials,
     addNewWebAuthnDevice,
+    loginWithWebAuthn,
     getSessionInfo,
     checkUrlFragment
   }

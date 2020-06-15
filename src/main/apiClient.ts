@@ -14,7 +14,12 @@ import { UrlParser } from './urlParser'
 import { popupSize } from './providerPopupSize'
 import { createHttpClient, HttpClient } from './httpClient'
 import { computePkceParams, PkceParams } from './pkceService'
-import { encodePublicKeyCredentialCreationOptions, serializeRegistrationPublicKeyCredential, publicKeyCredentialType, CredentialCreationOptionsSerialized } from './webAuthnService'
+import {
+  encodePublicKeyCredentialCreationOptions, encodePublicKeyCredentialRequestOptions,
+  serializeRegistrationPublicKeyCredential, serializeAuthenticationPublicKeyCredential,
+  CredentialCreationOptionsSerialized, CredentialRequestOptionsSerialized,
+  publicKeyCredentialType
+} from './webAuthnService'
 
 export type SignupParams = {
   data: SignupProfile
@@ -37,6 +42,10 @@ export type LoginWithCredentialsParams = {
   mediation?: 'silent' | 'optional' | 'required'
   auth?: AuthOptions
 }
+
+type EmailLoginWithWebAuthnParams = { email: string, auth?: AuthOptions }
+type PhoneNumberLoginWithWebAuthnParams = { phoneNumber: string, auth?: AuthOptions  }
+export type LoginWithWebAuthnParams =   EmailLoginWithWebAuthnParams | PhoneNumberLoginWithWebAuthnParams
 
 type EmailRequestPasswordResetParams = {
   email: string
@@ -95,6 +104,8 @@ export type TokenRequestParameters = {
   redirectUri: string
   persistent?: boolean // Whether the remember me is enabled
 }
+
+type InternalToken = { tkn: string }
 
 /**
  * Identity Rest API Client
@@ -382,7 +393,7 @@ export default class ApiClient {
 
   private loginWithPasswordByRedirect({ auth = {}, ...rest }: LoginWithPasswordParams): Promise<void> {
     return this.http
-      .post<{ tkn: string }>('/password/login', {
+      .post<InternalToken>('/password/login', {
         body: {
           clientId: this.config.clientId,
           scope: this.resolveScope(auth),
@@ -454,7 +465,7 @@ export default class ApiClient {
           })
           .then(result => this.eventManager.fireEvent('authenticated', result))
       : this.http
-          .post<{ tkn: string }>('/signup', {
+          .post<InternalToken>('/signup', {
             body: {
               clientId: this.config.clientId,
               redirectUrl,
@@ -624,6 +635,41 @@ export default class ApiClient {
         return this.http
           .post<void>('/webauthn/registration', { body: { ...serializedCredentials }, accessToken })
           .catch(error => { throw error })
+      })
+      .catch(error => {
+        if (error.error) this.eventManager.fireEvent('login_failed', error)
+
+        throw error
+      })
+  }
+
+  loginWithWebAuthn(params: LoginWithWebAuthnParams): Promise<void> {
+    const body = {
+      clientId: this.config.clientId,
+      origin: window.location.origin,
+      scope: this.resolveScope(params.auth),
+      email: (params as EmailLoginWithWebAuthnParams).email,
+      phoneNumber: (params as PhoneNumberLoginWithWebAuthnParams).phoneNumber
+    }
+
+    return this.http
+      .post<CredentialRequestOptionsSerialized>('/webauthn/authentication-options', { body })
+      .then(response => {
+        const options = encodePublicKeyCredentialRequestOptions(response.publicKey)
+
+        return navigator.credentials.get({ publicKey: options })
+      })
+      .then(credentials => {
+          if (!credentials || credentials.type !== publicKeyCredentialType) {
+            throw new Error('Unable to authenticate with invalid public key crendentials.')
+          }
+
+          const serializedCredentials = serializeAuthenticationPublicKeyCredential(credentials)
+
+          return this.http
+            .post<InternalToken>('/webauthn/authentication', { body: { ...serializedCredentials } })
+            .then(response => this.loginWithPasswordCallback(response.tkn, params.auth))
+            .catch(error => { throw error })
       })
       .catch(error => {
         if (error.error) this.eventManager.fireEvent('login_failed', error)
