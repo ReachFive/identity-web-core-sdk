@@ -9,7 +9,7 @@ export type HttpConfig = {
 }
 
 export type RequestParams = {
-  method?: 'GET' | 'POST'
+  method?: 'GET' | 'POST' | 'DELETE'
   query?: QueryString
   body?: {}
   accessToken?: string
@@ -17,17 +17,23 @@ export type RequestParams = {
 }
 
 export type GetRequestParams = Omit<RequestParams, 'body' | 'method'>
+export type DeleteRequestParams = Omit<RequestParams, 'body' | 'method'>
 export type PostRequestParams = Omit<RequestParams, 'method'>
 
 export interface HttpClient {
   get<Data>(path: string, options: GetRequestParams): Promise<Data>
   post<Data>(path: string, options: PostRequestParams): Promise<Data>
+  remove<Data>(path: string, options: DeleteRequestParams): Promise<Data>
   request<Data>(path: string, options: RequestParams): Promise<Data>
 }
 
 export function createHttpClient(config: HttpConfig): HttpClient {
   function get<Data>(path: string, params: GetRequestParams) {
     return request<Data>(path, { ...params, method: 'GET' })
+  }
+
+  function remove<Data>(path: string, params: DeleteRequestParams) {
+    return request<Data>(path, { ...params, method: 'DELETE' })
   }
 
   function post<Data>(path: string, params: PostRequestParams) {
@@ -55,7 +61,7 @@ export function createHttpClient(config: HttpConfig): HttpClient {
     return rawRequest(url, fetchOptions)
   }
 
-  return { get, post, request }
+  return { get, remove, post, request }
 }
 
 /**
