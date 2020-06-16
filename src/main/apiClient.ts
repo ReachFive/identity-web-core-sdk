@@ -17,7 +17,7 @@ import { computePkceParams, PkceParams } from './pkceService'
 import {
   encodePublicKeyCredentialCreationOptions, encodePublicKeyCredentialRequestOptions,
   serializeRegistrationPublicKeyCredential, serializeAuthenticationPublicKeyCredential,
-  RegistrationOptions, CredentialRequestOptionsSerialized,
+  RegistrationOptions, CredentialRequestOptionsSerialized, DeviceCredential,
   publicKeyCredentialType
 } from './webAuthnService'
 
@@ -676,6 +676,14 @@ export default class ApiClient {
 
         throw error
       })
+  }
+
+  listWebAuthnDevices(accessToken: string): Promise<DeviceCredential[]> {
+    return this.http.get<DeviceCredential[]>('/webauthn/registration', { accessToken })
+  }
+
+  removeWebAuthnDevice(accessToken: string, id: string): Promise<void> {
+    return this.http.remove<void>(`/webauthn/registration/${id}`, { accessToken }) 
   }
 
   getSessionInfo(): Promise<SessionInfo> {
