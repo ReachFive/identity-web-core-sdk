@@ -1,5 +1,15 @@
 # Changelog
 
+## v.1.14.0-beta.2
+
+### 17/06/2020
+
+### Features
+- Add new methods to allow management of FIDO2 devices: [listWebAuthnDevices](https://developer.reachfive.com/sdk-core/listWebAuthnDevices.html) & [removeWebAuthnDevice](https://developer.reachfive.com/sdk-core/removeWebAuthnDevice.html).
+
+### Fixes
+- Throw an error when the [Credentials Management API](https://caniuse.com/#feat=credential-management) is not available.
+
 ## v.1.14.0-beta.1
 
 ### 15/06/2020
