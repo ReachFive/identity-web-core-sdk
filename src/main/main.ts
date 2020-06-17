@@ -61,7 +61,7 @@ export type Client = {
   addNewWebAuthnDevice: (accessToken: string) => Promise<void>
   loginWithWebAuthn: (params: LoginWithWebAuthnParams) => Promise<void>
   listWebAuthnDevices: (accessToken: string) => Promise<DeviceCredential[]>
-  removeWebAuthnDevice: (accessToken: string, id: string) => Promise<void>
+  removeWebAuthnDevice: (accessToken: string, deviceId: string) => Promise<void>
   getSessionInfo: (params?: {}) => Promise<SessionInfo>
   checkUrlFragment: (url: string) => boolean
 }
@@ -198,8 +198,8 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.listWebAuthnDevices(accessToken))
   }
 
-  function removeWebAuthnDevice(accessToken: string, id: string) {
-    return apiClient.then(api => api.removeWebAuthnDevice(accessToken, id))
+  function removeWebAuthnDevice(accessToken: string, deviceId: string) {
+    return apiClient.then(api => api.removeWebAuthnDevice(accessToken, deviceId))
   }
 
   function getSessionInfo() {
