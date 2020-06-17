@@ -12,6 +12,11 @@ export type RegistrationOptions = {
 }
 export type CredentialRequestOptionsSerialized = { publicKey: PublicKeyCredentialRequestOptionsSerialized }
 
+export type DeviceCredential = {
+    friendlyName: string
+    id: string
+}
+
 type PublicKeyCredentialCreationOptionsSerialized = {
     rp: PublicKeyCredentialRpEntity
     user: {

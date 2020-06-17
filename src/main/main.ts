@@ -15,6 +15,7 @@ import ApiClient, {
 } from './apiClient'
 import { AuthOptions } from './authOptions'
 import { AuthResult } from './authResult'
+import { DeviceCredential } from './webAuthnService'
 import createEventManager, { Events } from './identityEventManager'
 import createUrlParser from './urlParser'
 import { toQueryString } from '../utils/queryString'
@@ -23,6 +24,7 @@ import { rawRequest } from './httpClient'
 export { AuthResult } from './authResult'
 export { AuthOptions } from './authOptions'
 export { ErrorResponse, Profile, SessionInfo } from './models'
+export { DeviceCredential } from './webAuthnService'
 
 export interface Config {
   clientId: string
@@ -58,6 +60,8 @@ export type Client = {
   loginWithCredentials: (params: LoginWithCredentialsParams) => Promise<void>
   addNewWebAuthnDevice: (accessToken: string) => Promise<void>
   loginWithWebAuthn: (params: LoginWithWebAuthnParams) => Promise<void>
+  listWebAuthnDevices: (accessToken: string) => Promise<DeviceCredential[]>
+  removeWebAuthnDevice: (accessToken: string, deviceId: string) => Promise<void>
   getSessionInfo: (params?: {}) => Promise<SessionInfo>
   checkUrlFragment: (url: string) => boolean
 }
@@ -190,6 +194,14 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.loginWithWebAuthn(params))
   }
 
+  function listWebAuthnDevices(accessToken: string) {
+    return apiClient.then(api => api.listWebAuthnDevices(accessToken))
+  }
+
+  function removeWebAuthnDevice(accessToken: string, deviceId: string) {
+    return apiClient.then(api => api.removeWebAuthnDevice(accessToken, deviceId))
+  }
+
   function getSessionInfo() {
     return apiClient.then(api => api.getSessionInfo())
   }
@@ -244,6 +256,8 @@ export function createClient(creationConfig: Config): Client {
     loginWithCredentials,
     addNewWebAuthnDevice,
     loginWithWebAuthn,
+    listWebAuthnDevices,
+    removeWebAuthnDevice,
     getSessionInfo,
     checkUrlFragment
   }
