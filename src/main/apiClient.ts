@@ -618,32 +618,31 @@ export default class ApiClient {
         origin: window.location.origin,
         friendlyName: window.navigator.platform
       }
-  
+
       return this.http
         .post<RegistrationOptions>('/webauthn/registration-options', { body, accessToken })
         .then(response => {
           const publicKey = encodePublicKeyCredentialCreationOptions(response.options.publicKey)
-  
+
           return navigator.credentials.create({ publicKey })
         })
         .then(credentials => {
           if (!credentials || credentials.type !== publicKeyCredentialType) {
             throw new Error('Unable to register invalid public key credentials.')
           }
-  
+
           const serializedCredentials = serializeRegistrationPublicKeyCredential(credentials)
-  
+
           return this.http
             .post<void>('/webauthn/registration', { body: { ...serializedCredentials }, accessToken })
             .catch(error => { throw error })
         })
         .catch(error => {
           if (error.error) this.eventManager.fireEvent('login_failed', error)
-  
+
           throw error
         })
-    }
-    else {
+    } else {
       return Promise.reject(new Error('Unsupported Credentials Management API'))
     }
   }
@@ -657,21 +656,21 @@ export default class ApiClient {
         email: (params as EmailLoginWithWebAuthnParams).email,
         phoneNumber: (params as PhoneNumberLoginWithWebAuthnParams).phoneNumber
       }
-  
+
       return this.http
         .post<CredentialRequestOptionsSerialized>('/webauthn/authentication-options', { body })
         .then(response => {
           const options = encodePublicKeyCredentialRequestOptions(response.publicKey)
-  
+
           return navigator.credentials.get({ publicKey: options })
         })
         .then(credentials => {
             if (!credentials || credentials.type !== publicKeyCredentialType) {
               throw new Error('Unable to authenticate with invalid public key crendentials.')
             }
-  
+
             const serializedCredentials = serializeAuthenticationPublicKeyCredential(credentials)
-  
+
             return this.http
               .post<InternalToken>('/webauthn/authentication', { body: { ...serializedCredentials } })
               .then(response => this.loginWithPasswordCallback(response.tkn, params.auth))
@@ -679,11 +678,10 @@ export default class ApiClient {
         })
         .catch(error => {
           if (error.error) this.eventManager.fireEvent('login_failed', error)
-  
+
           throw error
         })
-    }
-    else {
+    } else {
       return Promise.reject(new Error('Unsupported Credentials Management API'))
     }
   }
