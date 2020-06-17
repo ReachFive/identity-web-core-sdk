@@ -683,7 +683,7 @@ export default class ApiClient {
   }
 
   removeWebAuthnDevice(accessToken: string, id: string): Promise<void> {
-    return this.http.remove<void>(`/webauthn/registration/${id}`, { accessToken }) 
+    return this.http.remove<void>(`/webauthn/registration/${id}`, { accessToken })
   }
 
   getSessionInfo(): Promise<SessionInfo> {
