@@ -40,6 +40,30 @@ export type SignupProfile = {
   liteOnly?: boolean
 }
 
+export type OpenIdUser = {
+  sub: string
+  name?: string
+  givenName?: string
+  familyName?: string
+  middleName?: string
+  nickname?: string
+  preferredUsername?: string
+  profile?: string
+  picture?: string
+  website?: string
+  email?: string
+  emailVerified?: boolean
+  gender?: string
+  birthdate?: string
+  zoneinfo?: string
+  locale?: string
+  phoneNumber?: string
+  phoneNumberVerified?: boolean
+  address?: ProfileAddress[]
+  updatedAt?: number
+  customFields?: Record<string, any>
+}
+
 export type SessionInfo = {
   isAuthenticated: true
   name?: string

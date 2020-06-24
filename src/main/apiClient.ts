@@ -6,7 +6,7 @@ import { logError } from '../utils/logger'
 import { QueryString, toQueryString } from '../utils/queryString'
 import { camelCaseProperties } from '../utils/transformObjectProperties'
 
-import { ErrorResponse, Profile, SessionInfo, SignupProfile } from './models'
+import { ErrorResponse, Profile, SessionInfo, SignupProfile, OpenIdUser } from './models'
 import { AuthOptions, AuthParameters, computeAuthOptions, resolveScope } from './authOptions'
 import { AuthResult, enrichAuthResult } from './authResult'
 import { IdentityEventManager } from './identityEventManager'
@@ -136,6 +136,15 @@ export default class ApiClient {
   private authorizeUrl: string
   private tokenUrl: string
   private popupRelayUrl: string
+
+  getSignupData(signupToken: string): Promise<OpenIdUser> {
+    return this.http.get<OpenIdUser>(`${this.baseUrl}/signup/data`, {
+      query: {
+        clientId: this.config.clientId,
+        token: signupToken
+      }
+    })
+  }
 
   loginWithSocialProvider(provider: string, opts: AuthOptions = {}): Promise<void> {
     const authParams = this.authParams(opts, { acceptPopupMode: true })
