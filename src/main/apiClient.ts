@@ -652,7 +652,7 @@ export default class ApiClient {
           throw error
         })
     } else {
-      return Promise.reject(new Error('Unsupported Credentials Management API'))
+      return Promise.reject(new Error('Unsupported WebAuthn API'))
     }
   }
 
@@ -691,7 +691,7 @@ export default class ApiClient {
           throw error
         })
     } else {
-      return Promise.reject(new Error('Unsupported Credentials Management API'))
+      return Promise.reject(new Error('Unsupported WebAuthn API'))
     }
   }
 
