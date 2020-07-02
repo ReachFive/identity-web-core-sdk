@@ -1,5 +1,13 @@
 # Changelog
 
+## v.1.14.0
+
+### 02/07/2020
+
+### Features
+- Add a new method to fetch the profile data: [getSignupData](https://developer.reachfive.com/sdk-core/getSignupData.html).
+- The error message thrown when the WebAuthn API is not available is updated.
+
 ## v.1.14.0-beta.2
 
 ### 17/06/2020
