@@ -621,11 +621,11 @@ export default class ApiClient {
     }
   }
 
-  addNewWebAuthnDevice(accessToken: string): Promise<void> {
+  addNewWebAuthnDevice(accessToken: string, friendlyName: string): Promise<void> {
     if (navigator.credentials && navigator.credentials.create) {
       const body = {
         origin: window.location.origin,
-        friendlyName: window.navigator.platform
+        friendlyName
       }
 
       return this.http
