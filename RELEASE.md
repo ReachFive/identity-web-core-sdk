@@ -40,4 +40,4 @@
 
     Refer to the [.circleci/config.yml](.circleci/config.yml) file to set up the integration.
 
-6.  Finally, draft a new release in the [Github releases tab](https://github.com/ReachFive/identity-web-core-sdk/releases) (copy/past the changelog in the release's description).
+6.  Finally, create a new release in the [Github releases tab](https://github.com/ReachFive/identity-web-core-sdk/releases) (copy/past the changelog in the release's description).
