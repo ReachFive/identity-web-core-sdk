@@ -35,7 +35,6 @@ export type SignupProfile = {
   bio?: string
   customFields?: Record<string, any>
   consents?: Record<string, any>
-  tosAcceptedAt?: string
   company?: string
   liteOnly?: boolean
 }

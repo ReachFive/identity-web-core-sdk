@@ -24,7 +24,6 @@ export interface AuthOptions {
   loginHint?: string
   accessToken?: string
   requireRefreshToken?: boolean
-  acceptTos?: boolean
   persistent?: boolean
 }
 
@@ -44,7 +43,6 @@ export type AuthParameters = {
   idTokenHint?: string
   loginHint?: string
   accessToken?: string
-  acceptTos?: boolean
   persistent?: boolean
 }
 
@@ -88,7 +86,6 @@ export function computeAuthOptions(
       'idTokenHint',
       'loginHint',
       'accessToken',
-      'acceptTos',
       'persistent'
     ])
   }
