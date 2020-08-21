@@ -421,7 +421,7 @@ export default class ApiClient {
         tkn,
         ...maybeChallenge,
       })
-      window.location.assign(`${this.baseUrl}/oauth/authorize?${queryString}`)
+      window.location.assign(`${this.authorizeUrl}?${queryString}`)
     })
   }
 

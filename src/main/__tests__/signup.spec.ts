@@ -57,7 +57,7 @@ test('with default auth', async () => {
     })
   })
   expect(window.location.assign).toHaveBeenCalledWith(
-    `https://${domain}/identity/v1/password/callback?` +
+    `https://${domain}/oauth/authorize?` +
       toQueryString({
         client_id: clientId,
         response_type: 'token',
@@ -113,7 +113,7 @@ test('with auth param', async () => {
     })
   })
   expect(window.location.assign).toHaveBeenCalledWith(
-    `https://${domain}/identity/v1/password/callback?` +
+    `https://${domain}/oauth/authorize?` +
       toQueryString({
         client_id: clientId,
         response_type: 'code',
@@ -159,7 +159,7 @@ test('popup mode ignored', async () => {
   // Then
   expect(error).toBeNull()
   expect(window.location.assign).toHaveBeenCalledWith(
-    `https://${domain}/identity/v1/password/callback?` +
+    `https://${domain}/oauth/authorize?` +
       toQueryString({
         client_id: clientId,
         response_type: 'token',
