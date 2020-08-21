@@ -36,7 +36,7 @@ test('with default auth config (email/password)', async () => {
   })
 
   expect(window.location.assign).toHaveBeenCalledWith(
-    `https://${domain}/identity/v1/password/callback?` +
+    `https://${domain}/oauth/authorize?` +
       toQueryString({
         client_id: clientId,
         response_type: 'token',
@@ -73,7 +73,7 @@ test('with default auth config (phone/password)', async () => {
   })
 
   expect(window.location.assign).toHaveBeenCalledWith(
-    `https://${domain}/identity/v1/password/callback?` +
+    `https://${domain}/oauth/authorize?` +
       toQueryString({
         client_id: clientId,
         response_type: 'token',
@@ -115,7 +115,7 @@ test('with popup mode (email/password)', async () => {
   // Then
   expect(error).toBeNull()
   expect(window.location.assign).toHaveBeenCalledWith(
-    `https://${domain}/identity/v1/password/callback?` +
+    `https://${domain}/oauth/authorize?` +
       toQueryString({
         client_id: clientId,
         response_type: 'code',
@@ -163,7 +163,7 @@ test('with default auth (email/password)', async () => {
   })
 
   expect(window.location.assign).toHaveBeenCalledWith(
-    `https://${domain}/identity/v1/password/callback?` +
+    `https://${domain}/oauth/authorize?` +
       toQueryString({
         client_id: clientId,
         response_type: 'token',
