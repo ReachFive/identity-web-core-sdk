@@ -18,6 +18,7 @@ import {
   encodePublicKeyCredentialCreationOptions, encodePublicKeyCredentialRequestOptions,
   serializeRegistrationPublicKeyCredential, serializeAuthenticationPublicKeyCredential,
   RegistrationOptions, CredentialRequestOptionsSerialized, DeviceCredential,
+  EmailLoginWithWebAuthnParams, PhoneNumberLoginWithWebAuthnParams, LoginWithWebAuthnParams, SignupWithWebAuthnParams,
   publicKeyCredentialType
 } from './webAuthnService'
 
@@ -42,10 +43,6 @@ export type LoginWithCredentialsParams = {
   mediation?: 'silent' | 'optional' | 'required'
   auth?: AuthOptions
 }
-
-type EmailLoginWithWebAuthnParams = { email: string, auth?: AuthOptions }
-type PhoneNumberLoginWithWebAuthnParams = { phoneNumber: string, auth?: AuthOptions  }
-export type LoginWithWebAuthnParams =   EmailLoginWithWebAuthnParams | PhoneNumberLoginWithWebAuthnParams
 
 type EmailRequestPasswordResetParams = {
   email: string
@@ -617,6 +614,47 @@ export default class ApiClient {
       })
     } else {
       return Promise.reject(new Error('Unsupported Credentials Management API'))
+    }
+  }
+
+  signupWithWebAuthn(params: SignupWithWebAuthnParams) {
+    if (navigator.credentials && navigator.credentials.get) {
+      const body = {
+        origin: window.location.origin,
+        clientId: this.config.clientId,
+        friendlyName: params.friendlyName || window.navigator.platform,
+        profile: params.profile,
+        scope: params.scope,
+        redirectUrl: params.redirectUrl
+      }
+
+      const registrationOptionsPromise = this.http.post<RegistrationOptions>('/webauthn/signup-options', { body })
+      
+      const credentialsPromise = registrationOptionsPromise.then(response => {
+        const publicKey = encodePublicKeyCredentialCreationOptions(response.options.publicKey)
+        
+        return navigator.credentials.create({ publicKey })
+      })
+
+      return Promise.all([registrationOptionsPromise, credentialsPromise])
+        .then(([registrationOptions, credentials]) => {
+          if (!credentials || credentials.type !== publicKeyCredentialType) {
+            throw new Error('Unable to register invalid public key credentials.')
+          }
+
+          const serializedCredentials = serializeRegistrationPublicKeyCredential(credentials)
+
+          return this.http
+            .post<void>('/webauthn/signup', { 
+              body: {
+                publicKeyCredential: serializedCredentials,
+                webauthnId: registrationOptions.options.publicKey.user.id
+              }
+            })
+            .catch(error => { throw error })
+        })
+    } else {
+      return Promise.reject(new Error('Unsupported WebAuthn API'))
     }
   }
 

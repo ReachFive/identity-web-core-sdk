@@ -16,8 +16,7 @@ export type ProfileAddress = {
   phoneNumber?: string
 }
 
-export type SignupProfile = {
-  password: string
+export type SignupProfileData = {
   email?: string
   phoneNumber?: string
   givenName?: string
@@ -38,6 +37,8 @@ export type SignupProfile = {
   company?: string
   liteOnly?: boolean
 }
+
+export type SignupProfile = SignupProfileData & { password: string }
 
 export type OpenIdUser = {
   sub: string
