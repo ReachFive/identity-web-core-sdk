@@ -458,7 +458,6 @@ export default class ApiClient {
 
   signup(params: SignupParams): Promise<void> {
     const { data, auth, redirectUrl, returnToAfterEmailConfirmation } = params
-    const acceptTos = auth && auth.acceptTos
 
     const signupPromise = window.cordova
       ? this.http
@@ -479,7 +478,6 @@ export default class ApiClient {
               clientId: this.config.clientId,
               redirectUrl,
               scope: this.resolveScope(auth),
-              acceptTos,
               data,
               returnToAfterEmailConfirmation,
             }
