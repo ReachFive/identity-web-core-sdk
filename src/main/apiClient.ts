@@ -409,10 +409,10 @@ export default class ApiClient {
           ...rest
         }
       })
-      .then(({ tkn }) => this.loginWithPasswordCallback(tkn, auth))
+      .then(({ tkn }) => this.loginWithAuthenticationCallback(tkn, auth))
   }
 
-  private loginWithPasswordCallback(tkn: string, auth: AuthOptions = {}): void {
+  private loginWithAuthenticationCallback(tkn: string, auth: AuthOptions = {}): void {
     const authParams = this.authParams(auth)
 
     this.getPkceParams(authParams).then(maybeChallenge => {
@@ -421,7 +421,7 @@ export default class ApiClient {
         tkn,
         ...maybeChallenge,
       })
-      window.location.assign(`${this.baseUrl}/password/callback?${queryString}`)
+      window.location.assign(`${this.authorizeUrl}?${queryString}`)
     })
   }
 
@@ -482,7 +482,7 @@ export default class ApiClient {
               returnToAfterEmailConfirmation,
             }
           })
-          .then(({ tkn }) => this.loginWithPasswordCallback(tkn, auth))
+          .then(({ tkn }) => this.loginWithAuthenticationCallback(tkn, auth))
 
     const saveCredentials = !isUndefined(params.saveCredentials) && params.saveCredentials
 
@@ -680,7 +680,7 @@ export default class ApiClient {
 
             return this.http
               .post<InternalToken>('/webauthn/authentication', { body: { ...serializedCredentials } })
-              .then(response => this.loginWithPasswordCallback(response.tkn, params.auth))
+              .then(response => this.loginWithAuthenticationCallback(response.tkn, params.auth))
               .catch(error => { throw error })
         })
         .catch(error => {
