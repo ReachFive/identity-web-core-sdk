@@ -25,7 +25,7 @@ export function enrichAuthResult(response: AuthResult): AuthResult {
         idTokenPayload
       }
     } catch (e) {
-      logError('id token parsing error: ' + e)
+      logError("ID Token parsing error", e)
     }
   }
   return response
@@ -33,6 +33,6 @@ export function enrichAuthResult(response: AuthResult): AuthResult {
 
 export namespace AuthResult {
   export function isAuthResult(thing: any): thing is AuthResult {
-    return thing && (thing.accessToken || thing.idToken)
+    return thing && (thing.accessToken || thing.idToken || thing.code)
   }
 }

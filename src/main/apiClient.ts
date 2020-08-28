@@ -27,12 +27,13 @@ export type SignupParams = {
   saveCredentials?: boolean
   auth?: AuthOptions
   redirectUrl?: string
+  useRedirect?: boolean
 }
 export type UpdateEmailParams = { accessToken: string; email: string; redirectUrl?: string }
 export type EmailVerificationParams = { accessToken: string; redirectUrl?: string; returnToAfterEmailConfirmation?: string }
 export type PhoneNumberVerificationParams = { accessToken: string }
 
-type LoginWithPasswordOptions = { password: string; saveCredentials?: boolean; auth?: AuthOptions }
+type LoginWithPasswordOptions = { useRedirect?: boolean; password: string; saveCredentials?: boolean; auth?: AuthOptions }
 type EmailLoginWithPasswordParams = LoginWithPasswordOptions & { email: string }
 type PhoneNumberLoginWithPasswordParams = LoginWithPasswordOptions & { phoneNumber: string }
 
@@ -105,7 +106,7 @@ export type TokenRequestParameters = {
   persistent?: boolean // Whether the remember me is enabled
 }
 
-type InternalToken = { tkn: string }
+type AuthenticationToken = { tkn: string }
 
 /**
  * Identity Rest API Client
@@ -165,7 +166,7 @@ export default class ApiClient {
     })
   }
 
-  exchangeAuthorizationCodeWithPkce(params: TokenRequestParameters): Promise<void> {
+  exchangeAuthorizationCodeWithPkce(params: TokenRequestParameters): Promise<AuthResult> {
     return this.http
       .post<AuthResult>(this.tokenUrl, {
         body: {
@@ -175,7 +176,10 @@ export default class ApiClient {
           ...params
         }
       })
-      .then(result => this.eventManager.fireEvent('authenticated', result))
+      .then(result => {
+        this.eventManager.fireEvent('authenticated', result)
+        return enrichAuthResult(result)
+      })
   }
 
   loginFromSession(opts: AuthOptions = {}): Promise<void> {
@@ -184,6 +188,7 @@ export default class ApiClient {
         new Error("Cannot call 'loginFromSession' without 'idTokenHint' parameter if SSO is not enabled.")
       )
     }
+
     return this.loginWithRedirect({
       ...this.authParams(opts),
       prompt: 'none'
@@ -196,40 +201,76 @@ export default class ApiClient {
         new Error("Cannot call 'loginFromSession' without 'idTokenHint' parameter if SSO is not enabled.")
       )
     }
+
     const authorizationUrl = this.getAuthorizationUrl({
       ...this.authParams(opts),
       responseMode: 'web_message',
       prompt: 'none'
     })
 
+    return this.getWebMessage(
+      authorizationUrl,
+      `https://${this.config.domain}`,
+      opts.redirectUri || ""
+    )
+  }
+
+  private getWebMessage(
+    src: string,
+    origin: string,
+    redirectUri?: string,
+  ): Promise<AuthResult> {
     const iframe = document.createElement('iframe')
     iframe.setAttribute('width', '0')
     iframe.setAttribute('height', '0')
-    iframe.setAttribute('src', authorizationUrl)
-    document.body.appendChild(iframe)
+    iframe.setAttribute('style', 'display:none;')
+    iframe.setAttribute('src', src)
 
     return new Promise<AuthResult>((resolve, reject) => {
-      // An error on timeout could be added, but the need is not obvious for this function.
       const listener = (event: MessageEvent) => {
-        if (event.origin !== `https://${this.config.domain}`) return
+        // Verify the event's origin
+        if (event.origin !== origin) return
+
+        // Verify the event's syntax
         const data = camelCaseProperties(event.data)
-        if (data.type === 'authorization_response') {
-          if (AuthResult.isAuthResult(data.response)) {
+        if (data.type !== 'authorization_response') return
+
+        // The iframe is no longer needed, clean it up ..
+        if (window.document.body.contains(iframe)) {
+          window.document.body.removeChild(iframe)
+        }
+
+        // .. and close the event's source
+        if (event.source && "close" in event.source) {
+          event.source.close()
+        }
+
+        const result = data.response
+
+        if (AuthResult.isAuthResult(result)) {
+          if (result.code) {
+            resolve(this.exchangeAuthorizationCodeWithPkce({
+              code: result.code,
+              redirectUri: redirectUri || ""
+            }))
+          } else {
             this.eventManager.fireEvent('authenticated', data.response)
             resolve(enrichAuthResult(data.response))
-          } else if (ErrorResponse.isErrorResponse(data.response)) {
-            // The 'authentication_failed' event must not be triggered because it is not a real authentication failure.
-            reject(data.response)
-          } else {
-            reject({
-              error: 'unexpected_error',
-              errorDescription: 'Unexpected error occurred'
-            })
           }
-          window.removeEventListener('message', listener)
+        } else if (ErrorResponse.isErrorResponse(result)) {
+          // The 'authentication_failed' event must not be triggered because it is not a real authentication failure.
+          reject(result)
+        } else {
+          reject({
+            error: 'unexpected_error',
+            errorDescription: 'Unexpected error occurred'
+          })
         }
+        window.removeEventListener('message', listener, false)
       }
+
       window.addEventListener('message', listener, false)
+      document.body.appendChild(iframe)
     })
   }
 
@@ -241,7 +282,7 @@ export default class ApiClient {
   }
 
   private loginWithRedirect(queryString: Record<string, string | boolean | undefined>): Promise<void> {
-    window.location.assign(this.getAuthorizationUrl(queryString))
+    redirect(this.getAuthorizationUrl(queryString))
     return Promise.resolve()
   }
 
@@ -315,7 +356,7 @@ export default class ApiClient {
       {
         url: `${this.authorizeUrl}?${toQueryString(opts)}`,
         relay_url: this.popupRelayUrl,
-        window_features: this.computeProviderPopupOptions(opts.provider)
+        window_features: computeProviderPopupOptions(opts.provider)
       },
       (err: string, result: WinChanResponse<object>) => {
         if (err) {
@@ -339,29 +380,34 @@ export default class ApiClient {
     return Promise.resolve()
   }
 
-  loginWithPassword(params: LoginWithPasswordParams): Promise<void> {
-    // Whether the credentials will be stored in the browser
-    const saveCredentials = !isUndefined(params.saveCredentials) && params.saveCredentials
+  loginWithPassword(params: LoginWithPasswordParams): Promise<AuthResult | void> {
+    const { auth = {}, ...rest } = params
 
     const loginPromise =
-      window.cordova || saveCredentials
-        ? this.loginWithPasswordByOAuth(params)
-        : this.loginWithPasswordByRedirect(params)
+      window.cordova
+        ? this.ropcPasswordLogin(params).then(() => this.storeCredentialsInBrowser(params))
+        : this.http
+            .post<AuthenticationToken>('/password/login', {
+              body: {
+                clientId: this.config.clientId,
+                scope: this.resolveScope(auth),
+                ...rest
+              }
+            })
+            .then(tkn => this.storeCredentialsInBrowser(params).then(() => tkn))
+            .then(({ tkn }) => this.loginCallback(tkn, auth, !!params.useRedirect))
 
-    const resultPromise =
-      saveCredentials
-        ? loginPromise.then(() => this.storeCredentialsInBrowser(params))
-        : loginPromise
-
-    return resultPromise.catch((err: any) => {
+    return (loginPromise as Promise<AuthResult | void>).catch((err: any) => {
       if (err.error) {
         this.eventManager.fireEvent('login_failed', err)
       }
-      throw err
+      Promise.reject()
     })
   }
 
   private storeCredentialsInBrowser(params: LoginWithPasswordParams): Promise<void> {
+    if (!params.saveCredentials) return Promise.resolve()
+
     if (navigator.credentials && navigator.credentials.create && navigator.credentials.store) {
       const credentialParams = {
         password: {
@@ -383,7 +429,7 @@ export default class ApiClient {
     }
   }
 
-  private loginWithPasswordByOAuth(params: LoginWithPasswordParams): Promise<void> {
+  private ropcPasswordLogin(params: LoginWithPasswordParams): Promise<void> {
     const auth = params.auth
 
     return this.http
@@ -400,28 +446,29 @@ export default class ApiClient {
       .then(result => this.eventManager.fireEvent('authenticated', result))
   }
 
-  private loginWithPasswordByRedirect({ auth = {}, ...rest }: LoginWithPasswordParams): Promise<void> {
-    return this.http
-      .post<InternalToken>('/password/login', {
-        body: {
-          clientId: this.config.clientId,
-          scope: this.resolveScope(auth),
-          ...rest
-        }
-      })
-      .then(({ tkn }) => this.loginWithAuthenticationCallback(tkn, auth))
-  }
-
-  private loginWithAuthenticationCallback(tkn: string, auth: AuthOptions = {}): void {
+  private loginCallback(tkn: string, auth: AuthOptions = {}, useRedirect: boolean = false): Promise<AuthResult | void> {
     const authParams = this.authParams(auth)
 
-    this.getPkceParams(authParams).then(maybeChallenge => {
+    return this.getPkceParams(authParams).then(maybeChallenge => {
       const queryString = toQueryString({
         ...authParams,
-        tkn,
         ...maybeChallenge,
+        ...(useRedirect) ? {} : {
+          responseMode: 'web_message',
+          prompt: 'none'
+        },
+        tkn
       })
-      window.location.assign(`${this.authorizeUrl}?${queryString}`)
+
+      if (useRedirect) {
+        return redirect(`${this.authorizeUrl}?${queryString}`)
+      } else {
+        return this.getWebMessage(
+          `${this.authorizeUrl}?${queryString}`,
+          `https://${this.config.domain}`,
+          auth.redirectUri || ""
+        ) as Promise<AuthResult | void>
+      }
     })
   }
 
@@ -456,10 +503,20 @@ export default class ApiClient {
       })
   }
 
-  signup(params: SignupParams): Promise<void> {
-    const { data, auth, redirectUrl, returnToAfterEmailConfirmation } = params
+  signup(params: SignupParams): Promise<AuthResult | void> {
+    const { data, auth, redirectUrl, returnToAfterEmailConfirmation, useRedirect, saveCredentials } = params
 
-    const signupPromise = window.cordova
+    const loginParams: LoginWithPasswordParams = {
+      ...(data.phoneNumber)
+        ? { phoneNumber: data.phoneNumber }
+        : { email: data.email || "" },
+      useRedirect,
+      password: data.password,
+      saveCredentials,
+      auth
+    }
+
+    const resultPromise = window.cordova
       ? this.http
           .post<AuthResult>(`${this.baseUrl}/signup-token`, {
             body: {
@@ -472,8 +529,9 @@ export default class ApiClient {
             }
           })
           .then(result => this.eventManager.fireEvent('authenticated', result))
+          .then(() => this.storeCredentialsInBrowser(loginParams))
       : this.http
-          .post<InternalToken>('/signup', {
+          .post<AuthenticationToken>('/signup', {
             body: {
               clientId: this.config.clientId,
               redirectUrl,
@@ -482,26 +540,14 @@ export default class ApiClient {
               returnToAfterEmailConfirmation,
             }
           })
-          .then(({ tkn }) => this.loginWithAuthenticationCallback(tkn, auth))
+          .then(tkn => this.storeCredentialsInBrowser(loginParams).then(() => tkn))
+          .then(({ tkn }) => this.loginCallback(tkn, auth))
 
-    const saveCredentials = !isUndefined(params.saveCredentials) && params.saveCredentials
-
-    const loginParams: LoginWithPasswordParams | undefined = !isUndefined(data.phoneNumber)
-      ? { password: data.password, phoneNumber: data.phoneNumber }
-      : !isUndefined(data.email)
-      ? { password: data.password, email: data.email }
-      : undefined
-
-    const resultPromise =
-      saveCredentials && !isUndefined(loginParams)
-        ? signupPromise.then(() => this.storeCredentialsInBrowser(loginParams))
-        : signupPromise
-
-    return resultPromise.catch(err => {
+    return (resultPromise as Promise<AuthResult | void>).catch(err => {
       if (err.error) {
         this.eventManager.fireEvent('signup_failed', err)
       }
-      throw err
+      Promise.reject()
     })
   }
 
@@ -610,7 +656,7 @@ export default class ApiClient {
             password: credentials.password,
             auth: params.auth
           }
-          return this.loginWithPasswordByOAuth(loginParams)
+          return this.ropcPasswordLogin(loginParams)
         }
         return Promise.reject(new Error('Invalid credentials'))
       })
@@ -654,7 +700,7 @@ export default class ApiClient {
     }
   }
 
-  loginWithWebAuthn(params: LoginWithWebAuthnParams): Promise<void> {
+  loginWithWebAuthn(params: LoginWithWebAuthnParams): Promise<AuthResult | void> {
     if (navigator.credentials && navigator.credentials.get) {
       const body = {
         clientId: this.config.clientId,
@@ -679,8 +725,8 @@ export default class ApiClient {
             const serializedCredentials = serializeAuthenticationPublicKeyCredential(credentials)
 
             return this.http
-              .post<InternalToken>('/webauthn/authentication', { body: { ...serializedCredentials } })
-              .then(response => this.loginWithAuthenticationCallback(response.tkn, params.auth))
+              .post<AuthenticationToken>('/webauthn/authentication', { body: { ...serializedCredentials } })
+              .then(response => this.loginCallback(response.tkn, params.auth))
               .catch(error => { throw error })
         })
         .catch(error => {
@@ -710,9 +756,12 @@ export default class ApiClient {
 
   private getPkceParams(authParams: AuthParameters): Promise<PkceParams | {}> {
     if (this.config.pkceEnabled) {
-      if (authParams.responseType === 'token') throw new Error('Cannot use implicit flow when PKCE is enabled')
-      else return computePkceParams()
-    } else return Promise.resolve({})
+      if (authParams.responseType === 'token')
+        return Promise.reject('Cannot use implicit flow when PKCE is enabled')
+      else
+        return computePkceParams()
+    } else
+      return Promise.resolve({})
   }
 
   private authenticatedHandler = ({ responseType, redirectUri }: AuthOptions, response: AuthResult) => {
@@ -720,19 +769,6 @@ export default class ApiClient {
       window.location.assign(`${redirectUri}?code=${response.code}`)
     } else {
       this.eventManager.fireEvent('authenticated', response)
-    }
-  }
-
-  private computeProviderPopupOptions(provider: string): string {
-    try {
-      const opts = popupSize(provider)
-      const left = Math.max(0, (screen.width - opts.width) / 2)
-      const top = Math.max(0, (screen.height - opts.height) / 2)
-      const width = Math.min(screen.width, opts.width)
-      const height = Math.min(screen.height, opts.height)
-      return `menubar=0,toolbar=0,resizable=1,scrollbars=1,width=${width},height=${height},top=${top},left=${left}`
-    } catch (e) {
-      return 'menubar=0,toolbar=0,resizable=1,scrollbars=1,width=960,height=680'
     }
   }
 
@@ -748,6 +784,24 @@ export default class ApiClient {
   }
 }
 
+function redirect(location: string): Promise<void> {
+  window.location.assign(location)
+  return Promise.resolve()
+}
+
 function hasLoggedWithEmail(params: LoginWithPasswordParams): params is EmailLoginWithPasswordParams {
   return (params as EmailLoginWithPasswordParams).email !== undefined
+}
+
+function computeProviderPopupOptions(provider: string): string {
+  try {
+    const opts = popupSize(provider)
+    const left = Math.max(0, (screen.width - opts.width) / 2)
+    const top = Math.max(0, (screen.height - opts.height) / 2)
+    const width = Math.min(screen.width, opts.width)
+    const height = Math.min(screen.height, opts.height)
+    return `menubar=0,toolbar=0,resizable=1,scrollbars=1,width=${width},height=${height},top=${top},left=${left}`
+  } catch (e) {
+    return 'menubar=0,toolbar=0,resizable=1,scrollbars=1,width=960,height=680'
+  }
 }
