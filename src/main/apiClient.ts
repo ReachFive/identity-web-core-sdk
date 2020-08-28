@@ -44,9 +44,9 @@ export type LoginWithCredentialsParams = {
   auth?: AuthOptions
 }
 
-type EmailLoginWithWebAuthnParams = { email: string, auth?: AuthOptions }
-type PhoneNumberLoginWithWebAuthnParams = { phoneNumber: string, auth?: AuthOptions  }
-export type LoginWithWebAuthnParams =   EmailLoginWithWebAuthnParams | PhoneNumberLoginWithWebAuthnParams
+type EmailLoginWithWebAuthnParams = { useRedirect?: boolean; email: string, auth?: AuthOptions }
+type PhoneNumberLoginWithWebAuthnParams = { useRedirect?: boolean; phoneNumber: string, auth?: AuthOptions  }
+export type LoginWithWebAuthnParams = EmailLoginWithWebAuthnParams | PhoneNumberLoginWithWebAuthnParams
 
 type EmailRequestPasswordResetParams = {
   email: string
@@ -302,11 +302,12 @@ export default class ApiClient {
   private openInCordovaSystemBrowser(url: string): Promise<void> {
     return this.getAvailableBrowserTabPlugin().then(maybeBrowserTab => {
       if (!window.cordova) {
-        throw new Error('Cordova environnement not detected.')
+        return Promise.reject(new Error('Cordova environnement not detected.'))
       }
 
       if (maybeBrowserTab) {
         maybeBrowserTab.openUrl(url, () => {}, logError)
+        return Promise.resolve()
       } else if (window.cordova.InAppBrowser) {
         if (window.cordova.platformId === 'ios') {
           // Open a webview (to pass Apple validation tests)
@@ -315,8 +316,10 @@ export default class ApiClient {
           // Open the system browser
           window.cordova.InAppBrowser.open(url, '_system')
         }
+
+        return Promise.resolve()
       } else {
-        throw new Error('Cordova plugin "inappbrowser" is required.')
+        return Promise.reject(new Error('Cordova plugin "inappbrowser" is required.'))
       }
     })
   }
@@ -401,7 +404,7 @@ export default class ApiClient {
       if (err.error) {
         this.eventManager.fireEvent('login_failed', err)
       }
-      Promise.reject()
+      return Promise.reject(new Error(err.error))
     })
   }
 
@@ -499,7 +502,7 @@ export default class ApiClient {
       .then(() => this.loginWithVerificationCode(params, auth))
       .catch(err => {
         if (err.error) this.eventManager.fireEvent('login_failed', err)
-        throw err
+        return Promise.reject(new Error(err.error))
       })
   }
 
@@ -510,7 +513,6 @@ export default class ApiClient {
       ...(data.phoneNumber)
         ? { phoneNumber: data.phoneNumber }
         : { email: data.email || "" },
-      useRedirect,
       password: data.password,
       saveCredentials,
       auth
@@ -541,13 +543,13 @@ export default class ApiClient {
             }
           })
           .then(tkn => this.storeCredentialsInBrowser(loginParams).then(() => tkn))
-          .then(({ tkn }) => this.loginCallback(tkn, auth))
+          .then(({ tkn }) => this.loginCallback(tkn, auth, !!useRedirect))
 
     return (resultPromise as Promise<AuthResult | void>).catch(err => {
       if (err.error) {
         this.eventManager.fireEvent('signup_failed', err)
       }
-      Promise.reject()
+      return Promise.reject(new Error(err.error))
     })
   }
 
@@ -681,19 +683,17 @@ export default class ApiClient {
         })
         .then(credentials => {
           if (!credentials || credentials.type !== publicKeyCredentialType) {
-            throw new Error('Unable to register invalid public key credentials.')
+            return Promise.reject(new Error('Unable to register invalid public key credentials.'))
           }
 
           const serializedCredentials = serializeRegistrationPublicKeyCredential(credentials)
 
-          return this.http
-            .post<void>('/webauthn/registration', { body: { ...serializedCredentials }, accessToken })
-            .catch(error => { throw error })
+          return this.http.post<void>('/webauthn/registration', { body: { ...serializedCredentials }, accessToken })
         })
-        .catch(error => {
-          if (error.error) this.eventManager.fireEvent('login_failed', error)
+        .catch(err => {
+          if (err.error) this.eventManager.fireEvent('login_failed', err)
 
-          throw error
+          return Promise.reject(new Error(err.error))
         })
     } else {
       return Promise.reject(new Error('Unsupported WebAuthn API'))
@@ -719,20 +719,19 @@ export default class ApiClient {
         })
         .then(credentials => {
             if (!credentials || credentials.type !== publicKeyCredentialType) {
-              throw new Error('Unable to authenticate with invalid public key crendentials.')
+              return Promise.reject(new Error('Unable to authenticate with invalid public key credentials.'))
             }
 
             const serializedCredentials = serializeAuthenticationPublicKeyCredential(credentials)
 
             return this.http
               .post<AuthenticationToken>('/webauthn/authentication', { body: { ...serializedCredentials } })
-              .then(response => this.loginCallback(response.tkn, params.auth))
-              .catch(error => { throw error })
+              .then(response => this.loginCallback(response.tkn, params.auth, !!params.useRedirect))
         })
-        .catch(error => {
-          if (error.error) this.eventManager.fireEvent('login_failed', error)
+        .catch(err => {
+          if (err.error) this.eventManager.fireEvent('login_failed', err)
 
-          throw error
+          return Promise.reject(new Error(err.error))
         })
     } else {
       return Promise.reject(new Error('Unsupported WebAuthn API'))
@@ -757,7 +756,7 @@ export default class ApiClient {
   private getPkceParams(authParams: AuthParameters): Promise<PkceParams | {}> {
     if (this.config.pkceEnabled) {
       if (authParams.responseType === 'token')
-        return Promise.reject('Cannot use implicit flow when PKCE is enabled')
+        return Promise.reject(new Error('Cannot use implicit flow when PKCE is enabled'))
       else
         return computePkceParams()
     } else
