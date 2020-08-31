@@ -1,7 +1,7 @@
 import fetchMock from 'jest-fetch-mock'
 import { toQueryString } from '../../utils/queryString'
 import { delay } from '../../utils/promise'
-import { createDefaultTestClient, headers } from './testHelpers'
+import { createDefaultTestClient, expectIframeWithParams, headers } from './testHelpers'
 
 beforeEach(() => {
   window.fetch = fetchMock
@@ -10,7 +10,45 @@ beforeEach(() => {
 
 const defaultScope = 'openid profile email phone'
 
-test('with default auth config (email/password)', async () => {
+test('[default] with web_message (email/password)', async () => {
+  // Given
+  const { api, clientId, domain } = createDefaultTestClient()
+
+  const email = 'john.doe@example.com'
+  const password = 'izDf8£Zd'
+
+  const passwordToken = 'password_token'
+  const passwordLoginCall = fetchMock.mockResponseOnce(JSON.stringify({ tkn: passwordToken }))
+
+  // When
+  let error = null
+  api.loginWithPassword({
+    email,
+    password
+  }).catch(err => (error = err))
+
+  await delay(1)
+
+  // Then
+  expect(error).toBeNull()
+
+  expect(passwordLoginCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/password/login`, {
+    method: 'POST',
+    headers: headers.jsonAndDefaultLang,
+    body: `{"client_id":"${clientId}","scope":"${defaultScope}","email":"${email}","password":"${password}"}`
+  })
+
+  expectIframeWithParams(domain, {
+    client_id: clientId,
+    response_type: 'token',
+    scope: defaultScope,
+    responseMode: 'web_message',
+    prompt: 'none',
+    tkn: passwordToken
+  })
+})
+
+test('with redirect (email/password)', async () => {
   // Given
   const { api, clientId, domain } = createDefaultTestClient()
 
@@ -53,7 +91,7 @@ test('with default auth config (email/password)', async () => {
   )
 })
 
-test('with default auth config (phone/password)', async () => {
+test('with redirect (phone/password)', async () => {
   // Given
   const { api, clientId, domain } = createDefaultTestClient()
 

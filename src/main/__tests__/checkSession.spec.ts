@@ -1,7 +1,5 @@
 import fetchMock from 'jest-fetch-mock'
-import { createDefaultTestClient } from './testHelpers'
-import { toQueryString } from '../../utils/queryString'
-import { delay } from '../../utils/promise'
+import { createDefaultTestClient, expectIframeWithParams } from './testHelpers'
 
 beforeEach(() => {
   window.fetch = fetchMock
@@ -11,61 +9,35 @@ beforeEach(() => {
 
 describe('checkSession', () => {
   test('basic', async () => {
-    const { api, domain, clientId } = createDefaultTestClient({ sso: true })
+    const { api, domain, clientId } = createDefaultTestClient({sso: true})
 
     api.checkSession().catch(err => console.log(err))
 
-    await delay(10)
-
-    const iframe = document.querySelector('iframe')
-
-    expect(iframe).not.toBeNull()
-
-    if (iframe) {
-      // Make Typescript happy
-      expect(iframe.getAttribute('height')).toEqual('0')
-      expect(iframe.getAttribute('width')).toEqual('0')
-      expect(iframe.getAttribute('src')).toEqual(
-        `https://${domain}/oauth/authorize?` +
-          toQueryString({
-            client_id: clientId,
-            response_type: 'token',
-            scope: 'openid profile email phone',
-            response_mode: 'web_message',
-            prompt: 'none'
-          })
-      )
-    }
+    await expectIframeWithParams(domain, {
+      client_id: clientId,
+      response_type: 'token',
+      scope: 'openid profile email phone',
+      response_mode: 'web_message',
+      prompt: 'none'
+    })
   })
 
   test('with nonce', async () => {
-    const { api, domain, clientId } = createDefaultTestClient({ sso: true })
+    const { api, domain, clientId } = createDefaultTestClient({sso: true})
 
     const nonce = 'pizjfoihzefoiaef'
 
-    api.checkSession({ nonce }).catch(err => console.log(err))
+    api.checkSession({
+      nonce
+    }).catch(err => console.log(err))
 
-    await delay(10)
-
-    const iframe = document.querySelector('iframe')
-
-    expect(iframe).not.toBeNull()
-
-    if (iframe) {
-      // Make Typescript happy
-      expect(iframe.getAttribute('height')).toEqual('0')
-      expect(iframe.getAttribute('width')).toEqual('0')
-      expect(iframe.getAttribute('src')).toEqual(
-        `https://${domain}/oauth/authorize?` +
-          toQueryString({
-            client_id: clientId,
-            response_type: 'token',
-            nonce,
-            scope: 'openid profile email phone',
-            response_mode: 'web_message',
-            prompt: 'none'
-          })
-      )
-    }
+    await expectIframeWithParams(domain, {
+      client_id: clientId,
+      response_type: 'token',
+      nonce,
+      scope: 'openid profile email phone',
+      response_mode: 'web_message',
+      prompt: 'none'
+    })
   })
 })

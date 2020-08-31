@@ -1,6 +1,8 @@
 import fetchMock from 'jest-fetch-mock'
 import { Config, createClient } from '../main'
 import { RemoteSettings } from '../models'
+import { toQueryString } from '../../utils/queryString'
+import { delay } from '../../utils/promise'
 
 export function createDefaultTestClient(remoteSettings: Partial<RemoteSettings> = {}) {
   const actualRemoteSettings = {
@@ -48,4 +50,21 @@ export const headers = {
     ...jsonHeader,
     ...defaultLangHeader
   }
+}
+
+export async function expectIframeWithParams(
+  domain: string,
+  params: {}
+) {
+  await delay(15)
+  const iframe = document.querySelector('iframe')
+  expect(iframe).not.toBeNull()
+  if (iframe) {
+    // Make Typescript happy
+    expect(iframe.getAttribute('height')).toEqual('0')
+    expect(iframe.getAttribute('width')).toEqual('0')
+    expect(iframe.getAttribute('src')).toEqual(
+      `https://${domain}/oauth/authorize?${toQueryString(params)}`
+    )
+  } else fail('No iframe found!')
 }

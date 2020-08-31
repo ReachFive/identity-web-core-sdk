@@ -1,7 +1,7 @@
 import fetchMock from 'jest-fetch-mock'
 import { delay } from '../../utils/promise'
 import { toQueryString } from '../../utils/queryString'
-import { createDefaultTestClient, headers } from './testHelpers'
+import { createDefaultTestClient, expectIframeWithParams, headers } from './testHelpers'
 
 beforeEach(() => {
   window.fetch = fetchMock
@@ -71,64 +71,62 @@ test('with default auth (using redirect)', async () => {
   )
 })
 
-// TODO/cbu
-// test('with default auth (using web_message)', async () => {
-//   // Given
-//   const { api, clientId, domain } = createDefaultTestClient()
-//
-//   const signupToken = 'signupToken'
-//
-//   const fetch1 = fetchMock.mockResponseOnce(
-//     JSON.stringify({
-//       id: '1234',
-//       tkn: signupToken
-//     })
-//   )
-//
-//   let error = null
-//
-//   // When
-//   api
-//     .signup({
-//       data: {
-//         givenName: 'John',
-//         familyName: 'Doe',
-//         email: 'john.doe@example.com',
-//         password: 'P@ssw0rd'
-//       }
-//     })
-//     .catch(err => (error = err))
-//
-//   await delay(20)
-//
-//   // Then
-//
-//   expect(error).toBeNull()
-//   expect(fetch1).toHaveBeenCalledWith(`https://${domain}/identity/v1/signup`, {
-//     method: 'POST',
-//     headers: headers.jsonAndDefaultLang,
-//     body: JSON.stringify({
-//       client_id: clientId,
-//       scope: defaultScope,
-//       data: {
-//         given_name: 'John',
-//         family_name: 'Doe',
-//         email: 'john.doe@example.com',
-//         password: 'P@ssw0rd'
-//       }
-//     })
-//   })
-//   expect(window.location.assign).toHaveBeenCalledWith(
-//     `https://${domain}/oauth/authorize?` +
-//       toQueryString({
-//         client_id: clientId,
-//         response_type: 'token',
-//         scope: defaultScope,
-//         display: 'page',
-//         tkn: signupToken
-//       })
-//   )
-// })
+test('with default auth (using web_message)', async () => {
+  // Given
+  const { api, clientId, domain } = createDefaultTestClient()
+
+  const signupToken = 'signupToken'
+
+  const fetch1 = fetchMock.mockResponseOnce(
+    JSON.stringify({
+      id: '1234',
+      tkn: signupToken
+    })
+  )
+
+  let error = null
+
+  // When
+  api
+    .signup({
+      data: {
+        givenName: 'John',
+        familyName: 'Doe',
+        email: 'john.doe@example.com',
+        password: 'P@ssw0rd'
+      }
+    })
+    .catch(err => (error = err))
+
+  await delay(20)
+
+  // Then
+
+  expect(error).toBeNull()
+  expect(fetch1).toHaveBeenCalledWith(`https://${domain}/identity/v1/signup`, {
+    method: 'POST',
+    headers: headers.jsonAndDefaultLang,
+    body: JSON.stringify({
+      client_id: clientId,
+      scope: defaultScope,
+      data: {
+        given_name: 'John',
+        family_name: 'Doe',
+        email: 'john.doe@example.com',
+        password: 'P@ssw0rd'
+      }
+    })
+  })
+
+  await expectIframeWithParams(domain, {
+    client_id: clientId,
+    response_type: 'token',
+    scope: defaultScope,
+    responseMode: 'web_message',
+    prompt: 'none',
+    tkn: signupToken
+  })
+})
 
 test('with auth param', async () => {
   // Given
