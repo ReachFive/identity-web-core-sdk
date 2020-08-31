@@ -22,7 +22,13 @@ test('with default auth config (email/password)', async () => {
 
   // When
   let error = null
-  api.loginWithPassword({ email, password }).catch(err => (error = err))
+  api.loginWithPassword({
+    email,
+    password,
+    auth: {
+      useRedirect: true
+    }
+  }).catch(err => (error = err))
 
   await delay(1)
 
@@ -59,7 +65,13 @@ test('with default auth config (phone/password)', async () => {
 
   // When
   let error = null
-  api.loginWithPassword({ phoneNumber, password }).catch(err => (error = err))
+  api.loginWithPassword({
+    phoneNumber,
+    password,
+    auth: {
+      useRedirect: true
+    }
+  }).catch(err => (error = err))
 
   await delay(1)
 
@@ -105,7 +117,8 @@ test('with popup mode (email/password)', async () => {
       password,
       auth: {
         redirectUri,
-        popupMode: true
+        popupMode: true,
+        useRedirect: true
       }
     })
     .catch(err => (error = err))
@@ -119,9 +132,10 @@ test('with popup mode (email/password)', async () => {
       toQueryString({
         client_id: clientId,
         response_type: 'code',
-        scope: defaultScope,
-        display: 'page',
         redirect_uri: redirectUri,
+        scope: defaultScope,
+        // popupMode is intentionally ignored
+        display: 'page',
         tkn: passwordToken
       })
   )
@@ -145,6 +159,7 @@ test('with default auth (email/password)', async () => {
       email,
       password,
       auth: {
+        useRedirect: true,
         fetchBasicProfile: false,
         scope: ['openid', 'email']
       }

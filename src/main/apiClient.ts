@@ -27,13 +27,12 @@ export type SignupParams = {
   saveCredentials?: boolean
   auth?: AuthOptions
   redirectUrl?: string
-  useRedirect?: boolean
 }
 export type UpdateEmailParams = { accessToken: string; email: string; redirectUrl?: string }
 export type EmailVerificationParams = { accessToken: string; redirectUrl?: string; returnToAfterEmailConfirmation?: string }
 export type PhoneNumberVerificationParams = { accessToken: string }
 
-type LoginWithPasswordOptions = { useRedirect?: boolean; password: string; saveCredentials?: boolean; auth?: AuthOptions }
+type LoginWithPasswordOptions = { password: string; saveCredentials?: boolean; auth?: AuthOptions }
 type EmailLoginWithPasswordParams = LoginWithPasswordOptions & { email: string }
 type PhoneNumberLoginWithPasswordParams = LoginWithPasswordOptions & { phoneNumber: string }
 
@@ -44,9 +43,9 @@ export type LoginWithCredentialsParams = {
   auth?: AuthOptions
 }
 
-type EmailLoginWithWebAuthnParams = { useRedirect?: boolean; email: string, auth?: AuthOptions }
-type PhoneNumberLoginWithWebAuthnParams = { useRedirect?: boolean; phoneNumber: string, auth?: AuthOptions  }
-export type LoginWithWebAuthnParams = EmailLoginWithWebAuthnParams | PhoneNumberLoginWithWebAuthnParams
+type EmailLoginWithWebAuthnParams = { email: string, auth?: AuthOptions }
+type PhoneNumberLoginWithWebAuthnParams = { phoneNumber: string, auth?: AuthOptions  }
+export type LoginWithWebAuthnParams =   EmailLoginWithWebAuthnParams | PhoneNumberLoginWithWebAuthnParams
 
 type EmailRequestPasswordResetParams = {
   email: string
@@ -148,7 +147,10 @@ export default class ApiClient {
   }
 
   loginWithSocialProvider(provider: string, opts: AuthOptions = {}): Promise<void> {
-    const authParams = this.authParams(opts, { acceptPopupMode: true })
+    const authParams = this.authParams({
+      ...opts,
+      useRedirect: true
+    }, { acceptPopupMode: true })
 
     return this.getPkceParams(authParams).then(maybeChallenge => {
       const params = {
@@ -156,6 +158,7 @@ export default class ApiClient {
         provider,
         ...maybeChallenge
       }
+
       if ('cordova' in window) {
         return this.loginWithCordovaInAppBrowser(params)
       } else if (params.display === 'popup') {
@@ -190,7 +193,10 @@ export default class ApiClient {
     }
 
     return this.loginWithRedirect({
-      ...this.authParams(opts),
+      ...this.authParams({
+        ...opts,
+        useRedirect: true
+      }),
       prompt: 'none'
     })
   }
@@ -198,7 +204,7 @@ export default class ApiClient {
   checkSession(opts: AuthOptions = {}): Promise<AuthResult> {
     if (!this.config.sso && !opts.idTokenHint) {
       return Promise.reject(
-        new Error("Cannot call 'loginFromSession' without 'idTokenHint' parameter if SSO is not enabled.")
+        new Error("Cannot call 'checkSession' without 'idTokenHint' parameter if SSO is not enabled.")
       )
     }
 
@@ -398,13 +404,13 @@ export default class ApiClient {
               }
             })
             .then(tkn => this.storeCredentialsInBrowser(params).then(() => tkn))
-            .then(({ tkn }) => this.loginCallback(tkn, auth, !!params.useRedirect))
+            .then(({ tkn }) => this.loginCallback(tkn, auth))
 
     return (loginPromise as Promise<AuthResult | void>).catch((err: any) => {
       if (err.error) {
         this.eventManager.fireEvent('login_failed', err)
       }
-      return Promise.reject(new Error(err.error))
+      return Promise.reject(err)
     })
   }
 
@@ -449,21 +455,17 @@ export default class ApiClient {
       .then(result => this.eventManager.fireEvent('authenticated', result))
   }
 
-  private loginCallback(tkn: string, auth: AuthOptions = {}, useRedirect: boolean = false): Promise<AuthResult | void> {
+  private loginCallback(tkn: string, auth: AuthOptions = {}): Promise<AuthResult | void> {
     const authParams = this.authParams(auth)
 
     return this.getPkceParams(authParams).then(maybeChallenge => {
       const queryString = toQueryString({
         ...authParams,
         ...maybeChallenge,
-        ...(useRedirect) ? {} : {
-          responseMode: 'web_message',
-          prompt: 'none'
-        },
         tkn
       })
 
-      if (useRedirect) {
+      if (auth.useRedirect) {
         return redirect(`${this.authorizeUrl}?${queryString}`)
       } else {
         return this.getWebMessage(
@@ -502,12 +504,12 @@ export default class ApiClient {
       .then(() => this.loginWithVerificationCode(params, auth))
       .catch(err => {
         if (err.error) this.eventManager.fireEvent('login_failed', err)
-        return Promise.reject(new Error(err.error))
+        return Promise.reject(err)
       })
   }
 
   signup(params: SignupParams): Promise<AuthResult | void> {
-    const { data, auth, redirectUrl, returnToAfterEmailConfirmation, useRedirect, saveCredentials } = params
+    const { data, auth, redirectUrl, returnToAfterEmailConfirmation, saveCredentials } = params
 
     const loginParams: LoginWithPasswordParams = {
       ...(data.phoneNumber)
@@ -543,13 +545,13 @@ export default class ApiClient {
             }
           })
           .then(tkn => this.storeCredentialsInBrowser(loginParams).then(() => tkn))
-          .then(({ tkn }) => this.loginCallback(tkn, auth, !!useRedirect))
+          .then(({ tkn }) => this.loginCallback(tkn, auth))
 
     return (resultPromise as Promise<AuthResult | void>).catch(err => {
       if (err.error) {
         this.eventManager.fireEvent('signup_failed', err)
       }
-      return Promise.reject(new Error(err.error))
+      return Promise.reject(err)
     })
   }
 
@@ -693,7 +695,7 @@ export default class ApiClient {
         .catch(err => {
           if (err.error) this.eventManager.fireEvent('login_failed', err)
 
-          return Promise.reject(new Error(err.error))
+          return Promise.reject(err)
         })
     } else {
       return Promise.reject(new Error('Unsupported WebAuthn API'))
@@ -726,12 +728,12 @@ export default class ApiClient {
 
             return this.http
               .post<AuthenticationToken>('/webauthn/authentication', { body: { ...serializedCredentials } })
-              .then(response => this.loginCallback(response.tkn, params.auth, !!params.useRedirect))
+              .then(response => this.loginCallback(response.tkn, params.auth))
         })
         .catch(err => {
           if (err.error) this.eventManager.fireEvent('login_failed', err)
 
-          return Promise.reject(new Error(err.error))
+          return Promise.reject(err)
         })
     } else {
       return Promise.reject(new Error('Unsupported WebAuthn API'))

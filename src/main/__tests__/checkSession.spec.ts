@@ -31,7 +31,6 @@ describe('checkSession', () => {
             client_id: clientId,
             response_type: 'token',
             scope: 'openid profile email phone',
-            display: 'page',
             response_mode: 'web_message',
             prompt: 'none'
           })
@@ -61,9 +60,8 @@ describe('checkSession', () => {
           toQueryString({
             client_id: clientId,
             response_type: 'token',
-            scope: 'openid profile email phone',
-            display: 'page',
             nonce,
+            scope: 'openid profile email phone',
             response_mode: 'web_message',
             prompt: 'none'
           })
