@@ -467,7 +467,7 @@ export default class ApiClient {
       const queryString = toQueryString({
         ...authParams,
         ...maybeChallenge,
-        ...tkn
+        ...pick(tkn, 'tkn')
       })
 
       if (auth.useRedirect) {
