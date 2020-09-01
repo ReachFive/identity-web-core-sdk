@@ -409,7 +409,7 @@ export default class ApiClient {
               }
             })
             .then(tkn => this.storeCredentialsInBrowser(params).then(() => tkn))
-            .then(({ tkn }) => this.loginCallback(tkn, auth))
+            .then(tkn => this.loginCallback(tkn, auth))
 
     return (loginPromise as Promise<AuthResult | void>).catch((err: any) => {
       if (err.error) {
@@ -460,14 +460,14 @@ export default class ApiClient {
       .then(result => this.eventManager.fireEvent('authenticated', result))
   }
 
-  private loginCallback(tkn: string, auth: AuthOptions = {}): Promise<AuthResult | void> {
+  private loginCallback(tkn: AuthenticationToken, auth: AuthOptions = {}): Promise<AuthResult | void> {
     const authParams = this.authParams(auth)
 
     return this.getPkceParams(authParams).then(maybeChallenge => {
       const queryString = toQueryString({
         ...authParams,
         ...maybeChallenge,
-        tkn
+        ...tkn
       })
 
       if (auth.useRedirect) {
@@ -550,7 +550,7 @@ export default class ApiClient {
             }
           })
           .then(tkn => this.storeCredentialsInBrowser(loginParams).then(() => tkn))
-          .then(({ tkn }) => this.loginCallback(tkn, auth))
+          .then(tkn => this.loginCallback(tkn, auth))
 
     return (resultPromise as Promise<AuthResult | void>).catch(err => {
       if (err.error) {
@@ -733,7 +733,7 @@ export default class ApiClient {
 
             return this.http
               .post<AuthenticationToken>('/webauthn/authentication', { body: { ...serializedCredentials } })
-              .then(response => this.loginCallback(response.tkn, params.auth))
+              .then(tkn => this.loginCallback(tkn, params.auth))
         })
         .catch(err => {
           if (err.error) this.eventManager.fireEvent('login_failed', err)
