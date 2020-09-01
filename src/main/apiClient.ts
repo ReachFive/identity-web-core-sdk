@@ -360,12 +360,13 @@ export default class ApiClient {
 
   private loginWithPopup(opts: AuthOptions & { provider: string }): Promise<void> {
     type WinChanResponse<D> = { success: true; data: D } | { success: false; data: ErrorResponse }
+    const { responseType, redirectUri, provider } = opts
 
     WinChan.open(
       {
         url: `${this.authorizeUrl}?${toQueryString(opts)}`,
         relay_url: this.popupRelayUrl,
-        window_features: computeProviderPopupOptions(opts.provider)
+        window_features: computeProviderPopupOptions(provider)
       },
       (err: string, result: WinChanResponse<object>) => {
         if (err) {
@@ -380,7 +381,11 @@ export default class ApiClient {
         const r = camelCaseProperties(result) as WinChanResponse<AuthResult>
 
         if (r.success) {
-          this.authenticatedHandler(opts, r.data)
+          if (responseType === 'code') {
+            window.location.assign(`${redirectUri}?code=${r.data.code}`)
+          } else {
+            this.eventManager.fireEvent('authenticated', r.data)
+          }
         } else {
           this.eventManager.fireEvent('authentication_failed', r.data)
         }
@@ -763,14 +768,6 @@ export default class ApiClient {
         return computePkceParams()
     } else
       return Promise.resolve({})
-  }
-
-  private authenticatedHandler = ({ responseType, redirectUri }: AuthOptions, response: AuthResult) => {
-    if (responseType === 'code') {
-      window.location.assign(`${redirectUri}?code=${response.code}`)
-    } else {
-      this.eventManager.fireEvent('authenticated', response)
-    }
   }
 
   private resolveScope(opts: AuthOptions = {}) {
