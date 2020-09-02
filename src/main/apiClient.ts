@@ -68,6 +68,7 @@ type EmailVerificationCodeUpdatePasswordParams = {
   email: string
   verificationCode: string
   password: string
+  purpose: string
 }
 
 type SmsVerificationCodeUpdatePasswordParams = {
