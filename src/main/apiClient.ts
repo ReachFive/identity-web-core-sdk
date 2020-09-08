@@ -103,7 +103,7 @@ export type TokenRequestParameters = {
   persistent?: boolean // Whether the remember me is enabled
 }
 
-type InternalToken = { tkn: string }
+type AuthenticationToken = { tkn: string }
 
 /**
  * Identity Rest API Client
@@ -400,7 +400,7 @@ export default class ApiClient {
 
   private loginWithPasswordByRedirect({ auth = {}, ...rest }: LoginWithPasswordParams): Promise<void> {
     return this.http
-      .post<InternalToken>('/password/login', {
+      .post<AuthenticationToken>('/password/login', {
         body: {
           clientId: this.config.clientId,
           scope: this.resolveScope(auth),
@@ -471,7 +471,7 @@ export default class ApiClient {
           })
           .then(result => this.eventManager.fireEvent('authenticated', result))
       : this.http
-          .post<InternalToken>('/signup', {
+          .post<AuthenticationToken>('/signup', {
             body: {
               clientId: this.config.clientId,
               redirectUrl,
@@ -718,7 +718,7 @@ export default class ApiClient {
             const serializedCredentials = serializeAuthenticationPublicKeyCredential(credentials)
 
             return this.http
-              .post<InternalToken>('/webauthn/authentication', { body: { ...serializedCredentials } })
+              .post<AuthenticationToken>('/webauthn/authentication', { body: { ...serializedCredentials } })
               .then(response => this.loginWithAuthenticationCallback(response.tkn, params.auth))
               .catch(error => { throw error })
         })
