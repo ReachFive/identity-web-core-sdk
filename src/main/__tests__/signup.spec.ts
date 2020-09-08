@@ -33,9 +33,6 @@ test('with default auth (using redirect)', async () => {
         familyName: 'Doe',
         email: 'john.doe@example.com',
         password: 'P@ssw0rd'
-      },
-      auth: {
-        useRedirect: true
       }
     })
     .catch(err => (error = err))
@@ -94,6 +91,9 @@ test('with default auth (using web_message)', async () => {
         familyName: 'Doe',
         email: 'john.doe@example.com',
         password: 'P@ssw0rd'
+      },
+      auth: {
+        useWebMessage: true
       }
     })
     .catch(err => (error = err))
@@ -151,7 +151,6 @@ test('with auth param', async () => {
         password: 'P@ssw0rd'
       },
       auth: {
-        useRedirect: true,
         redirectUri
       }
     })
@@ -210,7 +209,6 @@ test('popup mode ignored', async () => {
         password: 'P@ssw0rd'
       },
       auth: {
-        useRedirect: true,
         popupMode: true
       }
     })

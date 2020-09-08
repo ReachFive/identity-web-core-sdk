@@ -9,7 +9,7 @@ beforeEach(() => {
 
 describe('checkSession', () => {
   test('basic', async () => {
-    const { api, domain, clientId } = createDefaultTestClient({sso: true})
+    const { api, domain, clientId } = createDefaultTestClient({ sso: true })
 
     api.checkSession().catch(err => console.log(err))
 
@@ -23,7 +23,7 @@ describe('checkSession', () => {
   })
 
   test('with nonce', async () => {
-    const { api, domain, clientId } = createDefaultTestClient({sso: true})
+    const { api, domain, clientId } = createDefaultTestClient({ sso: true })
 
     const nonce = 'pizjfoihzefoiaef'
 

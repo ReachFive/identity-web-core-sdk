@@ -15,7 +15,7 @@ export interface AuthOptions {
   redirectUri?: string
   scope?: string | string[]
   fetchBasicProfile?: boolean
-  useRedirect?: boolean
+  useWebMessage?: boolean
   popupMode?: boolean
   prompt?: Prompt
   origin?: string
@@ -79,7 +79,7 @@ export function computeAuthOptions(
 ): AuthParameters {
   const isPopup = opts.popupMode && acceptPopupMode
   const responseType = opts.redirectUri ? 'code' : 'token'
-  const responseMode = isPopup || opts.useRedirect ? undefined : 'web_message'
+  const responseMode = opts.useWebMessage && !isPopup ? 'web_message': undefined
   const display = isPopup ? 'popup' : (responseMode !== 'web_message') ? 'page' : undefined
   const prompt = responseMode === 'web_message' ? 'none' : opts.prompt
   const scope = resolveScope(opts, defaultScopes)

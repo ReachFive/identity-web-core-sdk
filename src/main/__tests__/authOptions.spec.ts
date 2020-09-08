@@ -2,15 +2,16 @@ import { computeAuthOptions } from '../authOptions'
 
 describe('computeAuthOptions', () => {
   test('responseType defaults', () => {
-    const expectedDefault = {
+    expect(computeAuthOptions()).toEqual({
+      display: 'page',
       responseType: 'token',
-      prompt: 'none',
-      responseMode: 'web_message',
       scope: 'openid profile email phone'
-    }
-
-    expect(computeAuthOptions()).toEqual(expectedDefault)
-    expect(computeAuthOptions({})).toEqual(expectedDefault)
+    })
+    expect(computeAuthOptions({})).toEqual({
+      display: 'page',
+      responseType: 'token',
+      scope: 'openid profile email phone'
+    })
   })
 
   test('with redirect uri', () => {
@@ -19,8 +20,7 @@ describe('computeAuthOptions', () => {
         redirectUri: 'https://localhost/login.callback'
       })
     ).toEqual({
-      prompt: 'none',
-      responseMode: 'web_message',
+      display: 'page',
       responseType: 'code',
       scope: 'openid profile email phone',
       redirectUri: 'https://localhost/login.callback'
@@ -29,8 +29,7 @@ describe('computeAuthOptions', () => {
 
   test('with extended scope', () => {
     const result = {
-      prompt: 'none',
-      responseMode: 'web_message',
+      display: 'page',
       responseType: 'token',
       scope: 'openid profile email phone address'
     }
@@ -48,8 +47,7 @@ describe('computeAuthOptions', () => {
 
   test('with specific scope', () => {
     const result = {
-      prompt: 'none',
-      responseMode: 'web_message',
+      display: 'page',
       responseType: 'token',
       scope: 'openid profile'
     }
@@ -77,9 +75,8 @@ describe('computeAuthOptions', () => {
 
   test('popup mode when refused', () => {
     expect(computeAuthOptions({ popupMode: true })).toEqual({
+      display: 'page',
       responseType: 'token',
-      prompt: 'none',
-      responseMode: 'web_message',
       scope: 'openid profile email phone'
     })
   })
@@ -90,8 +87,7 @@ describe('computeAuthOptions', () => {
         requireRefreshToken: true
       })
     ).toEqual({
-      prompt: 'none',
-      responseMode: 'web_message',
+      display: 'page',
       responseType: 'token',
       scope: 'openid profile email phone offline_access'
     })

@@ -149,7 +149,7 @@ export default class ApiClient {
   loginWithSocialProvider(provider: string, opts: AuthOptions = {}): Promise<void> {
     const authParams = this.authParams({
       ...opts,
-      useRedirect: true
+      useWebMessage: false
     }, { acceptPopupMode: true })
 
     return this.getPkceParams(authParams).then(maybeChallenge => {
@@ -195,7 +195,7 @@ export default class ApiClient {
     return this.loginWithRedirect({
       ...this.authParams({
         ...opts,
-        useRedirect: true
+        useWebMessage: false
       }),
       prompt: 'none'
     })
@@ -209,9 +209,10 @@ export default class ApiClient {
     }
 
     const authorizationUrl = this.getAuthorizationUrl({
-      ...this.authParams(opts),
-      responseMode: 'web_message',
-      prompt: 'none'
+      ...this.authParams({
+        ...opts,
+        useWebMessage: true
+      })
     })
 
     return this.getWebMessage(
@@ -470,14 +471,14 @@ export default class ApiClient {
         ...pick(tkn, 'tkn')
       })
 
-      if (auth.useRedirect) {
-        return redirect(`${this.authorizeUrl}?${queryString}`)
-      } else {
+      if (auth.useWebMessage) {
         return this.getWebMessage(
           `${this.authorizeUrl}?${queryString}`,
           `https://${this.config.domain}`,
           auth.redirectUri || ""
         ) as Promise<AuthResult | void>
+      } else {
+        return redirect(`${this.authorizeUrl}?${queryString}`)
       }
     })
   }

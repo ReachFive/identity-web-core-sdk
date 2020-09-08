@@ -13,7 +13,7 @@ test('with default auth', async () => {
   const { api, clientId, domain } = createDefaultTestClient()
 
   let error = null
-  api.loginWithSocialProvider('google', { useRedirect: true }).catch(err => (error = err))
+  api.loginWithSocialProvider('google', {}).catch(err => (error = err))
 
   await delay(1)
 

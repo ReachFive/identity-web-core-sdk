@@ -10,7 +10,44 @@ beforeEach(() => {
 
 const defaultScope = 'openid profile email phone'
 
-test('[default] with web_message (email/password)', async () => {
+test('with default auth config (email/password)', async () => {
+  // Given
+  const { api, clientId, domain } = createDefaultTestClient()
+
+  const email = 'john.doe@example.com'
+  const password = 'izDf8£Zd'
+
+  const passwordToken = 'password_token'
+  const passwordLoginCall = fetchMock.mockResponseOnce(JSON.stringify({ tkn: passwordToken }))
+
+  // When
+  let error = null
+  api.loginWithPassword({ email, password }).catch(err => (error = err))
+
+  await delay(1)
+
+  // Then
+  expect(error).toBeNull()
+
+  expect(passwordLoginCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/password/login`, {
+    method: 'POST',
+    headers: headers.jsonAndDefaultLang,
+    body: `{"client_id":"${clientId}","scope":"${defaultScope}","email":"${email}","password":"${password}"}`
+  })
+
+  expect(window.location.assign).toHaveBeenCalledWith(
+    `https://${domain}/oauth/authorize?` +
+    toQueryString({
+      client_id: clientId,
+      response_type: 'token',
+      scope: defaultScope,
+      display: 'page',
+      tkn: passwordToken
+    })
+  )
+})
+
+test('with web_message (email/password)', async () => {
   // Given
   const { api, clientId, domain } = createDefaultTestClient()
 
@@ -24,7 +61,10 @@ test('[default] with web_message (email/password)', async () => {
   let error = null
   api.loginWithPassword({
     email,
-    password
+    password,
+    auth: {
+      useWebMessage: true
+    }
   }).catch(err => (error = err))
 
   await delay(1)
@@ -48,49 +88,6 @@ test('[default] with web_message (email/password)', async () => {
   })
 })
 
-test('with redirect (email/password)', async () => {
-  // Given
-  const { api, clientId, domain } = createDefaultTestClient()
-
-  const email = 'john.doe@example.com'
-  const password = 'izDf8£Zd'
-
-  const passwordToken = 'password_token'
-  const passwordLoginCall = fetchMock.mockResponseOnce(JSON.stringify({ tkn: passwordToken }))
-
-  // When
-  let error = null
-  api.loginWithPassword({
-    email,
-    password,
-    auth: {
-      useRedirect: true
-    }
-  }).catch(err => (error = err))
-
-  await delay(1)
-
-  // Then
-  expect(error).toBeNull()
-
-  expect(passwordLoginCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/password/login`, {
-    method: 'POST',
-    headers: headers.jsonAndDefaultLang,
-    body: `{"client_id":"${clientId}","scope":"${defaultScope}","email":"${email}","password":"${password}"}`
-  })
-
-  expect(window.location.assign).toHaveBeenCalledWith(
-    `https://${domain}/oauth/authorize?` +
-      toQueryString({
-        client_id: clientId,
-        response_type: 'token',
-        scope: defaultScope,
-        display: 'page',
-        tkn: passwordToken
-      })
-  )
-})
-
 test('with redirect (phone/password)', async () => {
   // Given
   const { api, clientId, domain } = createDefaultTestClient()
@@ -103,13 +100,7 @@ test('with redirect (phone/password)', async () => {
 
   // When
   let error = null
-  api.loginWithPassword({
-    phoneNumber,
-    password,
-    auth: {
-      useRedirect: true
-    }
-  }).catch(err => (error = err))
+  api.loginWithPassword({ phoneNumber, password }).catch(err => (error = err))
 
   await delay(1)
 
@@ -155,8 +146,7 @@ test('with popup mode (email/password)', async () => {
       password,
       auth: {
         redirectUri,
-        popupMode: true,
-        useRedirect: true
+        popupMode: true
       }
     })
     .catch(err => (error = err))
@@ -197,7 +187,6 @@ test('with default auth (email/password)', async () => {
       email,
       password,
       auth: {
-        useRedirect: true,
         fetchBasicProfile: false,
         scope: ['openid', 'email']
       }
