@@ -618,7 +618,7 @@ export default class ApiClient {
   }
 
   signupWithWebAuthn(params: SignupWithWebAuthnParams, auth?: AuthOptions) {
-    if (navigator.credentials && navigator.credentials.get) {
+    if (window.PublicKeyCredential) {
       const body = {
         origin: window.location.origin,
         clientId: this.config.clientId,
@@ -660,7 +660,7 @@ export default class ApiClient {
   }
 
   addNewWebAuthnDevice(accessToken: string, friendlyName?: string): Promise<void> {
-    if (navigator.credentials && navigator.credentials.create) {
+    if (window.PublicKeyCredential) {
       const body = {
         origin: window.location.origin,
         friendlyName: friendlyName || window.navigator.platform
@@ -695,7 +695,7 @@ export default class ApiClient {
   }
 
   loginWithWebAuthn(params: LoginWithWebAuthnParams): Promise<void> {
-    if (navigator.credentials && navigator.credentials.get) {
+    if (window.PublicKeyCredential) {
       const body = {
         clientId: this.config.clientId,
         origin: window.location.origin,
