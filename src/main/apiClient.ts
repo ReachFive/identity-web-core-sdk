@@ -629,10 +629,10 @@ export default class ApiClient {
       }
 
       const registrationOptionsPromise = this.http.post<RegistrationOptions>('/webauthn/signup-options', { body })
-      
+
       const credentialsPromise = registrationOptionsPromise.then(response => {
         const publicKey = encodePublicKeyCredentialCreationOptions(response.options.publicKey)
-        
+
         return navigator.credentials.create({ publicKey })
       })
 
@@ -645,7 +645,7 @@ export default class ApiClient {
           const serializedCredentials = serializeRegistrationPublicKeyCredential(credentials)
 
           return this.http
-            .post<AuthenticationToken>('/webauthn/signup', { 
+            .post<AuthenticationToken>('/webauthn/signup', {
               body: {
                 publicKeyCredential: serializedCredentials,
                 webauthnId: registrationOptions.options.publicKey.user.id
