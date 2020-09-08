@@ -639,7 +639,7 @@ export default class ApiClient {
       return Promise.all([registrationOptionsPromise, credentialsPromise])
         .then(([registrationOptions, credentials]) => {
           if (!credentials || credentials.type !== publicKeyCredentialType) {
-            throw new Error('Unable to register invalid public key credentials.')
+            return Promise.reject(new Error('Unable to register invalid public key credentials.'))
           }
 
           const serializedCredentials = serializeRegistrationPublicKeyCredential(credentials)
@@ -675,7 +675,7 @@ export default class ApiClient {
         })
         .then(credentials => {
           if (!credentials || credentials.type !== publicKeyCredentialType) {
-            throw new Error('Unable to register invalid public key credentials.')
+            return Promise.reject(new Error('Unable to register invalid public key credentials.'))
           }
 
           const serializedCredentials = serializeRegistrationPublicKeyCredential(credentials)
@@ -713,7 +713,7 @@ export default class ApiClient {
         })
         .then(credentials => {
             if (!credentials || credentials.type !== publicKeyCredentialType) {
-              throw new Error('Unable to authenticate with invalid public key crendentials.')
+              return Promise.reject(new Error('Unable to authenticate with invalid public key crendentials.'))
             }
 
             const serializedCredentials = serializeAuthenticationPublicKeyCredential(credentials)
