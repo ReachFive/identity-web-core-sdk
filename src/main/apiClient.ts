@@ -652,7 +652,6 @@ export default class ApiClient {
               }
             })
             .then(response => this.loginWithAuthenticationCallback(response.tkn, auth))
-            .catch(error => { throw error })
         })
     } else {
       return Promise.reject(new Error('Unsupported WebAuthn API'))
@@ -682,7 +681,6 @@ export default class ApiClient {
 
           return this.http
             .post<void>('/webauthn/registration', { body: { ...serializedCredentials }, accessToken })
-            .catch(error => { throw error })
         })
         .catch(error => {
           if (error.error) this.eventManager.fireEvent('login_failed', error)
@@ -721,7 +719,6 @@ export default class ApiClient {
             return this.http
               .post<AuthenticationToken>('/webauthn/authentication', { body: { ...serializedCredentials } })
               .then(response => this.loginWithAuthenticationCallback(response.tkn, params.auth))
-              .catch(error => { throw error })
         })
         .catch(error => {
           if (error.error) this.eventManager.fireEvent('login_failed', error)
