@@ -516,6 +516,8 @@ export default class ApiClient {
 
   signup(params: SignupParams): Promise<AuthResult | void> {
     const { data, auth, redirectUrl, returnToAfterEmailConfirmation, saveCredentials } = params
+    const { clientId } = this.config
+    const scope = this.resolveScope(auth)
 
     const loginParams: LoginWithPasswordParams = {
       ...(data.phoneNumber)
@@ -530,9 +532,9 @@ export default class ApiClient {
       ? this.http
           .post<AuthResult>(`${this.baseUrl}/signup-token`, {
             body: {
-              clientId: this.config.clientId,
+              clientId,
               redirectUrl,
-              scope: this.resolveScope(auth),
+              scope,
               ...pick(auth, 'origin'),
               data,
               returnToAfterEmailConfirmation,
@@ -543,9 +545,9 @@ export default class ApiClient {
       : this.http
           .post<AuthenticationToken>('/signup', {
             body: {
-              clientId: this.config.clientId,
+              clientId,
               redirectUrl,
-              scope: this.resolveScope(auth),
+              scope,
               data,
               returnToAfterEmailConfirmation,
             }
