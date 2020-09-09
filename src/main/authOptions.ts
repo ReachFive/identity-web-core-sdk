@@ -79,7 +79,7 @@ export function computeAuthOptions(
 ): AuthParameters {
   const isPopup = opts.popupMode && acceptPopupMode
   const responseType = opts.redirectUri ? 'code' : 'token'
-  const responseMode = opts.useWebMessage && !isPopup ? 'web_message': undefined
+  const responseMode = opts.useWebMessage && !isPopup ? 'web_message' : undefined
   const display = isPopup ? 'popup' : (responseMode !== 'web_message') ? 'page' : undefined
   const prompt = responseMode === 'web_message' ? 'none' : opts.prompt
   const scope = resolveScope(opts, defaultScopes)
