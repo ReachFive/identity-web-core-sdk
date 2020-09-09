@@ -179,9 +179,9 @@ export default class ApiClient {
           ...params
         }
       })
-      .then(result => {
-        this.eventManager.fireEvent('authenticated', result)
-        return enrichAuthResult(result)
+      .then(authResult => {
+        this.eventManager.fireEvent('authenticated', authResult)
+        return enrichAuthResult(authResult)
       })
   }
 
@@ -395,12 +395,15 @@ export default class ApiClient {
     return Promise.resolve()
   }
 
-  loginWithPassword(params: LoginWithPasswordParams): Promise<AuthResult | void> {
+  loginWithPassword(params: LoginWithPasswordParams): Promise<AuthResult> {
     const { auth = {}, ...rest } = params
 
     const loginPromise =
       window.cordova
-        ? this.ropcPasswordLogin(params).then(() => this.storeCredentialsInBrowser(params))
+        ? this.ropcPasswordLogin(params)
+          .then(authResult =>
+            this.storeCredentialsInBrowser(params).then(() => enrichAuthResult(authResult))
+          )
         : this.http
             .post<AuthenticationToken>('/password/login', {
               body: {
@@ -412,7 +415,7 @@ export default class ApiClient {
             .then(tkn => this.storeCredentialsInBrowser(params).then(() => tkn))
             .then(tkn => this.loginCallback(tkn, auth))
 
-    return (loginPromise as Promise<AuthResult | void>).catch((err: any) => {
+    return loginPromise.catch((err: any) => {
       if (err.error) {
         this.eventManager.fireEvent('login_failed', err)
       }
@@ -444,7 +447,7 @@ export default class ApiClient {
     }
   }
 
-  private ropcPasswordLogin(params: LoginWithPasswordParams): Promise<void> {
+  private ropcPasswordLogin(params: LoginWithPasswordParams): Promise<AuthResult> {
     const auth = params.auth
 
     return this.http
@@ -458,10 +461,13 @@ export default class ApiClient {
           ...pick(auth, 'origin')
         }
       })
-      .then(result => this.eventManager.fireEvent('authenticated', result))
+      .then(authResult => {
+        this.eventManager.fireEvent('authenticated', authResult)
+        return enrichAuthResult(authResult)
+      })
   }
 
-  private loginCallback(tkn: AuthenticationToken, auth: AuthOptions = {}): Promise<AuthResult | void> {
+  private loginCallback(tkn: AuthenticationToken, auth: AuthOptions = {}): Promise<AuthResult> {
     const authParams = this.authParams(auth)
 
     return this.getPkceParams(authParams).then(maybeChallenge => {
@@ -476,9 +482,9 @@ export default class ApiClient {
           `${this.authorizeUrl}?${queryString}`,
           `https://${this.config.domain}`,
           auth.redirectUri || ""
-        ) as Promise<AuthResult | void>
+        )
       } else {
-        return redirect(`${this.authorizeUrl}?${queryString}`)
+        return redirect(`${this.authorizeUrl}?${queryString}`) as AuthResult
       }
     })
   }
@@ -514,7 +520,7 @@ export default class ApiClient {
       })
   }
 
-  signup(params: SignupParams): Promise<AuthResult | void> {
+  signup(params: SignupParams): Promise<AuthResult> {
     const { data, auth, redirectUrl, returnToAfterEmailConfirmation, saveCredentials } = params
     const { clientId } = this.config
     const scope = this.resolveScope(auth)
@@ -540,8 +546,10 @@ export default class ApiClient {
               returnToAfterEmailConfirmation,
             }
           })
-          .then(result => this.eventManager.fireEvent('authenticated', result))
-          .then(() => this.storeCredentialsInBrowser(loginParams))
+          .then(authResult => {
+            this.eventManager.fireEvent('authenticated', authResult)
+            return this.storeCredentialsInBrowser(loginParams).then(() => enrichAuthResult(authResult))
+          })
       : this.http
           .post<AuthenticationToken>('/signup', {
             body: {
@@ -555,7 +563,7 @@ export default class ApiClient {
           .then(tkn => this.storeCredentialsInBrowser(loginParams).then(() => tkn))
           .then(tkn => this.loginCallback(tkn, auth))
 
-    return (resultPromise as Promise<AuthResult | void>).catch(err => {
+    return resultPromise.catch(err => {
       if (err.error) {
         this.eventManager.fireEvent('signup_failed', err)
       }
@@ -655,7 +663,7 @@ export default class ApiClient {
     window.location.assign(`${this.baseUrl}/custom-token/login?${queryString}`)
   }
 
-  loginWithCredentials(params: LoginWithCredentialsParams): Promise<void> {
+  loginWithCredentials(params: LoginWithCredentialsParams): Promise<AuthResult> {
     if (navigator.credentials && navigator.credentials.get) {
       const request: CredentialRequestOptions = {
         password: true,
@@ -710,7 +718,7 @@ export default class ApiClient {
     }
   }
 
-  loginWithWebAuthn(params: LoginWithWebAuthnParams): Promise<AuthResult | void> {
+  loginWithWebAuthn(params: LoginWithWebAuthnParams): Promise<AuthResult> {
     if (navigator.credentials && navigator.credentials.get) {
       const body = {
         clientId: this.config.clientId,
