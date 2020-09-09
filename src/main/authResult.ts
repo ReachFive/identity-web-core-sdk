@@ -25,7 +25,7 @@ export function enrichAuthResult(response: AuthResult): AuthResult {
         idTokenPayload
       }
     } catch (e) {
-      logError("ID Token parsing error", e)
+      logError('ID Token parsing error', e)
     }
   }
   return response
