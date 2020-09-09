@@ -56,7 +56,7 @@ export async function expectIframeWithParams(
   domain: string,
   params: {}
 ) {
-  await delay(15)
+  await delay(10)
   const iframe = document.querySelector('iframe')
   expect(iframe).not.toBeNull()
   if (iframe) {
