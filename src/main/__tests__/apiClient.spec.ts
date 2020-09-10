@@ -91,9 +91,9 @@ describe('loginFromSession', () => {
         toQueryString({
           client_id: clientId,
           response_type: 'token',
+          id_token_hint: idTokenHint,
           scope: 'openid profile email phone',
           display: 'page',
-          id_token_hint: idTokenHint,
           prompt: 'none'
         })
     )
@@ -117,10 +117,10 @@ describe('loginFromSession', () => {
         toQueryString({
           client_id: clientId,
           response_type: 'code',
-          scope: 'openid profile email phone',
-          display: 'page',
           redirect_uri: redirectUri,
           id_token_hint: idTokenHint,
+          scope: 'openid profile email phone',
+          display: 'page',
           prompt: 'none'
         })
     )
@@ -178,9 +178,9 @@ describe('loginFromSession', () => {
         toQueryString({
           client_id: clientId,
           response_type: 'token',
+          id_token_hint: idTokenHint,
           scope: 'openid profile email phone',
           display: 'page',
-          id_token_hint: idTokenHint,
           prompt: 'none'
         })
     )

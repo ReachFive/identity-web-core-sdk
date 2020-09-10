@@ -36,15 +36,15 @@ export type Client = {
   remoteSettings: Promise<RemoteSettings>
   on: <K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) => void
   off: <K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) => void
-  signup: (params: SignupParams) => Promise<void>
+  signup: (params: SignupParams) => Promise<AuthResult>
   getSignupData: (signupToken: string) => Promise<OpenIdUser>
-  loginWithPassword: (params: LoginWithPasswordParams) => Promise<void>
+  loginWithPassword: (params: LoginWithPasswordParams) => Promise<AuthResult>
   sendEmailVerification: (params: EmailVerificationParams) => Promise<void>
   sendPhoneNumberVerification: (params: PhoneNumberVerificationParams) => Promise<void>
   startPasswordless: (params: PasswordlessParams, options?: AuthOptions) => Promise<void>
   verifyPasswordless: (params: VerifyPasswordlessParams) => Promise<void>
   loginWithSocialProvider: (provider: string, options?: AuthOptions) => Promise<void>
-  exchangeAuthorizationCodeWithPkce: (params: TokenRequestParameters) => Promise<void>
+  exchangeAuthorizationCodeWithPkce: (params: TokenRequestParameters) => Promise<AuthResult>
   requestPasswordReset: (params: RequestPasswordResetParams) => Promise<void>
   unlink: (params: { accessToken: string; identityId: string; fields?: string }) => Promise<void>
   refreshTokens: (params: { accessToken: string }) => Promise<AuthResult>
@@ -58,9 +58,9 @@ export type Client = {
   updatePhoneNumber: (params: { accessToken: string; phoneNumber: string }) => Promise<void>
   verifyPhoneNumber: (params: { accessToken: string; phoneNumber: string; verificationCode: string }) => Promise<void>
   loginWithCustomToken: (params: { token: string; auth: AuthOptions }) => Promise<void>
-  loginWithCredentials: (params: LoginWithCredentialsParams) => Promise<void>
+  loginWithCredentials: (params: LoginWithCredentialsParams) => Promise<AuthResult>
   addNewWebAuthnDevice: (accessToken: string, friendlyName?: string) => Promise<void>
-  loginWithWebAuthn: (params: LoginWithWebAuthnParams) => Promise<void>
+  loginWithWebAuthn: (params: LoginWithWebAuthnParams) => Promise<AuthResult>
   listWebAuthnDevices: (accessToken: string) => Promise<DeviceCredential[]>
   removeWebAuthnDevice: (accessToken: string, deviceId: string) => Promise<void>
   getSessionInfo: (params?: {}) => Promise<SessionInfo>

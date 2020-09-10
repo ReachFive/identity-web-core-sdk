@@ -19,9 +19,9 @@ test('loginFromSession', async () => {
       toQueryString({
         client_id: clientId,
         response_type: 'code',
+        redirect_uri: redirectUri,
         scope: 'openid profile email phone',
         display: 'page',
-        redirect_uri: redirectUri,
         prompt: 'none'
       })
   )

@@ -47,9 +47,9 @@ test('with auth params', async () => {
       toQueryString({
         client_id: clientId,
         response_type: 'code',
+        redirect_uri: redirectUri,
         scope: 'openid profile email phone',
         display: 'page',
-        redirect_uri: redirectUri,
         provider: 'linkedin'
       })
   )
@@ -74,9 +74,9 @@ test('with access token auth param', async () => {
       toQueryString({
         client_id: clientId,
         response_type: 'token',
+        access_token: accessToken,
         scope: 'openid profile email phone',
         display: 'page',
-        access_token: accessToken,
         provider: 'paypal'
       })
   )

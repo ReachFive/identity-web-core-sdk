@@ -24,7 +24,7 @@ export function parseQueryString(queryString: string): Record<string, string | u
   return camelCaseProperties(qs) as Record<string, string | undefined>
 }
 
-export function toQueryString(obj: QueryString, snakeCase = true) {
+export function toQueryString(obj: QueryString, snakeCase = true): string {
   const params = snakeCase ? snakeCaseProperties(obj) : obj
   return map(pickBy(params, v => v !== null && v !== undefined), (value, key) =>
     value !== '' ? `${key}=${encodeURIComponent(value)}` : key

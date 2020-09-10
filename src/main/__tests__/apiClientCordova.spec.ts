@@ -738,9 +738,9 @@ describe('loginWithSocialProvider', () => {
         toQueryString({
           client_id: clientId,
           response_type: 'code',
+          redirect_uri: redirectUri,
           scope: 'openid profile email phone',
           display: 'page',
-          redirect_uri: redirectUri,
           provider: 'facebook'
         }),
       '_system'
@@ -773,9 +773,9 @@ describe('loginWithSocialProvider', () => {
         toQueryString({
           client_id: clientId,
           response_type: 'code',
+          redirect_uri: redirectUri,
           scope: 'openid profile email phone',
           display: 'page',
-          redirect_uri: redirectUri,
           provider: 'facebook'
         }),
       '_blank'

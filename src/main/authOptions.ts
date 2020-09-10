@@ -5,6 +5,7 @@ import isArray from 'lodash/isArray'
 import isUndefined from 'lodash/isUndefined'
 
 export type ResponseType = 'code' | 'token'
+export type Prompt = 'none' | 'login' | 'consent' | 'select_account'
 
 /**
  * More infos here: https://developer.reach5.co/api/identity-web-legacy/#authentication-options
@@ -14,8 +15,9 @@ export interface AuthOptions {
   redirectUri?: string
   scope?: string | string[]
   fetchBasicProfile?: boolean
+  useWebMessage?: boolean
   popupMode?: boolean
-  prompt?: string
+  prompt?: Prompt
   origin?: string
   state?: string
   nonce?: string
@@ -27,15 +29,19 @@ export interface AuthOptions {
   persistent?: boolean
 }
 
+type ResponseMode = 'web_message'
+type Display = 'page' | 'popup' | 'touch' | 'wap'
+
 /**
  * This type represents the parameters that are actually sent to the HTTP API
  */
 export type AuthParameters = {
   responseType: ResponseType
+  responseMode?: ResponseMode
   scope: string
-  display: string
+  display?: Display
   redirectUri?: string
-  prompt?: string
+  prompt?: Prompt
   origin?: string
   state?: string
   nonce?: string
@@ -71,10 +77,15 @@ export function computeAuthOptions(
   { acceptPopupMode = false }: { acceptPopupMode?: boolean } = {},
   defaultScopes?: string
 ): AuthParameters {
+  const isPopup = opts.popupMode && acceptPopupMode
+  const responseType = opts.redirectUri ? 'code' : 'token'
+  const responseMode = opts.useWebMessage && !isPopup ? 'web_message' : undefined
+  const display = isPopup ? 'popup' : (responseMode !== 'web_message') ? 'page' : undefined
+  const prompt = responseMode === 'web_message' ? 'none' : opts.prompt
+  const scope = resolveScope(opts, defaultScopes)
+
   return {
-    responseType: opts.redirectUri ? 'code' : 'token',
-    scope: resolveScope(opts, defaultScopes),
-    display: opts.popupMode && acceptPopupMode ? 'popup' : 'page',
+    responseType,
     ...pick(opts, [
       'responseType',
       'redirectUri',
@@ -87,7 +98,11 @@ export function computeAuthOptions(
       'loginHint',
       'accessToken',
       'persistent'
-    ])
+    ]),
+    scope,
+    display,
+    responseMode,
+    prompt
   }
 }
 
