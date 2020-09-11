@@ -14,7 +14,6 @@ export type SignupWithWebAuthnParams = {
     profile: SignupProfileData
     friendlyName?: string,
     redirectUrl?: string
-    scope?: string | string[]
 }
 
 export type RegistrationOptions = {

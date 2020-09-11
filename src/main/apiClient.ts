@@ -689,7 +689,7 @@ export default class ApiClient {
         clientId: this.config.clientId,
         friendlyName: params.friendlyName || window.navigator.platform,
         profile: params.profile,
-        scope: params.scope,
+        scope: this.resolveScope(auth),
         redirectUrl: params.redirectUrl
       }
 
