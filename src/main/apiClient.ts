@@ -682,7 +682,7 @@ export default class ApiClient {
     }
   }
 
-  signupWithWebAuthn(params: SignupWithWebAuthnParams, auth?: AuthOptions) {
+  signupWithWebAuthn(params: SignupWithWebAuthnParams, auth?: AuthOptions): Promise<AuthResult> {
     if (window.PublicKeyCredential) {
       const body = {
         origin: window.location.origin,
