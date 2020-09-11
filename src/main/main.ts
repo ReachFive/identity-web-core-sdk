@@ -32,39 +32,39 @@ export interface Config {
 }
 
 export type Client = {
-  remoteSettings: Promise<RemoteSettings>
-  on: <K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) => void
-  off: <K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) => void
-  signup: (params: SignupParams) => Promise<AuthResult>
+  addNewWebAuthnDevice: (accessToken: string, friendlyName?: string) => Promise<void>
+  checkSession: (options?: AuthOptions) => Promise<AuthResult>
+  checkUrlFragment: (url: string) => boolean
+  exchangeAuthorizationCodeWithPkce: (params: TokenRequestParameters) => Promise<AuthResult>
+  getSessionInfo: (params?: {}) => Promise<SessionInfo>
   getSignupData: (signupToken: string) => Promise<OpenIdUser>
+  getUser: (params: { accessToken: string; fields?: string }) => Promise<Profile>
+  listWebAuthnDevices: (accessToken: string) => Promise<DeviceCredential[]>
+  loginFromSession: (options?: AuthOptions) => Promise<void>
+  loginWithCredentials: (params: LoginWithCredentialsParams) => Promise<AuthResult>
+  loginWithCustomToken: (params: { token: string; auth: AuthOptions }) => Promise<void>
   loginWithPassword: (params: LoginWithPasswordParams) => Promise<AuthResult>
+  loginWithSocialProvider: (provider: string, options?: AuthOptions) => Promise<void>
+  loginWithWebAuthn: (params: LoginWithWebAuthnParams) => Promise<AuthResult>
+  logout: (params?: { redirectTo?: string; removeCredentials?: boolean }) => Promise<void>
+  off: <K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) => void
+  on: <K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) => void
+  refreshTokens: (params: { accessToken: string }) => Promise<AuthResult>
+  remoteSettings: Promise<RemoteSettings>
+  removeWebAuthnDevice: (accessToken: string, deviceId: string) => Promise<void>
+  requestPasswordReset: (params: RequestPasswordResetParams) => Promise<void>
   sendEmailVerification: (params: EmailVerificationParams) => Promise<void>
   sendPhoneNumberVerification: (params: PhoneNumberVerificationParams) => Promise<void>
+  signup: (params: SignupParams) => Promise<AuthResult>
+  signupWithWebAuthn: (params: SignupWithWebAuthnParams, auth?: AuthOptions) => Promise<AuthResult>
   startPasswordless: (params: PasswordlessParams, options?: AuthOptions) => Promise<void>
-  verifyPasswordless: (params: VerifyPasswordlessParams) => Promise<void>
-  loginWithSocialProvider: (provider: string, options?: AuthOptions) => Promise<void>
-  exchangeAuthorizationCodeWithPkce: (params: TokenRequestParameters) => Promise<AuthResult>
-  requestPasswordReset: (params: RequestPasswordResetParams) => Promise<void>
   unlink: (params: { accessToken: string; identityId: string; fields?: string }) => Promise<void>
-  refreshTokens: (params: { accessToken: string }) => Promise<AuthResult>
-  loginFromSession: (options?: AuthOptions) => Promise<void>
-  checkSession: (options?: AuthOptions) => Promise<AuthResult>
-  logout: (params?: { redirectTo?: string; removeCredentials?: boolean }) => Promise<void>
-  getUser: (params: { accessToken: string; fields?: string }) => Promise<Profile>
-  updateProfile: (params: { accessToken: string; redirectUrl?: string; data: Profile }) => Promise<void>
   updateEmail: (params: UpdateEmailParams) => Promise<void>
   updatePassword: (params: UpdatePasswordParams) => Promise<void>
   updatePhoneNumber: (params: { accessToken: string; phoneNumber: string }) => Promise<void>
+  updateProfile: (params: { accessToken: string; redirectUrl?: string; data: Profile }) => Promise<void>
+  verifyPasswordless: (params: VerifyPasswordlessParams) => Promise<void>
   verifyPhoneNumber: (params: { accessToken: string; phoneNumber: string; verificationCode: string }) => Promise<void>
-  loginWithCustomToken: (params: { token: string; auth: AuthOptions }) => Promise<void>
-  loginWithCredentials: (params: LoginWithCredentialsParams) => Promise<AuthResult>
-  signupWithWebAuthn: (params: SignupWithWebAuthnParams, auth?: AuthOptions) => Promise<void>
-  addNewWebAuthnDevice: (accessToken: string, friendlyName?: string) => Promise<void>
-  loginWithWebAuthn: (params: LoginWithWebAuthnParams) => Promise<AuthResult>
-  listWebAuthnDevices: (accessToken: string) => Promise<DeviceCredential[]>
-  removeWebAuthnDevice: (accessToken: string, deviceId: string) => Promise<void>
-  getSessionInfo: (params?: {}) => Promise<SessionInfo>
-  checkUrlFragment: (url: string) => boolean
 }
 
 function checkParam<T>(data: T, key: keyof T) {
@@ -99,16 +99,94 @@ export function createClient(creationConfig: Config): Client {
       })
   )
 
-  function signup(params: SignupParams) {
-    return apiClient.then(api => api.signup(params))
+  function addNewWebAuthnDevice(accessToken: string, friendlyName?: string) {
+    return apiClient.then(api => api.addNewWebAuthnDevice(accessToken, friendlyName))
+  }
+
+  function checkSession(options: AuthOptions = {}) {
+    return apiClient.then(api => api.checkSession(options))
+  }
+
+  function checkUrlFragment(url: string = window.location.href): boolean {
+    const authResponseDetected = urlParser.checkUrlFragment(url)
+    if (authResponseDetected && url === window.location.href) {
+      window.location.hash = ''
+    }
+    return authResponseDetected
+  }
+
+  function exchangeAuthorizationCodeWithPkce(params: TokenRequestParameters) {
+    return apiClient.then(api => api.exchangeAuthorizationCodeWithPkce(params))
+  }
+
+  function getSessionInfo() {
+    return apiClient.then(api => api.getSessionInfo())
   }
 
   function getSignupData(signupToken: string) {
     return apiClient.then(api => api.getSignupData(signupToken))
   }
 
+  function getUser(params: { accessToken: string; fields?: string }) {
+    return apiClient.then(api => api.getUser(params))
+  }
+
+  function listWebAuthnDevices(accessToken: string) {
+    return apiClient.then(api => api.listWebAuthnDevices(accessToken))
+  }
+
+  function loginFromSession(options: AuthOptions = {}) {
+    return apiClient.then(api => api.loginFromSession(options))
+  }
+
+  function loginWithCredentials(params: LoginWithCredentialsParams) {
+    return apiClient.then(api => api.loginWithCredentials(params))
+  }
+
+  function loginWithCustomToken(params: { token: string; auth: AuthOptions }) {
+    return apiClient.then(api => api.loginWithCustomToken(params))
+  }
+
   function loginWithPassword(params: LoginWithPasswordParams) {
     return apiClient.then(api => api.loginWithPassword(params))
+  }
+
+  function loginWithSocialProvider(provider: string, options: AuthOptions = {}) {
+    return apiClient.then(api => api.loginWithSocialProvider(provider, options))
+  }
+
+  function loginWithWebAuthn(params: LoginWithWebAuthnParams) {
+    return apiClient.then(api => api.loginWithWebAuthn(params))
+  }
+
+  function logout(params: { redirectTo?: string; removeCredentials?: boolean } = {}) {
+    return apiClient.then(api => api.logout(params))
+  }
+
+  function off<K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void): void {
+    return eventManager.off(eventName, listener)
+  }
+
+  function on<K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void): void {
+    eventManager.on(eventName, listener)
+
+    if ((eventName as string) === 'authenticated' || (eventName as string) === 'authentication_failed') {
+      // This call must be asynchronous to ensure the listener cannot be called synchronously
+      // (this type of behavior is generally unexpected for the developer)
+      setTimeout(() => checkUrlFragment(), 0)
+    }
+  }
+
+  function refreshTokens(params: { accessToken: string }) {
+    return apiClient.then(api => api.refreshTokens(params))
+  }
+
+  function removeWebAuthnDevice(accessToken: string, deviceId: string) {
+    return apiClient.then(api => api.removeWebAuthnDevice(accessToken, deviceId))
+  }
+
+  function requestPasswordReset(params: RequestPasswordResetParams) {
+    return apiClient.then(api => api.requestPasswordReset(params))
   }
 
   function sendEmailVerification(params: EmailVerificationParams) {
@@ -119,52 +197,20 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.sendPhoneNumberVerification(params))
   }
 
+  function signup(params: SignupParams) {
+    return apiClient.then(api => api.signup(params))
+  }
+
+  function signupWithWebAuthn(params: SignupWithWebAuthnParams, auth?: AuthOptions) {
+    return apiClient.then(api => api.signupWithWebAuthn(params, auth))
+  }
+
   function startPasswordless(params: PasswordlessParams, options: AuthOptions = {}) {
     return apiClient.then(api => api.startPasswordless(params, options))
   }
 
-  function verifyPasswordless(params: VerifyPasswordlessParams) {
-    return apiClient.then(api => api.verifyPasswordless(params))
-  }
-
-  function loginWithSocialProvider(provider: string, options: AuthOptions = {}) {
-    return apiClient.then(api => api.loginWithSocialProvider(provider, options))
-  }
-
-  function exchangeAuthorizationCodeWithPkce(params: TokenRequestParameters) {
-    return apiClient.then(api => api.exchangeAuthorizationCodeWithPkce(params))
-  }
-
-  function requestPasswordReset(params: RequestPasswordResetParams) {
-    return apiClient.then(api => api.requestPasswordReset(params))
-  }
-
   function unlink(params: { accessToken: string; identityId: string; fields?: string }) {
     return apiClient.then(api => api.unlink(params))
-  }
-
-  function refreshTokens(params: { accessToken: string }) {
-    return apiClient.then(api => api.refreshTokens(params))
-  }
-
-  function loginFromSession(options: AuthOptions = {}) {
-    return apiClient.then(api => api.loginFromSession(options))
-  }
-
-  function checkSession(options: AuthOptions = {}) {
-    return apiClient.then(api => api.checkSession(options))
-  }
-
-  function logout(params: { redirectTo?: string; removeCredentials?: boolean } = {}) {
-    return apiClient.then(api => api.logout(params))
-  }
-
-  function getUser(params: { accessToken: string; fields?: string }) {
-    return apiClient.then(api => api.getUser(params))
-  }
-
-  function updateProfile(params: { accessToken: string; redirectUrl?: string; data: Profile }) {
-    return apiClient.then(api => api.updateProfile(params))
   }
 
   function updateEmail(params: UpdateEmailParams) {
@@ -179,97 +225,51 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.updatePhoneNumber(params))
   }
 
+  function updateProfile(params: { accessToken: string; redirectUrl?: string; data: Profile }) {
+    return apiClient.then(api => api.updateProfile(params))
+  }
+
+  function verifyPasswordless(params: VerifyPasswordlessParams) {
+    return apiClient.then(api => api.verifyPasswordless(params))
+  }
+
   function verifyPhoneNumber(params: { accessToken: string; phoneNumber: string; verificationCode: string }) {
     return apiClient.then(api => api.verifyPhoneNumber(params))
   }
 
-  function loginWithCustomToken(params: { token: string; auth: AuthOptions }) {
-    return apiClient.then(api => api.loginWithCustomToken(params))
-  }
-
-  function loginWithCredentials(params: LoginWithCredentialsParams) {
-    return apiClient.then(api => api.loginWithCredentials(params))
-  }
-
-  function signupWithWebAuthn(params: SignupWithWebAuthnParams, auth?: AuthOptions) {
-    return apiClient.then(api => api.signupWithWebAuthn(params, auth))
-  }
-
-  function addNewWebAuthnDevice(accessToken: string, friendlyName?: string) {
-    return apiClient.then(api => api.addNewWebAuthnDevice(accessToken, friendlyName))
-  }
-
-  function loginWithWebAuthn(params: LoginWithWebAuthnParams) {
-    return apiClient.then(api => api.loginWithWebAuthn(params))
-  }
-
-  function listWebAuthnDevices(accessToken: string) {
-    return apiClient.then(api => api.listWebAuthnDevices(accessToken))
-  }
-
-  function removeWebAuthnDevice(accessToken: string, deviceId: string) {
-    return apiClient.then(api => api.removeWebAuthnDevice(accessToken, deviceId))
-  }
-
-  function getSessionInfo() {
-    return apiClient.then(api => api.getSessionInfo())
-  }
-
-  function checkUrlFragment(url: string = window.location.href): boolean {
-    const authResponseDetected = urlParser.checkUrlFragment(url)
-    if (authResponseDetected && url === window.location.href) {
-      window.location.hash = ''
-    }
-    return authResponseDetected
-  }
-
-  function on<K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void): void {
-    eventManager.on(eventName, listener)
-
-    if ((eventName as string) === 'authenticated' || (eventName as string) === 'authentication_failed') {
-      // This call must be asynchronous to ensure the listener cannot be called synchronously
-      // (this type of behavior is generally unexpected for the developer)
-      setTimeout(() => checkUrlFragment(), 0)
-    }
-  }
-
-  function off<K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void): void {
-    return eventManager.off(eventName, listener)
-  }
-
   return {
-    remoteSettings,
-    on,
-    off,
-    signup,
+    addNewWebAuthnDevice,
+    checkSession,
+    checkUrlFragment,
+    exchangeAuthorizationCodeWithPkce,
+    getSessionInfo,
     getSignupData,
+    getUser,
+    listWebAuthnDevices,
+    loginFromSession,
+    loginWithCredentials,
+    loginWithCustomToken,
     loginWithPassword,
+    loginWithSocialProvider,
+    loginWithWebAuthn,
+    logout,
+    off,
+    on,
+    refreshTokens,
+    remoteSettings,
+    removeWebAuthnDevice,
+    requestPasswordReset,
     sendEmailVerification,
     sendPhoneNumberVerification,
+    signup,
+    signupWithWebAuthn,
     startPasswordless,
-    verifyPasswordless,
-    loginWithSocialProvider,
-    exchangeAuthorizationCodeWithPkce,
-    requestPasswordReset,
     unlink,
-    refreshTokens,
-    loginFromSession,
-    checkSession,
-    logout,
-    getUser,
-    updateProfile,
     updateEmail,
     updatePassword,
     updatePhoneNumber,
-    verifyPhoneNumber,
-    loginWithCustomToken,
-    loginWithCredentials,
-    signupWithWebAuthn,
-    addNewWebAuthnDevice,
-    loginWithWebAuthn,
-    listWebAuthnDevices,
-    removeWebAuthnDevice,
-    getSessionInfo,
-    checkUrlFragment
+    updateProfile,
+    verifyPasswordless,
+    verifyPhoneNumber
   }
 }
