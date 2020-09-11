@@ -1,5 +1,21 @@
 # Changelog
 
+## v.1.16.0
+
+### 10/09/2020
+
+### Features
+- The `acceptTos` (Term Of Service) parameter in the `AuthOptions` was removed.
+- The generic authentication callback was updated, it no longer calls the same endpoint.
+- A new `AuthOptions` parameter `useWebMessage` was added to leverage web messages and redirectionless authentication.
+- The following methods return now a `Promise<AuthResult>` instead of `Promise<void`>: 
+  - [`exchangeAuthorizationCodeWithPkce`](https://developer.reachfive.com/sdk-core/exchangeAuthorizationCodeWithPkce.html)
+  - [`loginWithCredentials`](https://developer.reachfive.com/sdk-core/loginWithCredentials.html)
+  - [`loginWithPassword`](https://developer.reachfive.com/sdk-core/loginWithPassword.html)
+  - [`loginWithWebAuthn`](https://developer.reachfive.com/sdk-core/loginWithWebAuthn.html)
+  - [`signup`](https://developer.reachfive.com/sdk-core/signup.html) 
+- The following parameters `prompt`, `display` and `responseMode` of the `AuthOptions` model are now string unions.
+  
 ## v.1.15.0
 
 ### 07/07/2020
