@@ -704,7 +704,7 @@ export default class ApiClient {
       return Promise.all([registrationOptionsPromise, credentialsPromise])
         .then(([registrationOptions, credentials]) => {
           if (!credentials || credentials.type !== publicKeyCredentialType) {
-            throw new Error('Unable to register invalid public key credentials.')
+            return Promise.reject(new Error('Unable to register invalid public key credentials.'))
           }
 
           const serializedCredentials = serializeRegistrationPublicKeyCredential(credentials)
@@ -717,7 +717,11 @@ export default class ApiClient {
               }
             })
             .then(tkn => this.loginCallback(tkn, auth))
-            .catch(error => { throw error })
+        })
+        .catch(err => {
+          if (err.error) this.eventManager.fireEvent('login_failed', err)
+
+          return Promise.reject(err)
         })
     } else {
       return Promise.reject(new Error('Unsupported WebAuthn API'))
