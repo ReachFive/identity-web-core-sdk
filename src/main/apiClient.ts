@@ -716,7 +716,7 @@ export default class ApiClient {
                 webauthnId: registrationOptions.options.publicKey.user.id
               }
             })
-            .then(response => this.loginWithAuthenticationCallback(response.tkn, auth))
+            .then(tkn => this.loginCallback(tkn, auth))
             .catch(error => { throw error })
         })
     } else {
