@@ -2,7 +2,6 @@ import { Profile, RemoteSettings, SessionInfo, OpenIdUser } from './models'
 import ApiClient, {
   LoginWithPasswordParams,
   LoginWithCredentialsParams,
-  LoginWithWebAuthnParams,
   PasswordlessParams,
   VerifyPasswordlessParams,
   RequestPasswordResetParams,
@@ -15,7 +14,7 @@ import ApiClient, {
 } from './apiClient'
 import { AuthOptions } from './authOptions'
 import { AuthResult } from './authResult'
-import { DeviceCredential } from './webAuthnService'
+import { DeviceCredential, LoginWithWebAuthnParams, SignupWithWebAuthnParams } from './webAuthnService'
 import createEventManager, { Events } from './identityEventManager'
 import createUrlParser from './urlParser'
 import { toQueryString } from '../utils/queryString'
@@ -24,7 +23,7 @@ import { rawRequest } from './httpClient'
 export { AuthResult } from './authResult'
 export { AuthOptions } from './authOptions'
 export { ErrorResponse, Profile, SessionInfo } from './models'
-export { DeviceCredential } from './webAuthnService'
+export { DeviceCredential, LoginWithWebAuthnParams, SignupWithWebAuthnParams } from './webAuthnService'
 
 export interface Config {
   clientId: string
@@ -59,6 +58,7 @@ export type Client = {
   verifyPhoneNumber: (params: { accessToken: string; phoneNumber: string; verificationCode: string }) => Promise<void>
   loginWithCustomToken: (params: { token: string; auth: AuthOptions }) => Promise<void>
   loginWithCredentials: (params: LoginWithCredentialsParams) => Promise<AuthResult>
+  signupWithWebAuthn: (params: SignupWithWebAuthnParams) => Promise<void>
   addNewWebAuthnDevice: (accessToken: string, friendlyName?: string) => Promise<void>
   loginWithWebAuthn: (params: LoginWithWebAuthnParams) => Promise<AuthResult>
   listWebAuthnDevices: (accessToken: string) => Promise<DeviceCredential[]>
@@ -191,6 +191,10 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.loginWithCredentials(params))
   }
 
+  function signupWithWebAuthn(params: SignupWithWebAuthnParams) {
+    return apiClient.then(api => api.signupWithWebAuthn(params))
+  }
+
   function addNewWebAuthnDevice(accessToken: string, friendlyName?: string) {
     return apiClient.then(api => api.addNewWebAuthnDevice(accessToken, friendlyName))
   }
@@ -260,6 +264,7 @@ export function createClient(creationConfig: Config): Client {
     verifyPhoneNumber,
     loginWithCustomToken,
     loginWithCredentials,
+    signupWithWebAuthn,
     addNewWebAuthnDevice,
     loginWithWebAuthn,
     listWebAuthnDevices,

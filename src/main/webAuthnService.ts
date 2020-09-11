@@ -1,8 +1,21 @@
 import { Buffer } from 'buffer/'
 
+import { AuthOptions } from './authOptions'
+import { SignupProfileData } from './models'
 import { encodeToBase64 } from '../utils/base64'
 
 export const publicKeyCredentialType = 'public-key'
+
+export type EmailLoginWithWebAuthnParams = { email: string, auth?: AuthOptions }
+export type PhoneNumberLoginWithWebAuthnParams = { phoneNumber: string, auth?: AuthOptions  }
+export type LoginWithWebAuthnParams =  EmailLoginWithWebAuthnParams | PhoneNumberLoginWithWebAuthnParams
+
+export type SignupWithWebAuthnParams = {
+    profile: SignupProfileData
+    friendlyName?: string,
+    redirectUrl?: string
+    scope?: string | string[]
+}
 
 export type RegistrationOptions = {
     friendlyName: string
