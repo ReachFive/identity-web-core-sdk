@@ -682,7 +682,7 @@ export default class ApiClient {
     }
   }
 
-  signupWithWebAuthn(params: SignupWithWebAuthnParams) {
+  signupWithWebAuthn(params: SignupWithWebAuthnParams, auth?: AuthOptions) {
     if (navigator.credentials && navigator.credentials.get) {
       const body = {
         origin: window.location.origin,
@@ -710,12 +710,13 @@ export default class ApiClient {
           const serializedCredentials = serializeRegistrationPublicKeyCredential(credentials)
 
           return this.http
-            .post<void>('/webauthn/signup', { 
+            .post<AuthenticationToken>('/webauthn/signup', { 
               body: {
                 publicKeyCredential: serializedCredentials,
                 webauthnId: registrationOptions.options.publicKey.user.id
               }
             })
+            .then(response => this.loginWithAuthenticationCallback(response.tkn, auth))
             .catch(error => { throw error })
         })
     } else {

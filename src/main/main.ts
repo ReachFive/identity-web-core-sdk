@@ -58,7 +58,7 @@ export type Client = {
   verifyPhoneNumber: (params: { accessToken: string; phoneNumber: string; verificationCode: string }) => Promise<void>
   loginWithCustomToken: (params: { token: string; auth: AuthOptions }) => Promise<void>
   loginWithCredentials: (params: LoginWithCredentialsParams) => Promise<AuthResult>
-  signupWithWebAuthn: (params: SignupWithWebAuthnParams) => Promise<void>
+  signupWithWebAuthn: (params: SignupWithWebAuthnParams, auth?: AuthOptions) => Promise<void>
   addNewWebAuthnDevice: (accessToken: string, friendlyName?: string) => Promise<void>
   loginWithWebAuthn: (params: LoginWithWebAuthnParams) => Promise<AuthResult>
   listWebAuthnDevices: (accessToken: string) => Promise<DeviceCredential[]>
@@ -191,8 +191,8 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.loginWithCredentials(params))
   }
 
-  function signupWithWebAuthn(params: SignupWithWebAuthnParams) {
-    return apiClient.then(api => api.signupWithWebAuthn(params))
+  function signupWithWebAuthn(params: SignupWithWebAuthnParams, auth?: AuthOptions) {
+    return apiClient.then(api => api.signupWithWebAuthn(params, auth))
   }
 
   function addNewWebAuthnDevice(accessToken: string, friendlyName?: string) {
