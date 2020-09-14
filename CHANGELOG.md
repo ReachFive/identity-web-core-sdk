@@ -1,5 +1,12 @@
 # Changelog
 
+## v.1.17.0
+
+### 14/09/2020
+
+### Features
+Add a new method to signup with Webauthn: [signupWithWebAuthn](https://developer.reachfive.com/sdk-core/signupWithWebAuthn.html).
+
 ## v.1.16.0
 
 ### 10/09/2020
