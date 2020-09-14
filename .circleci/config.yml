@@ -64,6 +64,7 @@ workflows:
             tags:
               only: /.*/
       - deploy-alpha:
+          context: reachfive
           requires:
             - test
           filters:
@@ -72,6 +73,7 @@ workflows:
             branches:
               ignore: /.*/
       - deploy-release:
+          context: reachfive
           requires:
             - test
           filters:
