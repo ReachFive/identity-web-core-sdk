@@ -18,6 +18,7 @@ import {
   encodePublicKeyCredentialCreationOptions, encodePublicKeyCredentialRequestOptions,
   serializeRegistrationPublicKeyCredential, serializeAuthenticationPublicKeyCredential,
   RegistrationOptions, CredentialRequestOptionsSerialized, DeviceCredential,
+  EmailLoginWithWebAuthnParams, PhoneNumberLoginWithWebAuthnParams, LoginWithWebAuthnParams, SignupWithWebAuthnParams,
   publicKeyCredentialType
 } from './webAuthnService'
 
@@ -42,10 +43,6 @@ export type LoginWithCredentialsParams = {
   mediation?: 'silent' | 'optional' | 'required'
   auth?: AuthOptions
 }
-
-type EmailLoginWithWebAuthnParams = { email: string, auth?: AuthOptions }
-type PhoneNumberLoginWithWebAuthnParams = { phoneNumber: string, auth?: AuthOptions  }
-export type LoginWithWebAuthnParams =   EmailLoginWithWebAuthnParams | PhoneNumberLoginWithWebAuthnParams
 
 type EmailRequestPasswordResetParams = {
   email: string
@@ -685,8 +682,54 @@ export default class ApiClient {
     }
   }
 
+  signupWithWebAuthn(params: SignupWithWebAuthnParams, auth?: AuthOptions): Promise<AuthResult> {
+    if (window.PublicKeyCredential) {
+      const body = {
+        origin: window.location.origin,
+        clientId: this.config.clientId,
+        friendlyName: params.friendlyName || window.navigator.platform,
+        profile: params.profile,
+        scope: this.resolveScope(auth),
+        redirectUrl: params.redirectUrl
+      }
+
+      const registrationOptionsPromise = this.http.post<RegistrationOptions>('/webauthn/signup-options', { body })
+
+      const credentialsPromise = registrationOptionsPromise.then(response => {
+        const publicKey = encodePublicKeyCredentialCreationOptions(response.options.publicKey)
+
+        return navigator.credentials.create({ publicKey })
+      })
+
+      return Promise.all([registrationOptionsPromise, credentialsPromise])
+        .then(([registrationOptions, credentials]) => {
+          if (!credentials || credentials.type !== publicKeyCredentialType) {
+            return Promise.reject(new Error('Unable to register invalid public key credentials.'))
+          }
+
+          const serializedCredentials = serializeRegistrationPublicKeyCredential(credentials)
+
+          return this.http
+            .post<AuthenticationToken>('/webauthn/signup', {
+              body: {
+                publicKeyCredential: serializedCredentials,
+                webauthnId: registrationOptions.options.publicKey.user.id
+              }
+            })
+            .then(tkn => this.loginCallback(tkn, auth))
+        })
+        .catch(err => {
+          if (err.error) this.eventManager.fireEvent('login_failed', err)
+
+          return Promise.reject(err)
+        })
+    } else {
+      return Promise.reject(new Error('Unsupported WebAuthn API'))
+    }
+  }
+
   addNewWebAuthnDevice(accessToken: string, friendlyName?: string): Promise<void> {
-    if (navigator.credentials && navigator.credentials.create) {
+    if (window.PublicKeyCredential) {
       const body = {
         origin: window.location.origin,
         friendlyName: friendlyName || window.navigator.platform
@@ -719,7 +762,7 @@ export default class ApiClient {
   }
 
   loginWithWebAuthn(params: LoginWithWebAuthnParams): Promise<AuthResult> {
-    if (navigator.credentials && navigator.credentials.get) {
+    if (window.PublicKeyCredential) {
       const body = {
         clientId: this.config.clientId,
         origin: window.location.origin,
