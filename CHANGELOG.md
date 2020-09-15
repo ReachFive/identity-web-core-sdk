@@ -1,5 +1,12 @@
 # Changelog
 
+## v.1.17.1
+
+### 15/09/2020
+
+### Fixes
+Fix the CircleCi job to deploy a new version.
+
 ## v.1.17.0
 
 ### 14/09/2020
