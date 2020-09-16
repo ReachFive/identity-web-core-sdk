@@ -32,7 +32,7 @@ beforeEach(() => {
     writable: true,
     value: { assign: jest.fn() }
   })
-  
+
   fetchMock.resetMocks()
   winchanMocker.reset()
 })
