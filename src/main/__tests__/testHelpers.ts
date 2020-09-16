@@ -35,7 +35,7 @@ export function createTestClient(config: Config, remoteSettings: Partial<RemoteS
 }
 
 export function defineWindowProperty(propertyKey: string, propertyValue?: object) {
-  return Object.defineProperty(window, propertyKey, { 
+  return Object.defineProperty(window, propertyKey, {
     writable: true,
     value: propertyValue ?? { assign: jest.fn() }
   })
