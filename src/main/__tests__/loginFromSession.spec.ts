@@ -3,8 +3,12 @@ import { toQueryString } from '../../utils/queryString'
 import { createDefaultTestClient } from './testHelpers'
 
 beforeEach(() => {
-  window.fetch = fetchMock
-  window.location.assign = jest.fn()
+  window.fetch = fetchMock as any
+
+  Object.defineProperty(window, 'location', {
+    writable: true,
+    value: { assign: jest.fn() }
+  })
 })
 
 test('loginFromSession', async () => {

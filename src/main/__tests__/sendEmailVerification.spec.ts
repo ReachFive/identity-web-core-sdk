@@ -2,8 +2,12 @@ import fetchMock from 'jest-fetch-mock'
 import { createDefaultTestClient, headers } from './testHelpers'
 
 beforeEach(() => {
-  window.fetch = fetchMock
-  window.location.assign = jest.fn()
+  window.fetch = fetchMock as any
+
+  Object.defineProperty(window, 'location', {
+    writable: true,
+    value: { assign: jest.fn() }
+  })
 })
 
 test('send mail', done => {

@@ -4,8 +4,12 @@ import { delay } from '../../utils/promise'
 import { createDefaultTestClient, expectIframeWithParams, headers } from './testHelpers'
 
 beforeEach(() => {
-  window.fetch = fetchMock
-  window.location.assign = jest.fn()
+  window.fetch = fetchMock as any
+
+  Object.defineProperty(window, 'location', {
+    writable: true,
+    value: { assign: jest.fn() }
+  })
 })
 
 const defaultScope = 'openid profile email phone'

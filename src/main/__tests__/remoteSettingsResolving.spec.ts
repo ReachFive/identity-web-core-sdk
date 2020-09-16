@@ -2,8 +2,12 @@ import { createTestClient, headers } from './testHelpers'
 import fetchMock from 'jest-fetch-mock'
 
 beforeEach(() => {
-  window.fetch = fetchMock
-  window.location.assign = jest.fn()
+  window.fetch = fetchMock as any
+
+  Object.defineProperty(window, 'location', {
+    writable: true,
+    value: { assign: jest.fn() }
+  })
 })
 
 test('remote settings language has priority over transmitted language', async () => {

@@ -25,9 +25,18 @@ function apiClientAndEventManager() {
 }
 
 beforeEach(() => {
-  window.fetch = fetchMock
-  window.location.assign = jest.fn() as any
-  (window as any).cordova = {}
+  window.fetch = fetchMock as any
+
+  Object.defineProperty(window, 'location', {
+    writable: true,
+    value: { assign: jest.fn() }
+  })
+
+  Object.defineProperty(window, 'cordova', {
+    writable: true,
+    value: {}
+  })
+
   delete window.handleOpenURL
   fetchMock.resetMocks()
 })
