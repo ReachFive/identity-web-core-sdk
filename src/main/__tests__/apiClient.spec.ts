@@ -1,10 +1,12 @@
-import ApiClient from '../apiClient'
-import { toQueryString } from '../../utils/queryString'
 import fetchMock from 'jest-fetch-mock'
-import winchanMocker from './winchanMocker'
-import { delay } from '../../utils/promise'
+
+import { defineWindowProperty } from './testHelpers'
+import ApiClient from '../apiClient'
 import createEventManager from '../identityEventManager'
 import createUrlParser from '../urlParser'
+import winchanMocker from './winchanMocker'
+import { toQueryString } from '../../utils/queryString'
+import { delay } from '../../utils/promise'
 
 const clientId = 'zdfuh'
 const domain = 'local.reach5.net'
@@ -28,10 +30,7 @@ function createServices(config = {}) {
 beforeEach(() => {
   window.fetch = fetchMock as any
 
-  Object.defineProperty(window, 'location', {
-    writable: true,
-    value: { assign: jest.fn() }
-  })
+  defineWindowProperty('location')
 
   fetchMock.resetMocks()
   winchanMocker.reset()

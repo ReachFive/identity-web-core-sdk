@@ -1,13 +1,10 @@
 import fetchMock from 'jest-fetch-mock'
-import { createDefaultTestClient, headers } from './testHelpers'
+import { createDefaultTestClient, defineWindowProperty, headers } from './testHelpers'
 
 beforeEach(() => {
   window.fetch = fetchMock as any
 
-  Object.defineProperty(window, 'location', {
-    writable: true,
-    value: { assign: jest.fn() }
-  })
+  defineWindowProperty('location')
 })
 
 test('send verification for phone number', done => {

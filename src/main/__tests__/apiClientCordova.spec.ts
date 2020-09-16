@@ -1,10 +1,11 @@
 import fetchMock from 'jest-fetch-mock'
+
+import { defineWindowProperty, headers } from './testHelpers'
 import ApiClient from '../apiClient'
-import { delay } from '../../utils/promise'
-import { toQueryString } from '../../utils/queryString'
 import createEventManager from '../identityEventManager'
 import createUrlParser from '../urlParser'
-import { headers } from './testHelpers'
+import { delay } from '../../utils/promise'
+import { toQueryString } from '../../utils/queryString'
 
 const clientId = 'kqIJE'
 const domain = 'local.reach5.net'
@@ -27,15 +28,8 @@ function apiClientAndEventManager() {
 beforeEach(() => {
   window.fetch = fetchMock as any
 
-  Object.defineProperty(window, 'location', {
-    writable: true,
-    value: { assign: jest.fn() }
-  })
-
-  Object.defineProperty(window, 'cordova', {
-    writable: true,
-    value: {}
-  })
+  defineWindowProperty('location')
+  defineWindowProperty('cordova', {})
 
   delete window.handleOpenURL
   fetchMock.resetMocks()

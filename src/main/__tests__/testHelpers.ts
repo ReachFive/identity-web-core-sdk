@@ -1,4 +1,5 @@
 import fetchMock from 'jest-fetch-mock'
+
 import { Config, createClient } from '../main'
 import { RemoteSettings } from '../models'
 import { toQueryString } from '../../utils/queryString'
@@ -31,6 +32,13 @@ export function createTestClient(config: Config, remoteSettings: Partial<RemoteS
   fetchMock.mockResponseOnce(JSON.stringify(actualRemoteSettings), { status: 200 })
 
   return createClient(config)
+}
+
+export function defineWindowProperty(propertyKey: string, propertyValue?: object) {
+  return Object.defineProperty(window, propertyKey, { 
+    writable: true,
+    value: propertyValue ?? { assign: jest.fn() }
+  })
 }
 
 // HTTP Headers helpers

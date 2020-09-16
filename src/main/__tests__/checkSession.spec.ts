@@ -1,13 +1,11 @@
 import fetchMock from 'jest-fetch-mock'
-import { createDefaultTestClient, expectIframeWithParams } from './testHelpers'
+
+import { createDefaultTestClient, defineWindowProperty, expectIframeWithParams } from './testHelpers'
 
 beforeEach(() => {
   window.fetch = fetchMock as any
 
-  Object.defineProperty(window, 'location', {
-    writable: true,
-    value: { assign: jest.fn() }
-  })
+  defineWindowProperty('location')
 
   document.body.innerHTML = ''
 })
