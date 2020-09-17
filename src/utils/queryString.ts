@@ -3,7 +3,7 @@ import map from 'lodash/map'
 
 import { camelCaseProperties, snakeCaseProperties } from './transformObjectProperties'
 
-export type QueryString = Record<string, any>
+export type QueryString = Record<string, string | string[] | number | boolean | undefined>
 
 /**
  * Basic query string parser.
