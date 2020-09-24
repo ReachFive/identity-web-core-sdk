@@ -1,10 +1,12 @@
 import fetchMock from 'jest-fetch-mock'
+
+import { createDefaultTestClient, defineWindowProperty } from './testHelpers'
 import { toQueryString } from '../../utils/queryString'
-import { createDefaultTestClient } from './testHelpers'
 
 beforeEach(() => {
-  window.fetch = fetchMock
-  window.location.assign = jest.fn()
+  window.fetch = fetchMock as any
+
+  defineWindowProperty('location')
 })
 
 test('loginFromSession', async () => {

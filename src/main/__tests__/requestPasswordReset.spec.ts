@@ -1,9 +1,11 @@
 import fetchMock from 'jest-fetch-mock'
-import { createDefaultTestClient, headers } from './testHelpers'
+
+import { createDefaultTestClient, defineWindowProperty, headers } from './testHelpers'
 
 beforeEach(() => {
-  window.fetch = fetchMock
-  window.location.assign = jest.fn()
+  window.fetch = fetchMock as any
+
+  defineWindowProperty('location')
 })
 
 test('simple', done => {

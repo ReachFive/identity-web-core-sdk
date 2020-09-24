@@ -1,11 +1,13 @@
 import fetchMock from 'jest-fetch-mock'
+
+import { createDefaultTestClient, defineWindowProperty, expectIframeWithParams, headers } from './testHelpers'
 import { delay } from '../../utils/promise'
 import { toQueryString } from '../../utils/queryString'
-import { createDefaultTestClient, expectIframeWithParams, headers } from './testHelpers'
 
 beforeEach(() => {
-  window.fetch = fetchMock
-  window.location.assign = jest.fn()
+  window.fetch = fetchMock as any
+
+  defineWindowProperty('location')
 })
 
 const defaultScope = 'openid profile email phone'

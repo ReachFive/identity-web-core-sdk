@@ -1,12 +1,14 @@
+import fetchMock from 'jest-fetch-mock'
+
+import { createDefaultTestClient, defineWindowProperty } from './testHelpers'
+import winchanMocker from './winchanMocker'
 import { delay } from '../../utils/promise'
 import { toQueryString } from '../../utils/queryString'
-import winchanMocker from './winchanMocker'
-import fetchMock from 'jest-fetch-mock'
-import { createDefaultTestClient } from './testHelpers'
 
 beforeEach(() => {
-  window.fetch = fetchMock
-  window.location.assign = jest.fn()
+  window.fetch = fetchMock as any
+
+  defineWindowProperty('location')
 })
 
 test('with default auth', async () => {

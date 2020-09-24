@@ -10,7 +10,7 @@ export type Prompt = 'none' | 'login' | 'consent' | 'select_account'
 /**
  * More infos here: https://developer.reach5.co/api/identity-web-legacy/#authentication-options
  */
-export interface AuthOptions {
+export type AuthOptions = {
   responseType?: ResponseType
   redirectUri?: string
   scope?: string | string[]
