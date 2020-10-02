@@ -244,11 +244,6 @@ export default class ApiClient {
           window.document.body.removeChild(iframe)
         }
 
-        // .. and close the event's source
-        if (event.source && "close" in event.source) {
-          event.source.close()
-        }
-
         const result = data.response
 
         if (AuthResult.isAuthResult(result)) {
