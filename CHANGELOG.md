@@ -1,5 +1,13 @@
 # Changelog
 
+## v.1.17.2
+
+### 02/10/2020
+
+### Fixes
+- Upgrade all dependencies.
+- Fix IE/Edge window closing warning.
+
 ## v.1.17.1
 
 ### 15/09/2020
