@@ -71,6 +71,7 @@ export function resolveScope(opts: AuthOptions = {}, defaultScopes?: string): st
  *    Authentication options
  * @param acceptPopupMode
  *    Indicates if the popup mode is allowed (depends on the type of authentication or context)
+ * @param defaultScopes
  */
 export function computeAuthOptions(
   opts: AuthOptions = {},

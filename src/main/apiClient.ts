@@ -216,7 +216,6 @@ export default class ApiClient {
       const params = {
         ...authParams,
         ...challenge,
-        state: ApiClient.generateRandomState(),
       }
 
       const authorizationUrl = this.getAuthorizationUrl(params)
@@ -224,17 +223,24 @@ export default class ApiClient {
       return this.getWebMessage(
         authorizationUrl,
         `https://${this.config.domain}`,
-        params.state,
         opts.redirectUri || "",
+        opts.state,
       )
     })
   }
 
+  logout(opts: { redirectTo?: string; removeCredentials?: boolean } = {}): void {
+    if (navigator.credentials && navigator.credentials.preventSilentAccess && opts.removeCredentials === true) {
+      navigator.credentials.preventSilentAccess()
+    }
+    window.location.assign(`${this.baseUrl}/logout?${toQueryString(opts)}`)
+  }
+
   private getWebMessage(
-    src: string,
-    origin: string,
-    state: string,
-    redirectUri: string,
+      src: string,
+      origin: string,
+      redirectUri: string,
+      state?: string,
   ): Promise<AuthResult> {
     const iframe = document.createElement('iframe')
     iframe.setAttribute('width', '0')
@@ -261,7 +267,7 @@ export default class ApiClient {
 
         if (AuthResult.isAuthResult(result)) {
           if (result.code) {
-            if (result.state && result.state !== state) {
+            if (state && result.state !== state) {
               return Promise.reject(
                   new Error("State values does not match, PKCE call from web message failed.")
               )
@@ -289,13 +295,6 @@ export default class ApiClient {
       window.addEventListener('message', listener, false)
       document.body.appendChild(iframe)
     })
-  }
-
-  logout(opts: { redirectTo?: string; removeCredentials?: boolean } = {}): void {
-    if (navigator.credentials && navigator.credentials.preventSilentAccess && opts.removeCredentials === true) {
-      navigator.credentials.preventSilentAccess()
-    }
-    window.location.assign(`${this.baseUrl}/logout?${toQueryString(opts)}`)
   }
 
   private loginWithRedirect(queryString: Record<string, string | boolean | undefined>): Promise<void> {
@@ -480,21 +479,19 @@ export default class ApiClient {
     const authParams = this.authParams(auth)
 
     return ApiClient.getPkceParams(authParams).then(maybeChallenge => {
-      const state = ApiClient.generateRandomState()
 
       const queryString = toQueryString({
         ...authParams,
         ...maybeChallenge,
         ...pick(tkn, 'tkn'),
-        state,
       })
 
       if (auth.useWebMessage) {
         return this.getWebMessage(
           `${this.authorizeUrl}?${queryString}`,
           `https://${this.config.domain}`,
-          state,
           auth.redirectUri || "",
+          auth.state,
         )
       } else {
         return redirect(`${this.authorizeUrl}?${queryString}`) as AuthResult
@@ -835,10 +832,6 @@ export default class ApiClient {
       return Promise.reject(new Error('Cannot use implicit flow when PKCE is enabled'))
     else
       return computePkceParams()
-  }
-
-  private static generateRandomState() {
-    return Math.random().toString(36).substring(2)
   }
 
   private resolveScope(opts: AuthOptions = {}) {
