@@ -149,7 +149,7 @@ export default class ApiClient {
       useWebMessage: false
     }, { acceptPopupMode: true })
 
-    return this.getPkceParams(authParams).then(maybeChallenge => {
+    return ApiClient.getPkceParams(authParams).then(maybeChallenge => {
       const params = {
         ...authParams,
         provider,
@@ -192,7 +192,7 @@ export default class ApiClient {
     return this.loginWithRedirect({
       ...this.authParams({
         ...opts,
-        useWebMessage: false
+        useWebMessage: false,
       }),
       prompt: 'none'
     })
@@ -205,24 +205,36 @@ export default class ApiClient {
       )
     }
 
-    const authorizationUrl = this.getAuthorizationUrl({
-      ...this.authParams({
-        ...opts,
-        useWebMessage: true
-      })
+    const authParams = this.authParams({
+      ...opts,
+      responseType: 'code',
+      useWebMessage: true,
     })
 
-    return this.getWebMessage(
-      authorizationUrl,
-      `https://${this.config.domain}`,
-      opts.redirectUri || ""
-    )
+    return ApiClient.getPkceParams(authParams).then(challenge => {
+
+      const params = {
+        ...authParams,
+        ...challenge,
+        state: ApiClient.generateRandomState(),
+      }
+
+      const authorizationUrl = this.getAuthorizationUrl(params)
+
+      return this.getWebMessage(
+        authorizationUrl,
+        `https://${this.config.domain}`,
+        params.state,
+        opts.redirectUri || "",
+      )
+    })
   }
 
   private getWebMessage(
     src: string,
     origin: string,
-    redirectUri?: string,
+    state: string,
+    redirectUri: string,
   ): Promise<AuthResult> {
     const iframe = document.createElement('iframe')
     iframe.setAttribute('width', '0')
@@ -231,6 +243,7 @@ export default class ApiClient {
     iframe.setAttribute('src', src)
 
     return new Promise<AuthResult>((resolve, reject) => {
+      // @ts-ignore
       const listener = (event: MessageEvent) => {
         // Verify the event's origin
         if (event.origin !== origin) return
@@ -248,9 +261,14 @@ export default class ApiClient {
 
         if (AuthResult.isAuthResult(result)) {
           if (result.code) {
+            if (result.state && result.state !== state) {
+              return Promise.reject(
+                  new Error("State values does not match, PKCE call from web message failed.")
+              )
+            }
             resolve(this.exchangeAuthorizationCodeWithPkce({
               code: result.code,
-              redirectUri: redirectUri || ""
+              redirectUri: redirectUri,
             }))
           } else {
             this.eventManager.fireEvent('authenticated', data.response)
@@ -281,8 +299,7 @@ export default class ApiClient {
   }
 
   private loginWithRedirect(queryString: Record<string, string | boolean | undefined>): Promise<void> {
-    redirect(this.getAuthorizationUrl(queryString))
-    return Promise.resolve()
+    return redirect(this.getAuthorizationUrl(queryString))
   }
 
   private getAuthorizationUrl(queryString: Record<string, string | boolean | undefined>): string {
@@ -462,18 +479,22 @@ export default class ApiClient {
   private loginCallback(tkn: AuthenticationToken, auth: AuthOptions = {}): Promise<AuthResult> {
     const authParams = this.authParams(auth)
 
-    return this.getPkceParams(authParams).then(maybeChallenge => {
+    return ApiClient.getPkceParams(authParams).then(maybeChallenge => {
+      const state = ApiClient.generateRandomState()
+
       const queryString = toQueryString({
         ...authParams,
         ...maybeChallenge,
-        ...pick(tkn, 'tkn')
+        ...pick(tkn, 'tkn'),
+        state,
       })
 
       if (auth.useWebMessage) {
         return this.getWebMessage(
           `${this.authorizeUrl}?${queryString}`,
           `https://${this.config.domain}`,
-          auth.redirectUri || ""
+          state,
+          auth.redirectUri || "",
         )
       } else {
         return redirect(`${this.authorizeUrl}?${queryString}`) as AuthResult
@@ -809,14 +830,15 @@ export default class ApiClient {
     })
   }
 
-  private getPkceParams(authParams: AuthParameters): Promise<PkceParams | {}> {
-    if (this.config.pkceEnabled) {
-      if (authParams.responseType === 'token')
-        return Promise.reject(new Error('Cannot use implicit flow when PKCE is enabled'))
-      else
-        return computePkceParams()
-    } else
-      return Promise.resolve({})
+  private static getPkceParams(authParams: AuthParameters): Promise<PkceParams | {}> {
+    if (authParams.responseType === 'token')
+      return Promise.reject(new Error('Cannot use implicit flow when PKCE is enabled'))
+    else
+      return computePkceParams()
+  }
+
+  private static generateRandomState() {
+    return Math.random().toString(36).substring(2)
   }
 
   private resolveScope(opts: AuthOptions = {}) {
