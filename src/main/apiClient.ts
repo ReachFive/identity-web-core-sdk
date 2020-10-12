@@ -224,7 +224,6 @@ export default class ApiClient {
         authorizationUrl,
         `https://${this.config.domain}`,
         opts.redirectUri || "",
-        opts.state,
       )
     })
   }
@@ -240,7 +239,6 @@ export default class ApiClient {
       src: string,
       origin: string,
       redirectUri: string,
-      state?: string,
   ): Promise<AuthResult> {
     const iframe = document.createElement('iframe')
     iframe.setAttribute('width', '0')
@@ -266,12 +264,6 @@ export default class ApiClient {
 
         if (AuthResult.isAuthResult(result)) {
           if (result.code) {
-            if (state && result.state !== state) {
-              reject({
-                error: 'state_error',
-                errorDescription: 'State values does not match, PKCE call from web message failed'
-              })
-            }
             resolve(this.exchangeAuthorizationCodeWithPkce({
               code: result.code,
               redirectUri,
@@ -491,7 +483,6 @@ export default class ApiClient {
           `${this.authorizeUrl}?${queryString}`,
           `https://${this.config.domain}`,
           auth.redirectUri || "",
-          auth.state,
         )
       } else {
         return redirect(`${this.authorizeUrl}?${queryString}`) as AuthResult
