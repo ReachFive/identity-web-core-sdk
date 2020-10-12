@@ -149,7 +149,7 @@ export default class ApiClient {
       useWebMessage: false
     }, { acceptPopupMode: true })
 
-    return this.buildPkceChallenge(authParams).then(maybeChallenge => {
+    return ApiClient.buildPkceParams(authParams).then(maybeChallenge => {
       const params = {
         ...authParams,
         provider,
@@ -183,11 +183,10 @@ export default class ApiClient {
   }
 
   loginFromSession(opts: AuthOptions = {}): Promise<void> {
-    if (!this.config.sso && !opts.idTokenHint) {
+    if (!this.config.sso && !opts.idTokenHint)
       return Promise.reject(
         new Error("Cannot call 'loginFromSession' without 'idTokenHint' parameter if SSO is not enabled.")
       )
-    }
 
     return this.loginWithRedirect({
       ...this.authParams({
@@ -199,11 +198,10 @@ export default class ApiClient {
   }
 
   checkSession(opts: AuthOptions = {}): Promise<AuthResult> {
-    if (!this.config.sso && !opts.idTokenHint) {
+    if (!this.config.sso && !opts.idTokenHint)
       return Promise.reject(
         new Error("Cannot call 'checkSession' without 'idTokenHint' parameter if SSO is not enabled.")
       )
-    }
 
     const authParams = this.authParams({
       ...opts,
@@ -211,7 +209,7 @@ export default class ApiClient {
       useWebMessage: true,
     })
 
-    return this.buildPkceChallenge(authParams).then(maybeChallenge => {
+    return ApiClient.buildPkceParams(authParams).then(maybeChallenge => {
 
       const params = {
         ...authParams,
@@ -226,13 +224,6 @@ export default class ApiClient {
         opts.redirectUri || "",
       )
     })
-  }
-
-  logout(opts: { redirectTo?: string; removeCredentials?: boolean } = {}): void {
-    if (navigator.credentials && navigator.credentials.preventSilentAccess && opts.removeCredentials === true) {
-      navigator.credentials.preventSilentAccess()
-    }
-    window.location.assign(`${this.baseUrl}/logout?${toQueryString(opts)}`)
   }
 
   private getWebMessage(
@@ -287,6 +278,13 @@ export default class ApiClient {
       window.addEventListener('message', listener, false)
       document.body.appendChild(iframe)
     })
+  }
+
+  logout(opts: { redirectTo?: string; removeCredentials?: boolean } = {}): void {
+    if (navigator.credentials && navigator.credentials.preventSilentAccess && opts.removeCredentials === true) {
+      navigator.credentials.preventSilentAccess()
+    }
+    window.location.assign(`${this.baseUrl}/logout?${toQueryString(opts)}`)
   }
 
   private loginWithRedirect(queryString: Record<string, string | boolean | undefined>): Promise<void> {
@@ -470,7 +468,7 @@ export default class ApiClient {
   private loginCallback(tkn: AuthenticationToken, auth: AuthOptions = {}): Promise<AuthResult> {
     const authParams = this.authParams(auth)
 
-    return this.buildPkceChallenge(authParams).then(maybeChallenge => {
+    return ApiClient.buildPkceParams(authParams).then(maybeChallenge => {
 
       const queryString = toQueryString({
         ...authParams,
@@ -818,14 +816,10 @@ export default class ApiClient {
     })
   }
 
-  private buildPkceChallenge(authParams: AuthParameters): Promise<PkceParams | {}> {
-    if (this.config.pkceEnforced) {
-      if (authParams.responseType === 'token') {
-        return Promise.reject(new Error('Cannot use implicit flow when PKCE is enabled'))
-      }
-      return computePkceParams()
-    }
-    return Promise.resolve({})
+  private static buildPkceParams(authParams: AuthParameters): Promise<PkceParams | {}> {
+    if (authParams.responseType === 'token') {
+      return Promise.reject(new Error('Cannot use implicit flow when PKCE is enforced'))
+    } else return computePkceParams()
   }
 
   private resolveScope(opts: AuthOptions = {}) {

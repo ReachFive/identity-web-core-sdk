@@ -18,7 +18,7 @@ describe('checkSession', () => {
 
     await expectIframeWithParams(domain, {
       client_id: clientId,
-      response_type: 'token',
+      response_type: 'code',
       scope: 'openid profile email phone',
       response_mode: 'web_message',
       prompt: 'none'
@@ -36,7 +36,7 @@ describe('checkSession', () => {
 
     await expectIframeWithParams(domain, {
       client_id: clientId,
-      response_type: 'token',
+      response_type: 'code',
       nonce,
       scope: 'openid profile email phone',
       response_mode: 'web_message',
