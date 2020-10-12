@@ -93,7 +93,7 @@ export type ApiClientConfig = {
   language?: string
   scope?: string
   sso: boolean
-  pkceEnabled?: boolean
+  pkceEnforced?: boolean
 }
 
 export type TokenRequestParameters = {
@@ -149,7 +149,7 @@ export default class ApiClient {
       useWebMessage: false
     }, { acceptPopupMode: true })
 
-    return ApiClient.getPkceParams(authParams).then(maybeChallenge => {
+    return this.buildPkceChallenge(authParams).then(maybeChallenge => {
       const params = {
         ...authParams,
         provider,
@@ -211,11 +211,11 @@ export default class ApiClient {
       useWebMessage: true,
     })
 
-    return ApiClient.getPkceParams(authParams).then(challenge => {
+    return this.buildPkceChallenge(authParams).then(maybeChallenge => {
 
       const params = {
         ...authParams,
-        ...challenge,
+        ...maybeChallenge,
       }
 
       const authorizationUrl = this.getAuthorizationUrl(params)
@@ -470,7 +470,7 @@ export default class ApiClient {
   private loginCallback(tkn: AuthenticationToken, auth: AuthOptions = {}): Promise<AuthResult> {
     const authParams = this.authParams(auth)
 
-    return ApiClient.getPkceParams(authParams).then(maybeChallenge => {
+    return this.buildPkceChallenge(authParams).then(maybeChallenge => {
 
       const queryString = toQueryString({
         ...authParams,
@@ -818,11 +818,14 @@ export default class ApiClient {
     })
   }
 
-  private static getPkceParams(authParams: AuthParameters): Promise<PkceParams | {}> {
-    if (authParams.responseType === 'token')
-      return Promise.reject(new Error('Cannot use implicit flow when PKCE is enabled'))
-    else
+  private buildPkceChallenge(authParams: AuthParameters): Promise<PkceParams | {}> {
+    if (this.config.pkceEnforced) {
+      if (authParams.responseType === 'token') {
+        return Promise.reject(new Error('Cannot use implicit flow when PKCE is enabled'))
+      }
       return computePkceParams()
+    }
+    return Promise.resolve({})
   }
 
   private resolveScope(opts: AuthOptions = {}) {
