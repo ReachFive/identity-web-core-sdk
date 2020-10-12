@@ -249,7 +249,6 @@ export default class ApiClient {
     iframe.setAttribute('src', src)
 
     return new Promise<AuthResult>((resolve, reject) => {
-      // @ts-ignore
       const listener = (event: MessageEvent) => {
         // Verify the event's origin
         if (event.origin !== origin) return
@@ -268,13 +267,14 @@ export default class ApiClient {
         if (AuthResult.isAuthResult(result)) {
           if (result.code) {
             if (state && result.state !== state) {
-              return Promise.reject(
-                  new Error("State values does not match, PKCE call from web message failed.")
-              )
+              reject({
+                error: 'state_error',
+                errorDescription: 'State values does not match, PKCE call from web message failed'
+              })
             }
             resolve(this.exchangeAuthorizationCodeWithPkce({
               code: result.code,
-              redirectUri: redirectUri,
+              redirectUri,
             }))
           } else {
             this.eventManager.fireEvent('authenticated', data.response)
