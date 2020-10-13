@@ -221,7 +221,6 @@ export default class ApiClient {
       return this.getWebMessage(
         authorizationUrl,
         `https://${this.config.domain}`,
-        opts.redirectUri || "",
       )
     })
   }
@@ -229,7 +228,6 @@ export default class ApiClient {
   private getWebMessage(
     src: string,
     origin: string,
-    redirectUri: string,
   ): Promise<AuthResult> {
     const iframe = document.createElement('iframe')
     iframe.setAttribute('width', '0')
@@ -257,7 +255,7 @@ export default class ApiClient {
           if (result.code) {
             resolve(this.exchangeAuthorizationCodeWithPkce({
               code: result.code,
-              redirectUri,
+              redirectUri: window.location.origin,
             }))
           } else {
             this.eventManager.fireEvent('authenticated', data.response)
@@ -480,7 +478,6 @@ export default class ApiClient {
         return this.getWebMessage(
           `${this.authorizeUrl}?${queryString}`,
           `https://${this.config.domain}`,
-          auth.redirectUri || "",
         )
       } else {
         return redirect(`${this.authorizeUrl}?${queryString}`) as AuthResult
@@ -818,12 +815,11 @@ export default class ApiClient {
 
   private getPkceParams(authParams: AuthParameters): Promise<PkceParams | {}> {
     if (authParams.responseType === 'code')
-      computePkceParams()
-
-    if (authParams.responseType === 'token' && this.config.pkceEnforced)
+      return computePkceParams()
+    else if (authParams.responseType === 'token' && this.config.pkceEnforced)
       return Promise.reject(new Error('Cannot use implicit flow when PKCE is enforced'))
-
-    return Promise.resolve({})
+    else
+      return Promise.resolve({})
   }
 
   private resolveScope(opts: AuthOptions = {}) {

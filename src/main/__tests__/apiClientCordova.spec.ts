@@ -17,7 +17,8 @@ function apiClientAndEventManager() {
       clientId,
       domain,
       language: 'en',
-      sso: false
+      sso: false,
+      pkceEnforced: false
     },
     eventManager,
     urlParser: createUrlParser(eventManager)

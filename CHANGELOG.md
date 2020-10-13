@@ -1,5 +1,13 @@
 # Changelog
 
+## Not released yet
+
+### Features
+Now use PKCE in every convenient API call which does not lead to a redirection.
+
+### Fixes
+Renamed pkceEnabled into pkceEnforced for the sake of comprehension.
+
 ## v.1.17.2
 
 ### 02/10/2020
@@ -117,7 +125,7 @@ The [`logout`](https://developer.reach5.co/api/identity-web/#logout) method was 
 ### 02/12/2019
 
 ### Fixes
-Add the missing implementation of `Buffer` to address an issue with the UMD bundle when PKCE is enforced.
+Add the missing implementation of `Buffer` to address an issue with the UMD bundle when PKCE is enabled.
 
 ## v.1.9.1
 

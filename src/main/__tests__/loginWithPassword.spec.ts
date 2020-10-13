@@ -80,7 +80,7 @@ test('with web_message (email/password)', async () => {
     body: `{"client_id":"${clientId}","scope":"${defaultScope}","email":"${email}","password":"${password}"}`
   })
 
-  expectIframeWithParams(domain, {
+  await expectIframeWithParams(domain, {
     client_id: clientId,
     response_type: 'token',
     scope: defaultScope,

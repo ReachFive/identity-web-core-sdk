@@ -19,6 +19,7 @@ function createServices(config = {}) {
       clientId,
       domain,
       sso: false,
+      pkceEnforced: false,
       ...config
     },
     eventManager,
