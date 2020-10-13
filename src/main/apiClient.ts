@@ -93,7 +93,7 @@ export type ApiClientConfig = {
   language?: string
   scope?: string
   sso: boolean
-  pkceEnforced?: boolean
+  pkceEnforced: boolean
 }
 
 export type TokenRequestParameters = {
@@ -149,7 +149,7 @@ export default class ApiClient {
       useWebMessage: false
     }, { acceptPopupMode: true })
 
-    return ApiClient.buildPkceParams(authParams).then(maybeChallenge => {
+    return this.getPkceParams(authParams).then(maybeChallenge => {
       const params = {
         ...authParams,
         provider,
@@ -183,9 +183,9 @@ export default class ApiClient {
   }
 
   loginFromSession(opts: AuthOptions = {}): Promise<void> {
-    if (!this.config.sso && !opts.idTokenHint)
+    if (!this.config.sso)
       return Promise.reject(
-        new Error("Cannot call 'loginFromSession' without 'idTokenHint' parameter if SSO is not enabled.")
+        new Error("Cannot call 'loginFromSession' if SSO is not enabled.")
       )
 
     return this.loginWithRedirect({
@@ -198,9 +198,9 @@ export default class ApiClient {
   }
 
   checkSession(opts: AuthOptions = {}): Promise<AuthResult> {
-    if (!this.config.sso && !opts.idTokenHint)
+    if (!this.config.sso)
       return Promise.reject(
-        new Error("Cannot call 'checkSession' without 'idTokenHint' parameter if SSO is not enabled.")
+        new Error("Cannot call 'checkSession' if SSO is not enabled.")
       )
 
     const authParams = this.authParams({
@@ -209,7 +209,7 @@ export default class ApiClient {
       useWebMessage: true,
     })
 
-    return ApiClient.buildPkceParams(authParams).then(maybeChallenge => {
+    return this.getPkceParams(authParams).then(maybeChallenge => {
 
       const params = {
         ...authParams,
@@ -227,9 +227,9 @@ export default class ApiClient {
   }
 
   private getWebMessage(
-      src: string,
-      origin: string,
-      redirectUri: string,
+    src: string,
+    origin: string,
+    redirectUri: string,
   ): Promise<AuthResult> {
     const iframe = document.createElement('iframe')
     iframe.setAttribute('width', '0')
@@ -468,7 +468,7 @@ export default class ApiClient {
   private loginCallback(tkn: AuthenticationToken, auth: AuthOptions = {}): Promise<AuthResult> {
     const authParams = this.authParams(auth)
 
-    return ApiClient.buildPkceParams(authParams).then(maybeChallenge => {
+    return this.getPkceParams(authParams).then(maybeChallenge => {
 
       const queryString = toQueryString({
         ...authParams,
@@ -816,10 +816,14 @@ export default class ApiClient {
     })
   }
 
-  private static buildPkceParams(authParams: AuthParameters): Promise<PkceParams | {}> {
-    if (authParams.responseType === 'token') {
+  private getPkceParams(authParams: AuthParameters): Promise<PkceParams | {}> {
+    if (authParams.responseType === 'code')
+      computePkceParams()
+
+    if (authParams.responseType === 'token' && this.config.pkceEnforced)
       return Promise.reject(new Error('Cannot use implicit flow when PKCE is enforced'))
-    } else return computePkceParams()
+
+    return Promise.resolve({})
   }
 
   private resolveScope(opts: AuthOptions = {}) {

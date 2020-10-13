@@ -117,7 +117,7 @@ The [`logout`](https://developer.reach5.co/api/identity-web/#logout) method was 
 ### 02/12/2019
 
 ### Fixes
-Add the missing implementation of `Buffer` to address an issue with the UMD bundle when PKCE is enabled.
+Add the missing implementation of `Buffer` to address an issue with the UMD bundle when PKCE is enforced.
 
 ## v.1.9.1
 

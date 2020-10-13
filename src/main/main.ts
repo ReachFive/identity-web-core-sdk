@@ -28,6 +28,7 @@ export { DeviceCredential, LoginWithWebAuthnParams, SignupWithWebAuthnParams } f
 export interface Config {
   clientId: string
   domain: string
+  pkceEnforced: boolean
   language?: string
 }
 
@@ -75,8 +76,8 @@ function checkParam<T>(data: T, key: keyof T) {
 }
 
 export function createClient(creationConfig: Config): Client {
-  checkParam(creationConfig, 'clientId')
   checkParam(creationConfig, 'domain')
+  checkParam(creationConfig, 'clientId')
 
   const { domain, clientId, language } = creationConfig
 
