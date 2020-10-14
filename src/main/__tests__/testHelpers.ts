@@ -8,6 +8,7 @@ import { delay } from '../../utils/promise'
 export function createDefaultTestClient(remoteSettings: Partial<RemoteSettings> = {}) {
   const actualRemoteSettings = {
     sso: false,
+    pkceEnforced: false,
     language: 'en',
     ...remoteSettings
   }
@@ -18,13 +19,14 @@ export function createDefaultTestClient(remoteSettings: Partial<RemoteSettings> 
   const clientId = 'ijzdfpidjf'
   const domain = 'local.reach5.net'
   const pkceEnforced = false
-  const api = createClient({ clientId, domain, pkceEnforced })
+  const api = createClient({ clientId, domain })
   return { api, clientId, domain, pkceEnforced }
 }
 
 export function createTestClient(config: Config, remoteSettings: Partial<RemoteSettings> = {}) {
   const actualRemoteSettings = {
     sso: false,
+    pkceEnforced: false,
     language: config.language,
     ...remoteSettings
   }

@@ -161,7 +161,7 @@ describe('loginFromSession', () => {
     } catch (e) {
       // Then
       expect(e).toEqual(
-        new Error("Cannot call 'loginFromSession' without 'idTokenHint' parameter if SSO is not enabled.")
+        new Error("Cannot call 'loginFromSession' if SSO is not enabled.")
       )
     }
   })

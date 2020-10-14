@@ -28,7 +28,6 @@ export { DeviceCredential, LoginWithWebAuthnParams, SignupWithWebAuthnParams } f
 export interface Config {
   clientId: string
   domain: string
-  pkceEnforced: boolean
   language?: string
 }
 

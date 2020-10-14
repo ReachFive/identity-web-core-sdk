@@ -3,10 +3,11 @@
 ## Not released yet
 
 ### Features
-Now use PKCE in every convenient API call which does not lead to a redirection.
+- Generate a PKCE `code_challenge` by default in all authorization code flows (`responseType === 'code'`)
+- Use the authorization code flow in checkSession
 
 ### Fixes
-Renamed pkceEnabled into pkceEnforced for the sake of comprehension.
+Renamed erroneously named config value `pkceEnabled` to `pkceEnforced`.
 
 ## v.1.17.2
 

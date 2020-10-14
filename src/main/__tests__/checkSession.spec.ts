@@ -6,6 +6,7 @@ beforeEach(() => {
   window.fetch = fetchMock as any
 
   defineWindowProperty('location')
+  defineWindowProperty('crypto')
 
   document.body.innerHTML = ''
 })
@@ -18,7 +19,7 @@ describe('checkSession', () => {
 
     await expectIframeWithParams(domain, {
       client_id: clientId,
-      response_type: 'code',
+      response_type: 'token',
       scope: 'openid profile email phone',
       response_mode: 'web_message',
       prompt: 'none'
@@ -36,7 +37,7 @@ describe('checkSession', () => {
 
     await expectIframeWithParams(domain, {
       client_id: clientId,
-      response_type: 'code',
+      response_type: 'token',
       nonce,
       scope: 'openid profile email phone',
       response_mode: 'web_message',
