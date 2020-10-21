@@ -1,6 +1,6 @@
 import fetchMock from 'jest-fetch-mock'
 
-import { defineWindowProperty, headers } from './testHelpers'
+import {defineWindowProperty, headers, mockPkceValues, mockPkceWindow} from './testHelpers'
 import ApiClient from '../apiClient'
 import createEventManager from '../identityEventManager'
 import createUrlParser from '../urlParser'
@@ -31,6 +31,7 @@ beforeEach(() => {
 
   defineWindowProperty('location')
   defineWindowProperty('cordova', {})
+  defineWindowProperty('crypto', mockPkceWindow)
 
   delete window.handleOpenURL
   fetchMock.resetMocks()
@@ -608,7 +609,7 @@ describe('loginWithSocialProvider', () => {
           response_type: 'token',
           scope: 'openid profile email phone',
           display: 'page',
-          provider: 'facebook'
+          provider: 'facebook',
         }),
       '_system'
     )
@@ -745,7 +746,8 @@ describe('loginWithSocialProvider', () => {
           redirect_uri: redirectUri,
           scope: 'openid profile email phone',
           display: 'page',
-          provider: 'facebook'
+          provider: 'facebook',
+          ...mockPkceValues,
         }),
       '_system'
     )
@@ -780,7 +782,8 @@ describe('loginWithSocialProvider', () => {
           redirect_uri: redirectUri,
           scope: 'openid profile email phone',
           display: 'page',
-          provider: 'facebook'
+          provider: 'facebook',
+          ...mockPkceValues,
         }),
       '_blank'
     )

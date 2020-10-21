@@ -221,6 +221,7 @@ export default class ApiClient {
       return this.getWebMessage(
         authorizationUrl,
         `https://${this.config.domain}`,
+        opts.redirectUri,
       )
     })
   }
@@ -228,6 +229,7 @@ export default class ApiClient {
   private getWebMessage(
     src: string,
     origin: string,
+    redirectUri ?: string,
   ): Promise<AuthResult> {
     const iframe = document.createElement('iframe')
     iframe.setAttribute('width', '0')
@@ -255,7 +257,7 @@ export default class ApiClient {
           if (result.code) {
             resolve(this.exchangeAuthorizationCodeWithPkce({
               code: result.code,
-              redirectUri: window.location.origin,
+              redirectUri: redirectUri || window.location.origin,
             }))
           } else {
             this.eventManager.fireEvent('authenticated', data.response)
@@ -478,6 +480,7 @@ export default class ApiClient {
         return this.getWebMessage(
           `${this.authorizeUrl}?${queryString}`,
           `https://${this.config.domain}`,
+          auth.redirectUri,
         )
       } else {
         return redirect(`${this.authorizeUrl}?${queryString}`) as AuthResult
@@ -634,7 +637,7 @@ export default class ApiClient {
   }
 
   getUser({ accessToken, fields }: { accessToken: string; fields?: string }): Promise<Profile> {
-    return this.http.get<Profile>('/me', { query: { fields }, accessToken })
+    return this.http.get<Profile>('/userinfo', { query: { fields }, accessToken })
   }
 
   updateProfile({

@@ -18,7 +18,7 @@ function createServices(config = {}) {
     config: {
       clientId,
       domain,
-      sso: false,
+      sso: true,
       pkceEnforced: false,
       ...config
     },

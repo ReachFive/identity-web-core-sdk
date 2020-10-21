@@ -29,6 +29,7 @@ export interface Config {
   clientId: string
   domain: string
   language?: string
+  pkceEnforced: boolean
 }
 
 export type Client = {

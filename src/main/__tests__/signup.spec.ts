@@ -1,6 +1,13 @@
 import fetchMock from 'jest-fetch-mock'
 
-import { createDefaultTestClient, defineWindowProperty, expectIframeWithParams, headers } from './testHelpers'
+import {
+    createDefaultTestClient,
+    defineWindowProperty,
+    expectIframeWithParams,
+    headers,
+    mockPkceValues,
+    mockPkceWindow
+} from './testHelpers'
 import { delay } from '../../utils/promise'
 import { toQueryString } from '../../utils/queryString'
 
@@ -8,6 +15,7 @@ beforeEach(() => {
   window.fetch = fetchMock as any
 
   defineWindowProperty('location')
+  defineWindowProperty('crypto', mockPkceWindow)
 })
 
 const defaultScope = 'openid profile email phone'
@@ -182,7 +190,8 @@ test('with auth param', async () => {
         redirect_uri: redirectUri,
         scope: defaultScope,
         display: 'page',
-        tkn: signupToken
+        ...mockPkceValues,
+        tkn: signupToken,
       })
   )
 })
