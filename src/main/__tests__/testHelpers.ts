@@ -20,9 +20,8 @@ export function createDefaultTestClient(remoteSettings: Partial<RemoteSettings> 
 
   const clientId = 'ijzdfpidjf'
   const domain = 'local.reach5.net'
-  const pkceEnforced = false
-  const api = createClient({ clientId, domain, pkceEnforced })
-  return { api, clientId, domain, pkceEnforced }
+  const api = createClient({ clientId, domain })
+  return { api, clientId, domain }
 }
 
 export function createTestClient(config: Config, remoteSettings: Partial<RemoteSettings> = {}) {
