@@ -21,7 +21,6 @@ test('remote settings language has priority over transmitted language', async ()
       clientId,
       domain,
       language: submittedLanguage,
-      pkceEnforced: false, // TODO STAN
     },
     {
       language: actualLanguage
