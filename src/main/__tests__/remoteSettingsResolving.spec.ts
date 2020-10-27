@@ -20,7 +20,7 @@ test('remote settings language has priority over transmitted language', async ()
     {
       clientId,
       domain,
-      language: submittedLanguage,
+      language: submittedLanguage
     },
     {
       language: actualLanguage

@@ -1,6 +1,6 @@
 import fetchMock from 'jest-fetch-mock'
 
-import {defineWindowProperty, headers, mockPkceValues, mockPkceWindow} from './testHelpers'
+import { defineWindowProperty, headers, mockPkceValues, mockPkceWindow } from './testHelpers'
 import ApiClient from '../apiClient'
 import createEventManager from '../identityEventManager'
 import createUrlParser from '../urlParser'

@@ -1,6 +1,6 @@
 import fetchMock from 'jest-fetch-mock'
 
-import { defineWindowProperty } from './testHelpers'
+import { defineWindowProperty, mockPkceValues, mockPkceWindow } from './testHelpers'
 import ApiClient from '../apiClient'
 import createEventManager from '../identityEventManager'
 import createUrlParser from '../urlParser'
@@ -18,7 +18,7 @@ function createServices(config = {}) {
     config: {
       clientId,
       domain,
-      sso: true,
+      sso: false,
       pkceEnforced: false,
       ...config
     },
@@ -32,6 +32,7 @@ beforeEach(() => {
   window.fetch = fetchMock as any
 
   defineWindowProperty('location')
+  defineWindowProperty('crypto', mockPkceWindow)
 
   fetchMock.resetMocks()
   winchanMocker.reset()
@@ -96,10 +97,10 @@ describe('loginFromSession', () => {
         toQueryString({
           client_id: clientId,
           response_type: 'token',
+          prompt: 'none',
           id_token_hint: idTokenHint,
           scope: 'openid profile email phone',
           display: 'page',
-          prompt: 'none'
         })
     )
   })
@@ -123,10 +124,11 @@ describe('loginFromSession', () => {
           client_id: clientId,
           response_type: 'code',
           redirect_uri: redirectUri,
+          prompt: 'none',
           id_token_hint: idTokenHint,
           scope: 'openid profile email phone',
           display: 'page',
-          prompt: 'none'
+          ...mockPkceValues,
         })
     )
   })
@@ -144,9 +146,9 @@ describe('loginFromSession', () => {
         toQueryString({
           client_id: clientId,
           response_type: 'token',
+          prompt: 'none',
           scope: 'openid profile email phone',
           display: 'page',
-          prompt: 'none'
         })
     )
   })
@@ -183,10 +185,10 @@ describe('loginFromSession', () => {
         toQueryString({
           client_id: clientId,
           response_type: 'token',
+          prompt: 'none',
           id_token_hint: idTokenHint,
           scope: 'openid profile email phone',
           display: 'page',
-          prompt: 'none'
         })
     )
   })

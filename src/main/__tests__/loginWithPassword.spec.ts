@@ -168,7 +168,7 @@ test('with popup mode (email/password)', async () => {
         // popupMode is intentionally ignored
         display: 'page',
         ...mockPkceValues,
-        tkn: passwordToken
+        tkn: passwordToken,
       })
   )
 })

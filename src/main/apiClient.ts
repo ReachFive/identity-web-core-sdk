@@ -188,12 +188,19 @@ export default class ApiClient {
         new Error("Cannot call 'loginFromSession' if SSO is not enabled.")
       )
 
-    return this.loginWithRedirect({
-      ...this.authParams({
-        ...opts,
-        useWebMessage: false,
-      }),
-      prompt: 'none'
+    const authParams = this.authParams({
+      ...opts,
+      useWebMessage: false,
+      prompt: 'none',
+    })
+
+    return this.getPkceParams(authParams).then(maybeChallenge => {
+      const params = {
+        ...authParams,
+        ...maybeChallenge,
+      }
+
+      return this.loginWithRedirect(params)
     })
   }
 
@@ -229,7 +236,7 @@ export default class ApiClient {
   private getWebMessage(
     src: string,
     origin: string,
-    redirectUri ?: string,
+    redirectUri?: string,
   ): Promise<AuthResult> {
     const iframe = document.createElement('iframe')
     iframe.setAttribute('width', '0')
@@ -469,11 +476,10 @@ export default class ApiClient {
     const authParams = this.authParams(auth)
 
     return this.getPkceParams(authParams).then(maybeChallenge => {
-
       const queryString = toQueryString({
         ...authParams,
         ...maybeChallenge,
-        ...pick(tkn, 'tkn'),
+        ...pick(tkn, 'tkn')
       })
 
       if (auth.useWebMessage) {

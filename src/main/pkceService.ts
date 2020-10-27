@@ -16,12 +16,13 @@ export function computePkceParams(): Promise<PkceParams> {
 }
 
 function generateCodeVerifier(): string {
-  return encodeToBase64(window.crypto.getRandomValues(new Uint8Array(32)))
+  const randomValues = window.crypto.getRandomValues(new Uint8Array(32))
+  return encodeToBase64(randomValues)
 }
 
 function computeCodeChallenge(verifier: string): Promise<string> {
   const binaryChallenge = Buffer.from(verifier, 'utf-8')
-  return new Promise(resolve => {
+    return new Promise(resolve => {
     window.crypto.subtle.digest('SHA-256', binaryChallenge).then(hash => {
       return resolve(encodeToBase64(hash))
     })

@@ -5,11 +5,9 @@ import { RemoteSettings } from '../models'
 import { toQueryString } from '../../utils/queryString'
 import { delay } from '../../utils/promise'
 
-export type QueryString = Record<string, string | number | boolean>
-
 export function createDefaultTestClient(remoteSettings: Partial<RemoteSettings> = {}) {
   const actualRemoteSettings = {
-    sso: true,
+    sso: false,
     pkceEnforced: false,
     language: 'en',
     ...remoteSettings
