@@ -85,7 +85,7 @@ describe('loginFromSession', () => {
     expect.assertions(1)
 
     // Given
-    const { client } = createServices()
+    const { client } = createServices({ sso: true })
     const idTokenHint = 'idtokencontent'
 
     // When
@@ -107,7 +107,7 @@ describe('loginFromSession', () => {
 
   test('with code authorization', async () => {
     // Given
-    const { client } = createServices()
+    const { client } = createServices({ sso: true })
     const redirectUri = 'https://mysite/login/callback'
     const idTokenHint = 'idtokencontent'
 
@@ -170,7 +170,7 @@ describe('loginFromSession', () => {
 
   test('popup mode is ignored', async () => {
     // Given
-    const { client } = createServices()
+    const { client } = createServices({ sso: true })
     const idTokenHint = 'idtokencontent'
 
     // When
