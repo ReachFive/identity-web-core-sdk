@@ -308,15 +308,13 @@ export default class ApiClient {
         maybeBrowserTab.openUrl(url, () => {}, logError)
         return Promise.resolve()
       } else if (window.cordova.InAppBrowser) {
-        if (window.cordova.platformId === 'ios') {
+        const ref = window.cordova.platformId === 'ios' ?
           // Open a webview (to pass Apple validation tests)
-          window.cordova.InAppBrowser.open(url, '_blank')
-        } else {
+          window.cordova.InAppBrowser.open(url, '_blank') :
           // Open the system browser
           window.cordova.InAppBrowser.open(url, '_system')
-        }
 
-        return Promise.resolve()
+        return Promise.resolve(ref)
       } else {
         return Promise.reject(new Error('Cordova plugin "inappbrowser" is required.'))
       }
