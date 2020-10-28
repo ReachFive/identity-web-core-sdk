@@ -143,7 +143,7 @@ export default class ApiClient {
     })
   }
 
-  loginWithSocialProvider(provider: string, opts: AuthOptions = {}): Promise<void> {
+  loginWithSocialProvider(provider: string, opts: AuthOptions = {}): Promise<void | Function> {
     const authParams = this.authParams({
       ...opts,
       useWebMessage: false
@@ -289,7 +289,7 @@ export default class ApiClient {
     return `${this.authorizeUrl}?${toQueryString(queryString)}`
   }
 
-  private loginWithCordovaInAppBrowser(opts: QueryString): Promise<void> {
+  private loginWithCordovaInAppBrowser(opts: QueryString): Promise<void | Function> {
     return this.openInCordovaSystemBrowser(
       this.getAuthorizationUrl({
         ...opts,
@@ -298,7 +298,7 @@ export default class ApiClient {
     )
   }
 
-  private openInCordovaSystemBrowser(url: string): Promise<void> {
+  private openInCordovaSystemBrowser(url: string): Promise<void | Function> {
     return this.getAvailableBrowserTabPlugin().then(maybeBrowserTab => {
       if (!window.cordova) {
         return Promise.reject(new Error('Cordova environnement not detected.'))
