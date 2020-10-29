@@ -10,7 +10,24 @@ beforeEach(() => {
   defineWindowProperty('crypto', mockPkceWindow)
 })
 
-test('loginFromSession with PKCE', async () => {
+test('loginFromSession with implicit flow', async () => {
+  const { api, clientId, domain } = createDefaultTestClient({ sso: true })
+
+  await api.loginFromSession()
+
+  expect(window.location.assign).toHaveBeenCalledWith(
+    `https://${domain}/oauth/authorize?` +
+      toQueryString({
+        client_id: clientId,
+        response_type: 'token',
+        prompt: 'none',
+        scope: 'openid profile email phone',
+        display: 'page',
+      })
+  )
+})
+
+test('loginFromSession with authorization code flow', async () => {
   const { api, clientId, domain } = createDefaultTestClient({ sso: true })
 
   const redirectUri = 'https://mysite.com/login/callback'
