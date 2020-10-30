@@ -1,6 +1,6 @@
 import fetchMock from 'jest-fetch-mock'
 
-import { createDefaultTestClient, defineWindowProperty, expectIframeWithParams, headers } from './testHelpers'
+import { createDefaultTestClient, defineWindowProperty, expectIframeWithParams, headers, mockPkceValues, mockPkceWindow } from './testHelpers'
 import { toQueryString } from '../../utils/queryString'
 import { delay } from '../../utils/promise'
 
@@ -8,6 +8,7 @@ beforeEach(() => {
   window.fetch = fetchMock as any
 
   defineWindowProperty('location')
+  defineWindowProperty('crypto', mockPkceWindow)
 })
 
 const defaultScope = 'openid profile email phone'
@@ -80,7 +81,7 @@ test('with web_message (email/password)', async () => {
     body: `{"client_id":"${clientId}","scope":"${defaultScope}","email":"${email}","password":"${password}"}`
   })
 
-  expectIframeWithParams(domain, {
+  await expectIframeWithParams(domain, {
     client_id: clientId,
     response_type: 'token',
     scope: defaultScope,
@@ -166,7 +167,8 @@ test('with popup mode (email/password)', async () => {
         scope: defaultScope,
         // popupMode is intentionally ignored
         display: 'page',
-        tkn: passwordToken
+        ...mockPkceValues,
+        tkn: passwordToken,
       })
   )
 })

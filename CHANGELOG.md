@@ -1,5 +1,14 @@
 # Changelog
 
+## Not released yet
+
+### Features
+- Generate a PKCE `code_challenge` by default in all authorization code flows (`responseType === 'code'`)
+- Use the authorization code flow with PKCE in checkSession
+
+### Fixes
+Renamed erroneously named config value `pkceEnabled` to `pkceEnforced`.
+
 ## v.1.17.2
 
 ### 02/10/2020

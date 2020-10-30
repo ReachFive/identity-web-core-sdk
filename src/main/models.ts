@@ -78,6 +78,7 @@ export type SessionInfo = {
  */
 export type RemoteSettings = {
   sso: boolean
+  pkceEnforced: boolean
   language: string
 }
 

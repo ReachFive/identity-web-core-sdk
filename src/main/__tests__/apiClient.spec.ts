@@ -1,6 +1,6 @@
 import fetchMock from 'jest-fetch-mock'
 
-import { defineWindowProperty } from './testHelpers'
+import { defineWindowProperty, mockPkceValues, mockPkceWindow } from './testHelpers'
 import ApiClient from '../apiClient'
 import createEventManager from '../identityEventManager'
 import createUrlParser from '../urlParser'
@@ -19,6 +19,7 @@ function createServices(config = {}) {
       clientId,
       domain,
       sso: false,
+      pkceEnforced: false,
       ...config
     },
     eventManager,
@@ -31,6 +32,7 @@ beforeEach(() => {
   window.fetch = fetchMock as any
 
   defineWindowProperty('location')
+  defineWindowProperty('crypto', mockPkceWindow)
 
   fetchMock.resetMocks()
   winchanMocker.reset()
@@ -83,7 +85,7 @@ describe('loginFromSession', () => {
     expect.assertions(1)
 
     // Given
-    const { client } = createServices()
+    const { client } = createServices({ sso: true })
     const idTokenHint = 'idtokencontent'
 
     // When
@@ -95,17 +97,17 @@ describe('loginFromSession', () => {
         toQueryString({
           client_id: clientId,
           response_type: 'token',
+          prompt: 'none',
           id_token_hint: idTokenHint,
           scope: 'openid profile email phone',
           display: 'page',
-          prompt: 'none'
         })
     )
   })
 
   test('with code authorization', async () => {
     // Given
-    const { client } = createServices()
+    const { client } = createServices({ sso: true })
     const redirectUri = 'https://mysite/login/callback'
     const idTokenHint = 'idtokencontent'
 
@@ -122,10 +124,11 @@ describe('loginFromSession', () => {
           client_id: clientId,
           response_type: 'code',
           redirect_uri: redirectUri,
+          prompt: 'none',
           id_token_hint: idTokenHint,
           scope: 'openid profile email phone',
           display: 'page',
-          prompt: 'none'
+          ...mockPkceValues,
         })
     )
   })
@@ -143,9 +146,9 @@ describe('loginFromSession', () => {
         toQueryString({
           client_id: clientId,
           response_type: 'token',
+          prompt: 'none',
           scope: 'openid profile email phone',
           display: 'page',
-          prompt: 'none'
         })
     )
   })
@@ -160,14 +163,14 @@ describe('loginFromSession', () => {
     } catch (e) {
       // Then
       expect(e).toEqual(
-        new Error("Cannot call 'loginFromSession' without 'idTokenHint' parameter if SSO is not enabled.")
+        new Error("Cannot call 'loginFromSession' if SSO is not enabled.")
       )
     }
   })
 
   test('popup mode is ignored', async () => {
     // Given
-    const { client } = createServices()
+    const { client } = createServices({ sso: true })
     const idTokenHint = 'idtokencontent'
 
     // When
@@ -182,10 +185,10 @@ describe('loginFromSession', () => {
         toQueryString({
           client_id: clientId,
           response_type: 'token',
+          prompt: 'none',
           id_token_hint: idTokenHint,
           scope: 'openid profile email phone',
           display: 'page',
-          prompt: 'none'
         })
     )
   })

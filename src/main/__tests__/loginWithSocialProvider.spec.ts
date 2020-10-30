@@ -1,6 +1,6 @@
 import fetchMock from 'jest-fetch-mock'
 
-import { createDefaultTestClient, defineWindowProperty } from './testHelpers'
+import { createDefaultTestClient, defineWindowProperty, mockPkceValues, mockPkceWindow } from './testHelpers'
 import winchanMocker from './winchanMocker'
 import { delay } from '../../utils/promise'
 import { toQueryString } from '../../utils/queryString'
@@ -9,6 +9,7 @@ beforeEach(() => {
   window.fetch = fetchMock as any
 
   defineWindowProperty('location')
+  defineWindowProperty('crypto', mockPkceWindow)
 })
 
 test('with default auth', async () => {
@@ -52,7 +53,8 @@ test('with auth params', async () => {
         redirect_uri: redirectUri,
         scope: 'openid profile email phone',
         display: 'page',
-        provider: 'linkedin'
+        provider: 'linkedin',
+        ...mockPkceValues,
       })
   )
 })

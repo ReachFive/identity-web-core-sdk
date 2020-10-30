@@ -40,7 +40,7 @@ test('remote settings language has priority over transmitted language', async ()
   })
 
   // Then
-  expect(passwordLoginCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/me?fields=name`, {
+  expect(passwordLoginCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/userinfo?fields=name`, {
     method: 'GET',
     headers: {
       ...headers.lang(actualLanguage),

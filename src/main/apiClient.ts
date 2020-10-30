@@ -93,7 +93,7 @@ export type ApiClientConfig = {
   language?: string
   scope?: string
   sso: boolean
-  pkceEnabled?: boolean
+  pkceEnforced: boolean
 }
 
 export type TokenRequestParameters = {
@@ -183,40 +183,54 @@ export default class ApiClient {
   }
 
   loginFromSession(opts: AuthOptions = {}): Promise<void> {
-    if (!this.config.sso && !opts.idTokenHint) {
+    if (!this.config.sso)
       return Promise.reject(
-        new Error("Cannot call 'loginFromSession' without 'idTokenHint' parameter if SSO is not enabled.")
+        new Error("Cannot call 'loginFromSession' if SSO is not enabled.")
       )
-    }
 
-    return this.loginWithRedirect({
-      ...this.authParams({
-        ...opts,
-        useWebMessage: false
-      }),
-      prompt: 'none'
+    const authParams = this.authParams({
+      ...opts,
+      useWebMessage: false,
+      prompt: 'none',
+    })
+
+    return this.getPkceParams(authParams).then(maybeChallenge => {
+      const params = {
+        ...authParams,
+        ...maybeChallenge,
+      }
+
+      return this.loginWithRedirect(params)
     })
   }
 
   checkSession(opts: AuthOptions = {}): Promise<AuthResult> {
-    if (!this.config.sso && !opts.idTokenHint) {
+    if (!this.config.sso)
       return Promise.reject(
-        new Error("Cannot call 'checkSession' without 'idTokenHint' parameter if SSO is not enabled.")
+        new Error("Cannot call 'checkSession' if SSO is not enabled.")
       )
-    }
 
-    const authorizationUrl = this.getAuthorizationUrl({
-      ...this.authParams({
-        ...opts,
-        useWebMessage: true
-      })
+    const authParams = this.authParams({
+      ...opts,
+      responseType: 'code',
+      useWebMessage: true,
     })
 
-    return this.getWebMessage(
-      authorizationUrl,
-      `https://${this.config.domain}`,
-      opts.redirectUri || ""
-    )
+    return this.getPkceParams(authParams).then(maybeChallenge => {
+
+      const params = {
+        ...authParams,
+        ...maybeChallenge,
+      }
+
+      const authorizationUrl = this.getAuthorizationUrl(params)
+
+      return this.getWebMessage(
+        authorizationUrl,
+        `https://${this.config.domain}`,
+        opts.redirectUri,
+      )
+    })
   }
 
   private getWebMessage(
@@ -250,7 +264,7 @@ export default class ApiClient {
           if (result.code) {
             resolve(this.exchangeAuthorizationCodeWithPkce({
               code: result.code,
-              redirectUri: redirectUri || ""
+              redirectUri: redirectUri || window.location.origin,
             }))
           } else {
             this.eventManager.fireEvent('authenticated', data.response)
@@ -281,8 +295,7 @@ export default class ApiClient {
   }
 
   private loginWithRedirect(queryString: Record<string, string | boolean | undefined>): Promise<void> {
-    redirect(this.getAuthorizationUrl(queryString))
-    return Promise.resolve()
+    return redirect(this.getAuthorizationUrl(queryString))
   }
 
   private getAuthorizationUrl(queryString: Record<string, string | boolean | undefined>): string {
@@ -473,7 +486,7 @@ export default class ApiClient {
         return this.getWebMessage(
           `${this.authorizeUrl}?${queryString}`,
           `https://${this.config.domain}`,
-          auth.redirectUri || ""
+          auth.redirectUri,
         )
       } else {
         return redirect(`${this.authorizeUrl}?${queryString}`) as AuthResult
@@ -630,7 +643,7 @@ export default class ApiClient {
   }
 
   getUser({ accessToken, fields }: { accessToken: string; fields?: string }): Promise<Profile> {
-    return this.http.get<Profile>('/me', { query: { fields }, accessToken })
+    return this.http.get<Profile>('/userinfo', { query: { fields }, accessToken })
   }
 
   updateProfile({
@@ -810,12 +823,11 @@ export default class ApiClient {
   }
 
   private getPkceParams(authParams: AuthParameters): Promise<PkceParams | {}> {
-    if (this.config.pkceEnabled) {
-      if (authParams.responseType === 'token')
-        return Promise.reject(new Error('Cannot use implicit flow when PKCE is enabled'))
-      else
-        return computePkceParams()
-    } else
+    if (authParams.responseType === 'code')
+      return computePkceParams()
+    else if (authParams.responseType === 'token' && this.config.pkceEnforced)
+      return Promise.reject(new Error('Cannot use implicit flow when PKCE is enforced'))
+    else
       return Promise.resolve({})
   }
 
