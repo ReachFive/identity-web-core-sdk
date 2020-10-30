@@ -16,7 +16,7 @@
     npm version --no-git-tag-version prerelease --preid=alpha
     ```
 
-    This commands will update the version in the [`package.json`](package.json) file. 
+    This commands will update the version in the [`package.json`](package.json) and [`package-lock.json`](package-lock.json) files. 
 
     Commit and push the change with the version.
 
