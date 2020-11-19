@@ -698,7 +698,8 @@ export default class ApiClient {
         friendlyName: params.friendlyName || window.navigator.platform,
         profile: params.profile,
         scope: this.resolveScope(auth),
-        redirectUrl: params.redirectUrl
+        redirectUrl: params.redirectUrl,
+        returnToAfterEmailConfirmation: params.returnToAfterEmailConfirmation
       }
 
       const registrationOptionsPromise = this.http.post<RegistrationOptions>('/webauthn/signup-options', { body })
