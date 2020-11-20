@@ -143,7 +143,7 @@ export default class ApiClient {
     })
   }
 
-  loginWithSocialProvider(provider: string, opts: AuthOptions = {}): Promise<void | Function> {
+  loginWithSocialProvider(provider: string, opts: AuthOptions = {}): Promise<void | InAppBrowser> {
     const authParams = this.authParams({
       ...opts,
       useWebMessage: false
@@ -302,7 +302,7 @@ export default class ApiClient {
     return `${this.authorizeUrl}?${toQueryString(queryString)}`
   }
 
-  private loginWithCordovaInAppBrowser(opts: QueryString): Promise<void | Function> {
+  private loginWithCordovaInAppBrowser(opts: QueryString): Promise<void | InAppBrowser> {
     return this.openInCordovaSystemBrowser(
       this.getAuthorizationUrl({
         ...opts,
@@ -311,7 +311,7 @@ export default class ApiClient {
     )
   }
 
-  private openInCordovaSystemBrowser(url: string): Promise<void | Function> {
+  private openInCordovaSystemBrowser(url: string): Promise<void | InAppBrowser> {
     return this.getAvailableBrowserTabPlugin().then(maybeBrowserTab => {
       if (!window.cordova) {
         return Promise.reject(new Error('Cordova environnement not detected.'))
@@ -323,14 +323,11 @@ export default class ApiClient {
       }
 
       if (window.cordova.InAppBrowser) {
-        let ref;
-        if (window.cordova.platformId === 'ios') {
+        const ref = window.cordova.platformId === 'ios' ?
           // Open a webview (to pass Apple validation tests)
-          ref = window.cordova.InAppBrowser.open(url, '_blank')
-        } else {
+          window.cordova.InAppBrowser.open(url, '_blank') :
           // Open the system browser
-          ref = window.cordova.InAppBrowser.open(url, '_system')
-        }
+          window.cordova.InAppBrowser.open(url, '_system')
         return Promise.resolve(ref)
       }
 

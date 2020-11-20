@@ -22,6 +22,7 @@
     "format": "prettier --write \"src/**/{*.ts,*.tsx}\""
   },
   "dependencies": {
+    "@types/cordova-plugin-inappbrowser": "2.0.0",
     "buffer": "5.6.0",
     "lodash": "4.17.20",
     "winchan": "0.2.2"

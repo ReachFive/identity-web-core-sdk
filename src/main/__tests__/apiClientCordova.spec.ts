@@ -569,7 +569,7 @@ describe('loginWithSocialProvider', () => {
       await client.loginWithSocialProvider('facebook')
     } catch (e) {
       // Then
-      expect(e).toEqual(new Error('Cordova plugin "inappbrowser" is required.'))
+      expect(e).toEqual(new Error('Cordova plugin "InAppBrowser" is required.'))
     }
   })
 
