@@ -1,5 +1,10 @@
 # Changelog
 
+## Not released yet
+
+### Features
+Return the object reference from InAppBrowser within Cordova context 
+
 ## v.1.18.0
 
 ### 30/10/2020

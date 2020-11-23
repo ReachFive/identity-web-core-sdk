@@ -20,7 +20,7 @@ interface Window {
       browsertab?: BrowserTab
     }
     InAppBrowser?: {
-      open(url: string, target: '_self' | '_blank' | '_system'): void
+      open(url: string, target: '_self' | '_blank' | '_system'): void | InAppBrowser
     },
     platformId?: 'ios' | 'android'
   }

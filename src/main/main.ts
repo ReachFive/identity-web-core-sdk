@@ -44,7 +44,7 @@ export type Client = {
   loginWithCredentials: (params: LoginWithCredentialsParams) => Promise<AuthResult>
   loginWithCustomToken: (params: { token: string; auth: AuthOptions }) => Promise<void>
   loginWithPassword: (params: LoginWithPasswordParams) => Promise<AuthResult>
-  loginWithSocialProvider: (provider: string, options?: AuthOptions) => Promise<void>
+  loginWithSocialProvider: (provider: string, options?: AuthOptions) => Promise<void | InAppBrowser>
   loginWithWebAuthn: (params: LoginWithWebAuthnParams) => Promise<AuthResult>
   logout: (params?: { redirectTo?: string; removeCredentials?: boolean }) => Promise<void>
   off: <K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) => void
