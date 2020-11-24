@@ -12,8 +12,9 @@ export type LoginWithWebAuthnParams =  EmailLoginWithWebAuthnParams | PhoneNumbe
 
 export type SignupWithWebAuthnParams = {
     profile: SignupProfileData
-    friendlyName?: string,
+    friendlyName?: string
     redirectUrl?: string
+    returnToAfterEmailConfirmation?: string
 }
 
 export type RegistrationOptions = {
