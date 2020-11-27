@@ -1,9 +1,13 @@
 # Changelog
 
-## Not released yet
+## v.1.18.1
 
-### Features
-Return the object reference from InAppBrowser within Cordova context 
+### 30/11/2020
+
+### Fixes
+- The [loginWithSocialProvider](https://developer.reachfive.com/sdk-core/loginWithSocialProvider.html) method returns now the object reference from `InAppBrowser` within Cordova context.
+- The `returnToAfterEmailConfirmation` parameter is added to the [signupWithWebAuthn](https://developer.reachfive.com/sdk-core/signupWithWebAuthn.html#params) method and allows to override the redirect URL specified in the *Signup* email template.
+- The [verifyPasswordless](https://developer.reachfive.com/sdk-core/verifyPasswordless.html) method receives now correctly the `auth` options.
 
 ## v.1.18.0
 
