@@ -65,6 +65,7 @@ describe('computeAuthOptions', () => {
     ).toEqual(result)
   })
 
+  // popup mode is only allowed in social login
   test('popup mode when accepted', () => {
     expect(computeAuthOptions({ popupMode: true }, { acceptPopupMode: true })).toEqual({
       display: 'popup',
@@ -92,4 +93,32 @@ describe('computeAuthOptions', () => {
       scope: 'openid profile email phone offline_access'
     })
   })
+
+  test('origin', () => {
+    expect(
+      computeAuthOptions({
+        origin: 'single'
+      })
+    ).toEqual({
+      display: 'page',
+      responseType: 'token',
+      scope: 'openid profile email phone',
+      origin: 'single',
+    })
+  })
+
+  test('accessToken', () => {
+    expect(
+      computeAuthOptions({
+        accessToken: 'abc.123.def'
+      })
+    ).toEqual({
+      display: 'page',
+      responseType: 'token',
+      scope: 'openid profile email phone',
+      accessToken: 'abc.123.def',
+    })
+  })
 })
+
+// TODO accessToken

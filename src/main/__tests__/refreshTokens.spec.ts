@@ -1,16 +1,18 @@
 import fetchMock from 'jest-fetch-mock'
 
-import { createDefaultTestClient, defineWindowProperty, headers } from './testHelpers'
+import { headers } from './helpers/testHelpers'
+import { createDefaultTestClient } from './helpers/clientFactory'
+
+fetchMock.enableMocks()
 
 beforeEach(() => {
-  window.fetch = fetchMock as any
-
-  defineWindowProperty('location')
+  jest.resetAllMocks()
+  fetchMock.resetMocks()
 })
 
 test('simple', async () => {
   // Given
-  const { api, clientId, domain } = createDefaultTestClient()
+  const { client, clientId, domain } = createDefaultTestClient()
 
   const accessToken = '1234556789'
 
@@ -21,7 +23,7 @@ test('simple', async () => {
   const tokenType = 'Bearer'
 
   const authenticatedHandler = jest.fn()
-  api.on('authenticated', authenticatedHandler)
+  client.on('authenticated', authenticatedHandler)
 
   const refreshCall = fetchMock.mockResponseOnce(
     JSON.stringify({
@@ -33,7 +35,7 @@ test('simple', async () => {
   )
 
   // When
-  const authResult = await api.refreshTokens({ accessToken })
+  const authResult = await client.refreshTokens({ accessToken })
 
   // Then
   expect(authResult).toEqual({

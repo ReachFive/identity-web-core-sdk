@@ -1,40 +1,5 @@
-import fetchMock from 'jest-fetch-mock'
-
-import { Config, createClient } from '../main'
-import { RemoteSettings } from '../models'
-import { toQueryString } from '../../utils/queryString'
-import { delay } from '../../utils/promise'
-
-export function createDefaultTestClient(remoteSettings: Partial<RemoteSettings> = {}) {
-  const actualRemoteSettings = {
-    sso: false,
-    pkceEnforced: false,
-    language: 'en',
-    ...remoteSettings
-  }
-
-  // Mocks the initial config fetching
-  fetchMock.mockResponseOnce(JSON.stringify(actualRemoteSettings), { status: 200 })
-
-  const clientId = 'ijzdfpidjf'
-  const domain = 'local.reach5.net'
-  const api = createClient({ clientId, domain })
-  return { api, clientId, domain }
-}
-
-export function createTestClient(config: Config, remoteSettings: Partial<RemoteSettings> = {}) {
-  const actualRemoteSettings = {
-    sso: false,
-    pkceEnforced: false,
-    language: config.language,
-    ...remoteSettings
-  }
-
-  // Mocks the initial config fetching
-  fetchMock.mockResponseOnce(JSON.stringify(actualRemoteSettings), { status: 200 })
-
-  return createClient(config)
-}
+import { toQueryString } from '../../../utils/queryString'
+import { delay } from '../../../utils/promise'
 
 export function defineWindowProperty(propertyKey: string, propertyValue?: object) {
   return Object.defineProperty(window, propertyKey, {
@@ -63,14 +28,14 @@ export const headers = {
 }
 
 export async function expectIframeWithParams(
+  iframeId: string,
   domain: string,
   params: {}
 ) {
   await delay(10)
-  const iframe = document.querySelector('iframe')
+  const iframe = document.querySelector('#wm' + iframeId)
   expect(iframe).not.toBeNull()
   if (iframe) {
-    // Make Typescript happy
     expect(iframe.getAttribute('height')).toEqual('0')
     expect(iframe.getAttribute('width')).toEqual('0')
     expect(iframe.getAttribute('src')).toEqual(
@@ -79,7 +44,22 @@ export async function expectIframeWithParams(
   } else fail('No iframe found!')
 }
 
-export const mockPkceWindow = {
+export async function expectIframeWithParamss(
+  iframeId: string,
+  src: string
+) {
+  await delay(10)
+  // "wm" needed to make sure the randomized id is valid
+  const iframe = document.querySelector('#wm' + iframeId)
+  expect(iframe).not.toBeNull()
+  if (iframe) {
+    expect(iframe.getAttribute('height')).toEqual('0')
+    expect(iframe.getAttribute('width')).toEqual('0')
+    expect(iframe.getAttribute('src')).toEqual(src)
+  } else fail('No iframe found!')
+}
+
+export const mockWindowCrypto = {
   getRandomValues: (_: Uint8Array) => Uint8Array.from([
     232,13,106,142,120,103,229,207,154,233,25,115,160,208,85,59,40,124,18,56,69,251,83,63,102,164,125,65,53,14,213,172
   ]),
@@ -90,9 +70,4 @@ export const mockPkceWindow = {
       ]).buffer
     )
   },
-}
-
-export const mockPkceValues = {
-  code_challenge: 'KBHQASQDHCtWjDGVGQaPjsK8c8SlrH2yfm3nQh75o14',
-  code_challenge_method: 'S256',
 }

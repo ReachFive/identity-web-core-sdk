@@ -1,11 +1,12 @@
 import fetchMock from 'jest-fetch-mock'
 
-import { defineWindowProperty, headers, mockPkceValues, mockPkceWindow } from './testHelpers'
+import { defineWindowProperty, headers, mockWindowCrypto } from './helpers/testHelpers'
 import ApiClient from '../apiClient'
 import createEventManager from '../identityEventManager'
 import createUrlParser from '../urlParser'
 import { delay } from '../../utils/promise'
 import { toQueryString } from '../../utils/queryString'
+import { mockPkceValues } from './helpers/oauthHelpers'
 
 const clientId = 'kqIJE'
 const domain = 'local.reach5.net'
@@ -19,6 +20,7 @@ function apiClientAndEventManager() {
       language: 'en',
       sso: false,
       pkceEnforced: false,
+      isPublic: true
     },
     eventManager,
     urlParser: createUrlParser(eventManager)
@@ -26,15 +28,17 @@ function apiClientAndEventManager() {
   return { client, eventManager }
 }
 
+fetchMock.enableMocks()
+defineWindowProperty('crypto', mockWindowCrypto)
+defineWindowProperty('location')
+
 beforeEach(() => {
-  window.fetch = fetchMock as any
-
-  defineWindowProperty('location')
-  defineWindowProperty('cordova', {})
-  defineWindowProperty('crypto', mockPkceWindow)
-
-  delete window.handleOpenURL
+  document.body.innerHTML = ''
+  jest.resetAllMocks()
   fetchMock.resetMocks()
+  delete window.handleOpenURL
+
+  defineWindowProperty('cordova', {})
 })
 
 describe('signup', () => {
