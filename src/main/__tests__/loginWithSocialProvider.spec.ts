@@ -150,5 +150,3 @@ test('with popup mode with unexpected failure', async () => {
     error: 'server_error'
   })
 })
-
-// TODO popup mode tests in separate file, emphasizing that only SLO is supported
