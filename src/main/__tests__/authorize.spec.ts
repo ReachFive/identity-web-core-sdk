@@ -38,10 +38,10 @@ describe('with redirection', () => {
 
   describe.each`
   clientType            | responseType
-  ${pblic}          | ${token}
-  ${pblic}          | ${code}
-  ${confidential}   | ${token}
-  ${confidential}   | ${code}
+  ${pblic}              | ${token}
+  ${pblic}              | ${code}
+  ${confidential}       | ${token}
+  ${confidential}       | ${code}
   `('$clientType | $responseType', ({ clientType, responseType }) => {
 
     test.each([email, phone])('loginWithPassword: %j', async (credentials) => {
@@ -120,9 +120,9 @@ describe('with web message', () => {
   // confidential + code omitted, see special case
   describe.each`
   clientType            | responseType
-  ${pblic}          | ${token}
-  ${pblic}          | ${code}
-  ${confidential}   | ${token}
+  ${pblic}              | ${token}
+  ${pblic}              | ${code}
+  ${confidential}       | ${token}
   `('$clientType | $responseType', ({ clientType, responseType }) => {
 
     test.each([email, phone])('loginWithPassword: %j', async (credentials) => {
