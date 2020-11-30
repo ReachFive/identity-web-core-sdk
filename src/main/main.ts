@@ -229,8 +229,8 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.updateProfile(params))
   }
 
-  function verifyPasswordless(params: VerifyPasswordlessParams) {
-    return apiClient.then(api => api.verifyPasswordless(params))
+  function verifyPasswordless(params: VerifyPasswordlessParams, auth?: AuthOptions) {
+    return apiClient.then(api => api.verifyPasswordless(params, auth))
   }
 
   function verifyPhoneNumber(params: { accessToken: string; phoneNumber: string; verificationCode: string }) {
