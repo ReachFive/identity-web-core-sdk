@@ -1,10 +1,17 @@
-import fetchMock from "jest-fetch-mock"
-import { toQueryString } from "../utils/queryString"
-import { createDefaultTestClient } from "./__tests__/helpers/testHelpers"
+import fetchMock from 'jest-fetch-mock'
+import { toQueryString } from '../../utils/queryString'
+import { createDefaultTestClient } from './helpers/clientFactory'
+
+fetchMock.enableMocks()
+
+beforeEach(() => {
+  jest.resetAllMocks()
+  fetchMock.resetMocks()
+})
 
 describe('nominal', () => {
   test('with session cookie', async () => {
-    const { api, domain, clientId } = createDefaultTestClient({ sso: true })
+    const { client, domain, clientId } = createDefaultTestClient({ sso: true })
 
     const sessionInfoCall = fetchMock.mockResponseOnce(
       JSON.stringify({
@@ -18,7 +25,7 @@ describe('nominal', () => {
     )
 
     // When
-    const result = await api.getSessionInfo()
+    const result = await client.getSessionInfo()
 
     // Then
     expect(sessionInfoCall).toHaveBeenCalledWith(
