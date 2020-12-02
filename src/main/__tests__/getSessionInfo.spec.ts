@@ -1,6 +1,6 @@
 import fetchMock from 'jest-fetch-mock'
 import { toQueryString } from '../../utils/queryString'
-import { createDefaultTestClient } from "./helpers/clientFactory"
+import { createDefaultTestClient } from './helpers/clientFactory'
 
 beforeAll(() => {
   fetchMock.enableMocks()
