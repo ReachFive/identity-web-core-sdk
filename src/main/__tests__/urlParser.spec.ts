@@ -1,6 +1,5 @@
-import createEventManager from '../../identityEventManager'
-import createUrlParser from '../../urlParser'
-import { delay } from '../../../utils/promise'
+import createEventManager from '../identityEventManager'
+import createUrlParser from '../urlParser'
 
 function createServices() {
   const eventManager = createEventManager()
@@ -10,7 +9,7 @@ function createServices() {
 }
 
 describe('parseUrlFragment', () => {
-  test('with success url', async () => {
+  test('with success url', () => {
     expect.assertions(3)
 
     // Given
@@ -39,8 +38,6 @@ describe('parseUrlFragment', () => {
         ].join('&')
     )
 
-    await delay(1)
-
     // Then
     expect(result).toBe(true)
     expect(authenticatedHandler).toHaveBeenCalledWith({
@@ -56,7 +53,7 @@ describe('parseUrlFragment', () => {
     expect(authenticationFailedHandler).not.toHaveBeenCalled()
   })
 
-  test('with error url', async () => {
+  test('with error url', () => {
     expect.assertions(3)
 
     // Given
@@ -78,8 +75,6 @@ describe('parseUrlFragment', () => {
         [`error=${error}`, `error_description=${errorDescription}`, `error_usr_msg=${errorUsrMsg}`].join('&')
     )
 
-    await delay(1)
-
     // Then
     expect(result).toBe(true)
     expect(authenticatedHandler).not.toHaveBeenCalled()
@@ -90,7 +85,7 @@ describe('parseUrlFragment', () => {
     })
   })
 
-  test('with url to be ignored', async () => {
+  test('with url to be ignored',  () => {
     expect.assertions(3)
 
     // Given
@@ -104,8 +99,6 @@ describe('parseUrlFragment', () => {
 
     // When
     const result = urlParser.checkUrlFragment('https://example.com/login/callback#toto=tutu')
-
-    await delay(1)
 
     // Then
     expect(result).toBe(false)

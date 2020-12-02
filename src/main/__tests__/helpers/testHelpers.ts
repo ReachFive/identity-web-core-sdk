@@ -1,4 +1,3 @@
-import { toQueryString } from '../../../utils/queryString'
 import { delay } from '../../../utils/promise'
 
 export function defineWindowProperty(propertyKey: string, propertyValue?: object) {
@@ -29,26 +28,9 @@ export const headers = {
 
 export async function expectIframeWithParams(
   iframeId: string,
-  domain: string,
-  params: {}
-) {
-  await delay(10)
-  const iframe = document.querySelector('#wm' + iframeId)
-  expect(iframe).not.toBeNull()
-  if (iframe) {
-    expect(iframe.getAttribute('height')).toEqual('0')
-    expect(iframe.getAttribute('width')).toEqual('0')
-    expect(iframe.getAttribute('src')).toEqual(
-      `https://${domain}/oauth/authorize?${toQueryString(params)}`
-    )
-  } else fail('No iframe found!')
-}
-
-export async function expectIframeWithParamss(
-  iframeId: string,
   src: string
 ) {
-  await delay(10)
+  await delay(5)
   // "wm" needed to make sure the randomized id is valid
   const iframe = document.querySelector('#wm' + iframeId)
   expect(iframe).not.toBeNull()

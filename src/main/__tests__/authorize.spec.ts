@@ -2,7 +2,7 @@ import fetchMock from 'jest-fetch-mock'
 
 import {
   defineWindowProperty,
-  expectIframeWithParamss,
+  expectIframeWithParams,
   mockWindowCrypto
 } from './helpers/testHelpers'
 import { mockNextRandom, popNextRandomString } from './helpers/randomStringMock'
@@ -23,9 +23,11 @@ import { LoginWithPasswordParams } from '../apiClient'
 import { loginWithPasswordTest } from './loginWithPassword.spec'
 import { signupTest } from './signup.spec'
 
-fetchMock.enableMocks()
-defineWindowProperty('crypto', mockWindowCrypto)
-defineWindowProperty('location')
+beforeAll(() => {
+  fetchMock.enableMocks()
+  defineWindowProperty('location')
+  defineWindowProperty('crypto', mockWindowCrypto)
+})
 
 beforeEach(() => {
   document.body.innerHTML = ''
@@ -50,9 +52,7 @@ describe('with redirection', () => {
 
       const authParams = {
         ...credentials,
-        auth: {
-          ...responseType
-        }
+        auth: responseType,
       } as LoginWithPasswordParams
       await loginWithPasswordTest(testkit, authParams, credentials)
 
@@ -149,7 +149,7 @@ describe('with web message', () => {
         ...webMessage,
         ...tkn,
       })
-      await expectIframeWithParamss(iframeId, expectedSrc)
+      await expectIframeWithParams(iframeId, expectedSrc)
     })
 
     test('signup', async () => {
@@ -177,7 +177,7 @@ describe('with web message', () => {
         ...webMessage,
         ...tkn,
       })
-      await expectIframeWithParamss(iframeId, expectedSrc)
+      await expectIframeWithParams(iframeId, expectedSrc)
     })
 
     test('checkSession', async () => {
@@ -201,7 +201,7 @@ describe('with web message', () => {
         ...webMessage,
         nonce,
       })
-      await expectIframeWithParamss(nonce, expectedSrc)
+      await expectIframeWithParams(nonce, expectedSrc)
     })
   })
 
@@ -234,7 +234,7 @@ describe('with web message', () => {
           ...webMessage,
           ...tkn,
         })
-        await expectIframeWithParamss(iframeId, expectedSrc)
+        await expectIframeWithParams(iframeId, expectedSrc)
       })
 
       test('signup', async () => {
@@ -262,7 +262,7 @@ describe('with web message', () => {
           ...webMessage,
           ...tkn,
         })
-        await expectIframeWithParamss(iframeId, expectedSrc)
+        await expectIframeWithParams(iframeId, expectedSrc)
       })
 
       test('checkSession', async () => {
@@ -285,7 +285,7 @@ describe('with web message', () => {
           ...webMessage,
           nonce,
         })
-        await expectIframeWithParamss(nonce, expectedSrc)
+        await expectIframeWithParams(nonce, expectedSrc)
       })
     })
   })

@@ -3,8 +3,10 @@ import fetchMock from 'jest-fetch-mock'
 import { defineWindowProperty, headers } from './helpers/testHelpers'
 import { createDefaultTestClient } from './helpers/clientFactory'
 
-fetchMock.enableMocks()
-defineWindowProperty('location')
+beforeAll(() => {
+  fetchMock.enableMocks()
+  defineWindowProperty('location')
+})
 
 beforeEach(() => {
   jest.resetAllMocks()

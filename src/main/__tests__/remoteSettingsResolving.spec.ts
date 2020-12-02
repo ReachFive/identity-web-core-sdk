@@ -3,7 +3,9 @@ import fetchMock from 'jest-fetch-mock'
 import { headers } from './helpers/testHelpers'
 import { createTestClient } from './helpers/clientFactory'
 
-fetchMock.enableMocks()
+beforeAll(() => {
+  fetchMock.enableMocks()
+})
 
 beforeEach(() => {
   jest.resetAllMocks()

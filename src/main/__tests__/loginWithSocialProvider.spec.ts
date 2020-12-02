@@ -1,15 +1,16 @@
 import fetchMock from 'jest-fetch-mock'
 
 import { defineWindowProperty, mockWindowCrypto } from './helpers/testHelpers'
-import { delay } from '../../utils/promise'
 import { toQueryString } from '../../utils/queryString'
 import { createDefaultTestClient } from './helpers/clientFactory'
 import { popNextRandomString } from './helpers/randomStringMock'
 import winchanMocker from './helpers/winchanMocker'
 
-fetchMock.enableMocks()
-defineWindowProperty('crypto', mockWindowCrypto)
-defineWindowProperty('location')
+beforeAll(() => {
+  fetchMock.enableMocks()
+  defineWindowProperty('location')
+  defineWindowProperty('crypto', mockWindowCrypto)
+})
 
 beforeEach(() => {
   document.body.innerHTML = ''
@@ -22,8 +23,6 @@ test('with default auth', async () => {
   const { client, clientId, domain } = createDefaultTestClient()
 
   await client.loginWithSocialProvider('google', {})
-
-  await delay(1)
 
   expect(window.location.assign).toHaveBeenCalledWith(
     `https://${domain}/oauth/authorize?` +
@@ -62,7 +61,6 @@ test('with popup mode', async () => {
 
   // When
   await client.loginWithSocialProvider('facebook', { popupMode: true })
-  await delay(1)
 
   // Then
   expect(winchanMocker.receivedParams).toEqual({
@@ -78,8 +76,6 @@ test('with popup mode', async () => {
     relay_url: `https://${domain}/popup/relay`,
     window_features: 'menubar=0,toolbar=0,resizable=1,scrollbars=1,width=0,height=0,top=0,left=0'
   })
-
-  await delay(5)
 
   expect(authenticatedHandler).toHaveBeenCalledWith({
     idToken,
@@ -114,12 +110,11 @@ test('with popup mode with expected failure', async () => {
 
   // When
   await client.loginWithSocialProvider('facebook', { popupMode: true })
-  await delay(1)
 
   // Then
-  expect(authenticatedHandler).not.toHaveBeenCalled()
+  await expect(authenticatedHandler).not.toHaveBeenCalled()
 
-  expect(authenticationFailedHandler).toHaveBeenCalledWith({
+  await expect(authenticationFailedHandler).toHaveBeenCalledWith({
     error: 'access_denied',
     errorDescription: 'The user cancelled the login process',
     errorUsrMsg: 'Login cancelled'
@@ -130,7 +125,7 @@ test('with popup mode with unexpected failure', async () => {
   // Given
   const { client } = createDefaultTestClient()
 
-  winchanMocker.mockOpenError('Saboteur !!!')
+  winchanMocker.mockOpenError(new Error('[fake error: ignore me]'))
 
   const authenticatedHandler = jest.fn()
   client.on('authenticated', authenticatedHandler)
@@ -140,7 +135,6 @@ test('with popup mode with unexpected failure', async () => {
 
   // When
   await client.loginWithSocialProvider('facebook', { popupMode: true })
-  await delay(1)
 
   // Then
   expect(authenticatedHandler).not.toHaveBeenCalled()

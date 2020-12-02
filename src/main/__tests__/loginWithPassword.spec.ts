@@ -1,13 +1,14 @@
 import { TestKit, createDefaultTestClient } from './helpers/clientFactory'
 import fetchMock from 'jest-fetch-mock'
-import { delay } from '../../utils/promise'
 import { LoginWithPasswordParams } from '../apiClient'
 import { scope, tkn } from './helpers/oauthHelpers'
 import { defineWindowProperty, headers, mockWindowCrypto } from './helpers/testHelpers'
 
-fetchMock.enableMocks()
-defineWindowProperty('crypto', mockWindowCrypto)
-defineWindowProperty('location')
+beforeAll(() => {
+  fetchMock.enableMocks()
+  defineWindowProperty('location')
+  defineWindowProperty('crypto', mockWindowCrypto)
+})
 
 beforeEach(() => {
   jest.resetAllMocks()
@@ -26,7 +27,6 @@ export async function loginWithPasswordTest(
 
   // When
   await client.loginWithPassword(params)
-  await delay(2)
 
   // Then
   expect(passwordLoginCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/password/login`, {
@@ -64,13 +64,10 @@ describe('error cases', () => {
     )
 
     // When
-    let error = null
-    client.loginWithPassword({ email: 'john.doe@example.com', password: 'majefize' }).catch(err => (error = err))
-
-    await delay(1)
+    const promise = client.loginWithPassword({ email: 'john.doe@example.com', password: 'majefize' })
 
     // Then
-    expect(error).toEqual(expectedError)
-    expect(loginFailedHandler).toHaveBeenCalledWith(expectedError)
+    await expect(promise).rejects.toEqual(expectedError)
+    await expect(loginFailedHandler).toHaveBeenCalledWith(expectedError)
   })
 })

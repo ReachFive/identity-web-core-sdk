@@ -1,6 +1,8 @@
-import { RemoteSettings } from "../../models"
 import fetchMock from "jest-fetch-mock"
+import { RemoteSettings } from "../../models"
 import { Client, Config, createClient } from "../../main"
+
+fetchMock.enableMocks()
 
 export type TestKit = {
   client: Client
@@ -15,7 +17,7 @@ export function createDefaultTestClient(remoteSettings: Partial<RemoteSettings> 
     pkceEnforced: false,
     isPublic: false,
     language: 'en',
-    ...remoteSettings
+    ...remoteSettings,
   }
 
   const clientId = 'ijzdfpidjf'

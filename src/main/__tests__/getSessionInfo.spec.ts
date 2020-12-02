@@ -1,8 +1,10 @@
 import fetchMock from 'jest-fetch-mock'
 import { toQueryString } from '../../utils/queryString'
-import { createDefaultTestClient } from './helpers/clientFactory'
+import { createDefaultTestClient } from "./helpers/clientFactory"
 
-fetchMock.enableMocks()
+beforeAll(() => {
+  fetchMock.enableMocks()
+})
 
 beforeEach(() => {
   jest.resetAllMocks()
@@ -35,7 +37,9 @@ describe('nominal', () => {
       }),
       {
         method: 'GET',
-        headers: {},
+        headers: {
+          "Accept-Language": "en"
+        },
         credentials: 'include'
       }
     )
