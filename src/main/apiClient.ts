@@ -843,13 +843,6 @@ export default class ApiClient {
   private authParams(opts: AuthOptions, { acceptPopupMode = false } = {}) {
     const isConfidentialCodeWebMsg = !this.config.isPublic && !!opts.useWebMessage && (opts.responseType === 'code' || opts.redirectUri)
 
-    if (isConfidentialCodeWebMsg) {
-      console.log(
-        "Confidential clients cannot perform authorization code flows using web messages. " +
-        "For SPAs, it is recommended to use a public client."
-      )
-    }
-
     const overrideResponseType: Partial<AuthOptions> = isConfidentialCodeWebMsg
       ? { responseType: 'token', redirectUri: undefined }
       : {}
