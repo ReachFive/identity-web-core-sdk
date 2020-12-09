@@ -16,7 +16,6 @@
     "watch": "rollup -c -w",
     "test": "jest",
     "watch:test": "jest --watch",
-    "prepublishOnly": "npm run build",
     "tslint": "tslint --format stylish --project tsconfig.json",
     "tslint-fix": "npm run tslint -- --fix",
     "format": "prettier --write \"src/**/{*.ts,*.tsx}\""
