@@ -10,16 +10,13 @@ The following command installs the Identity Web Core SDK as a Node.js dependency
 npm install --save @reachfive/identity-core
 ```
 
-Refer to the [public documentation](https://developer.reach5.co/guides/installation/web) to see some examples and to
-configure the language.
-
 ## Documentation
 
 You'll find the documentation of the methods exposed [here](https://developer.reachfive.com/sdk-core/index.html).
 
 ## Changelog
 
-Please refer to [changelog](CHANGELOG.md) to see the descriptions of each release.
+Please refer to [changelog](CHANGELOG.md) to learn about release notes.
 
 ## License
 
