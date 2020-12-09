@@ -15,7 +15,7 @@ configure the language.
 
 ## Documentation
 
-You'll find the documentation of the methods exposed on https://developer.reach5.co/api/identity-web/.
+You'll find the documentation of the methods exposed [here](https://developer.reachfive.com/sdk-core/index.html).
 
 ## Changelog
 
@@ -23,4 +23,4 @@ Please refer to [changelog](CHANGELOG.md) to see the descriptions of each releas
 
 ## License
 
-MIT © [ReachFive](https://reachfive.co/)
+MIT © [ReachFive](https://www.reachfive.com)
