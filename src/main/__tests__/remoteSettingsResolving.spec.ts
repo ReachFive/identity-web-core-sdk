@@ -1,11 +1,15 @@
 import fetchMock from 'jest-fetch-mock'
 
-import { createTestClient, defineWindowProperty, headers } from './testHelpers'
+import { headers } from './helpers/testHelpers'
+import { createTestClient } from './helpers/clientFactory'
+
+beforeAll(() => {
+  fetchMock.enableMocks()
+})
 
 beforeEach(() => {
-  window.fetch = fetchMock as any
-
-  defineWindowProperty('location')
+  jest.resetAllMocks()
+  fetchMock.resetMocks()
 })
 
 test('remote settings language has priority over transmitted language', async () => {

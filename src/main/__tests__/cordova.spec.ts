@@ -1,11 +1,11 @@
 import fetchMock from 'jest-fetch-mock'
 
-import { defineWindowProperty, headers, mockPkceValues, mockPkceWindow } from './testHelpers'
+import { defineWindowProperty, headers, mockWindowCrypto } from './helpers/testHelpers'
 import ApiClient from '../apiClient'
 import createEventManager from '../identityEventManager'
 import createUrlParser from '../urlParser'
-import { delay } from '../../utils/promise'
 import { toQueryString } from '../../utils/queryString'
+import { mockPkceValues } from './helpers/oauthHelpers'
 
 const clientId = 'kqIJE'
 const domain = 'local.reach5.net'
@@ -19,6 +19,7 @@ function apiClientAndEventManager() {
       language: 'en',
       sso: false,
       pkceEnforced: false,
+      isPublic: true
     },
     eventManager,
     urlParser: createUrlParser(eventManager)
@@ -26,15 +27,19 @@ function apiClientAndEventManager() {
   return { client, eventManager }
 }
 
-beforeEach(() => {
-  window.fetch = fetchMock as any
-
+beforeAll(() => {
+  fetchMock.enableMocks()
   defineWindowProperty('location')
-  defineWindowProperty('cordova', {})
-  defineWindowProperty('crypto', mockPkceWindow)
+  defineWindowProperty('crypto', mockWindowCrypto)
+})
 
-  delete window.handleOpenURL
+beforeEach(() => {
+  document.body.innerHTML = ''
+  jest.resetAllMocks()
   fetchMock.resetMocks()
+  delete window.handleOpenURL
+
+  defineWindowProperty('cordova', {})
 })
 
 describe('signup', () => {
@@ -203,19 +208,16 @@ describe('signup', () => {
     )
 
     // When
-    try {
-      await client.signup({
-        data: {
-          email: 'john.doe@example.com',
-          password: 'majefize'
-        }
-      })
-    } catch (e) {
-      // Then
-      expect(e).toEqual(expectedError)
-    }
+    const promise = client.signup({
+      data: {
+        email: 'john.doe@example.com',
+        password: 'majefize'
+      }
+    })
 
-    expect(signupFailedHandler).toHaveBeenCalledWith(expectedError)
+    // Then
+    await expect(promise).rejects.toStrictEqual(expectedError)
+    await expect(signupFailedHandler).toHaveBeenCalledWith(expectedError)
   })
 
   test('with an unexpected error', async () => {
@@ -227,24 +229,21 @@ describe('signup', () => {
     const signupFailedHandler = jest.fn()
     eventManager.on('signup_failed', signupFailedHandler)
 
-    const error = new Error('Saboteur !!')
+    const error = new Error('[fake error: ignore me]')
 
     fetchMock.mockRejectOnce(error)
 
     // When
-    try {
-      await client.signup({
-        data: {
-          email: 'john.doe@example.com',
-          password: 'majefize'
-        }
-      })
-    } catch (e) {
-      // Then
-      expect(e).toEqual(error)
-    }
+    const promise = client.signup({
+      data: {
+        email: 'john.doe@example.com',
+        password: 'majefize'
+      }
+    })
 
-    expect(signupFailedHandler).not.toHaveBeenCalled()
+    // Then
+    await expect(promise).rejects.toThrow(error)
+    await expect(signupFailedHandler).not.toHaveBeenCalled()
   })
 })
 
@@ -504,16 +503,13 @@ describe('loginWithPassword', () => {
     )
 
     // When
-    try {
-      await client.loginWithPassword({
-        email: 'john.doe@example.com',
-        password: 'majefize'
-      })
-    } catch (e) {
-      expect(e).toEqual(expectedError)
-    }
+    const promise = client.loginWithPassword({
+      email: 'john.doe@example.com',
+      password: 'majefize'
+    })
 
-    expect(loginFailedHandler).toHaveBeenCalledWith(expectedError)
+    await expect(promise).rejects.toStrictEqual(expectedError)
+    await expect(loginFailedHandler).toHaveBeenCalledWith(expectedError)
   })
 })
 
@@ -559,18 +555,13 @@ describe('loginWithSocialProvider', () => {
   })
 
   test('error when the InAppBrowser plugin is not present', async () => {
-    expect.assertions(1)
-
     // Given
     const { client } = apiClientAndEventManager()
 
     // When
-    try {
-      await client.loginWithSocialProvider('facebook')
-    } catch (e) {
+    await expect(client.loginWithSocialProvider('facebook'))
       // Then
-      expect(e).toEqual(new Error('Cordova plugin "InAppBrowser" is required.'))
-    }
+      .rejects.toThrow(new Error('Cordova plugin "InAppBrowser" is required.'))
   })
 
   test('with the browsertab plugin present but not available (on Android)', async () => {
@@ -879,8 +870,6 @@ describe('handleOpenURL', () => {
         ].join('&')
     )
 
-    await delay(1)
-
     // Then
     expect(authenticatedHandler).toHaveBeenCalledWith({
       idToken,
@@ -923,8 +912,6 @@ describe('handleOpenURL', () => {
         ].join('&')
     )
 
-    await delay(1)
-
     // Then
     expect(handleOpenURL).toHaveBeenCalled()
     expect(authenticatedHandler).not.toHaveBeenCalled()
@@ -965,8 +952,6 @@ describe('handleOpenURL', () => {
           `token_type=${tokenType}`
         ].join('&')
     )
-
-    await delay(1)
 
     // Then
     expect(authenticatedHandler).toHaveBeenCalledWith({

@@ -1,17 +1,22 @@
 import fetchMock from 'jest-fetch-mock'
 
-import { createDefaultTestClient, defineWindowProperty, headers } from './testHelpers'
+import { defineWindowProperty, headers } from './helpers/testHelpers'
+import { createDefaultTestClient } from './helpers/clientFactory'
 
-beforeEach(() => {
-  window.fetch = fetchMock as any
-
+beforeAll(() => {
+  fetchMock.enableMocks()
   defineWindowProperty('location')
 })
 
-test('send mail', done => {
-  const { api, domain } = createDefaultTestClient()
+beforeEach(() => {
+  jest.resetAllMocks()
+  fetchMock.resetMocks()
+})
 
-  const fetch1 = fetchMock.mockResponseOnce(JSON.stringify(''))
+test('send verification mail', async () => {
+  const { client, domain } = createDefaultTestClient()
+
+  const apiCall = fetchMock.mockResponseOnce(JSON.stringify(''))
 
   const accessToken = '456'
   const params = {
@@ -20,20 +25,17 @@ test('send mail', done => {
     returnToAfterEmailConfirmation: 'http://confirmation.com'
   }
 
-  const body = {
-    redirect_url: 'http://toto.com',
-    return_to_after_email_confirmation: 'http://confirmation.com'
-  }
-
-  api.sendEmailVerification(params).then(_ => {
-    expect(fetch1).toHaveBeenCalledWith(`https://${domain}/identity/v1/send-email-verification`, {
+  client.sendEmailVerification(params).then(() => {
+    expect(apiCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/send-email-verification`, {
       method: 'POST',
       headers: {
         ...headers.jsonAndDefaultLang,
         ...headers.accessToken(accessToken)
       },
-      body: JSON.stringify(body)
+      body: JSON.stringify({
+        redirect_url: 'http://toto.com',
+        return_to_after_email_confirmation: 'http://confirmation.com'
+      })
     })
-    done()
   })
 })

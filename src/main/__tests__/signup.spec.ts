@@ -1,252 +1,57 @@
 import fetchMock from 'jest-fetch-mock'
 
 import {
-    createDefaultTestClient,
-    defineWindowProperty,
-    expectIframeWithParams,
-    headers,
-    mockPkceValues,
-    mockPkceWindow
-} from './testHelpers'
-import { delay } from '../../utils/promise'
-import { toQueryString } from '../../utils/queryString'
+  defineWindowProperty,
+  headers,
+  mockWindowCrypto
+} from './helpers/testHelpers'
+import { createDefaultTestClient, TestKit } from './helpers/clientFactory'
+import { scope, tkn } from './helpers/oauthHelpers'
+import { SignupParams } from '../apiClient'
+import { snakeCaseProperties } from '../../utils/transformObjectProperties'
+
+beforeAll(() => {
+  fetchMock.enableMocks()
+  defineWindowProperty('location')
+  defineWindowProperty('crypto', mockWindowCrypto)
+})
 
 beforeEach(() => {
-  window.fetch = fetchMock as any
-
-  defineWindowProperty('location')
-  defineWindowProperty('crypto', mockPkceWindow)
+  jest.resetAllMocks()
+  fetchMock.resetMocks()
 })
 
-const defaultScope = 'openid profile email phone'
+export async function signupTest(testkit: TestKit, params: SignupParams) {
+  const { client, clientId, domain } = testkit
 
-test('with default auth (using redirect)', async () => {
   // Given
-  const { api, clientId, domain } = createDefaultTestClient()
-
-  const signupToken = 'signupToken'
-
-  const fetch1 = fetchMock.mockResponseOnce(
+  const signupCall = fetchMock.mockResponseOnce(
     JSON.stringify({
       id: '1234',
-      tkn: signupToken
+      ...tkn,
     })
   )
 
-  let error = null
-
   // When
-  api
-    .signup({
-      data: {
-        givenName: 'John',
-        familyName: 'Doe',
-        email: 'john.doe@example.com',
-        password: 'P@ssw0rd'
-      }
-    })
-    .catch(err => (error = err))
+  await client.signup(params)
 
-  await delay(20)
-
-  // Then
-
-  expect(error).toBeNull()
-  expect(fetch1).toHaveBeenCalledWith(`https://${domain}/identity/v1/signup`, {
+  await expect(signupCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/signup`, {
     method: 'POST',
     headers: headers.jsonAndDefaultLang,
     body: JSON.stringify({
       client_id: clientId,
-      scope: defaultScope,
-      data: {
-        given_name: 'John',
-        family_name: 'Doe',
-        email: 'john.doe@example.com',
-        password: 'P@ssw0rd'
-      }
+      ...scope,
+      data: snakeCaseProperties(params.data),
     })
   })
-  expect(window.location.assign).toHaveBeenCalledWith(
-    `https://${domain}/oauth/authorize?` +
-      toQueryString({
-        client_id: clientId,
-        response_type: 'token',
-        scope: defaultScope,
-        display: 'page',
-        tkn: signupToken
-      })
-  )
-})
-
-test('with default auth (using web_message)', async () => {
-  // Given
-  const { api, clientId, domain } = createDefaultTestClient()
-
-  const signupToken = 'signupToken'
-
-  const fetch1 = fetchMock.mockResponseOnce(
-    JSON.stringify({
-      id: '1234',
-      tkn: signupToken
-    })
-  )
-
-  let error = null
-
-  // When
-  api
-    .signup({
-      data: {
-        givenName: 'John',
-        familyName: 'Doe',
-        email: 'john.doe@example.com',
-        password: 'P@ssw0rd'
-      },
-      auth: {
-        useWebMessage: true
-      }
-    })
-    .catch(err => (error = err))
-
-  await delay(20)
-
-  // Then
-
-  expect(error).toBeNull()
-  expect(fetch1).toHaveBeenCalledWith(`https://${domain}/identity/v1/signup`, {
-    method: 'POST',
-    headers: headers.jsonAndDefaultLang,
-    body: JSON.stringify({
-      client_id: clientId,
-      scope: defaultScope,
-      data: {
-        given_name: 'John',
-        family_name: 'Doe',
-        email: 'john.doe@example.com',
-        password: 'P@ssw0rd'
-      }
-    })
-  })
-
-  await expectIframeWithParams(domain, {
-    client_id: clientId,
-    response_type: 'token',
-    scope: defaultScope,
-    responseMode: 'web_message',
-    prompt: 'none',
-    tkn: signupToken
-  })
-})
-
-test('with auth param', async () => {
-  // Given
-  const { api, clientId, domain } = createDefaultTestClient()
-
-  const signupToken = 'signupToken'
-  const fetch1 = fetchMock.mockResponseOnce(
-    JSON.stringify({
-      id: '1234',
-      tkn: signupToken
-    })
-  )
-  const redirectUri = 'http://mysite.com/login/callback'
-
-  let error = null
-
-  // When
-  api
-    .signup({
-      data: {
-        email: 'john.doe@example.com',
-        password: 'P@ssw0rd'
-      },
-      auth: {
-        redirectUri
-      }
-    })
-    .catch(err => (error = err))
-
-  await delay(20)
-
-  // Then
-  expect(error).toBeNull()
-  expect(fetch1).toHaveBeenCalledWith(`https://${domain}/identity/v1/signup`, {
-    method: 'POST',
-    headers: headers.jsonAndDefaultLang,
-    body: JSON.stringify({
-      client_id: clientId,
-      scope: defaultScope,
-      data: {
-        email: 'john.doe@example.com',
-        password: 'P@ssw0rd'
-      }
-    })
-  })
-  expect(window.location.assign).toHaveBeenCalledWith(
-    `https://${domain}/oauth/authorize?` +
-      toQueryString({
-        client_id: clientId,
-        response_type: 'code',
-        redirect_uri: redirectUri,
-        scope: defaultScope,
-        display: 'page',
-        ...mockPkceValues,
-        tkn: signupToken,
-      })
-  )
-})
-
-test('popup mode ignored', async () => {
-  // Given
-  const { api, clientId, domain } = createDefaultTestClient()
-
-  const signupToken = 'signupToken'
-  fetchMock.mockResponseOnce(
-    JSON.stringify({
-      id: '1234',
-      tkn: signupToken
-    })
-  )
-
-  let error = null
-
-  // When
-  api
-    .signup({
-      data: {
-        givenName: 'John',
-        familyName: 'Doe',
-        email: 'john.doe@example.com',
-        password: 'P@ssw0rd'
-      },
-      auth: {
-        popupMode: true
-      }
-    })
-    .catch(err => (error = err))
-
-  await delay(20)
-
-  // Then
-  expect(error).toBeNull()
-  expect(window.location.assign).toHaveBeenCalledWith(
-    `https://${domain}/oauth/authorize?` +
-      toQueryString({
-        client_id: clientId,
-        response_type: 'token',
-        scope: defaultScope,
-        display: 'page', // Not popup
-        tkn: signupToken
-      })
-  )
-})
+}
 
 test('with user error', async () => {
   // Given
-  const { api } = createDefaultTestClient()
+  const { client } = createDefaultTestClient()
 
   const signupFailedHandler = jest.fn()
-  api.on('signup_failed', signupFailedHandler)
+  client.on('signup_failed', signupFailedHandler)
 
   const errorCode = 'email_already_exists'
   const errorDescription = 'Email already in use'
@@ -268,45 +73,37 @@ test('with user error', async () => {
   )
 
   // When
-  let error = null
-  api
+  const promise = client
     .signup({
       data: {
         email: 'john.doe@example.com',
         password: 'majefize'
       }
     })
-    .catch(err => (error = err))
 
-  await delay(1)
-
-  expect(error).toEqual(expectedError)
-  expect(signupFailedHandler).toHaveBeenCalledWith(expectedError)
+  await expect(promise).rejects.toEqual(expectedError)
+  await expect(signupFailedHandler).toHaveBeenCalledWith(expectedError)
 })
 
 test('with unexpected error', async () => {
   // Given
-  const { api } = createDefaultTestClient()
+  const { client } = createDefaultTestClient()
 
   const signupFailedHandler = jest.fn()
-  api.on('signup_failed', signupFailedHandler)
+  client.on('signup_failed', signupFailedHandler)
 
-  const expectedError = new Error('Saboteur !!')
+  const expectedError = new Error('[fake error: ignore me]')
   fetchMock.mockRejectOnce(expectedError)
 
   // When
-  let error = null
-  api
+  const promise = client
     .signup({
       data: {
         email: 'john.doe@example.com',
         password: 'majefize'
       }
     })
-    .catch(err => (error = err))
 
-  await delay(1)
-
-  expect(error).toEqual(expectedError)
-  expect(signupFailedHandler).not.toHaveBeenCalled()
+  await expect(promise).rejects.toThrow(expectedError)
+  await expect(signupFailedHandler).not.toHaveBeenCalled()
 })

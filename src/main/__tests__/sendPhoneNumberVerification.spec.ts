@@ -1,30 +1,30 @@
 import fetchMock from 'jest-fetch-mock'
-import { createDefaultTestClient, defineWindowProperty, headers } from './testHelpers'
+import { defineWindowProperty, headers } from './helpers/testHelpers'
+import { createDefaultTestClient } from './helpers/clientFactory'
 
-beforeEach(() => {
-  window.fetch = fetchMock as any
-
+beforeAll(() => {
+  fetchMock.enableMocks()
   defineWindowProperty('location')
 })
 
-test('send verification for phone number', done => {
-  const { api, domain } = createDefaultTestClient()
+beforeEach(() => {
+  jest.resetAllMocks()
+  fetchMock.resetMocks()
+})
 
-  const fetch1 = fetchMock.mockResponseOnce(JSON.stringify(''))
+test('send verification for phone number', async () => {
+  const { client, domain } = createDefaultTestClient()
 
+  const apiCall = fetchMock.mockResponseOnce(JSON.stringify(''))
   const accessToken = '123'
-  const params = {
-    accessToken
-  }
 
-  api.sendPhoneNumberVerification(params).then(_ => {
-    expect(fetch1).toHaveBeenCalledWith(`https://${domain}/identity/v1/send-phone-number-verification`, {
+  client.sendPhoneNumberVerification({ accessToken }).then(() => {
+    expect(apiCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/send-phone-number-verification`, {
       method: 'POST',
       headers: {
         ...headers.defaultLang,
         ...headers.accessToken(accessToken)
       }
     })
-    done()
   })
 })

@@ -1,23 +1,20 @@
 import { Buffer } from 'buffer/'
 
 import { encodeToBase64 } from '../utils/base64'
+import { randomBase64String } from '../utils/random'
 
 export type PkceParams = { codeChallenge: string; codeChallengeMethod: string }
 
 export function computePkceParams(): Promise<PkceParams> {
-  const verifier = generateCodeVerifier()
-  sessionStorage.setItem('verifier_key', verifier)
-  return computeCodeChallenge(verifier).then(challenge => {
+  const codeVerifier = randomBase64String()
+
+  sessionStorage.setItem('verifier_key', codeVerifier)
+  return computeCodeChallenge(codeVerifier).then(challenge => {
     return {
       codeChallenge: challenge,
       codeChallengeMethod: 'S256'
     }
   })
-}
-
-function generateCodeVerifier(): string {
-  const randomValues = window.crypto.getRandomValues(new Uint8Array(32))
-  return encodeToBase64(randomValues)
 }
 
 function computeCodeChallenge(verifier: string): Promise<string> {

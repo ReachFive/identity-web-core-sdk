@@ -36,7 +36,7 @@ export type Client = {
   checkSession: (options?: AuthOptions) => Promise<AuthResult>
   checkUrlFragment: (url: string) => boolean
   exchangeAuthorizationCodeWithPkce: (params: TokenRequestParameters) => Promise<AuthResult>
-  getSessionInfo: (params?: {}) => Promise<SessionInfo>
+  getSessionInfo: () => Promise<SessionInfo>
   getSignupData: (signupToken: string) => Promise<OpenIdUser>
   getUser: (params: { accessToken: string; fields?: string }) => Promise<Profile>
   listWebAuthnDevices: (accessToken: string) => Promise<DeviceCredential[]>
@@ -70,7 +70,7 @@ export type Client = {
 function checkParam<T>(data: T, key: keyof T) {
   const value = data[key]
   if (value === undefined || value === null) {
-    throw new Error(`the reach5 creation config has errors: ${key as string} is not set`)
+    throw new Error(`The reach5 creation config has errors: ${key as string} is not set`)
   }
 }
 

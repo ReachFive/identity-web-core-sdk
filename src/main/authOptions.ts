@@ -91,7 +91,6 @@ export function computeAuthOptions(
     ...pick(opts, [
       'responseType',
       'redirectUri',
-      'prompt',
       'origin',
       'state',
       'nonce',

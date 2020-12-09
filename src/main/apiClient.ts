@@ -21,6 +21,7 @@ import {
   EmailLoginWithWebAuthnParams, PhoneNumberLoginWithWebAuthnParams, LoginWithWebAuthnParams, SignupWithWebAuthnParams,
   publicKeyCredentialType
 } from './webAuthnService'
+import { randomBase64String } from "../utils/random"
 
 export type SignupParams = {
   data: SignupProfile
@@ -94,6 +95,7 @@ export type ApiClientConfig = {
   scope?: string
   sso: boolean
   pkceEnforced: boolean
+  isPublic: boolean
 }
 
 export type TokenRequestParameters = {
@@ -239,9 +241,12 @@ export default class ApiClient {
     redirectUri?: string,
   ): Promise<AuthResult> {
     const iframe = document.createElement('iframe')
+    // "wm" needed to make sure the randomized id is valid
+    const id = `wm${randomBase64String()}`
     iframe.setAttribute('width', '0')
     iframe.setAttribute('height', '0')
     iframe.setAttribute('style', 'display:none;')
+    iframe.setAttribute('id', id)
     iframe.setAttribute('src', src)
 
     return new Promise<AuthResult>((resolve, reject) => {
@@ -823,7 +828,7 @@ export default class ApiClient {
   }
 
   private getPkceParams(authParams: AuthParameters): Promise<PkceParams | {}> {
-    if (authParams.responseType === 'code')
+    if (this.config.isPublic && authParams.responseType === 'code')
       return computePkceParams()
     else if (authParams.responseType === 'token' && this.config.pkceEnforced)
       return Promise.reject(new Error('Cannot use implicit flow when PKCE is enforced'))
@@ -836,9 +841,22 @@ export default class ApiClient {
   }
 
   private authParams(opts: AuthOptions, { acceptPopupMode = false } = {}) {
+    const isConfidentialCodeWebMsg = !this.config.isPublic && !!opts.useWebMessage && (opts.responseType === 'code' || opts.redirectUri)
+
+    const overrideResponseType: Partial<AuthOptions> = isConfidentialCodeWebMsg
+      ? { responseType: 'token', redirectUri: undefined }
+      : {}
+
     return {
       clientId: this.config.clientId,
-      ...computeAuthOptions(opts, { acceptPopupMode }, this.config.scope)
+      ...computeAuthOptions(
+        {
+          ...opts,
+          ...overrideResponseType
+        },
+        { acceptPopupMode },
+        this.config.scope
+      )
     }
   }
 }
