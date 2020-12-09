@@ -7,7 +7,7 @@
 ### Features
 
 - Only generate a `code_challenge` for **public** clients in authorization code flows.
-- Hardcode to `response_type=token` for **confidential* clients in web message requests.
+- Hardcode to `response_type=token` for **confidential** clients in web message requests.
 
 ### Fixes
 
