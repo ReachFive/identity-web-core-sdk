@@ -1,8 +1,8 @@
 # Changelog
 
-## v.1.19.0
+## 1.19.0
 
-### 09/12/2020
+### 12/10/2020
 
 ### Features
 
@@ -13,9 +13,9 @@
 
 Refactor tests to cover a wider set of request permutations.
 
-## v.1.18.1
+## 1.18.1
 
-### 30/11/2020
+### 11/30/2020
 
 ### Fixes
 
@@ -27,9 +27,9 @@ Refactor tests to cover a wider set of request permutations.
 - The [verifyPasswordless](https://developer.reachfive.com/sdk-core/verifyPasswordless.html) method receives now
   correctly the `auth` options.
 
-## v.1.18.0
+## 1.18.0
 
-### 30/10/2020
+### 10/30/2020
 
 ### Features
 
@@ -40,35 +40,35 @@ Refactor tests to cover a wider set of request permutations.
 
 Rename erroneously named config value `pkceEnabled` to `pkceEnforced`.
 
-## v.1.17.2
+## 1.17.2
 
-### 02/10/2020
+### 10/02/2020
 
 ### Fixes
 
 - Upgrade all dependencies.
 - Fix IE/Edge window closing warning.
 
-## v.1.17.1
+## 1.17.1
 
-### 15/09/2020
+### 09/15/2020
 
 ### Fixes
 
 Fix the CircleCi job to deploy a new version.
 
-## v.1.17.0
+## 1.17.0
 
-### 14/09/2020
+### 09/14/2020
 
 ### Features
 
 Add a new method to signup with
 Webauthn: [signupWithWebAuthn](https://developer.reachfive.com/sdk-core/signupWithWebAuthn.html).
 
-## v.1.16.0
+## 1.16.0
 
-### 10/09/2020
+### 09/10/2020
 
 ### Features
 
@@ -83,7 +83,7 @@ Webauthn: [signupWithWebAuthn](https://developer.reachfive.com/sdk-core/signupWi
     - [`signup`](https://developer.reachfive.com/sdk-core/signup.html)
 - The following parameters `prompt`, `display` and `responseMode` of the `AuthOptions` model are now string unions.
 
-## v.1.15.0
+## 1.15.0
 
 ### 07/07/2020
 
@@ -93,9 +93,9 @@ Add the optional `friendlyName` parameter to
 the [addNewWebAuthnDevice](https://developer.reachfive.com/sdk-core/addNewWebAuthnDevice.html) method to set the
 device's name.
 
-## v.1.14.0
+## 1.14.0
 
-### 02/07/2020
+### 07/02/2020
 
 ### Features
 
@@ -103,9 +103,9 @@ device's name.
   data: [getSignupData](https://developer.reachfive.com/sdk-core/getSignupData.html).
 - The error message thrown when the WebAuthn API is not available is updated.
 
-## v.1.14.0-beta.2
+## 1.14.0-beta.2
 
-### 17/06/2020
+### 06/17/2020
 
 ### Features
 
@@ -117,9 +117,9 @@ devices: [listWebAuthnDevices](https://developer.reachfive.com/sdk-core/listWebA
 
 Throw an error when the [Credentials Management API](https://caniuse.com/#feat=credential-management) is not available.
 
-## v.1.14.0-beta.1
+## 1.14.0-beta.1
 
-### 15/06/2020
+### 06/15/2020
 
 ### Features
 
@@ -127,9 +127,9 @@ Add new methods to allow implementation of login with
 biometrics: [addNewWebAuthnDevice](https://developer.reachfive.com/sdk-core/addNewWebAuthnDevice.html)
 & [loginWithWebAuthn](https://developer.reachfive.com/sdk-core/loginWithWebAuthn.html).
 
-## v.1.13.0
+## 1.13.0
 
-### 18/05/2020
+### 05/18/2020
 
 ### Features
 
@@ -137,18 +137,18 @@ Add two new methods to request the verification of the phone number and email
 address: [sendPhoneNumberVerification](https://developer.reachfive.com/sdk-core/sendPhoneNumberVerification.html)
 & [sendEmailVerification](https://developer.reachfive.com/sdk-core/sendEmailVerification.html)
 
-## v.1.12.1
+## 1.12.1
 
-### 11/05/2020
+### 05/11/2020
 
 ### Fixes
 
 Correct the signature of the [`verifyPasswordless`](https://developer.reachfive.com/sdk-core/verifyPasswordless.html)
 method.
 
-## v.1.12.0
+## 1.12.0
 
-### 17/04/2020
+### 04/17/2020
 
 ### Features
 
@@ -156,9 +156,9 @@ Move the `persistent` parameter from
 the [`loginWithPassword`](https://developer.reachfive.com/sdk-core/loginWithPassword.html) method to `AuthOptions`
 payload object to make it available in every login method.
 
-## v.1.11.0
+## 1.11.0
 
-### 16/04/2020
+### 04/16/2020
 
 ### Features
 
@@ -166,67 +166,67 @@ Add the `persistent` parameter to
 the [`loginWithPassword`](https://developer.reachfive.com/sdk-core/loginWithPassword.html) method to choose whether the
 user session is persisted if the SSO feature is enabled.
 
-## v.1.10.0
+## 1.10.0
 
-### 05/02/2020
+### 02/05/2020
 
 ### Features
 
 Add the `returnToAfterPasswordReset` parameter for reset password and the `returnToAfterEmailConfirmation` parameter for
 signup.
 
-## v.1.9.3
+## 1.9.3
 
-### 07/01/2020
+### 01/07/2020
 
 ### Fixes
 
 The [`logout`](https://developer.reach5.co/api/identity-web/#logout) method was fixed on Safari and IE11.
 
-## v.1.9.2
+## 1.9.2
 
-### 02/12/2019
+### 12/02/2019
 
 ### Fixes
 
 Add the missing implementation of `Buffer` to address an issue with the UMD bundle when PKCE is enabled.
 
-## v.1.9.1
+## 1.9.1
 
-### 29/11/2019
+### 11/29/2019
 
 ### Fixes
 
 - Open a webview for social login if the Cordova platform is iOS.
 - Support compatibility with IE11.
 
-## v.1.9.0
+## 1.9.0
 
-### 28/10/2019
+### 10/28/2019
 
 ### Features
 
 Support PKCE in login with password
 
-## v.1.8.0
+## 1.8.0
 
-### 21/10/2019
+### 10/21/2019
 
 ### Features
 
 Export the remote settings and the `ErrorResponse` model.
 
-## v1.7.1
+## 1.7.1
 
-### 19/09/2019
+### 09/19/2019
 
 ### Fixes
 
 Customs fields and consents snake_case conversion
 
-## v1.7.0
+## 1.7.0
 
-### 06/09/2019
+### 09/06/2019
 
 ### Features
 
@@ -237,9 +237,9 @@ the [signup]((https://developer.reach5.co/api/identity-web/#signup)).
 
 Fix `redirectUrl` argument for [update email]((https://developer.reach5.co/api/identity-web/#updateemail)) function.
 
-## v1.6.0
+## 1.6.0
 
-### 05/08/2019
+### 08/05/2019
 
 ### Features
 
@@ -259,9 +259,9 @@ Fix `redirectUrl` argument for [update email]((https://developer.reach5.co/api/i
 
 The new default is to use the scopes defined for your client via the ReachFive console.
 
-## v1.5.0
+## 1.5.0
 
-### 24/06/2019
+### 06/24/2019
 
 ### Features
 
@@ -271,9 +271,9 @@ Update the signature of the `loginWithSocialProvider` method to handle pkce supp
 
 Pass auth options `scope` used by `loginWithPassword` and `signup` to the Identity API calls.
 
-## v1.4.0
+## 1.4.0
 
-### 21/06/2019
+### 06/21/2019
 
 ### Features
 
@@ -281,17 +281,17 @@ Pass auth options `scope` used by `loginWithPassword` and `signup` to the Identi
 - Update the signature of the `requestPasswordReset` method to handle request password with a phone number.
 - Update the signature of the `updatePassword` method to handle update password with a phone number.
 
-## v1.3.0
+## 1.3.0
 
-### 11/06/2019
+### 06/11/2019
 
 ### Features
 
 Update the signature of the `loginWithPassword` method to handle login with a phone number.
 
-## v1.2.1
+## 1.2.1
 
-### 21/03/2019
+### 03/21/2019
 
 #### Improvements
 
@@ -302,17 +302,17 @@ Update the signature of the `loginWithPassword` method to handle login with a ph
 
 Error messages changes for SDK configuration.
 
-## v1.1.4
+## 1.1.4
 
-### 21/03/2019
+### 03/21/2019
 
 #### Improvements
 
 Automatise the deployment of a new release with `circleci`.
 
-## v1.1.3
+## 1.1.3
 
-### 15/03/2019
+### 03/15/2019
 
 #### Fixes and improvements
 
