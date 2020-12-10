@@ -1,56 +1,47 @@
 # Javascript Node CircleCI 2.0 configuration file
 #
 # Check https://circleci.com/docs/2.0/language-javascript/ for more details
-#
+
 version: 2
 
 defaults: &defaults
   working_directory: ~/repo
   docker:
-    - image: circleci/node:12
+    - image: circleci/node:15
 
 jobs:
   test:
     <<: *defaults
     steps:
       - checkout
-      # Download and cache dependencies
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "package.json" }}
-            # fallback to using the latest cache if no exact match is found
-            - v1-dependencies-
-      - run: npm install
-      - save_cache:
-          paths:
-            - node_modules
-          key: v1-dependencies-{{ checksum "package.json" }}
+      - run: npm ci
       - run: npm run tslint
       - run: npm run build
-      - run: npm test
+      - run: npm run test
       - persist_to_workspace:
           root: ~/repo
-          paths: .
+          paths:
+            - .
 
   deploy-alpha:
     <<: *defaults
     steps:
-    - attach_workspace:
-        at: ~/repo
-    - run:
-        name: Authenticate with registry
-        command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/repo/.npmrc
-    - run:
-        name: Publish package
-        command: npm publish --tag alpha
-  
+      - attach_workspace:
+          at: ~/repo
+      - run:
+          name: Authenticate with registry
+          command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/repo/.npmrc
+      - run:
+          name: Publish package
+          command: npm publish --tag alpha
+
   deploy-release:
     <<: *defaults
     steps:
       - attach_workspace:
           at: ~/repo
       - run:
-          name: Publish to NPM
+          name: Publish to npm
           command: |
             npm set //registry.npmjs.org/:_authToken=$NPM_TOKEN
             npm publish
