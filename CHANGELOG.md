@@ -7,6 +7,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.20.0] - 2021-01-14
+
+### Features
+
+- Add an optional parameter `captchaToken` for captcha support in [loginWithPassword](https://developer.reachfive.com/sdk-core/loginWithPassword.html)
+
 ## [1.19.0] - 2020-12-10
 
 ### Features
