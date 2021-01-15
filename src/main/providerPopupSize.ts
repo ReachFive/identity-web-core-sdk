@@ -11,8 +11,6 @@ export function popupSize(provider: string): PopupSize {
       return { width: 650, height: 400 }
     case 'google':
       return { width: 560, height: 630 }
-    case 'instagram':
-      return { width: 440, height: 750 }
     case 'kakaotalk':
       return { width: 450, height: 400 }
     case 'line':

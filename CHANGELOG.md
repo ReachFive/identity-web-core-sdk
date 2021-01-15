@@ -7,6 +7,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+- Remove Instagram related code as it is no longer a supported social provider.
+
 ## [1.20.0] - 2021-01-14
 
 ### Features
