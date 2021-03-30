@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.0-alpha.23
+
+### 03/30/2021
+
+### Fixes
+Fix `verifyPasswordless` signature to enable passing `auth: AuthOptions`. 
+
 ## 0.1.0-alpha.22
 
 ### 05/12/2019
