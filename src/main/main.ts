@@ -27,8 +27,8 @@ export function createClient(config: ApiClientConfig) {
     return apiClient.then(api => api.startPasswordless(params, options))
   }
 
-  function verifyPasswordless(params: PasswordlessParams) {
-    return apiClient.then(api => api.verifyPasswordless(params))
+  function verifyPasswordless(params: PasswordlessParams, auth?: AuthOptions) {
+    return apiClient.then(api => api.verifyPasswordless(params, auth))
   }
 
   function loginWithSocialProvider(provider: ProviderId, options: AuthOptions = {}) {
