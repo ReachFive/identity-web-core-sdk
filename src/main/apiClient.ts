@@ -2,12 +2,12 @@ import WinChan from 'winchan'
 import pick from 'lodash/pick'
 import isUndefined from 'lodash/isUndefined'
 
-import { logError } from '../utils/logger'
+import { logError, logWarn } from '../utils/logger'
 import { QueryString, toQueryString } from '../utils/queryString'
 import { camelCaseProperties } from '../utils/transformObjectProperties'
 
 import { ErrorResponse, Profile, SessionInfo, SignupProfile, OpenIdUser } from './models'
-import { AuthOptions, AuthParameters, computeAuthOptions, resolveScope } from './authOptions'
+import { AuthOptions, AuthParameters, computeAuthOptions, resolveScope, ResponseType } from './authOptions'
 import { AuthResult, enrichAuthResult } from './authResult'
 import { IdentityEventManager } from './identityEventManager'
 import { UrlParser } from './urlParser'
@@ -21,7 +21,7 @@ import {
   EmailLoginWithWebAuthnParams, PhoneNumberLoginWithWebAuthnParams, LoginWithWebAuthnParams, SignupWithWebAuthnParams,
   publicKeyCredentialType
 } from './webAuthnService'
-import { randomBase64String } from "../utils/random"
+import { randomBase64String } from '../utils/random'
 
 export type SignupParams = {
   data: SignupProfile
@@ -501,13 +501,37 @@ export default class ApiClient {
   startPasswordless(params: PasswordlessParams, auth: AuthOptions = {}): Promise<void> {
     const { authType, email, phoneNumber } = params
 
-    return this.http.post('/passwordless/start', {
-      body: {
-        ...this.authParams(auth),
-        authType,
-        email,
-        phoneNumber
-      }
+    const authParams = this.authParams(auth)
+
+    const shouldOverrideAuthParams = !this.config.isPublic && auth.responseType === 'code' && !!auth.useWebMessage
+
+    if (shouldOverrideAuthParams) {
+      logWarn('Web messages are not supported in passwordless flows')
+    }
+
+    const overrideAuthParams = shouldOverrideAuthParams ?
+      {
+        responseType: 'code' as ResponseType,
+        redirectUri: auth.redirectUri,
+        display: 'page',
+        useWebMessage: false,
+        responseMode: undefined,
+        prompt: undefined
+      } :
+      {}
+
+    return this.getPkceParams(authParams).then(maybeChallenge => {
+
+      return this.http.post('/passwordless/start', {
+        body: {
+          ...authParams,
+          authType,
+          email,
+          phoneNumber,
+          ...maybeChallenge,
+          ...overrideAuthParams,
+        }
+      })
     })
   }
 

@@ -2,6 +2,10 @@ export function log(msg: string) {
   if (window.console && window.console.log) window.console.log(msg)
 }
 
+export function logWarn(msg: string) {
+  if (window.console && window.console.warn) window.console.warn(msg)
+}
+
 export function logError(messageOrException: string | Error, exception?: Error) {
   if (window.console) {
     if (window.console.error) {
