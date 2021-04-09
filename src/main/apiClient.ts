@@ -21,7 +21,7 @@ import {
   EmailLoginWithWebAuthnParams, PhoneNumberLoginWithWebAuthnParams, LoginWithWebAuthnParams, SignupWithWebAuthnParams,
   publicKeyCredentialType
 } from './webAuthnService'
-import { randomBase64String } from "../utils/random"
+import { randomBase64String } from '../utils/random'
 
 export type SignupParams = {
   data: SignupProfile
@@ -498,16 +498,24 @@ export default class ApiClient {
     })
   }
 
-  startPasswordless(params: PasswordlessParams, auth: AuthOptions = {}): Promise<void> {
+  // TODO: Make passwordless able to handle web_message
+  // Asana https://app.asana.com/0/982150578058310/1200173806808689/f
+  startPasswordless(params: PasswordlessParams, auth: Omit<AuthOptions, 'useWebMessage'> = {}): Promise<void> {
     const { authType, email, phoneNumber } = params
 
-    return this.http.post('/passwordless/start', {
-      body: {
-        ...this.authParams(auth),
-        authType,
-        email,
-        phoneNumber
-      }
+    const authParams = this.authParams(auth)
+
+    return this.getPkceParams(authParams).then(maybeChallenge => {
+
+      return this.http.post('/passwordless/start', {
+        body: {
+          ...authParams,
+          authType,
+          email,
+          phoneNumber,
+          ...maybeChallenge,
+        }
+      })
     })
   }
 
