@@ -1,9 +1,8 @@
 import WinChan from 'winchan'
-import omit from 'lodash/omit'
 import pick from 'lodash/pick'
 import isUndefined from 'lodash/isUndefined'
 
-import { logError, logWarn } from '../utils/logger'
+import { logError } from '../utils/logger'
 import { QueryString, toQueryString } from '../utils/queryString'
 import { camelCaseProperties } from '../utils/transformObjectProperties'
 
@@ -499,21 +498,12 @@ export default class ApiClient {
     })
   }
 
-
-  startPasswordless(params: PasswordlessParams, auth: AuthOptions = {}): Promise<void> {
+  // TODO: Make passwordless able to handle web_message
+  // Asana https://app.asana.com/0/982150578058310/1200173806808689/f
+  startPasswordless(params: PasswordlessParams, auth: Omit<AuthOptions, 'useWebMessage'> = {}): Promise<void> {
     const { authType, email, phoneNumber } = params
 
-    // TODO: Make passwordless able to handle web_message
-    // Asana https://app.asana.com/0/982150578058310/1200173806808689/f
-    let authOptions: AuthOptions
-    if (auth.useWebMessage) {
-      logWarn('Web messages are not supported in passwordless flows')
-      authOptions = omit(auth, 'useWebMessage')
-    } else {
-      authOptions = auth
-    }
-
-    const authParams = this.authParams(authOptions)
+    const authParams = this.authParams(auth)
 
     return this.getPkceParams(authParams).then(maybeChallenge => {
 
