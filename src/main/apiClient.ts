@@ -1,4 +1,5 @@
 import WinChan from 'winchan'
+import omit from 'lodash/omit'
 import pick from 'lodash/pick'
 import isUndefined from 'lodash/isUndefined'
 
@@ -7,7 +8,7 @@ import { QueryString, toQueryString } from '../utils/queryString'
 import { camelCaseProperties } from '../utils/transformObjectProperties'
 
 import { ErrorResponse, Profile, SessionInfo, SignupProfile, OpenIdUser } from './models'
-import { AuthOptions, AuthParameters, computeAuthOptions, resolveScope, ResponseType } from './authOptions'
+import { AuthOptions, AuthParameters, computeAuthOptions, resolveScope } from './authOptions'
 import { AuthResult, enrichAuthResult } from './authResult'
 import { IdentityEventManager } from './identityEventManager'
 import { UrlParser } from './urlParser'
@@ -498,27 +499,21 @@ export default class ApiClient {
     })
   }
 
+
   startPasswordless(params: PasswordlessParams, auth: AuthOptions = {}): Promise<void> {
     const { authType, email, phoneNumber } = params
 
-    const authParams = this.authParams(auth)
-
-    const shouldOverrideAuthParams = !this.config.isPublic && auth.responseType === 'code' && !!auth.useWebMessage
-
-    if (shouldOverrideAuthParams) {
+    // TODO: Make passwordless able to handle web_message
+    // Asana https://app.asana.com/0/982150578058310/1200173806808689/f
+    let authOptions: AuthOptions
+    if (auth.useWebMessage) {
       logWarn('Web messages are not supported in passwordless flows')
+      authOptions = omit(auth, 'useWebMessage')
+    } else {
+      authOptions = auth
     }
 
-    const overrideAuthParams = shouldOverrideAuthParams ?
-      {
-        responseType: 'code' as ResponseType,
-        redirectUri: auth.redirectUri,
-        display: 'page',
-        useWebMessage: false,
-        responseMode: undefined,
-        prompt: undefined
-      } :
-      {}
+    const authParams = this.authParams(authOptions)
 
     return this.getPkceParams(authParams).then(maybeChallenge => {
 
@@ -529,7 +524,6 @@ export default class ApiClient {
           email,
           phoneNumber,
           ...maybeChallenge,
-          ...overrideAuthParams,
         }
       })
     })

@@ -1,9 +1,9 @@
-export function log(msg: string) {
-  if (window.console && window.console.log) window.console.log(msg)
+export function log(message: string) {
+  if (window.console && window.console.log) window.console.log(message)
 }
 
-export function logWarn(msg: string) {
-  if (window.console && window.console.warn) window.console.warn(msg)
+export function logWarn(message: string) {
+  if (window.console && window.console.warn) window.console.warn(message)
 }
 
 export function logError(messageOrException: string | Error, exception?: Error) {

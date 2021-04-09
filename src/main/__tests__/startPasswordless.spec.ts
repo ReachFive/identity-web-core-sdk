@@ -45,14 +45,14 @@ test('with default client', async () => {
   })
 })
 
-test('with confidential client, response type set to token and use web message set to true', async () => {
+test('with confidential client', async () => {
   const { domain, clientId, client } = createDefaultTestClient(confidential)
 
   // Given
   const startPasswordlessCall = fetchMock.mockResponseOnce(JSON.stringify(''))
 
   // When
-  await client.startPasswordless(authParams, { ...authOptions, useWebMessage: true })
+  await client.startPasswordless(authParams, authOptions)
 
   // Then
   expect(startPasswordlessCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/passwordless/start`, {
@@ -66,7 +66,6 @@ test('with confidential client, response type set to token and use web message s
       ...pageDisplay,
       auth_type: authParams.authType,
       email: authParams.email,
-      use_web_message: false,
     })
   })
 })
