@@ -7,7 +7,19 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-- Remove Instagram related code as it is no longer a supported social provider.
+## [1.20.1] - 2021-04-15
+
+### Added
+
+Added PKCE extra security in passwordless start flow.
+
+### Changed
+
+Remove Instagram related code as it is no longer a supported social provider.
+
+### Fixes
+
+Moved `cordova-plugin-inappbrowser` typings from devDependencies to dependencies.
 
 ## [1.20.0] - 2021-01-14
 
@@ -277,7 +289,11 @@ Automatise the deployment of a new release with `circleci`.
 - Implement `tslint`.
 - Remove `yarn`.
 
-[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.19.0...HEAD
+[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.20.1...HEAD
+
+[1.20.1]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.20.0...v1.20.1
+
+[1.20.0]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.19.0...v1.20.0
 
 [1.19.0]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.18.1...v1.19.0
 
