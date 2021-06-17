@@ -7,7 +7,6 @@ export type StartPhoneNumberRegistrationParams = {
 
 export type VerifyPhoneNumberRegistrationParams = {
   accessToken: string
-  phoneNumber: string
   verificationCode: string
 }
 
@@ -36,10 +35,9 @@ export default class MfaClient {
   }
 
   verifyPhoneNumberRegistration(params: VerifyPhoneNumberRegistrationParams): Promise<void> {
-    const { accessToken, phoneNumber, verificationCode } = params
+    const { accessToken, verificationCode } = params
     return this.http.post<void>(this.verifyPhoneNumberRegistrationUrl, {
       body: {
-        phoneNumber,
         verificationCode
       },
       accessToken
