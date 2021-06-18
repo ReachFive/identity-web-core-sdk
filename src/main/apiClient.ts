@@ -133,8 +133,6 @@ export default class ApiClient {
     this.authorizeUrl = `https://${this.config.domain}/oauth/authorize`
     this.tokenUrl = `https://${this.config.domain}/oauth/token`
     this.popupRelayUrl = `https://${this.config.domain}/popup/relay`
-    this.startPhoneNumberRegistrationUrl = `https://${this.baseUrl}/mfa/credentials/register/phone-number/start`
-    this.verifyPhoneNumberRegistrationUrl = `https://${this.baseUrl}/mfa/credentials/register/phone-number/verify`
 
     this.initCordovaCallbackIfNecessary()
   }
@@ -147,8 +145,6 @@ export default class ApiClient {
   private authorizeUrl: string
   private tokenUrl: string
   private popupRelayUrl: string
-  private readonly startPhoneNumberRegistrationUrl: string
-  private readonly verifyPhoneNumberRegistrationUrl: string
 
   getSignupData(signupToken: string): Promise<OpenIdUser> {
     return this.http.get<OpenIdUser>(`${this.baseUrl}/signup/data`, {
@@ -844,7 +840,7 @@ export default class ApiClient {
 
   startPhoneNumberRegistration(params: StartPhoneNumberRegistrationParams): Promise<void> {
     const { accessToken, phoneNumber } = params
-    return this.http.post<void>(this.startPhoneNumberRegistrationUrl, {
+    return this.http.post<void>('/mfa/credentials/register/phone-number/start', {
       body: {
         phoneNumber
       },
@@ -854,7 +850,7 @@ export default class ApiClient {
 
   verifyPhoneNumberRegistration(params: VerifyPhoneNumberRegistrationParams): Promise<void> {
     const { accessToken, verificationCode } = params
-    return this.http.post<void>(this.verifyPhoneNumberRegistrationUrl, {
+    return this.http.post<void>('/mfa/credentials/register/phone-number/verify', {
       body: {
         verificationCode
       },
