@@ -10,7 +10,9 @@ import ApiClient, {
   UpdateEmailParams,
   TokenRequestParameters,
   EmailVerificationParams,
-  PhoneNumberVerificationParams
+  PhoneNumberVerificationParams,
+  StartPhoneNumberRegistrationParams,
+  VerifyPhoneNumberRegistrationParams
 } from './apiClient'
 import { AuthOptions } from './authOptions'
 import { AuthResult } from './authResult'
@@ -58,6 +60,7 @@ export type Client = {
   signup: (params: SignupParams) => Promise<AuthResult>
   signupWithWebAuthn: (params: SignupWithWebAuthnParams, auth?: AuthOptions) => Promise<AuthResult>
   startPasswordless: (params: PasswordlessParams, options?: Omit<AuthOptions, 'useWebMessage'>) => Promise<void>
+  startPhoneNumberRegistration: (params: StartPhoneNumberRegistrationParams) => Promise<void>
   unlink: (params: { accessToken: string; identityId: string; fields?: string }) => Promise<void>
   updateEmail: (params: UpdateEmailParams) => Promise<void>
   updatePassword: (params: UpdatePasswordParams) => Promise<void>
@@ -65,6 +68,7 @@ export type Client = {
   updateProfile: (params: { accessToken: string; redirectUrl?: string; data: Profile }) => Promise<void>
   verifyPasswordless: (params: VerifyPasswordlessParams) => Promise<void>
   verifyPhoneNumber: (params: { accessToken: string; phoneNumber: string; verificationCode: string }) => Promise<void>
+  verifyPhoneNumberRegistration: (params: VerifyPhoneNumberRegistrationParams) => Promise<void>
 }
 
 function checkParam<T>(data: T, key: keyof T) {
@@ -209,6 +213,10 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.startPasswordless(params, options))
   }
 
+  function startPhoneNumberRegistration(params: StartPhoneNumberRegistrationParams) {
+    return apiClient.then(api => api.startPhoneNumberRegistration(params))
+  }
+
   function unlink(params: { accessToken: string; identityId: string; fields?: string }) {
     return apiClient.then(api => api.unlink(params))
   }
@@ -235,6 +243,10 @@ export function createClient(creationConfig: Config): Client {
 
   function verifyPhoneNumber(params: { accessToken: string; phoneNumber: string; verificationCode: string }) {
     return apiClient.then(api => api.verifyPhoneNumber(params))
+  }
+
+  function verifyPhoneNumberRegistration(params: VerifyPhoneNumberRegistrationParams) {
+    return apiClient.then(api => api.verifyPhoneNumberRegistration(params))
   }
 
   return {
@@ -264,12 +276,14 @@ export function createClient(creationConfig: Config): Client {
     signup,
     signupWithWebAuthn,
     startPasswordless,
+    startPhoneNumberRegistration,
     unlink,
     updateEmail,
     updatePassword,
     updatePhoneNumber,
     updateProfile,
     verifyPasswordless,
-    verifyPhoneNumber
+    verifyPhoneNumber,
+    verifyPhoneNumberRegistration
   }
 }
