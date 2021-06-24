@@ -10,7 +10,9 @@ import ApiClient, {
   UpdateEmailParams,
   TokenRequestParameters,
   EmailVerificationParams,
-  PhoneNumberVerificationParams
+  PhoneNumberVerificationParams,
+  StartMfaPhoneNumberRegistrationParams,
+  VerifyMfaPhoneNumberRegistrationParams
 } from './apiClient'
 import { AuthOptions } from './authOptions'
 import { AuthResult } from './authResult'
@@ -57,6 +59,7 @@ export type Client = {
   sendPhoneNumberVerification: (params: PhoneNumberVerificationParams) => Promise<void>
   signup: (params: SignupParams) => Promise<AuthResult>
   signupWithWebAuthn: (params: SignupWithWebAuthnParams, auth?: AuthOptions) => Promise<AuthResult>
+  startMfaPhoneNumberRegistration: (params: StartMfaPhoneNumberRegistrationParams) => Promise<void>
   startPasswordless: (params: PasswordlessParams, options?: Omit<AuthOptions, 'useWebMessage'>) => Promise<void>
   unlink: (params: { accessToken: string; identityId: string; fields?: string }) => Promise<void>
   updateEmail: (params: UpdateEmailParams) => Promise<void>
@@ -64,6 +67,7 @@ export type Client = {
   updatePhoneNumber: (params: { accessToken: string; phoneNumber: string }) => Promise<void>
   updateProfile: (params: { accessToken: string; redirectUrl?: string; data: Profile }) => Promise<void>
   verifyPasswordless: (params: VerifyPasswordlessParams) => Promise<void>
+  verifyMfaPhoneNumberRegistration: (params: VerifyMfaPhoneNumberRegistrationParams) => Promise<void>
   verifyPhoneNumber: (params: { accessToken: string; phoneNumber: string; verificationCode: string }) => Promise<void>
 }
 
@@ -205,6 +209,10 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.signupWithWebAuthn(params, auth))
   }
 
+  function startMfaPhoneNumberRegistration(params: StartMfaPhoneNumberRegistrationParams) {
+    return apiClient.then(api => api.startMfaPhoneNumberRegistration(params))
+  }
+
   function startPasswordless(params: PasswordlessParams, options: AuthOptions = {}) {
     return apiClient.then(api => api.startPasswordless(params, options))
   }
@@ -227,6 +235,10 @@ export function createClient(creationConfig: Config): Client {
 
   function updateProfile(params: { accessToken: string; redirectUrl?: string; data: Profile }) {
     return apiClient.then(api => api.updateProfile(params))
+  }
+
+  function verifyMfaPhoneNumberRegistration(params: VerifyMfaPhoneNumberRegistrationParams) {
+    return apiClient.then(api => api.verifyMfaPhoneNumberRegistration(params))
   }
 
   function verifyPasswordless(params: VerifyPasswordlessParams, auth?: AuthOptions) {
@@ -263,6 +275,7 @@ export function createClient(creationConfig: Config): Client {
     sendPhoneNumberVerification,
     signup,
     signupWithWebAuthn,
+    startMfaPhoneNumberRegistration,
     startPasswordless,
     unlink,
     updateEmail,
@@ -270,6 +283,7 @@ export function createClient(creationConfig: Config): Client {
     updatePhoneNumber,
     updateProfile,
     verifyPasswordless,
+    verifyMfaPhoneNumberRegistration,
     verifyPhoneNumber
   }
 }

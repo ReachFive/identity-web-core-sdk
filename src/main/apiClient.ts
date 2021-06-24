@@ -104,12 +104,12 @@ export type TokenRequestParameters = {
   persistent?: boolean // Whether the remember me is enabled
 }
 
-export type StartPhoneNumberRegistrationParams = {
+export type StartMfaPhoneNumberRegistrationParams = {
   accessToken: string
   phoneNumber: string
 }
 
-export type VerifyPhoneNumberRegistrationParams = {
+export type VerifyMfaPhoneNumberRegistrationParams = {
   accessToken: string
   verificationCode: string
 }
@@ -838,7 +838,7 @@ export default class ApiClient {
     return this.http.remove<void>(`/webauthn/registration/${deviceId}`, { accessToken })
   }
 
-  startPhoneNumberRegistration(params: StartPhoneNumberRegistrationParams): Promise<void> {
+  startMfaPhoneNumberRegistration(params: StartMfaPhoneNumberRegistrationParams): Promise<void> {
     const { accessToken, phoneNumber } = params
     return this.http.post<void>('/mfa/credentials/register/phone-number/start', {
       body: {
@@ -848,7 +848,7 @@ export default class ApiClient {
     })
   }
 
-  verifyPhoneNumberRegistration(params: VerifyPhoneNumberRegistrationParams): Promise<void> {
+  verifyMfaPhoneNumberRegistration(params: VerifyMfaPhoneNumberRegistrationParams): Promise<void> {
     const { accessToken, verificationCode } = params
     return this.http.post<void>('/mfa/credentials/register/phone-number/verify', {
       body: {
