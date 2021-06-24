@@ -11,8 +11,8 @@ import ApiClient, {
   TokenRequestParameters,
   EmailVerificationParams,
   PhoneNumberVerificationParams,
-  StartPhoneNumberRegistrationParams,
-  VerifyPhoneNumberRegistrationParams
+  StartMfaPhoneNumberRegistrationParams,
+  VerifyMfaPhoneNumberRegistrationParams
 } from './apiClient'
 import { AuthOptions } from './authOptions'
 import { AuthResult } from './authResult'
@@ -59,16 +59,16 @@ export type Client = {
   sendPhoneNumberVerification: (params: PhoneNumberVerificationParams) => Promise<void>
   signup: (params: SignupParams) => Promise<AuthResult>
   signupWithWebAuthn: (params: SignupWithWebAuthnParams, auth?: AuthOptions) => Promise<AuthResult>
+  startMfaPhoneNumberRegistration: (params: StartMfaPhoneNumberRegistrationParams) => Promise<void>
   startPasswordless: (params: PasswordlessParams, options?: Omit<AuthOptions, 'useWebMessage'>) => Promise<void>
-  startPhoneNumberRegistration: (params: StartPhoneNumberRegistrationParams) => Promise<void>
   unlink: (params: { accessToken: string; identityId: string; fields?: string }) => Promise<void>
   updateEmail: (params: UpdateEmailParams) => Promise<void>
   updatePassword: (params: UpdatePasswordParams) => Promise<void>
   updatePhoneNumber: (params: { accessToken: string; phoneNumber: string }) => Promise<void>
   updateProfile: (params: { accessToken: string; redirectUrl?: string; data: Profile }) => Promise<void>
   verifyPasswordless: (params: VerifyPasswordlessParams) => Promise<void>
+  verifyMfaPhoneNumberRegistration: (params: VerifyMfaPhoneNumberRegistrationParams) => Promise<void>
   verifyPhoneNumber: (params: { accessToken: string; phoneNumber: string; verificationCode: string }) => Promise<void>
-  verifyPhoneNumberRegistration: (params: VerifyPhoneNumberRegistrationParams) => Promise<void>
 }
 
 function checkParam<T>(data: T, key: keyof T) {
@@ -209,12 +209,12 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.signupWithWebAuthn(params, auth))
   }
 
-  function startPasswordless(params: PasswordlessParams, options: AuthOptions = {}) {
-    return apiClient.then(api => api.startPasswordless(params, options))
+  function startMfaPhoneNumberRegistration(params: StartMfaPhoneNumberRegistrationParams) {
+    return apiClient.then(api => api.startMfaPhoneNumberRegistration(params))
   }
 
-  function startPhoneNumberRegistration(params: StartPhoneNumberRegistrationParams) {
-    return apiClient.then(api => api.startPhoneNumberRegistration(params))
+  function startPasswordless(params: PasswordlessParams, options: AuthOptions = {}) {
+    return apiClient.then(api => api.startPasswordless(params, options))
   }
 
   function unlink(params: { accessToken: string; identityId: string; fields?: string }) {
@@ -237,16 +237,16 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.updateProfile(params))
   }
 
+  function verifyMfaPhoneNumberRegistration(params: VerifyMfaPhoneNumberRegistrationParams) {
+    return apiClient.then(api => api.verifyMfaPhoneNumberRegistration(params))
+  }
+
   function verifyPasswordless(params: VerifyPasswordlessParams, auth?: AuthOptions) {
     return apiClient.then(api => api.verifyPasswordless(params, auth))
   }
 
   function verifyPhoneNumber(params: { accessToken: string; phoneNumber: string; verificationCode: string }) {
     return apiClient.then(api => api.verifyPhoneNumber(params))
-  }
-
-  function verifyPhoneNumberRegistration(params: VerifyPhoneNumberRegistrationParams) {
-    return apiClient.then(api => api.verifyPhoneNumberRegistration(params))
   }
 
   return {
@@ -275,15 +275,15 @@ export function createClient(creationConfig: Config): Client {
     sendPhoneNumberVerification,
     signup,
     signupWithWebAuthn,
+    startMfaPhoneNumberRegistration,
     startPasswordless,
-    startPhoneNumberRegistration,
     unlink,
     updateEmail,
     updatePassword,
     updatePhoneNumber,
     updateProfile,
     verifyPasswordless,
-    verifyPhoneNumber,
-    verifyPhoneNumberRegistration
+    verifyMfaPhoneNumberRegistration,
+    verifyPhoneNumber
   }
 }
