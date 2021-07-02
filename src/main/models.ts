@@ -73,6 +73,15 @@ export type SessionInfo = {
   socialProviders?: string[]
 }
 
+export type StepUpResponse = {
+  amr: string[]
+  token: string
+}
+
+export type PasswordlessResponse = {
+  challengeId?: string
+}
+
 /**
  * This type represents the settings of a ReachFive account's stored in the backend.
  */
