@@ -82,6 +82,29 @@ export type PasswordlessResponse = {
   challengeId?: string
 }
 
+type MfaCredentialType = 'sms'
+
+type MfaCredential = {
+  type: MfaCredentialType
+  createdAt: string
+  friendlyName: string
+}
+
+export type PhoneMfaCredential = MfaCredential & {
+  type: 'sms'
+  phoneNumber: string
+}
+
+export type MfaCredentialsResponse = {
+  credentials: MfaCredential[]
+}
+
+export namespace MfaCredential {
+  export function isPhoneCredential(credential: MfaCredential): credential is PhoneMfaCredential {
+    return credential.type === 'sms'
+  }
+}
+
 /**
  * This type represents the settings of a ReachFive account's stored in the backend.
  */

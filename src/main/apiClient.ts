@@ -13,7 +13,7 @@ import {
   SignupProfile,
   OpenIdUser,
   StepUpResponse,
-  PasswordlessResponse
+  PasswordlessResponse, MfaCredentialsResponse
 } from './models'
 import { AuthOptions, AuthParameters, computeAuthOptions, resolveScope } from './authOptions'
 import { AuthResult, enrichAuthResult } from './authResult'
@@ -926,6 +926,12 @@ export default class ApiClient {
         withCookies: true
       })
     }
+  }
+
+  listMfaCredentials(accessToken: string): Promise<MfaCredentialsResponse> {
+    return this.http.get<MfaCredentialsResponse>('/mfa/credentials', {
+      accessToken
+    })
   }
 
   private getPkceParams(authParams: AuthParameters): Promise<PkceParams | {}> {
