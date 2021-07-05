@@ -12,8 +12,7 @@ import {
   SessionInfo,
   SignupProfile,
   OpenIdUser,
-  StepUpResponse,
-  PasswordlessResponse, MfaCredentialsResponse
+  PasswordlessResponse, MFA
 } from './models'
 import { AuthOptions, AuthParameters, computeAuthOptions, resolveScope } from './authOptions'
 import { AuthResult, enrichAuthResult } from './authResult'
@@ -30,6 +29,8 @@ import {
   publicKeyCredentialType
 } from './webAuthnService'
 import { randomBase64String } from '../utils/random'
+import StepUpResponse = MFA.StepUpResponse
+import MfaCredentialsResponse = MFA.MfaCredentialsResponse
 
 export type SignupParams = {
   data: SignupProfile

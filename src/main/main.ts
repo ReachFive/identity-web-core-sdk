@@ -3,9 +3,7 @@ import {
   RemoteSettings,
   SessionInfo,
   OpenIdUser,
-  StepUpResponse,
-  PasswordlessResponse,
-  MfaCredentialsResponse
+  PasswordlessResponse, MFA,
 } from './models'
 import ApiClient, {
   LoginWithPasswordParams,
@@ -29,10 +27,12 @@ import createEventManager, { Events } from './identityEventManager'
 import createUrlParser from './urlParser'
 import { toQueryString } from '../utils/queryString'
 import { rawRequest } from './httpClient'
+import StepUpResponse = MFA.StepUpResponse
+import MfaCredentialsResponse = MFA.MfaCredentialsResponse
 
 export { AuthResult } from './authResult'
 export { AuthOptions } from './authOptions'
-export { ErrorResponse, Profile, SessionInfo, StepUpResponse, PasswordlessResponse } from './models'
+export { ErrorResponse, Profile, SessionInfo, MFA, PasswordlessResponse } from './models'
 export { DeviceCredential, LoginWithWebAuthnParams, SignupWithWebAuthnParams } from './webAuthnService'
 
 export interface Config {

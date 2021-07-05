@@ -73,35 +73,35 @@ export type SessionInfo = {
   socialProviders?: string[]
 }
 
-export type StepUpResponse = {
-  amr: string[]
-  token: string
-}
-
 export type PasswordlessResponse = {
   challengeId?: string
 }
 
-type MfaCredentialType = 'sms'
-
-type MfaCredential = {
-  type: MfaCredentialType
-  createdAt: string
-  friendlyName: string
-}
-
-export type PhoneMfaCredential = MfaCredential & {
-  type: 'sms'
-  phoneNumber: string
-}
-
-export type MfaCredentialsResponse = {
-  credentials: MfaCredential[]
-}
-
-export namespace MfaCredential {
+export namespace MFA {
   export function isPhoneCredential(credential: MfaCredential): credential is PhoneMfaCredential {
     return credential.type === 'sms'
+  }
+
+  type MfaCredentialType = 'sms'
+
+  type MfaCredential = {
+    type: MfaCredentialType
+    createdAt: string
+    friendlyName: string
+  }
+
+  export type PhoneMfaCredential = MfaCredential & {
+    type: 'sms'
+    phoneNumber: string
+  }
+
+  export type MfaCredentialsResponse = {
+    credentials: MfaCredential[]
+  }
+
+  export type StepUpResponse = {
+    amr: string[]
+    token: string
   }
 }
 
