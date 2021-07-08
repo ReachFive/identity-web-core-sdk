@@ -135,15 +135,9 @@ export type VerifyMfaPhoneNumberRegistrationParams = {
   verificationCode: string
 }
 
-type RegularAuthOptions = {
+export type StepUpParams = {
   options?: AuthOptions
 }
-
-type PushedAuthOptions = {
-  request: string
-}
-
-export type StepUpParams = RegularAuthOptions | PushedAuthOptions
 
 type AuthenticationToken = { tkn: string }
 
@@ -908,25 +902,16 @@ export default class ApiClient {
   }
 
   getMfaStepUpToken(params: StepUpParams): Promise<StepUpResponse> {
-    if ('options' in params) {
-      const authParams = this.authParams(params.options ?? {})
-      return this.getPkceParams(authParams).then(challenge => {
-        return this.http.post<StepUpResponse>('/mfa/stepup', {
-          body: {
-            ...authParams,
-            ...challenge
-          },
-          withCookies: true
-        })
-      })
-    } else {
+    const authParams = this.authParams(params.options ?? {})
+    return this.getPkceParams(authParams).then(challenge => {
       return this.http.post<StepUpResponse>('/mfa/stepup', {
         body: {
-          request: (params as PushedAuthOptions).request
+          ...authParams,
+          ...challenge
         },
         withCookies: true
       })
-    }
+    })
   }
 
   listMfaCredentials(accessToken: string): Promise<MfaCredentialsResponse> {
