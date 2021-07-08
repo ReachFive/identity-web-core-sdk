@@ -79,6 +79,7 @@ export type Client = {
   verifyPhoneNumber: (params: { accessToken: string; phoneNumber: string; verificationCode: string }) => Promise<void>
   getMfaStepUpToken: (params: StepUpParams) => Promise<StepUpResponse>
   listMfaCredentials: (accessToken: string) => Promise<MfaCredentialsResponse>
+  removeMfaPhoneNumber: (accessToken: string) => Promise<void>
 }
 
 function checkParam<T>(data: T, key: keyof T) {
@@ -267,6 +268,10 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.listMfaCredentials(accessToken))
   }
 
+  function removeMfaPhoneNumber(accessToken: string) {
+    return apiClient.then(api => api.removeMfaPhoneNumber(accessToken))
+  }
+
   return {
     addNewWebAuthnDevice,
     checkSession,
@@ -305,5 +310,6 @@ export function createClient(creationConfig: Config): Client {
     verifyPhoneNumber,
     getMfaStepUpToken,
     listMfaCredentials,
+    removeMfaPhoneNumber,
   }
 }
