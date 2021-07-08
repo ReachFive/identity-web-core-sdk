@@ -1,4 +1,10 @@
-import { Profile, RemoteSettings, SessionInfo, OpenIdUser } from './models'
+import {
+  Profile,
+  RemoteSettings,
+  SessionInfo,
+  OpenIdUser,
+  PasswordlessResponse, MFA,
+} from './models'
 import ApiClient, {
   LoginWithPasswordParams,
   LoginWithCredentialsParams,
@@ -12,7 +18,7 @@ import ApiClient, {
   EmailVerificationParams,
   PhoneNumberVerificationParams,
   StartMfaPhoneNumberRegistrationParams,
-  VerifyMfaPhoneNumberRegistrationParams
+  VerifyMfaPhoneNumberRegistrationParams, StepUpParams
 } from './apiClient'
 import { AuthOptions } from './authOptions'
 import { AuthResult } from './authResult'
@@ -21,10 +27,12 @@ import createEventManager, { Events } from './identityEventManager'
 import createUrlParser from './urlParser'
 import { toQueryString } from '../utils/queryString'
 import { rawRequest } from './httpClient'
+import StepUpResponse = MFA.StepUpResponse
+import MfaCredentialsResponse = MFA.CredentialsResponse
 
 export { AuthResult } from './authResult'
 export { AuthOptions } from './authOptions'
-export { ErrorResponse, Profile, SessionInfo } from './models'
+export { ErrorResponse, Profile, SessionInfo, MFA, PasswordlessResponse } from './models'
 export { DeviceCredential, LoginWithWebAuthnParams, SignupWithWebAuthnParams } from './webAuthnService'
 
 export interface Config {
@@ -60,7 +68,7 @@ export type Client = {
   signup: (params: SignupParams) => Promise<AuthResult>
   signupWithWebAuthn: (params: SignupWithWebAuthnParams, auth?: AuthOptions) => Promise<AuthResult>
   startMfaPhoneNumberRegistration: (params: StartMfaPhoneNumberRegistrationParams) => Promise<void>
-  startPasswordless: (params: PasswordlessParams, options?: Omit<AuthOptions, 'useWebMessage'>) => Promise<void>
+  startPasswordless: (params: PasswordlessParams, options?: Omit<AuthOptions, 'useWebMessage'>) => Promise<PasswordlessResponse>
   unlink: (params: { accessToken: string; identityId: string; fields?: string }) => Promise<void>
   updateEmail: (params: UpdateEmailParams) => Promise<void>
   updatePassword: (params: UpdatePasswordParams) => Promise<void>
@@ -69,6 +77,8 @@ export type Client = {
   verifyPasswordless: (params: VerifyPasswordlessParams) => Promise<void>
   verifyMfaPhoneNumberRegistration: (params: VerifyMfaPhoneNumberRegistrationParams) => Promise<void>
   verifyPhoneNumber: (params: { accessToken: string; phoneNumber: string; verificationCode: string }) => Promise<void>
+  getMfaStepUpToken: (params: StepUpParams) => Promise<StepUpResponse>
+  listMfaCredentials: (accessToken: string) => Promise<MfaCredentialsResponse>
 }
 
 function checkParam<T>(data: T, key: keyof T) {
@@ -249,6 +259,14 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.verifyPhoneNumber(params))
   }
 
+  function getMfaStepUpToken(params: StepUpParams) {
+    return apiClient.then(api => api.getMfaStepUpToken(params))
+  }
+
+  function listMfaCredentials(accessToken: string) {
+    return apiClient.then(api => api.listMfaCredentials(accessToken))
+  }
+
   return {
     addNewWebAuthnDevice,
     checkSession,
@@ -284,6 +302,8 @@ export function createClient(creationConfig: Config): Client {
     updateProfile,
     verifyPasswordless,
     verifyMfaPhoneNumberRegistration,
-    verifyPhoneNumber
+    verifyPhoneNumber,
+    getMfaStepUpToken,
+    listMfaCredentials,
   }
 }

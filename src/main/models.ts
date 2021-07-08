@@ -73,6 +73,40 @@ export type SessionInfo = {
   socialProviders?: string[]
 }
 
+export type PasswordlessResponse = MFA.ChallengeId
+
+export namespace MFA {
+  export type ChallengeId = {
+    challengeId?: string
+  }
+
+  export function isPhoneCredential(credential: Credential): credential is PhoneCredential {
+    return credential.type === 'sms'
+  }
+
+  type CredentialType = 'sms'
+
+  type Credential = {
+    type: CredentialType
+    createdAt: string
+    friendlyName: string
+  }
+
+  export type PhoneCredential = Credential & {
+    type: 'sms'
+    phoneNumber: string
+  }
+
+  export type CredentialsResponse = {
+    credentials: Credential[]
+  }
+
+  export type StepUpResponse = {
+    amr: string[]
+    token: string
+  }
+}
+
 /**
  * This type represents the settings of a ReachFive account's stored in the backend.
  */

@@ -6,7 +6,14 @@ import { logError } from '../utils/logger'
 import { QueryString, toQueryString } from '../utils/queryString'
 import { camelCaseProperties } from '../utils/transformObjectProperties'
 
-import { ErrorResponse, Profile, SessionInfo, SignupProfile, OpenIdUser } from './models'
+import {
+  ErrorResponse,
+  Profile,
+  SessionInfo,
+  SignupProfile,
+  OpenIdUser,
+  PasswordlessResponse, MFA
+} from './models'
 import { AuthOptions, AuthParameters, computeAuthOptions, resolveScope } from './authOptions'
 import { AuthResult, enrichAuthResult } from './authResult'
 import { IdentityEventManager } from './identityEventManager'
@@ -22,6 +29,8 @@ import {
   publicKeyCredentialType
 } from './webAuthnService'
 import { randomBase64String } from '../utils/random'
+import StepUpResponse = MFA.StepUpResponse
+import MfaCredentialsResponse = MFA.CredentialsResponse
 
 export type SignupParams = {
   data: SignupProfile
@@ -80,13 +89,25 @@ export type UpdatePasswordParams =
   | EmailVerificationCodeUpdatePasswordParams
   | SmsVerificationCodeUpdatePasswordParams
 
-export type PasswordlessParams = {
+type SingleFactorPasswordlessParams = {
   authType: 'magic_link' | 'sms'
   email?: string
   phoneNumber?: string
 }
 
-export type VerifyPasswordlessParams = PasswordlessParams & { verificationCode: string }
+type StepUpPasswordlessParams = {
+  authType: 'magic_link' | 'sms'
+  stepUp: string
+}
+
+export type PasswordlessParams = SingleFactorPasswordlessParams | StepUpPasswordlessParams
+
+type VerifySingleFactorPasswordlessParams = SingleFactorPasswordlessParams & { verificationCode: string }
+type VerifySecondFactorPasswordlessParams = {
+  challengeId: string
+  verificationCode: string
+}
+export type VerifyPasswordlessParams = VerifySingleFactorPasswordlessParams | VerifySecondFactorPasswordlessParams
 
 export type ApiClientConfig = {
   clientId: string
@@ -112,6 +133,10 @@ export type StartMfaPhoneNumberRegistrationParams = {
 export type VerifyMfaPhoneNumberRegistrationParams = {
   accessToken: string
   verificationCode: string
+}
+
+export type StepUpParams = {
+  options?: AuthOptions
 }
 
 type AuthenticationToken = { tkn: string }
@@ -510,26 +535,35 @@ export default class ApiClient {
 
   // TODO: Make passwordless able to handle web_message
   // Asana https://app.asana.com/0/982150578058310/1200173806808689/f
-  startPasswordless(params: PasswordlessParams, auth: Omit<AuthOptions, 'useWebMessage'> = {}): Promise<void> {
-    const { authType, email, phoneNumber } = params
+  startPasswordless(params: PasswordlessParams, auth: Omit<AuthOptions, 'useWebMessage'> = {}): Promise<PasswordlessResponse> {
+    const passwordlessPayload =
+      ('stepUp' in params)
+        ? Promise.resolve(params)
+        : this.resolveSingleFactorPasswordlessParams(params, auth)
 
+    return passwordlessPayload.then(payload =>
+      this.http.post<PasswordlessResponse>('/passwordless/start', {
+        body: payload
+      })
+    )
+  }
+
+  private resolveSingleFactorPasswordlessParams(params: SingleFactorPasswordlessParams, auth: Omit<AuthOptions, 'useWebMessage'> = {}): Promise<{}> {
+    const { authType, email, phoneNumber } = params
     const authParams = this.authParams(auth)
 
     return this.getPkceParams(authParams).then(maybeChallenge => {
-
-      return this.http.post('/passwordless/start', {
-        body: {
-          ...authParams,
-          authType,
-          email,
-          phoneNumber,
-          ...maybeChallenge,
-        }
-      })
+      return {
+        ...authParams,
+        authType,
+        email,
+        phoneNumber,
+        ...maybeChallenge,
+      }
     })
   }
 
-  private loginWithVerificationCode(params: VerifyPasswordlessParams, auth: AuthOptions): void {
+  private loginWithVerificationCode(params: VerifyPasswordlessParams, auth: AuthOptions = {}): void {
     const queryString = toQueryString({
       ...this.authParams(auth),
       ...params
@@ -538,13 +572,15 @@ export default class ApiClient {
   }
 
   verifyPasswordless(params: VerifyPasswordlessParams, auth: AuthOptions = {}): Promise<void> {
-    return this.http
-      .post('/verify-auth-code', { body: params })
-      .then(() => this.loginWithVerificationCode(params, auth))
-      .catch(err => {
-        if (err.error) this.eventManager.fireEvent('login_failed', err)
-        return Promise.reject(err)
-      })
+   return ('challengeId' in params)
+      ? Promise.resolve(this.loginWithVerificationCode(params))
+      : this.http
+        .post('/verify-auth-code', { body: params })
+        .catch(err => {
+          if (err.error) this.eventManager.fireEvent('login_failed', err)
+          return Promise.reject(err)
+        })
+        .then(() => this.loginWithVerificationCode(params, auth))
   }
 
   signup(params: SignupParams): Promise<AuthResult> {
@@ -862,6 +898,25 @@ export default class ApiClient {
     return this.http.get<SessionInfo>('/sso/data', {
       query: { clientId: this.config.clientId },
       withCookies: true
+    })
+  }
+
+  getMfaStepUpToken(params: StepUpParams): Promise<StepUpResponse> {
+    const authParams = this.authParams(params.options ?? {})
+    return this.getPkceParams(authParams).then(challenge => {
+      return this.http.post<StepUpResponse>('/mfa/stepup', {
+        body: {
+          ...authParams,
+          ...challenge
+        },
+        withCookies: true
+      })
+    })
+  }
+
+  listMfaCredentials(accessToken: string): Promise<MfaCredentialsResponse> {
+    return this.http.get<MfaCredentialsResponse>('/mfa/credentials', {
+      accessToken
     })
   }
 
