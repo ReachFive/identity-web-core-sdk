@@ -7,6 +7,17 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Features
+
+- Method to initiate an MFA step-up challenge
+- Method to list registered MFA credentials
+
+### Changed
+
+- `startPasswordless` can now can take a MFA step-up token to initiate a second factor challenge
+- `startPasswordless` now returns an MFA challenge ID when using in step-up flows
+- `verifyPasswordless` refactored to be able to complete second factor challenges
+
 ## [1.20.1] - 2021-04-15
 
 ### Added
