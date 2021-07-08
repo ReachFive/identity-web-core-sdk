@@ -876,7 +876,7 @@ export default class ApiClient {
 
   startMfaPhoneNumberRegistration(params: StartMfaPhoneNumberRegistrationParams): Promise<void> {
     const { accessToken, phoneNumber } = params
-    return this.http.post<void>('/mfa/credentials/manage/phone-number/register', {
+    return this.http.post<void>('/mfa/credentials/phone-number/register', {
       body: {
         phoneNumber
       },
@@ -886,7 +886,7 @@ export default class ApiClient {
 
   verifyMfaPhoneNumberRegistration(params: VerifyMfaPhoneNumberRegistrationParams): Promise<void> {
     const { accessToken, verificationCode } = params
-    return this.http.post<void>('/mfa/credentials/manage/phone-number/verify', {
+    return this.http.post<void>('/mfa/credentials/phone-number/verify', {
       body: {
         verificationCode
       },
@@ -914,7 +914,7 @@ export default class ApiClient {
   }
 
   removeMfaPhoneNumber(accessToken: string): Promise<void> {
-    return this.http.get<void>('/mfa/credentials/manage/phone-number/remove', {
+    return this.http.remove<void>('/mfa/credentials/phone-number/remove', {
       accessToken
     })
   }
