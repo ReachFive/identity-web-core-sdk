@@ -30,7 +30,7 @@ import {
 } from './webAuthnService'
 import { randomBase64String } from '../utils/random'
 import StepUpResponse = MFA.StepUpResponse
-import MfaCredentialsResponse = MFA.MfaCredentialsResponse
+import MfaCredentialsResponse = MFA.CredentialsResponse
 
 export type SignupParams = {
   data: SignupProfile

@@ -28,7 +28,7 @@ import createUrlParser from './urlParser'
 import { toQueryString } from '../utils/queryString'
 import { rawRequest } from './httpClient'
 import StepUpResponse = MFA.StepUpResponse
-import MfaCredentialsResponse = MFA.MfaCredentialsResponse
+import MfaCredentialsResponse = MFA.CredentialsResponse
 
 export { AuthResult } from './authResult'
 export { AuthOptions } from './authOptions'
