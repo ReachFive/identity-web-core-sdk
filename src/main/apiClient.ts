@@ -914,7 +914,7 @@ export default class ApiClient {
   }
 
   removeMfaPhoneNumber(accessToken: string): Promise<void> {
-    return this.http.remove<void>('/mfa/credentials/phone-number/remove', {
+    return this.http.remove<void>('/mfa/credentials/phone-number', {
       accessToken
     })
   }
