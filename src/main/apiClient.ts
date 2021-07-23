@@ -139,6 +139,11 @@ export type StepUpParams = {
   options?: AuthOptions
 }
 
+export type RemoveMfaPhoneNumberParams = {
+  accessToken: string
+  phoneNumber: string
+}
+
 type AuthenticationToken = { tkn: string }
 
 /**
@@ -876,7 +881,7 @@ export default class ApiClient {
 
   startMfaPhoneNumberRegistration(params: StartMfaPhoneNumberRegistrationParams): Promise<void> {
     const { accessToken, phoneNumber } = params
-    return this.http.post<void>('/mfa/credentials/phone-number/register', {
+    return this.http.post<void>('/mfa/credentials/phone-numbers', {
       body: {
         phoneNumber
       },
@@ -886,7 +891,7 @@ export default class ApiClient {
 
   verifyMfaPhoneNumberRegistration(params: VerifyMfaPhoneNumberRegistrationParams): Promise<void> {
     const { accessToken, verificationCode } = params
-    return this.http.post<void>('/mfa/credentials/phone-number/verify', {
+    return this.http.post<void>('/mfa/credentials/phone-numbers/verify', {
       body: {
         verificationCode
       },
@@ -913,9 +918,13 @@ export default class ApiClient {
     })
   }
 
-  removeMfaPhoneNumber(accessToken: string): Promise<void> {
-    return this.http.remove<void>('/mfa/credentials/phone-number', {
-      accessToken
+  removeMfaPhoneNumber(params: RemoveMfaPhoneNumberParams): Promise<void> {
+    const { accessToken, phoneNumber } = params
+    return this.http.remove<void>('/mfa/credentials/phone-numbers', {
+      body: {
+        phoneNumber
+      },
+      accessToken,
     })
   }
 
