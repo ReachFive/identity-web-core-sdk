@@ -3,7 +3,8 @@ import {
   RemoteSettings,
   SessionInfo,
   OpenIdUser,
-  PasswordlessResponse, MFA,
+  PasswordlessResponse,
+  MFA,
 } from './models'
 import ApiClient, {
   LoginWithPasswordParams,
@@ -18,7 +19,9 @@ import ApiClient, {
   EmailVerificationParams,
   PhoneNumberVerificationParams,
   StartMfaPhoneNumberRegistrationParams,
-  VerifyMfaPhoneNumberRegistrationParams, StepUpParams
+  VerifyMfaPhoneNumberRegistrationParams,
+  StepUpParams,
+  RemoveMfaPhoneNumberParams,
 } from './apiClient'
 import { AuthOptions } from './authOptions'
 import { AuthResult } from './authResult'
@@ -79,6 +82,7 @@ export type Client = {
   verifyPhoneNumber: (params: { accessToken: string; phoneNumber: string; verificationCode: string }) => Promise<void>
   getMfaStepUpToken: (params: StepUpParams) => Promise<StepUpResponse>
   listMfaCredentials: (accessToken: string) => Promise<MfaCredentialsResponse>
+  removeMfaPhoneNumber: (params: RemoveMfaPhoneNumberParams) => Promise<void>
 }
 
 function checkParam<T>(data: T, key: keyof T) {
@@ -267,6 +271,10 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.listMfaCredentials(accessToken))
   }
 
+  function removeMfaPhoneNumber(params: RemoveMfaPhoneNumberParams) {
+    return apiClient.then(api => api.removeMfaPhoneNumber(params))
+  }
+
   return {
     addNewWebAuthnDevice,
     checkSession,
@@ -305,5 +313,6 @@ export function createClient(creationConfig: Config): Client {
     verifyPhoneNumber,
     getMfaStepUpToken,
     listMfaCredentials,
+    removeMfaPhoneNumber,
   }
 }

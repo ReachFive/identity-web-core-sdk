@@ -17,7 +17,7 @@ export type RequestParams = {
 }
 
 export type GetRequestParams = Omit<RequestParams, 'body' | 'method'>
-export type DeleteRequestParams = Omit<RequestParams, 'body' | 'method'>
+export type DeleteRequestParams = Omit<RequestParams, 'method'>
 export type PostRequestParams = Omit<RequestParams, 'method'>
 
 export interface HttpClient {
