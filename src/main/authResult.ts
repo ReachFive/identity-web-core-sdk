@@ -11,6 +11,7 @@ export interface AuthResult {
   idTokenPayload?: IdTokenPayload
   code?: string
   state?: string
+  refreshToken?: string
 }
 
 /**
