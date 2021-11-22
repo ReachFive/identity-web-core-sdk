@@ -694,15 +694,24 @@ export default class ApiClient {
     return this.http.post('/unlink', { body: data, accessToken })
   }
 
-  refreshTokens({ accessToken }: { accessToken: string }): Promise<AuthResult> {
+  refreshTokens({ accessToken, refreshToken }: { accessToken?: string, refreshToken?: string }): Promise<AuthResult> {
+    if((isUndefined(refreshToken)) && !isUndefined(accessToken)) {
+      return this.http
+        .post<AuthResult>('/token/access-token', {
+          body: {
+            clientId: this.config.clientId,
+            accessToken
+          } }).then(enrichAuthResult)
+    }
+    // Ultimately the purpose is to remove the access token parameter and stop calling /token/access-token
     return this.http
-      .post<AuthResult>('/token/access-token', {
+      .post<AuthResult>(this.tokenUrl, {
         body: {
           clientId: this.config.clientId,
-          accessToken
-        }
-      })
-      .then(enrichAuthResult)
+          accessToken,
+          grantType: 'refresh_token',
+          refreshToken
+        } }).then(enrichAuthResult)
   }
 
   getUser({ accessToken, fields }: { accessToken: string; fields?: string }): Promise<Profile> {
