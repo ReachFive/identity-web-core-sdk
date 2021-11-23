@@ -703,7 +703,6 @@ export default class ApiClient {
             accessToken
           } }).then(enrichAuthResult)
     }
-    // Ultimately the purpose is to remove the access token parameter and stop calling /token/access-token
     return this.http
       .post<AuthResult>(this.tokenUrl, {
         body: {
