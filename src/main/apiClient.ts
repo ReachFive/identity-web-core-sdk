@@ -12,7 +12,7 @@ import {
   SessionInfo,
   SignupProfile,
   OpenIdUser,
-  PasswordlessResponse, MFA
+  PasswordlessResponse, MFA, Scope
 } from './models'
 import { AuthOptions, AuthParameters, computeAuthOptions, resolveScope } from './authOptions'
 import { AuthResult, enrichAuthResult } from './authResult'
@@ -146,6 +146,7 @@ export type RemoveMfaPhoneNumberParams = {
 
 type AuthenticationToken = { tkn: string }
 
+export type RefreshTokenParams = { accessToken: string} | { refreshToken: string, scope?: Scope}
 /**
  * Identity Rest API Client
  */
@@ -694,23 +695,25 @@ export default class ApiClient {
     return this.http.post('/unlink', { body: data, accessToken })
   }
 
-  refreshTokens({ accessToken, refreshToken }: { accessToken?: string, refreshToken?: string }): Promise<AuthResult> {
-    if((isUndefined(refreshToken)) && !isUndefined(accessToken)) {
-      return this.http
-        .post<AuthResult>('/token/access-token', {
+  refreshTokens(params: RefreshTokenParams): Promise<AuthResult> {
+    const result =
+      ('refreshToken' in params)
+        ? this.http.post<AuthResult>(this.tokenUrl, {
           body: {
             clientId: this.config.clientId,
-            accessToken
-          } }).then(enrichAuthResult)
-    }
-    return this.http
-      .post<AuthResult>(this.tokenUrl, {
-        body: {
-          clientId: this.config.clientId,
-          accessToken,
-          grantType: 'refresh_token',
-          refreshToken
-        } }).then(enrichAuthResult)
+            grantType: 'refresh_token',
+            refreshToken: params.refreshToken,
+            ...pick(params, 'scope'),
+          }
+        })
+        : this.http.post<AuthResult>('/token/access-token', {
+          body: {
+            clientId: this.config.clientId,
+            accessToken: params.accessToken
+          }
+        })
+
+    return result.then(enrichAuthResult)
   }
 
   getUser({ accessToken, fields }: { accessToken: string; fields?: string }): Promise<Profile> {

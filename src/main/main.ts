@@ -21,7 +21,7 @@ import ApiClient, {
   StartMfaPhoneNumberRegistrationParams,
   VerifyMfaPhoneNumberRegistrationParams,
   StepUpParams,
-  RemoveMfaPhoneNumberParams,
+  RemoveMfaPhoneNumberParams, RefreshTokenParams,
 } from './apiClient'
 import { AuthOptions } from './authOptions'
 import { AuthResult } from './authResult'
@@ -62,7 +62,7 @@ export type Client = {
   logout: (params?: { redirectTo?: string; removeCredentials?: boolean }) => Promise<void>
   off: <K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) => void
   on: <K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) => void
-  refreshTokens: (params: { accessToken?: string, refreshToken?: string}) => Promise<AuthResult>
+  refreshTokens: (params: RefreshTokenParams) => Promise<AuthResult>
   remoteSettings: Promise<RemoteSettings>
   removeWebAuthnDevice: (accessToken: string, deviceId: string) => Promise<void>
   requestPasswordReset: (params: RequestPasswordResetParams) => Promise<void>
@@ -195,7 +195,7 @@ export function createClient(creationConfig: Config): Client {
     }
   }
 
-  function refreshTokens(params: { accessToken?: string, refreshToken?: string}) {
+  function refreshTokens(params: RefreshTokenParams) {
     return apiClient.then(api => api.refreshTokens(params))
   }
 
