@@ -14,12 +14,10 @@ beforeEach(() => {
 
 test('simple', async () => {
   // Given
-  const { client, clientId, domain } = createDefaultTestClient()
+  const {client, clientId, domain} = createDefaultTestClient()
 
   const accessToken = '1234556789'
 
-  const refreshToken = '1234jkljklerw2'
-  const grantType = 'refresh_token'
   const idToken =
     'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.Pd6t82tPL3EZdkeYxw_DV2KimE1U2FvuLHmfR_mimJ5US3JFU4J2Gd94O7rwpSTGN1B9h-_lsTebo4ua4xHsTtmczZ9xa8a_kWKaSkqFjNFaFp6zcoD6ivCu03SlRqsQzSRHXo6TKbnqOt9D6Y2rNa3C4igSwoS0jUE4BgpXbc0'
   const newAccessToken = 'kjbsdfljndvlksndfv'
@@ -37,18 +35,8 @@ test('simple', async () => {
     })
   )
 
-  const refreshCallWithRefreshToken = fetchMock.mockResponseOnce(
-    JSON.stringify({
-      id_token: idToken,
-      access_token: newAccessToken,
-      expires_in: expiresIn,
-      token_type: tokenType,
-      refresh_token: refreshToken
-    })
-  )
-
   // When
-  const authResult = await client.refreshTokens({ accessToken })
+  const authResult = await client.refreshTokens({accessToken})
 
   // Then
   expect(authResult).toEqual({
@@ -70,31 +58,59 @@ test('simple', async () => {
       access_token: accessToken
     })
   })
+})
+
+test('refresh token with a refresh token', async () => {
+  // Given
+  const {client, clientId, domain} = createDefaultTestClient()
+  const newAccessToken = "newAccessToken"
+  const expiresIn = 1800
+  const tokenType = 'Bearer'
+  const scope = 'openId external offline_access'
+  const idToken =
+    'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.Pd6t82tPL3EZdkeYxw_DV2KimE1U2FvuLHmfR_mimJ5US3JFU4J2Gd94O7rwpSTGN1B9h-_lsTebo4ua4xHsTtmczZ9xa8a_kWKaSkqFjNFaFp6zcoD6ivCu03SlRqsQzSRHXo6TKbnqOt9D6Y2rNa3C4igSwoS0jUE4BgpXbc0'
+  const refreshToken = 'refreshToken'
+  const newRefreshToken = 'newRefreshToken'
+
+  const authenticatedHandler = jest.fn()
+  client.on('authenticated', authenticatedHandler)
+
+  const refreshCallWithRefreshToken = fetchMock.mockResponseOnce(
+    JSON.stringify({
+      idToken,
+      accessToken: newAccessToken,
+      expiresIn,
+      idTokenPayload: {
+        name: 'John Doe',
+        sub: '1234567890'
+      },
+      refreshToken: newRefreshToken,
+      tokenType,
+    })
+  )
 
   // When
-  const authResultWithRefreshToken = await client.refreshTokens({ accessToken, refreshToken })
-
-  // Then
-  expect(authResultWithRefreshToken).toEqual({
+  const authResult = await client.refreshTokens({refreshToken, scope})
+  //Then
+  expect(authResult).toEqual({
     idToken,
-    refreshToken,
     idTokenPayload: {
       name: 'John Doe',
       sub: '1234567890'
     },
     accessToken: newAccessToken,
     expiresIn,
-    tokenType
+    tokenType,
+    refreshToken: newRefreshToken
   })
-  expect(refreshCallWithRefreshToken).toHaveBeenLastCalledWith(`https://${domain}/oauth/token`, {
+  expect(refreshCallWithRefreshToken).toHaveBeenCalledWith(`https://${domain}/oauth/token`, {
     method: 'POST',
     headers: headers.jsonAndDefaultLang,
     body: JSON.stringify({
       client_id: clientId,
-      access_token: accessToken,
-      grant_type: grantType,
+      grant_type: 'refresh_token',
       refresh_token: refreshToken,
+      scope
     })
   })
-  expect(authenticatedHandler).not.toHaveBeenCalled()
 })
