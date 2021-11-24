@@ -12,7 +12,7 @@ beforeEach(() => {
   fetchMock.resetMocks()
 })
 
-test('simple', async () => {
+test('legacy token refresh', async () => {
   // Given
   const {client, clientId, domain} = createDefaultTestClient()
 
