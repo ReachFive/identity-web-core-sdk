@@ -3,6 +3,7 @@ import pick from 'lodash/pick'
 import isString from 'lodash/isString'
 import isArray from 'lodash/isArray'
 import isUndefined from 'lodash/isUndefined'
+import { Scope } from "./models"
 
 export type ResponseType = 'code' | 'token'
 export type Prompt = 'none' | 'login' | 'consent' | 'select_account'
@@ -13,7 +14,7 @@ export type Prompt = 'none' | 'login' | 'consent' | 'select_account'
 export type AuthOptions = {
   responseType?: ResponseType
   redirectUri?: string
-  scope?: string | string[]
+  scope?: Scope
   fetchBasicProfile?: boolean
   useWebMessage?: boolean
   popupMode?: boolean

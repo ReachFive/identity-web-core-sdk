@@ -139,6 +139,8 @@ export type FieldError = {
   code: 'missing' | 'invalid'
 }
 
+export type Scope = string | string[]
+
 export namespace ErrorResponse {
   export function isErrorResponse(thing: any): thing is ErrorResponse {
     return thing && thing.error
