@@ -1,18 +1,16 @@
 import WinChan from 'winchan'
 import pick from 'lodash/pick'
 import isUndefined from 'lodash/isUndefined'
-
 import { logError } from '../utils/logger'
 import { QueryString, toQueryString } from '../utils/queryString'
 import { camelCaseProperties } from '../utils/transformObjectProperties'
-
 import {
   ErrorResponse,
   Profile,
   SessionInfo,
   SignupProfile,
   OpenIdUser,
-  PasswordlessResponse, MFA
+  PasswordlessResponse, MFA, Scope
 } from './models'
 import { AuthOptions, AuthParameters, computeAuthOptions, resolveScope } from './authOptions'
 import { AuthResult, enrichAuthResult } from './authResult'
@@ -42,13 +40,11 @@ export type SignupParams = {
 export type UpdateEmailParams = { accessToken: string; email: string; redirectUrl?: string }
 export type EmailVerificationParams = { accessToken: string; redirectUrl?: string; returnToAfterEmailConfirmation?: string }
 export type PhoneNumberVerificationParams = { accessToken: string }
-
 type LoginWithPasswordOptions = { password: string; saveCredentials?: boolean; auth?: AuthOptions, captchaToken?: string }
 type EmailLoginWithPasswordParams = LoginWithPasswordOptions & { email: string }
 type PhoneNumberLoginWithPasswordParams = LoginWithPasswordOptions & { phoneNumber: string }
 
 export type LoginWithPasswordParams = EmailLoginWithPasswordParams | PhoneNumberLoginWithPasswordParams
-
 export type LoginWithCredentialsParams = {
   mediation?: 'silent' | 'optional' | 'required'
   auth?: AuthOptions
@@ -146,6 +142,7 @@ export type RemoveMfaPhoneNumberParams = {
 
 type AuthenticationToken = { tkn: string }
 
+export type RefreshTokenParams = { accessToken: string} | { refreshToken: string, scope?: Scope}
 /**
  * Identity Rest API Client
  */
@@ -694,15 +691,25 @@ export default class ApiClient {
     return this.http.post('/unlink', { body: data, accessToken })
   }
 
-  refreshTokens({ accessToken }: { accessToken: string }): Promise<AuthResult> {
-    return this.http
-      .post<AuthResult>('/token/access-token', {
-        body: {
-          clientId: this.config.clientId,
-          accessToken
-        }
-      })
-      .then(enrichAuthResult)
+  refreshTokens(params: RefreshTokenParams): Promise<AuthResult> {
+    const result =
+      ('refreshToken' in params)
+        ? this.http.post<AuthResult>(this.tokenUrl, {
+          body: {
+            clientId: this.config.clientId,
+            grantType: 'refresh_token',
+            refreshToken: params.refreshToken,
+            ...pick(params, 'scope'),
+          }
+        })
+        : this.http.post<AuthResult>('/token/access-token', {
+          body: {
+            clientId: this.config.clientId,
+            accessToken: params.accessToken
+          }
+        })
+
+    return result.then(enrichAuthResult)
   }
 
   getUser({ accessToken, fields }: { accessToken: string; fields?: string }): Promise<Profile> {
