@@ -135,6 +135,15 @@ export type VerifyMfaPhoneNumberRegistrationParams = {
   verificationCode: string
 }
 
+export type StartMfaEmailRegistrationParams = {
+  accessToken: string
+}
+
+export type VerifyMfaEmailRegistrationParams = {
+  accessToken: string
+  verificationCode: string
+}
+
 export type StepUpParams = {
   options?: AuthOptions
 }
@@ -142,6 +151,10 @@ export type StepUpParams = {
 export type RemoveMfaPhoneNumberParams = {
   accessToken: string
   phoneNumber: string
+}
+
+export type RemoveMfaEmailParams = {
+  accessToken: string
 }
 
 type AuthenticationToken = { tkn: string }
@@ -899,6 +912,23 @@ export default class ApiClient {
     })
   }
 
+  startMfaEmailRegistration(params: StartMfaEmailRegistrationParams): Promise<void> {
+    const { accessToken } = params
+    return this.http.post<void>('/mfa/credentials/emails', {
+      accessToken
+    })
+  }
+
+  verifyMfaEmailRegistration(params: VerifyMfaEmailRegistrationParams): Promise<void> {
+    const { accessToken, verificationCode } = params
+    return this.http.post<void>('/mfa/credentials/emails/verify', {
+      body: {
+        verificationCode
+      },
+      accessToken
+    })
+  }
+
   getMfaStepUpToken(params: StepUpParams): Promise<StepUpResponse> {
     const authParams = this.authParams(params.options ?? {})
     return this.getPkceParams(authParams).then(challenge => {
@@ -924,6 +954,13 @@ export default class ApiClient {
       body: {
         phoneNumber
       },
+      accessToken,
+    })
+  }
+
+  removeMfaEmail(params: RemoveMfaEmailParams): Promise<void> {
+    const { accessToken } = params
+    return this.http.remove<void>('/mfa/credentials/emails', {
       accessToken,
     })
   }

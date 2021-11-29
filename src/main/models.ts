@@ -84,7 +84,11 @@ export namespace MFA {
     return credential.type === 'sms'
   }
 
-  type CredentialType = 'sms'
+  export function isEmailCredential(credential: Credential): credential is EmailCredential {
+    return credential.type === 'email'
+  }
+
+  type CredentialType = 'sms' | 'email'
 
   type Credential = {
     type: CredentialType
@@ -95,6 +99,11 @@ export namespace MFA {
   export type PhoneCredential = Credential & {
     type: 'sms'
     phoneNumber: string
+  }
+
+  export type EmailCredential = Credential & {
+    type: 'email'
+    email: string
   }
 
   export type CredentialsResponse = {

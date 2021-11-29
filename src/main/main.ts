@@ -22,6 +22,9 @@ import ApiClient, {
   VerifyMfaPhoneNumberRegistrationParams,
   StepUpParams,
   RemoveMfaPhoneNumberParams,
+  VerifyMfaEmailRegistrationParams,
+  StartMfaEmailRegistrationParams,
+  RemoveMfaEmailParams,
 } from './apiClient'
 import { AuthOptions } from './authOptions'
 import { AuthResult } from './authResult'
@@ -70,6 +73,7 @@ export type Client = {
   sendPhoneNumberVerification: (params: PhoneNumberVerificationParams) => Promise<void>
   signup: (params: SignupParams) => Promise<AuthResult>
   signupWithWebAuthn: (params: SignupWithWebAuthnParams, auth?: AuthOptions) => Promise<AuthResult>
+  startMfaEmailRegistration: (params: StartMfaEmailRegistrationParams) => Promise<void>
   startMfaPhoneNumberRegistration: (params: StartMfaPhoneNumberRegistrationParams) => Promise<void>
   startPasswordless: (params: PasswordlessParams, options?: Omit<AuthOptions, 'useWebMessage'>) => Promise<PasswordlessResponse>
   unlink: (params: { accessToken: string; identityId: string; fields?: string }) => Promise<void>
@@ -78,11 +82,13 @@ export type Client = {
   updatePhoneNumber: (params: { accessToken: string; phoneNumber: string }) => Promise<void>
   updateProfile: (params: { accessToken: string; redirectUrl?: string; data: Profile }) => Promise<void>
   verifyPasswordless: (params: VerifyPasswordlessParams) => Promise<void>
+  verifyMfaEmailRegistration: (params: VerifyMfaEmailRegistrationParams) => Promise<void>
   verifyMfaPhoneNumberRegistration: (params: VerifyMfaPhoneNumberRegistrationParams) => Promise<void>
   verifyPhoneNumber: (params: { accessToken: string; phoneNumber: string; verificationCode: string }) => Promise<void>
   getMfaStepUpToken: (params: StepUpParams) => Promise<StepUpResponse>
   listMfaCredentials: (accessToken: string) => Promise<MfaCredentialsResponse>
   removeMfaPhoneNumber: (params: RemoveMfaPhoneNumberParams) => Promise<void>
+  removeMfaEmail: (params: RemoveMfaEmailParams) => Promise<void>
 }
 
 function checkParam<T>(data: T, key: keyof T) {
@@ -223,6 +229,10 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.signupWithWebAuthn(params, auth))
   }
 
+  function startMfaEmailRegistration(params: StartMfaEmailRegistrationParams) {
+    return apiClient.then(api => api.startMfaEmailRegistration(params))
+  }
+
   function startMfaPhoneNumberRegistration(params: StartMfaPhoneNumberRegistrationParams) {
     return apiClient.then(api => api.startMfaPhoneNumberRegistration(params))
   }
@@ -251,6 +261,10 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.updateProfile(params))
   }
 
+  function verifyMfaEmailRegistration(params: VerifyMfaEmailRegistrationParams) {
+    return apiClient.then(api => api.verifyMfaEmailRegistration(params))
+  }
+
   function verifyMfaPhoneNumberRegistration(params: VerifyMfaPhoneNumberRegistrationParams) {
     return apiClient.then(api => api.verifyMfaPhoneNumberRegistration(params))
   }
@@ -273,6 +287,10 @@ export function createClient(creationConfig: Config): Client {
 
   function removeMfaPhoneNumber(params: RemoveMfaPhoneNumberParams) {
     return apiClient.then(api => api.removeMfaPhoneNumber(params))
+  }
+
+  function removeMfaEmail(params: RemoveMfaEmailParams) {
+    return apiClient.then(api => api.removeMfaEmail(params))
   }
 
   return {
@@ -301,6 +319,7 @@ export function createClient(creationConfig: Config): Client {
     sendPhoneNumberVerification,
     signup,
     signupWithWebAuthn,
+    startMfaEmailRegistration,
     startMfaPhoneNumberRegistration,
     startPasswordless,
     unlink,
@@ -309,10 +328,12 @@ export function createClient(creationConfig: Config): Client {
     updatePhoneNumber,
     updateProfile,
     verifyPasswordless,
+    verifyMfaEmailRegistration,
     verifyMfaPhoneNumberRegistration,
     verifyPhoneNumber,
     getMfaStepUpToken,
     listMfaCredentials,
     removeMfaPhoneNumber,
+    removeMfaEmail,
   }
 }

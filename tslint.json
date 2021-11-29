@@ -85,6 +85,7 @@
     "strict-string-expressions": false,
     "whitespace": false,
     "no-async-without-await": false,
-    "invalid-void": false
+    "invalid-void": false,
+    "max-file-line-count": [false]
   }
 }
