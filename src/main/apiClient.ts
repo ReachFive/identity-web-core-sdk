@@ -1,11 +1,9 @@
 import WinChan from 'winchan'
 import pick from 'lodash/pick'
 import isUndefined from 'lodash/isUndefined'
-
 import { logError } from '../utils/logger'
 import { QueryString, toQueryString } from '../utils/queryString'
 import { camelCaseProperties } from '../utils/transformObjectProperties'
-
 import {
   ErrorResponse,
   Profile,
@@ -42,13 +40,11 @@ export type SignupParams = {
 export type UpdateEmailParams = { accessToken: string; email: string; redirectUrl?: string }
 export type EmailVerificationParams = { accessToken: string; redirectUrl?: string; returnToAfterEmailConfirmation?: string }
 export type PhoneNumberVerificationParams = { accessToken: string }
-
 type LoginWithPasswordOptions = { password: string; saveCredentials?: boolean; auth?: AuthOptions, captchaToken?: string }
 type EmailLoginWithPasswordParams = LoginWithPasswordOptions & { email: string }
 type PhoneNumberLoginWithPasswordParams = LoginWithPasswordOptions & { phoneNumber: string }
 
 export type LoginWithPasswordParams = EmailLoginWithPasswordParams | PhoneNumberLoginWithPasswordParams
-
 export type LoginWithCredentialsParams = {
   mediation?: 'silent' | 'optional' | 'required'
   auth?: AuthOptions
