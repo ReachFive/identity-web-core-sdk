@@ -26,6 +26,7 @@ import ApiClient, {
   StartMfaEmailRegistrationParams,
   RemoveMfaEmailParams,
   RefreshTokenParams,
+  StartMfaEmailRegistrationResponse,
 } from './apiClient'
 import { AuthOptions } from './authOptions'
 import { AuthResult } from './authResult'
@@ -74,7 +75,7 @@ export type Client = {
   sendPhoneNumberVerification: (params: PhoneNumberVerificationParams) => Promise<void>
   signup: (params: SignupParams) => Promise<AuthResult>
   signupWithWebAuthn: (params: SignupWithWebAuthnParams, auth?: AuthOptions) => Promise<AuthResult>
-  startMfaEmailRegistration: (params: StartMfaEmailRegistrationParams) => Promise<void>
+  startMfaEmailRegistration: (params: StartMfaEmailRegistrationParams) => Promise<StartMfaEmailRegistrationResponse>
   startMfaPhoneNumberRegistration: (params: StartMfaPhoneNumberRegistrationParams) => Promise<void>
   startPasswordless: (params: PasswordlessParams, options?: Omit<AuthOptions, 'useWebMessage'>) => Promise<PasswordlessResponse>
   unlink: (params: { accessToken: string; identityId: string; fields?: string }) => Promise<void>
