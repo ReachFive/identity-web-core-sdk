@@ -145,20 +145,18 @@ export type VerifyMfaEmailRegistrationParams = {
   verificationCode: string
 }
 
-export type StepUpWithCookie = {
+export type StepUpWithCookieParams = {
   method: 'cookie'
 }
 
 export type StepUpWithAccessTokenParams = {
-  method: 'access_token',
+  method: 'access_token'
   accessToken: string
 }
 
-export type StepUpMethod = StepUpWithCookie | StepUpWithAccessTokenParams
-
 export type StepUpParams = {
-  options?: AuthOptions
-} & StepUpMethod
+    options?: AuthOptions
+  } & (StepUpWithCookieParams | StepUpWithAccessTokenParams)
 
 export type RemoveMfaPhoneNumberParams = {
   accessToken: string
