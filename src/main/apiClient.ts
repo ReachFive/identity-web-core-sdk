@@ -145,9 +145,20 @@ export type VerifyMfaEmailRegistrationParams = {
   verificationCode: string
 }
 
+export type StepUpWithCookie = {
+  method: 'cookie'
+}
+
+export type StepUpWithAccessTokenParams = {
+  method: 'access_token',
+  accessToken: string
+}
+
+export type StepUpMethod = StepUpWithCookie | StepUpWithAccessTokenParams
+
 export type StepUpParams = {
   options?: AuthOptions
-}
+} & StepUpMethod
 
 export type RemoveMfaPhoneNumberParams = {
   accessToken: string
@@ -949,7 +960,8 @@ export default class ApiClient {
           ...authParams,
           ...challenge
         },
-        withCookies: true
+        withCookies: params.method === 'cookie',
+        accessToken: (params.method === 'access_token') ? params.accessToken : undefined
       })
     })
   }
