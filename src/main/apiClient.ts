@@ -10,9 +10,7 @@ import {
   SessionInfo,
   SignupProfile,
   OpenIdUser,
-  PasswordlessResponse,
-  MFA,
-  Scope
+  PasswordlessResponse, MFA, Scope
 } from './models'
 import { AuthOptions, AuthParameters, computeAuthOptions, resolveScope } from './authOptions'
 import { AuthResult, enrichAuthResult } from './authResult'
@@ -31,7 +29,6 @@ import {
 import { randomBase64String } from '../utils/random'
 import StepUpResponse = MFA.StepUpResponse
 import MfaCredentialsResponse = MFA.CredentialsResponse
-import EmailCredential = MFA.EmailCredential
 
 export type SignupParams = {
   data: SignupProfile
@@ -137,8 +134,6 @@ export type VerifyMfaPhoneNumberRegistrationParams = {
 export type StartMfaEmailRegistrationParams = {
   accessToken: string
 }
-
-export type StartMfaEmailRegistrationResponse = { status: 'email_sent' } | { status: 'enabled', credential: EmailCredential }
 
 export type VerifyMfaEmailRegistrationParams = {
   accessToken: string
@@ -927,9 +922,9 @@ export default class ApiClient {
     })
   }
 
-  startMfaEmailRegistration(params: StartMfaEmailRegistrationParams): Promise<StartMfaEmailRegistrationResponse> {
+  startMfaEmailRegistration(params: StartMfaEmailRegistrationParams): Promise<void> {
     const { accessToken } = params
-    return this.http.post<StartMfaEmailRegistrationResponse>('/mfa/credentials/emails', {
+    return this.http.post<void>('/mfa/credentials/emails', {
       accessToken
     })
   }
