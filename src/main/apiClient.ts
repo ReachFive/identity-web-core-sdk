@@ -131,9 +131,12 @@ export type VerifyMfaPhoneNumberRegistrationParams = {
   verificationCode: string
 }
 
+export type StepUpWithSessionParams = { method: 'session' }
+export type StepUpWithAccessTokenParams = { method: 'access_token', accessToken: string }
+
 export type StepUpParams = {
   options?: AuthOptions
-}
+} & (StepUpWithSessionParams | StepUpWithAccessTokenParams)
 
 export type RemoveMfaPhoneNumberParams = {
   accessToken: string
@@ -914,7 +917,8 @@ export default class ApiClient {
           ...authParams,
           ...challenge
         },
-        withCookies: true
+        withCookies: params.method === 'session',
+        accessToken: (params.method === 'access_token') ? params.accessToken : undefined
       })
     })
   }
