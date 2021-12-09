@@ -916,7 +916,7 @@ export default class ApiClient {
           ...challenge
         },
         withCookies: params.accessToken === undefined,
-        accessToken: (params.accessToken !== undefined) ? params.accessToken : undefined
+        accessToken: params.accessToken
       })
     })
   }
