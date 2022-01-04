@@ -95,7 +95,7 @@ type SingleFactorPasswordlessParams = {
 }
 
 type StepUpPasswordlessParams = {
-  authType: 'magic_link' | 'sms'
+  authType?: 'email' | 'sms'
   stepUp: string
 }
 
