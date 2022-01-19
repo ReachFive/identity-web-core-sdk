@@ -27,6 +27,7 @@ import ApiClient, {
   RemoveMfaEmailParams,
   RefreshTokenParams,
   StartMfaEmailRegistrationResponse,
+  VerifyMfaPasswordlessParams,
 } from './apiClient'
 import { AuthOptions } from './authOptions'
 import { AuthResult } from './authResult'
@@ -84,6 +85,7 @@ export type Client = {
   updatePhoneNumber: (params: { accessToken: string; phoneNumber: string }) => Promise<void>
   updateProfile: (params: { accessToken: string; redirectUrl?: string; data: Profile }) => Promise<void>
   verifyPasswordless: (params: VerifyPasswordlessParams) => Promise<void>
+  verifyMfaPasswordless: (params: VerifyMfaPasswordlessParams) => Promise<AuthResult>
   verifyMfaEmailRegistration: (params: VerifyMfaEmailRegistrationParams) => Promise<void>
   verifyMfaPhoneNumberRegistration: (params: VerifyMfaPhoneNumberRegistrationParams) => Promise<void>
   verifyPhoneNumber: (params: { accessToken: string; phoneNumber: string; verificationCode: string }) => Promise<void>
@@ -263,6 +265,10 @@ export function createClient(creationConfig: Config): Client {
     return apiClient.then(api => api.updateProfile(params))
   }
 
+  function verifyMfaPasswordless(params: VerifyMfaPasswordlessParams) {
+    return apiClient.then(api => api.verifyMfaPasswordless(params))
+  }
+
   function verifyMfaEmailRegistration(params: VerifyMfaEmailRegistrationParams) {
     return apiClient.then(api => api.verifyMfaEmailRegistration(params))
   }
@@ -330,6 +336,7 @@ export function createClient(creationConfig: Config): Client {
     updatePhoneNumber,
     updateProfile,
     verifyPasswordless,
+    verifyMfaPasswordless,
     verifyMfaEmailRegistration,
     verifyMfaPhoneNumberRegistration,
     verifyPhoneNumber,
