@@ -95,18 +95,19 @@ type SingleFactorPasswordlessParams = {
 }
 
 type StepUpPasswordlessParams = {
-  authType: 'magic_link' | 'sms'
+  authType: 'email' | 'sms'
   stepUp: string
 }
 
 export type PasswordlessParams = SingleFactorPasswordlessParams | StepUpPasswordlessParams
 
-type VerifySingleFactorPasswordlessParams = SingleFactorPasswordlessParams & { verificationCode: string }
-type VerifySecondFactorPasswordlessParams = {
+export type VerifyMfaPasswordlessParams = {
   challengeId: string
   verificationCode: string
+  accessToken: string
 }
-export type VerifyPasswordlessParams = VerifySingleFactorPasswordlessParams | VerifySecondFactorPasswordlessParams
+
+export type VerifyPasswordlessParams = SingleFactorPasswordlessParams & { verificationCode: string }
 
 export type ApiClientConfig = {
   clientId: string
@@ -161,7 +162,8 @@ export type RemoveMfaEmailParams = {
 
 type AuthenticationToken = { tkn: string }
 
-export type RefreshTokenParams = { accessToken: string} | { refreshToken: string, scope?: Scope}
+export type RefreshTokenParams = { accessToken: string } | { refreshToken: string, scope?: Scope }
+
 /**
  * Identity Rest API Client
  */
@@ -590,6 +592,17 @@ export default class ApiClient {
       ...params
     })
     window.location.assign(`${this.baseUrl}/passwordless/verify?${queryString}`)
+  }
+
+  verifyMfaPasswordless(params: VerifyMfaPasswordlessParams): Promise<AuthResult> {
+    const { challengeId, verificationCode, accessToken } = params
+
+    return this.http.post<AuthResult>('/passwordless/verify',{
+      body: {
+        challengeId, verificationCode
+      },
+      accessToken
+    })
   }
 
   verifyPasswordless(params: VerifyPasswordlessParams, auth: AuthOptions = {}): Promise<void> {
