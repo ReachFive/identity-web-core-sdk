@@ -147,6 +147,7 @@ export type VerifyMfaEmailRegistrationParams = {
 
 export type StepUpParams = {
   options?: AuthOptions
+  accessToken?: string
 }
 
 export type RemoveMfaPhoneNumberParams = {
@@ -949,7 +950,8 @@ export default class ApiClient {
           ...authParams,
           ...challenge
         },
-        withCookies: true
+        withCookies: params.accessToken === undefined,
+        accessToken: params.accessToken
       })
     })
   }
