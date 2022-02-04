@@ -1,5 +1,5 @@
-import { AuthResult, enrichAuthResult } from './authResult'
 import EventManager from '../utils/eventManager'
+import { AuthResult, enrichAuthResult } from './authResult'
 import { ErrorResponse, Profile } from './models'
 
 export type Events = {
@@ -38,6 +38,6 @@ export default function createEventManager(): IdentityEventManager {
       } else {
         eventManager.fire(eventName, data)
       }
-    }
+    },
   }
 }

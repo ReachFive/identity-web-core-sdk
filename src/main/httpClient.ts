@@ -1,6 +1,7 @@
+import isEmpty from 'lodash/isEmpty'
+
 import { QueryString, toQueryString } from '../utils/queryString'
 import { camelCaseProperties, snakeCaseProperties } from '../utils/transformObjectProperties'
-import isEmpty from 'lodash/isEmpty'
 
 export type HttpConfig = {
   baseUrl: string
@@ -52,10 +53,10 @@ export function createHttpClient(config: HttpConfig): HttpClient {
       headers: {
         ...(accessToken && { Authorization: 'Bearer ' + accessToken }),
         ...(config.language && { 'Accept-Language': config.language }),
-        ...(body && { 'Content-Type': 'application/json;charset=UTF-8' })
+        ...(body && { 'Content-Type': 'application/json;charset=UTF-8' }),
       },
       ...(withCookies && config.acceptCookies && { credentials: 'include' }),
-      ...(body && { body: JSON.stringify(snakeCaseProperties(body)) })
+      ...(body && { body: JSON.stringify(snakeCaseProperties(body)) }),
     }
 
     return rawRequest(url, fetchOptions)
@@ -67,12 +68,11 @@ export function createHttpClient(config: HttpConfig): HttpClient {
 /**
  * Low level HTTP client
  */
-export function rawRequest<Data>(url: string, fetchOptions?: RequestInit) {
-  return fetch(url, fetchOptions).then(response => {
-    if (response.status !== 204) {
-      const dataP = (response.json().then(camelCaseProperties) as any) as Promise<Data>
-      return response.ok ? dataP : dataP.then(data => Promise.reject(data))
-    }
-    return (undefined as any) as Data
-  })
+export async function rawRequest<Data>(url: string, fetchOptions?: RequestInit): Promise<Data> {
+  const response = await fetch(url, fetchOptions)
+  if (response.status !== 204) {
+    const dataP = response.json().then(camelCaseProperties) as Promise<Data>
+    return response.ok ? dataP : dataP.then(data => Promise.reject(data))
+  }
+  return undefined as any as Data
 }

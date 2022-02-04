@@ -1,7 +1,3 @@
-# Javascript Node CircleCI 2.0 configuration file
-#
-# Check https://circleci.com/docs/2.0/language-javascript/ for more details
-
 version: 2
 
 defaults: &defaults
@@ -15,7 +11,7 @@ jobs:
     steps:
       - checkout
       - run: npm ci
-      - run: npm run tslint
+      - run: npm run lint:check
       - run: npm run build
       - run: npm run test
       - persist_to_workspace:

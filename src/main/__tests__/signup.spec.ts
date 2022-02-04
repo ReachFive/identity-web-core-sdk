@@ -1,14 +1,7 @@
 import fetchMock from 'jest-fetch-mock'
 
-import {
-  defineWindowProperty,
-  headers,
-  mockWindowCrypto
-} from './helpers/testHelpers'
-import { createDefaultTestClient, TestKit } from './helpers/clientFactory'
-import { scope, tkn } from './helpers/oauthHelpers'
-import { SignupParams } from '../apiClient'
-import { snakeCaseProperties } from '../../utils/transformObjectProperties'
+import { createDefaultTestClient } from './helpers/clientFactory'
+import { defineWindowProperty, mockWindowCrypto } from './helpers/windowHelpers'
 
 beforeAll(() => {
   fetchMock.enableMocks()
@@ -20,31 +13,6 @@ beforeEach(() => {
   jest.resetAllMocks()
   fetchMock.resetMocks()
 })
-
-export async function signupTest(testkit: TestKit, params: SignupParams) {
-  const { client, clientId, domain } = testkit
-
-  // Given
-  const signupCall = fetchMock.mockResponseOnce(
-    JSON.stringify({
-      id: '1234',
-      ...tkn,
-    })
-  )
-
-  // When
-  await client.signup(params)
-
-  await expect(signupCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/signup`, {
-    method: 'POST',
-    headers: headers.jsonAndDefaultLang,
-    body: JSON.stringify({
-      client_id: clientId,
-      ...scope,
-      data: snakeCaseProperties(params.data),
-    })
-  })
-}
 
 test('with user error', async () => {
   // Given
@@ -60,26 +28,25 @@ test('with user error', async () => {
   const expectedError = {
     error: errorCode,
     errorDescription,
-    errorUsrMsg
+    errorUsrMsg,
   }
 
   fetchMock.mockResponseOnce(
     JSON.stringify({
       error: errorCode,
       error_description: errorDescription,
-      error_usr_msg: errorUsrMsg
+      error_usr_msg: errorUsrMsg,
     }),
     { status: 400 }
   )
 
   // When
-  const promise = client
-    .signup({
-      data: {
-        email: 'john.doe@example.com',
-        password: 'majefize'
-      }
-    })
+  const promise = client.signup({
+    data: {
+      email: 'john.doe@example.com',
+      password: 'majefize',
+    },
+  })
 
   await expect(promise).rejects.toEqual(expectedError)
   await expect(signupFailedHandler).toHaveBeenCalledWith(expectedError)
@@ -96,13 +63,12 @@ test('with unexpected error', async () => {
   fetchMock.mockRejectOnce(expectedError)
 
   // When
-  const promise = client
-    .signup({
-      data: {
-        email: 'john.doe@example.com',
-        password: 'majefize'
-      }
-    })
+  const promise = client.signup({
+    data: {
+      email: 'john.doe@example.com',
+      password: 'majefize',
+    },
+  })
 
   await expect(promise).rejects.toThrow(expectedError)
   await expect(signupFailedHandler).not.toHaveBeenCalled()

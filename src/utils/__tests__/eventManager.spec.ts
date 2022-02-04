@@ -27,7 +27,7 @@ describe('EventManager', () => {
     expect(handler).toHaveBeenCalledWith(2)
 
     // Wrong handler
-    em.off('myEvent', function() {})
+    em.off('myEvent', () => void {})
 
     em.fire('myEvent', 3)
 

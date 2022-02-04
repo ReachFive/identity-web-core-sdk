@@ -1,11 +1,12 @@
 import fetchMock from 'jest-fetch-mock'
 
-import { defineWindowProperty, headers, mockWindowCrypto } from './helpers/testHelpers'
+import { toQueryString } from '../../utils/queryString'
 import ApiClient from '../apiClient'
 import createEventManager from '../identityEventManager'
 import createUrlParser from '../urlParser'
-import { toQueryString } from '../../utils/queryString'
+import { headersTest } from './helpers/identityHelpers'
 import { mockPkceValues } from './helpers/oauthHelpers'
+import { defineWindowProperty, mockWindowCrypto } from './helpers/windowHelpers'
 
 const clientId = 'kqIJE'
 const domain = 'local.reach5.net'
@@ -19,10 +20,10 @@ function apiClientAndEventManager() {
       language: 'en',
       sso: false,
       pkceEnforced: false,
-      isPublic: true
+      isPublic: true,
     },
     eventManager,
-    urlParser: createUrlParser(eventManager)
+    urlParser: createUrlParser(eventManager),
   })
   return { client, eventManager }
 }
@@ -61,7 +62,7 @@ describe('signup', () => {
         id_token: idToken,
         access_token: accessToken,
         expires_in: expiresIn,
-        token_type: tokenType
+        token_type: tokenType,
       })
     )
 
@@ -77,15 +78,15 @@ describe('signup', () => {
         email,
         password,
         givenName,
-        familyName
-      }
+        familyName,
+      },
     })
 
     // Then
 
     expect(signupCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/signup-token`, {
       method: 'POST',
-      headers: headers.jsonAndDefaultLang,
+      headers: headersTest.jsonAndDefaultLang,
       body: JSON.stringify({
         client_id: clientId,
         scope: 'openid profile email phone',
@@ -93,20 +94,20 @@ describe('signup', () => {
           email,
           password,
           given_name: givenName,
-          family_name: familyName
-        }
-      })
+          family_name: familyName,
+        },
+      }),
     })
 
     expect(authenticatedHandler).toHaveBeenCalledWith({
       idToken,
       idTokenPayload: {
         sub: '1234567890',
-        name: 'John Doe'
+        name: 'John Doe',
       },
       accessToken,
       expiresIn,
-      tokenType
+      tokenType,
     })
   })
 
@@ -130,7 +131,7 @@ describe('signup', () => {
         id_token: idToken,
         access_token: accessToken,
         expires_in: expiresIn,
-        token_type: tokenType
+        token_type: tokenType,
       })
     )
 
@@ -145,17 +146,17 @@ describe('signup', () => {
         email,
         password,
         givenName,
-        familyName
+        familyName,
       },
       auth: {
-        origin
-      }
+        origin,
+      },
     })
 
     // Then
     expect(signupCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/signup-token`, {
       method: 'POST',
-      headers: headers.jsonAndDefaultLang,
+      headers: headersTest.jsonAndDefaultLang,
       body: JSON.stringify({
         client_id: clientId,
         scope: 'openid profile email phone',
@@ -164,20 +165,20 @@ describe('signup', () => {
           email,
           password,
           given_name: givenName,
-          family_name: familyName
-        }
-      })
+          family_name: familyName,
+        },
+      }),
     })
 
     expect(authenticatedHandler).toHaveBeenCalledWith({
       idToken,
       idTokenPayload: {
         sub: '1234567890',
-        name: 'John Doe'
+        name: 'John Doe',
       },
       accessToken,
       expiresIn,
-      tokenType
+      tokenType,
     })
   })
 
@@ -195,14 +196,14 @@ describe('signup', () => {
     const expectedError = {
       error,
       errorDescription,
-      errorUsrMsg
+      errorUsrMsg,
     }
 
     fetchMock.mockResponseOnce(
       JSON.stringify({
         error,
         error_description: errorDescription,
-        error_usr_msg: errorUsrMsg
+        error_usr_msg: errorUsrMsg,
       }),
       { status: 400 }
     )
@@ -211,8 +212,8 @@ describe('signup', () => {
     const promise = client.signup({
       data: {
         email: 'john.doe@example.com',
-        password: 'majefize'
-      }
+        password: 'majefize',
+      },
     })
 
     // Then
@@ -237,8 +238,8 @@ describe('signup', () => {
     const promise = client.signup({
       data: {
         email: 'john.doe@example.com',
-        password: 'majefize'
-      }
+        password: 'majefize',
+      },
     })
 
     // Then
@@ -271,7 +272,7 @@ describe('loginWithPassword', () => {
         id_token: idToken,
         access_token: accessToken,
         expires_in: expiresIn,
-        token_type: tokenType
+        token_type: tokenType,
       })
     )
 
@@ -281,25 +282,25 @@ describe('loginWithPassword', () => {
     // Then
     expect(passwordLoginCall).toHaveBeenCalledWith(`https://${domain}/oauth/token`, {
       method: 'POST',
-      headers: headers.jsonAndDefaultLang,
+      headers: headersTest.jsonAndDefaultLang,
       body: JSON.stringify({
         client_id: clientId,
         grant_type: 'password',
         username: email,
         password,
-        scope: 'openid profile email phone'
-      })
+        scope: 'openid profile email phone',
+      }),
     })
 
     expect(authenticatedHandler).toHaveBeenCalledWith({
       idToken,
       idTokenPayload: {
         sub: '1234567890',
-        name: 'John Doe'
+        name: 'John Doe',
       },
       accessToken,
       expiresIn,
-      tokenType
+      tokenType,
     })
   })
 
@@ -326,7 +327,7 @@ describe('loginWithPassword', () => {
         id_token: idToken,
         access_token: accessToken,
         expires_in: expiresIn,
-        token_type: tokenType
+        token_type: tokenType,
       })
     )
 
@@ -336,25 +337,25 @@ describe('loginWithPassword', () => {
     // Then
     expect(passwordLoginCall).toHaveBeenCalledWith(`https://${domain}/oauth/token`, {
       method: 'POST',
-      headers: headers.jsonAndDefaultLang,
+      headers: headersTest.jsonAndDefaultLang,
       body: JSON.stringify({
         client_id: clientId,
         grant_type: 'password',
         username: phoneNumber,
         password,
-        scope: 'openid profile email phone'
-      })
+        scope: 'openid profile email phone',
+      }),
     })
 
     expect(authenticatedHandler).toHaveBeenCalledWith({
       idToken,
       idTokenPayload: {
         sub: '1234567890',
-        name: 'John Doe'
+        name: 'John Doe',
       },
       accessToken,
       expiresIn,
-      tokenType
+      tokenType,
     })
   })
 
@@ -383,7 +384,7 @@ describe('loginWithPassword', () => {
         id_token: idToken,
         access_token: accessToken,
         expires_in: expiresIn,
-        token_type: tokenType
+        token_type: tokenType,
       })
     )
 
@@ -391,32 +392,32 @@ describe('loginWithPassword', () => {
     await client.loginWithPassword({
       email,
       password,
-      auth: { origin }
+      auth: { origin },
     })
 
     // Then
     expect(passwordLoginCall).toHaveBeenCalledWith(`https://${domain}/oauth/token`, {
       method: 'POST',
-      headers: headers.jsonAndDefaultLang,
+      headers: headersTest.jsonAndDefaultLang,
       body: JSON.stringify({
         client_id: clientId,
         grant_type: 'password',
         username: email,
         password,
         scope: 'openid profile email phone',
-        origin
-      })
+        origin,
+      }),
     })
 
     expect(authenticatedHandler).toHaveBeenCalledWith({
       idToken,
       idTokenPayload: {
         sub: '1234567890',
-        name: 'John Doe'
+        name: 'John Doe',
       },
       accessToken,
       expiresIn,
-      tokenType
+      tokenType,
     })
   })
 
@@ -441,7 +442,7 @@ describe('loginWithPassword', () => {
         id_token: idToken,
         access_token: accessToken,
         expires_in: expiresIn,
-        token_type: tokenType
+        token_type: tokenType,
       })
     )
 
@@ -450,33 +451,33 @@ describe('loginWithPassword', () => {
       email,
       password,
       auth: {
-        redirectUri: 'http://mysite.com/login/callback'
-      }
+        redirectUri: 'http://mysite.com/login/callback',
+      },
     })
 
     // Then
 
     expect(passwordLoginCall).toHaveBeenCalledWith(`https://${domain}/oauth/token`, {
       method: 'POST',
-      headers: headers.jsonAndDefaultLang,
+      headers: headersTest.jsonAndDefaultLang,
       body: JSON.stringify({
         client_id: clientId,
         grant_type: 'password',
         username: email,
         password,
-        scope: 'openid profile email phone'
-      })
+        scope: 'openid profile email phone',
+      }),
     })
 
     expect(authenticatedHandler).toHaveBeenCalledWith({
       idToken,
       idTokenPayload: {
         sub: '1234567890',
-        name: 'John Doe'
+        name: 'John Doe',
       },
       accessToken,
       expiresIn,
-      tokenType
+      tokenType,
     })
   })
 
@@ -490,14 +491,14 @@ describe('loginWithPassword', () => {
     const expectedError = {
       error: 'invalid_grant',
       errorDescription: 'Invalid email or password',
-      errorUsrMsg: 'Invalid email or password'
+      errorUsrMsg: 'Invalid email or password',
     }
 
     fetchMock.mockResponseOnce(
       JSON.stringify({
         error: 'invalid_grant',
         error_description: 'Invalid email or password',
-        error_usr_msg: 'Invalid email or password'
+        error_usr_msg: 'Invalid email or password',
       }),
       { status: 400 }
     )
@@ -505,7 +506,7 @@ describe('loginWithPassword', () => {
     // When
     const promise = client.loginWithPassword({
       email: 'john.doe@example.com',
-      password: 'majefize'
+      password: 'majefize',
     })
 
     await expect(promise).rejects.toStrictEqual(expectedError)
@@ -529,18 +530,18 @@ describe('loginWithSocialProvider', () => {
             calledUrl = url
             success()
           }),
-          close() {},
-          isAvailable: jest.fn().mockImplementation(resolve => resolve(true))
-        }
-      }
+          close: jest.fn(),
+          isAvailable: jest.fn().mockImplementation(resolve => resolve(true)),
+        },
+      },
     }
 
     // When
     await client.loginWithSocialProvider('facebook')
 
     // Then
-    expect(window.cordova.plugins!.browsertab!.isAvailable).toHaveBeenCalledTimes(1)
-    expect(window.cordova.plugins!.browsertab!.openUrl).toHaveBeenCalledTimes(1)
+    expect(window.cordova.plugins?.browsertab?.isAvailable).toHaveBeenCalledTimes(1)
+    expect(window.cordova.plugins?.browsertab?.openUrl).toHaveBeenCalledTimes(1)
 
     expect(calledUrl).toEqual(
       `https://${domain}/oauth/authorize?` +
@@ -549,7 +550,7 @@ describe('loginWithSocialProvider', () => {
           response_type: 'token',
           scope: 'openid profile email phone',
           display: 'page',
-          provider: 'facebook'
+          provider: 'facebook',
         })
     )
   })
@@ -576,24 +577,24 @@ describe('loginWithSocialProvider', () => {
           openUrl: jest.fn().mockImplementation((_url, _success, error) => {
             error(new Error('Not available'))
           }),
-          close() {},
-          isAvailable: jest.fn().mockImplementation(resolve => resolve(false))
-        }
+          close: jest.fn(),
+          isAvailable: jest.fn().mockImplementation(resolve => resolve(false)),
+        },
       },
       InAppBrowser: {
-        open: jest.fn()
+        open: jest.fn(),
       },
-      platformId: 'android'
+      platformId: 'android',
     }
 
     // When
     await client.loginWithSocialProvider('facebook')
 
     // Then
-    expect(window.cordova.plugins!.browsertab!.isAvailable).toHaveBeenCalledTimes(1)
-    expect(window.cordova.plugins!.browsertab!.openUrl).not.toHaveBeenCalled()
+    expect(window.cordova.plugins?.browsertab?.isAvailable).toHaveBeenCalledTimes(1)
+    expect(window.cordova.plugins?.browsertab?.openUrl).not.toHaveBeenCalled()
 
-    expect(window.cordova.InAppBrowser!.open).toHaveBeenCalledWith(
+    expect(window.cordova.InAppBrowser?.open).toHaveBeenCalledWith(
       `https://${domain}/oauth/authorize?` +
         toQueryString({
           client_id: clientId,
@@ -618,31 +619,31 @@ describe('loginWithSocialProvider', () => {
           openUrl: jest.fn().mockImplementation((_url, _success, error) => {
             error(new Error('Not available'))
           }),
-          close() {},
-          isAvailable: jest.fn().mockImplementation(resolve => resolve(false))
-        }
+          close: jest.fn(),
+          isAvailable: jest.fn().mockImplementation(resolve => resolve(false)),
+        },
       },
       InAppBrowser: {
-        open: jest.fn()
+        open: jest.fn(),
       },
-      platformId: 'ios'
+      platformId: 'ios',
     }
 
     // When
     await client.loginWithSocialProvider('facebook')
 
     // Then
-    expect(window.cordova.plugins!.browsertab!.isAvailable).toHaveBeenCalledTimes(1)
-    expect(window.cordova.plugins!.browsertab!.openUrl).not.toHaveBeenCalled()
+    expect(window.cordova.plugins?.browsertab?.isAvailable).toHaveBeenCalledTimes(1)
+    expect(window.cordova.plugins?.browsertab?.openUrl).not.toHaveBeenCalled()
 
-    expect(window.cordova.InAppBrowser!.open).toHaveBeenCalledWith(
+    expect(window.cordova.InAppBrowser?.open).toHaveBeenCalledWith(
       `https://${domain}/oauth/authorize?` +
         toQueryString({
           client_id: clientId,
           response_type: 'token',
           scope: 'openid profile email phone',
           display: 'page',
-          provider: 'facebook'
+          provider: 'facebook',
         }),
       '_blank'
     )
@@ -656,23 +657,23 @@ describe('loginWithSocialProvider', () => {
 
     window.cordova = {
       InAppBrowser: {
-        open: jest.fn()
+        open: jest.fn(),
       },
-      platformId: 'android'
+      platformId: 'android',
     }
 
     // When
     await client.loginWithSocialProvider('facebook')
 
     // Then
-    expect(window.cordova.InAppBrowser!.open).toHaveBeenCalledWith(
+    expect(window.cordova.InAppBrowser?.open).toHaveBeenCalledWith(
       `https://${domain}/oauth/authorize?` +
         toQueryString({
           client_id: clientId,
           response_type: 'token',
           scope: 'openid profile email phone',
           display: 'page',
-          provider: 'facebook'
+          provider: 'facebook',
         }),
       '_system'
     )
@@ -686,23 +687,23 @@ describe('loginWithSocialProvider', () => {
 
     window.cordova = {
       InAppBrowser: {
-        open: jest.fn()
+        open: jest.fn(),
       },
-      platformId: 'ios'
+      platformId: 'ios',
     }
 
     // When
     await client.loginWithSocialProvider('facebook')
 
     // Then
-    expect(window.cordova.InAppBrowser!.open).toHaveBeenCalledWith(
+    expect(window.cordova.InAppBrowser?.open).toHaveBeenCalledWith(
       `https://${domain}/oauth/authorize?` +
         toQueryString({
           client_id: clientId,
           response_type: 'token',
           scope: 'openid profile email phone',
           display: 'page',
-          provider: 'facebook'
+          provider: 'facebook',
         }),
       '_blank'
     )
@@ -718,18 +719,18 @@ describe('loginWithSocialProvider', () => {
 
     window.cordova = {
       InAppBrowser: {
-        open: jest.fn()
+        open: jest.fn(),
       },
-      platformId: 'android'
+      platformId: 'android',
     }
 
     // When
     await client.loginWithSocialProvider('facebook', {
-      redirectUri
+      redirectUri,
     })
 
     // Then
-    expect(window.cordova.InAppBrowser!.open).toHaveBeenCalledWith(
+    expect(window.cordova.InAppBrowser?.open).toHaveBeenCalledWith(
       `https://${domain}/oauth/authorize?` +
         toQueryString({
           client_id: clientId,
@@ -754,18 +755,18 @@ describe('loginWithSocialProvider', () => {
 
     window.cordova = {
       InAppBrowser: {
-        open: jest.fn()
+        open: jest.fn(),
       },
-      platformId: 'ios'
+      platformId: 'ios',
     }
 
     // When
     await client.loginWithSocialProvider('facebook', {
-      redirectUri
+      redirectUri,
     })
 
     // Then
-    expect(window.cordova.InAppBrowser!.open).toHaveBeenCalledWith(
+    expect(window.cordova.InAppBrowser?.open).toHaveBeenCalledWith(
       `https://${domain}/oauth/authorize?` +
         toQueryString({
           client_id: clientId,
@@ -788,25 +789,25 @@ describe('loginWithSocialProvider', () => {
 
     window.cordova = {
       InAppBrowser: {
-        open: jest.fn()
+        open: jest.fn(),
       },
-      platformId: 'android'
+      platformId: 'android',
     }
 
     // When
     await client.loginWithSocialProvider('facebook', {
-      popupMode: true
+      popupMode: true,
     })
 
     // Then
-    expect(window.cordova.InAppBrowser!.open).toHaveBeenCalledWith(
+    expect(window.cordova.InAppBrowser?.open).toHaveBeenCalledWith(
       `https://${domain}/oauth/authorize?` +
         toQueryString({
           client_id: clientId,
           response_type: 'token',
           scope: 'openid profile email phone',
           display: 'page',
-          provider: 'facebook'
+          provider: 'facebook',
         }),
       '_system'
     )
@@ -820,25 +821,25 @@ describe('loginWithSocialProvider', () => {
 
     window.cordova = {
       InAppBrowser: {
-        open: jest.fn()
+        open: jest.fn(),
       },
-      platformId: 'ios'
+      platformId: 'ios',
     }
 
     // When
     await client.loginWithSocialProvider('facebook', {
-      popupMode: true
+      popupMode: true,
     })
 
     // Then
-    expect(window.cordova.InAppBrowser!.open).toHaveBeenCalledWith(
+    expect(window.cordova.InAppBrowser?.open).toHaveBeenCalledWith(
       `https://${domain}/oauth/authorize?` +
         toQueryString({
           client_id: clientId,
           response_type: 'token',
           scope: 'openid profile email phone',
           display: 'page',
-          provider: 'facebook'
+          provider: 'facebook',
         }),
       '_blank'
     )
@@ -860,13 +861,13 @@ describe('handleOpenURL', () => {
     const authenticatedHandler = jest.fn().mockName('authenticationHandler')
     eventManager.on('authenticated', authenticatedHandler)
 
-    window.handleOpenURL!(
+    window.handleOpenURL?.(
       'myapp://login/callback#' +
         [
           `id_token=${idToken}`,
           `access_token=${accessToken}`,
           `expires_in=${expiresIn}`,
-          `token_type=${tokenType}`
+          `token_type=${tokenType}`,
         ].join('&')
     )
 
@@ -875,11 +876,11 @@ describe('handleOpenURL', () => {
       idToken,
       idTokenPayload: {
         sub: '1234567890',
-        name: 'John Doe'
+        name: 'John Doe',
       },
       accessToken,
       expiresIn,
-      tokenType
+      tokenType,
     })
   })
 
@@ -908,7 +909,7 @@ describe('handleOpenURL', () => {
           `id_token=${idToken}`,
           `access_token=${accessToken}`,
           `expires_in=${expiresIn}`,
-          `token_type=${tokenType}`
+          `token_type=${tokenType}`,
         ].join('&')
     )
 
@@ -928,9 +929,9 @@ describe('handleOpenURL', () => {
         browsertab: {
           openUrl: jest.fn(),
           close: jest.fn(),
-          isAvailable: jest.fn()
-        }
-      }
+          isAvailable: jest.fn(),
+        },
+      },
     }
 
     const idToken =
@@ -943,13 +944,13 @@ describe('handleOpenURL', () => {
     const authenticatedHandler = jest.fn().mockName('authenticationHandler')
     eventManager.on('authenticated', authenticatedHandler)
 
-    window.handleOpenURL!(
+    window.handleOpenURL?.(
       'myapp://login/callback#' +
         [
           `id_token=${idToken}`,
           `access_token=${accessToken}`,
           `expires_in=${expiresIn}`,
-          `token_type=${tokenType}`
+          `token_type=${tokenType}`,
         ].join('&')
     )
 
@@ -958,12 +959,12 @@ describe('handleOpenURL', () => {
       idToken,
       idTokenPayload: {
         sub: '1234567890',
-        name: 'John Doe'
+        name: 'John Doe',
       },
       accessToken,
       expiresIn,
-      tokenType
+      tokenType,
     })
-    expect(window.cordova.plugins!.browsertab!.close).toHaveBeenCalled()
+    expect(window.cordova.plugins?.browsertab?.close).toHaveBeenCalled()
   })
 })

@@ -1,7 +1,8 @@
 import fetchMock from 'jest-fetch-mock'
 
-import { defineWindowProperty, headers } from './helpers/testHelpers'
 import { createDefaultTestClient } from './helpers/clientFactory'
+import { headersTest } from './helpers/identityHelpers'
+import { defineWindowProperty } from './helpers/windowHelpers'
 
 beforeAll(() => {
   fetchMock.enableMocks()
@@ -17,19 +18,19 @@ test('simple', async () => {
   const { client, clientId, domain } = createDefaultTestClient()
 
   const passwordResetCall = fetchMock.mockResponseOnce('', {
-    status: 204
+    status: 204,
   })
 
   const email = 'john.doe@example.com'
 
-  client.requestPasswordReset({ email }).then(() => {
+  await client.requestPasswordReset({ email }).then(() => {
     expect(passwordResetCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/forgot-password`, {
       method: 'POST',
-      headers: headers.jsonAndDefaultLang,
+      headers: headersTest.jsonAndDefaultLang,
       body: JSON.stringify({
         client_id: clientId,
-        email
-      })
+        email,
+      }),
     })
   })
 })

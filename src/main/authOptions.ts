@@ -1,9 +1,10 @@
-import uniq from 'lodash/uniq'
-import pick from 'lodash/pick'
-import isString from 'lodash/isString'
 import isArray from 'lodash/isArray'
+import isString from 'lodash/isString'
 import isUndefined from 'lodash/isUndefined'
-import { Scope } from "./models"
+import pick from 'lodash/pick'
+import uniq from 'lodash/uniq'
+
+import { Scope } from './models'
 
 export type ResponseType = 'code' | 'token'
 export type Prompt = 'none' | 'login' | 'consent' | 'select_account'
@@ -58,11 +59,11 @@ export type AuthParameters = {
  */
 export function resolveScope(opts: AuthOptions = {}, defaultScopes?: string): string {
   const fetchBasicProfile = isUndefined(opts.fetchBasicProfile) || opts.fetchBasicProfile
-  const scopes = isUndefined(opts.scope) ? defaultScopes : opts.scope
+  const scopes = opts.scope || defaultScopes
   return uniq([
     ...(fetchBasicProfile ? ['openid', 'profile', 'email', 'phone'] : []),
     ...(opts.requireRefreshToken ? ['offline_access'] : []),
-    ...parseScope(scopes)
+    ...parseScope(scopes),
   ]).join(' ')
 }
 
@@ -83,7 +84,7 @@ export function computeAuthOptions(
   const isPopup = opts.popupMode && acceptPopupMode
   const responseType = opts.redirectUri ? 'code' : 'token'
   const responseMode = opts.useWebMessage && !isPopup ? 'web_message' : undefined
-  const display = isPopup ? 'popup' : (responseMode !== 'web_message') ? 'page' : undefined
+  const display = isPopup ? 'popup' : responseMode !== 'web_message' ? 'page' : undefined
   const prompt = responseMode === 'web_message' ? 'none' : opts.prompt
   const scope = resolveScope(opts, defaultScopes)
 
@@ -99,12 +100,12 @@ export function computeAuthOptions(
       'idTokenHint',
       'loginHint',
       'accessToken',
-      'persistent'
+      'persistent',
     ]),
     scope,
     display,
     responseMode,
-    prompt
+    prompt,
   }
 }
 
@@ -112,7 +113,7 @@ export function computeAuthOptions(
  * Normalize the scope format (e.g. "openid email" => ["openid", "email"])
  * @param scope Scope entered by the user
  */
-function parseScope(scope: string[] | string | undefined): string[] {
+function parseScope(scope?: string[] | string): string[] {
   if (isUndefined(scope)) return []
   if (isArray(scope)) return scope
   if (isString(scope)) return scope.split(' ')

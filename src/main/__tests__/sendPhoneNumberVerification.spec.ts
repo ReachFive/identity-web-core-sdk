@@ -1,6 +1,8 @@
 import fetchMock from 'jest-fetch-mock'
-import { defineWindowProperty, headers } from './helpers/testHelpers'
+
 import { createDefaultTestClient } from './helpers/clientFactory'
+import { headersTest } from './helpers/identityHelpers'
+import { defineWindowProperty } from './helpers/windowHelpers'
 
 beforeAll(() => {
   fetchMock.enableMocks()
@@ -18,13 +20,13 @@ test('send verification for phone number', async () => {
   const apiCall = fetchMock.mockResponseOnce(JSON.stringify(''))
   const accessToken = '123'
 
-  client.sendPhoneNumberVerification({ accessToken }).then(() => {
+  await client.sendPhoneNumberVerification({ accessToken }).then(() => {
     expect(apiCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/send-phone-number-verification`, {
       method: 'POST',
       headers: {
-        ...headers.defaultLang,
-        ...headers.accessToken(accessToken)
-      }
+        ...headersTest.defaultLang,
+        ...headersTest.accessToken(accessToken),
+      },
     })
   })
 })

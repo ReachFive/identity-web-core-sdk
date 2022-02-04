@@ -1,4 +1,5 @@
 import pull from 'lodash/pull'
+
 import { logError } from './logger'
 
 type Listeners<K extends keyof EVENTS, EVENTS> = Array<(data: EVENTS[K]) => void>
@@ -11,7 +12,7 @@ export default class EventManager<EVENTS extends {}> {
       try {
         listener(data)
       } catch (e) {
-        logError(e)
+        e instanceof Error ? logError(e) : void {}
       }
     })
   }

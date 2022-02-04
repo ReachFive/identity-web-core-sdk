@@ -1,5 +1,5 @@
-import { camelCaseProperties } from './transformObjectProperties'
 import { decodeBase64UrlSafe } from './base64'
+import { camelCaseProperties } from './transformObjectProperties'
 
 export type Gender = 'female' | 'male' | 'other'
 

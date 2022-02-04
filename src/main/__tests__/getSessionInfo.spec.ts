@@ -1,4 +1,5 @@
 import fetchMock from 'jest-fetch-mock'
+
 import { toQueryString } from '../../utils/queryString'
 import { createDefaultTestClient } from './helpers/clientFactory'
 
@@ -22,7 +23,7 @@ describe('nominal', () => {
         last_login_type: 'password',
         is_authenticated: true,
         has_password: true,
-        social_providers: []
+        social_providers: [],
       })
     )
 
@@ -32,15 +33,15 @@ describe('nominal', () => {
     // Then
     expect(sessionInfoCall).toHaveBeenCalledWith(
       `https://${domain}/identity/v1/sso/data?` +
-      toQueryString({
-        client_id: clientId
-      }),
+        toQueryString({
+          client_id: clientId,
+        }),
       {
         method: 'GET',
         headers: {
-          "Accept-Language": "en"
+          'Accept-Language': 'en',
         },
-        credentials: 'include'
+        credentials: 'include',
       }
     )
 
@@ -50,7 +51,7 @@ describe('nominal', () => {
       lastLoginType: 'password',
       isAuthenticated: true,
       hasPassword: true,
-      socialProviders: []
+      socialProviders: [],
     })
   })
 })

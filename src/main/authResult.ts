@@ -23,10 +23,10 @@ export function enrichAuthResult(response: AuthResult): AuthResult {
       const idTokenPayload = parseJwtTokenPayload(response.idToken)
       return {
         ...response,
-        idTokenPayload
+        idTokenPayload,
       }
     } catch (e) {
-      logError('ID Token parsing error', e)
+      e instanceof Error ? logError('ID Token parsing error', e) : void {}
     }
   }
   return response

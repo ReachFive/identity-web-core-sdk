@@ -1,7 +1,7 @@
 import fetchMock from 'jest-fetch-mock'
 
-import { headers } from './helpers/testHelpers'
 import { createDefaultTestClient } from './helpers/clientFactory'
+import { headersTest } from './helpers/identityHelpers'
 
 beforeAll(() => {
   fetchMock.enableMocks()
@@ -14,7 +14,7 @@ beforeEach(() => {
 
 test('legacy token refresh', async () => {
   // Given
-  const {client, clientId, domain} = createDefaultTestClient()
+  const { client, clientId, domain } = createDefaultTestClient()
 
   const accessToken = '1234556789'
 
@@ -31,39 +31,39 @@ test('legacy token refresh', async () => {
       id_token: idToken,
       access_token: newAccessToken,
       expires_in: expiresIn,
-      token_type: tokenType
+      token_type: tokenType,
     })
   )
 
   // When
-  const authResult = await client.refreshTokens({accessToken})
+  const authResult = await client.refreshTokens({ accessToken })
 
   // Then
   expect(authResult).toEqual({
     idToken,
     idTokenPayload: {
       name: 'John Doe',
-      sub: '1234567890'
+      sub: '1234567890',
     },
     accessToken: newAccessToken,
     expiresIn,
-    tokenType
+    tokenType,
   })
 
   expect(refreshCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/token/access-token`, {
     method: 'POST',
-    headers: headers.jsonAndDefaultLang,
+    headers: headersTest.jsonAndDefaultLang,
     body: JSON.stringify({
       client_id: clientId,
-      access_token: accessToken
-    })
+      access_token: accessToken,
+    }),
   })
 })
 
 test('refresh token with a refresh token', async () => {
   // Given
-  const {client, clientId, domain} = createDefaultTestClient()
-  const newAccessToken = "newAccessToken"
+  const { client, clientId, domain } = createDefaultTestClient()
+  const newAccessToken = 'newAccessToken'
   const expiresIn = 1800
   const tokenType = 'Bearer'
   const scope = 'openId external offline_access'
@@ -82,7 +82,7 @@ test('refresh token with a refresh token', async () => {
       expiresIn,
       idTokenPayload: {
         name: 'John Doe',
-        sub: '1234567890'
+        sub: '1234567890',
       },
       refreshToken: newRefreshToken,
       tokenType,
@@ -90,27 +90,27 @@ test('refresh token with a refresh token', async () => {
   )
 
   // When
-  const authResult = await client.refreshTokens({refreshToken, scope})
+  const authResult = await client.refreshTokens({ refreshToken, scope })
   //Then
   expect(authResult).toEqual({
     idToken,
     idTokenPayload: {
       name: 'John Doe',
-      sub: '1234567890'
+      sub: '1234567890',
     },
     accessToken: newAccessToken,
     expiresIn,
     tokenType,
-    refreshToken: newRefreshToken
+    refreshToken: newRefreshToken,
   })
   expect(refreshCallWithRefreshToken).toHaveBeenCalledWith(`https://${domain}/oauth/token`, {
     method: 'POST',
-    headers: headers.jsonAndDefaultLang,
+    headers: headersTest.jsonAndDefaultLang,
     body: JSON.stringify({
       client_id: clientId,
       grant_type: 'refresh_token',
       refresh_token: refreshToken,
-      scope
-    })
+      scope,
+    }),
   })
 })

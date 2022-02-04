@@ -1,13 +1,14 @@
 import fetchMock from 'jest-fetch-mock'
-import { RemoteSettings } from '../../models'
+
 import { Client, Config, createClient } from '../../main'
+import { RemoteSettings } from '../../models'
 
 fetchMock.enableMocks()
 
 export type TestKit = {
   client: Client
   remoteSettings: RemoteSettings
-  domain: string,
+  domain: string
   clientId: string
 }
 
@@ -33,7 +34,7 @@ export function createDefaultTestClient(remoteSettings: Partial<RemoteSettings> 
     client,
     remoteSettings: actualRemoteSettings,
     domain,
-    clientId
+    clientId,
   }
 }
 
@@ -42,11 +43,13 @@ export function createTestClient(config: Config, remoteSettings: Partial<RemoteS
     sso: false,
     pkceEnforced: false,
     language: config.language,
-    ...remoteSettings
+    ...remoteSettings,
   }
 
   // Mocks the initial config fetching
-  fetchMock.mockResponseOnce(JSON.stringify(actualRemoteSettings), { status: 200 })
+  fetchMock.mockResponseOnce(JSON.stringify(actualRemoteSettings), {
+    status: 200,
+  })
 
   return createClient(config)
 }

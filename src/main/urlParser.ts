@@ -1,7 +1,7 @@
-import { AuthResult } from './authResult'
 import { parseQueryString } from '../utils/queryString'
-import { ErrorResponse } from './models'
+import { AuthResult } from './authResult'
 import { IdentityEventManager } from './identityEventManager'
+import { ErrorResponse } from './models'
 
 export type UrlParser = {
   /**
@@ -35,7 +35,7 @@ export default function createUrlParser(eventManager: IdentityEventManager): Url
       return false
     },
 
-    parseUrlFragment(url: string = ''): AuthResult | ErrorResponse | undefined {
+    parseUrlFragment(url = ''): AuthResult | ErrorResponse | undefined {
       const separatorIndex = url.indexOf('#')
 
       if (separatorIndex >= 0) {
@@ -46,7 +46,7 @@ export default function createUrlParser(eventManager: IdentityEventManager): Url
         if (AuthResult.isAuthResult(parsed)) {
           return {
             ...parsed,
-            expiresIn
+            expiresIn,
           }
         }
 
@@ -54,6 +54,6 @@ export default function createUrlParser(eventManager: IdentityEventManager): Url
       }
 
       return undefined
-    }
+    },
   }
 }

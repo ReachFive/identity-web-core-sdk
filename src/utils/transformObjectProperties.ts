@@ -1,19 +1,11 @@
-import isObject from 'lodash/isObject'
-import isArray from 'lodash/isArray'
-import reduce from 'lodash/reduce'
 import camelCase from 'lodash/camelCase'
+import isArray from 'lodash/isArray'
+import isObject from 'lodash/isObject'
+import reduce from 'lodash/reduce'
 import lodashSnakeCase from 'lodash/snakeCase'
 
-export const snakeCasePath = (path: string) =>
-  path
-    .split('.')
-    .map(snakeCase)
-    .join('.')
-export const camelCasePath = (path: string) =>
-  path
-    .split('.')
-    .map(camelCase)
-    .join('.')
+export const snakeCasePath = (path: string) => path.split('.').map(snakeCase).join('.')
+export const camelCasePath = (path: string) => path.split('.').map(camelCase).join('.')
 
 export const camelCaseProperties = (object: object) => transformObjectProperties(object, camelCase)
 export const snakeCaseProperties = (object: object) => transformObjectProperties(object, snakeCase)
@@ -22,7 +14,7 @@ export const snakeCaseProperties = (object: object) => transformObjectProperties
  * Won't convert the value of the field, but the field key will be converted.
  * The values in this list should be in snake_case.
  */
-const fieldsNotToConvert = ['custom_fields', 'consents']
+const fieldsNotToConvert = ['consents', 'custom_fields']
 
 function transformObjectProperties(object: any, transform: (path: string) => string): any {
   if (isArray(object)) {
@@ -45,6 +37,6 @@ function transformObjectProperties(object: any, transform: (path: string) => str
 
 /* reuse lodash as it covers most cases, but we want the same behavior as the
    snakecasing strategy on the server where numbers are not separated from non numbers.  */
-function snakeCase(input: string) {
-  return lodashSnakeCase(input).replace(/\_\d/g, dashNumber => dashNumber.slice(1))
+function snakeCase(input: string): string {
+  return lodashSnakeCase(input).replace(/_\d/g, dashNumber => dashNumber.slice(1))
 }

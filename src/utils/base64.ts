@@ -30,25 +30,17 @@ export function encodeBase64(str: string) {
  * return an decoded URL Safe Base64 as UTF-8 encoded string
  */
 export function decodeBase64UrlSafe(base64: string) {
-  // Add removed at end '='
-  // base64 += Array(5 - base64.length % 4).join('=');
-
-  // tslint:disable-next-line: no-parameter-reassignment
-  base64 = base64
-    .replace(/\-/g, '+') // Convert '-' to '+'
-    .replace(/\_/g, '/') // Convert '_' to '/'
-  return decodeBase64(base64) // Cf: https://developer.mozilla.org/fr/docs/D%C3%A9coder_encoder_en_base64
+  const normBase64 = base64
+    .replace(/-/g, '+') // Convert '-' to '+'
+    .replace(/_/g, '/') // Convert '_' to '/'
+  return decodeBase64(normBase64) // Cf: https://developer.mozilla.org/fr/docs/D%C3%A9coder_encoder_en_base64
 }
 
 /**
  * Encode an array into Base64 url safe - Used for PKCE random/hash functions.
  */
 export function encodeToBase64(array: ArrayBuffer | Uint8Array): string {
-  return Buffer.from(array)
-    .toString('base64')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '')
+  return Buffer.from(array).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
 }
 
 /**

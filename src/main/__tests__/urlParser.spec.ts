@@ -34,7 +34,7 @@ describe('parseUrlFragment', () => {
           `id_token=${idToken}`,
           `access_token=${accessToken}`,
           `expires_in=${expiresIn}`,
-          `token_type=${tokenType}`
+          `token_type=${tokenType}`,
         ].join('&')
     )
 
@@ -44,11 +44,11 @@ describe('parseUrlFragment', () => {
       idToken,
       idTokenPayload: {
         sub: '1234567890',
-        name: 'John Doe'
+        name: 'John Doe',
       },
       accessToken,
       expiresIn,
-      tokenType
+      tokenType,
     })
     expect(authenticationFailedHandler).not.toHaveBeenCalled()
   })
@@ -81,11 +81,11 @@ describe('parseUrlFragment', () => {
     expect(authenticationFailedHandler).toHaveBeenCalledWith({
       error,
       errorDescription,
-      errorUsrMsg
+      errorUsrMsg,
     })
   })
 
-  test('with url to be ignored',  () => {
+  test('with url to be ignored', () => {
     expect.assertions(3)
 
     // Given

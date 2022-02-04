@@ -1,47 +1,40 @@
-import {
-  Profile,
-  RemoteSettings,
-  SessionInfo,
-  OpenIdUser,
-  PasswordlessResponse,
-  MFA,
-} from './models'
+import { toQueryString } from '../utils/queryString'
 import ApiClient, {
-  LoginWithPasswordParams,
+  EmailVerificationParams,
   LoginWithCredentialsParams,
+  LoginWithPasswordParams,
   PasswordlessParams,
-  VerifyPasswordlessParams,
+  PhoneNumberVerificationParams,
+  RefreshTokenParams,
+  RemoveMfaEmailParams,
+  RemoveMfaPhoneNumberParams,
   RequestPasswordResetParams,
   SignupParams,
-  UpdatePasswordParams,
-  UpdateEmailParams,
-  TokenRequestParameters,
-  EmailVerificationParams,
-  PhoneNumberVerificationParams,
-  StartMfaPhoneNumberRegistrationParams,
-  VerifyMfaPhoneNumberRegistrationParams,
-  StepUpParams,
-  RemoveMfaPhoneNumberParams,
-  VerifyMfaEmailRegistrationParams,
   StartMfaEmailRegistrationParams,
-  RemoveMfaEmailParams,
-  RefreshTokenParams,
   StartMfaEmailRegistrationResponse,
+  StartMfaPhoneNumberRegistrationParams,
+  StepUpParams,
+  TokenRequestParameters,
+  UpdateEmailParams,
+  UpdatePasswordParams,
+  VerifyMfaEmailRegistrationParams,
   VerifyMfaPasswordlessParams,
+  VerifyMfaPhoneNumberRegistrationParams,
+  VerifyPasswordlessParams,
 } from './apiClient'
 import { AuthOptions } from './authOptions'
 import { AuthResult } from './authResult'
-import { DeviceCredential, LoginWithWebAuthnParams, SignupWithWebAuthnParams } from './webAuthnService'
-import createEventManager, { Events } from './identityEventManager'
-import createUrlParser from './urlParser'
-import { toQueryString } from '../utils/queryString'
 import { rawRequest } from './httpClient'
+import createEventManager, { Events } from './identityEventManager'
+import { MFA, OpenIdUser, PasswordlessResponse, Profile, RemoteSettings, SessionInfo } from './models'
+import createUrlParser from './urlParser'
+import { DeviceCredential, LoginWithWebAuthnParams, SignupWithWebAuthnParams } from './webAuthnService'
 import StepUpResponse = MFA.StepUpResponse
 import MfaCredentialsResponse = MFA.CredentialsResponse
 
-export { AuthResult } from './authResult'
 export { AuthOptions } from './authOptions'
-export { ErrorResponse, Profile, SessionInfo, MFA, PasswordlessResponse } from './models'
+export { AuthResult } from './authResult'
+export { ErrorResponse, MFA, PasswordlessResponse, Profile, SessionInfo } from './models'
 export { DeviceCredential, LoginWithWebAuthnParams, SignupWithWebAuthnParams } from './webAuthnService'
 
 export interface Config {
@@ -78,7 +71,10 @@ export type Client = {
   signupWithWebAuthn: (params: SignupWithWebAuthnParams, auth?: AuthOptions) => Promise<AuthResult>
   startMfaEmailRegistration: (params: StartMfaEmailRegistrationParams) => Promise<StartMfaEmailRegistrationResponse>
   startMfaPhoneNumberRegistration: (params: StartMfaPhoneNumberRegistrationParams) => Promise<void>
-  startPasswordless: (params: PasswordlessParams, options?: Omit<AuthOptions, 'useWebMessage'>) => Promise<PasswordlessResponse>
+  startPasswordless: (
+    params: PasswordlessParams,
+    options?: Omit<AuthOptions, 'useWebMessage'>
+  ) => Promise<PasswordlessResponse>
   unlink: (params: { accessToken: string; identityId: string; fields?: string }) => Promise<void>
   updateEmail: (params: UpdateEmailParams) => Promise<void>
   updatePassword: (params: UpdatePasswordParams) => Promise<void>
@@ -112,7 +108,10 @@ export function createClient(creationConfig: Config): Client {
   const urlParser = createUrlParser(eventManager)
 
   const remoteSettings = rawRequest<RemoteSettings>(
-    `https://${domain}/identity/v1/config?${toQueryString({ clientId, lang: language })}`
+    `https://${domain}/identity/v1/config?${toQueryString({
+      clientId,
+      lang: language,
+    })}`
   )
 
   const apiClient = remoteSettings.then(
@@ -120,10 +119,10 @@ export function createClient(creationConfig: Config): Client {
       new ApiClient({
         config: {
           ...creationConfig,
-          ...remoteConfig
+          ...remoteConfig,
         },
         eventManager,
-        urlParser
+        urlParser,
       })
   )
 

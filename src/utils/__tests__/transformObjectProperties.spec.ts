@@ -1,4 +1,4 @@
-import { camelCaseProperties, snakeCaseProperties, camelCasePath, snakeCasePath } from '../transformObjectProperties'
+import { camelCasePath, camelCaseProperties, snakeCasePath, snakeCaseProperties } from '../transformObjectProperties'
 
 const snakeCaseObject = {
   given_name: 'Robert',
@@ -8,22 +8,22 @@ const snakeCaseObject = {
     street_address: 'Sunset Blvd',
     locality: 'Los Angeles',
     postal_code: 'CA 90028',
-    country: 'United States'
+    country: 'United States',
   },
   phone_number: '+1 (123) 123-4567',
   friends: [
     {
       given_name: 'Martin',
-      family_name: 'Scorsese'
+      family_name: 'Scorsese',
     },
     {
       given_name: 'Al',
-      family_name: 'Pacino'
-    }
+      family_name: 'Pacino',
+    },
   ],
   tags: ['actor', 'american'],
   is_alive: true,
-  test3: true
+  test3: true,
 }
 
 const camelCaseObject = {
@@ -34,22 +34,22 @@ const camelCaseObject = {
     streetAddress: 'Sunset Blvd',
     locality: 'Los Angeles',
     postalCode: 'CA 90028',
-    country: 'United States'
+    country: 'United States',
   },
   phoneNumber: '+1 (123) 123-4567',
   friends: [
     {
       givenName: 'Martin',
-      familyName: 'Scorsese'
+      familyName: 'Scorsese',
     },
     {
       givenName: 'Al',
-      familyName: 'Pacino'
-    }
+      familyName: 'Pacino',
+    },
   ],
   tags: ['actor', 'american'],
   isAlive: true,
-  test3: true
+  test3: true,
 }
 
 describe('camelCaseProperties', () => {
@@ -67,9 +67,9 @@ describe('snakeCaseProperties', () => {
 })
 
 describe('camelCasePath', () => {
-  test('basic', () => expect(camelCasePath('foo_bar.toto_titi')).toEqual('fooBar.totoTiti'))
+  test('basic', () => expect(camelCasePath('foo_bar.toto_titi')).toBe('fooBar.totoTiti'))
 })
 
 describe('snakeCasePath', () => {
-  test('basic', () => expect(snakeCasePath('fooBar.totoTiti')).toEqual('foo_bar.toto_titi'))
+  test('basic', () => expect(snakeCasePath('fooBar.totoTiti')).toBe('foo_bar.toto_titi'))
 })

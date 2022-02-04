@@ -1,7 +1,8 @@
 import fetchMock from 'jest-fetch-mock'
 
-import { defineWindowProperty, headers } from './helpers/testHelpers'
 import { createDefaultTestClient } from './helpers/clientFactory'
+import { headersTest } from './helpers/identityHelpers'
+import { defineWindowProperty } from './helpers/windowHelpers'
 
 beforeAll(() => {
   fetchMock.enableMocks()
@@ -22,20 +23,20 @@ test('send verification mail', async () => {
   const params = {
     accessToken,
     redirectUrl: 'http://toto.com',
-    returnToAfterEmailConfirmation: 'http://confirmation.com'
+    returnToAfterEmailConfirmation: 'http://confirmation.com',
   }
 
-  client.sendEmailVerification(params).then(() => {
+  await client.sendEmailVerification(params).then(() => {
     expect(apiCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/send-email-verification`, {
       method: 'POST',
       headers: {
-        ...headers.jsonAndDefaultLang,
-        ...headers.accessToken(accessToken)
+        ...headersTest.jsonAndDefaultLang,
+        ...headersTest.accessToken(accessToken),
       },
       body: JSON.stringify({
         redirect_url: 'http://toto.com',
-        return_to_after_email_confirmation: 'http://confirmation.com'
-      })
+        return_to_after_email_confirmation: 'http://confirmation.com',
+      }),
     })
   })
 })

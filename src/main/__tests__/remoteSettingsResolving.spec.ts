@@ -1,7 +1,7 @@
 import fetchMock from 'jest-fetch-mock'
 
-import { headers } from './helpers/testHelpers'
 import { createTestClient } from './helpers/clientFactory'
+import { headersTest } from './helpers/identityHelpers'
 
 beforeAll(() => {
   fetchMock.enableMocks()
@@ -24,31 +24,31 @@ test('remote settings language has priority over transmitted language', async ()
     {
       clientId,
       domain,
-      language: submittedLanguage
+      language: submittedLanguage,
     },
     {
-      language: actualLanguage
+      language: actualLanguage,
     }
   )
 
   const passwordLoginCall = fetchMock.mockResponseOnce(
     JSON.stringify({
-      name: 'John Doe'
+      name: 'John Doe',
     })
   )
 
   // When
   await api.getUser({
     accessToken,
-    fields: 'name'
+    fields: 'name',
   })
 
   // Then
   expect(passwordLoginCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/userinfo?fields=name`, {
     method: 'GET',
     headers: {
-      ...headers.lang(actualLanguage),
-      ...headers.accessToken(accessToken)
-    }
+      ...headersTest.lang(actualLanguage),
+      ...headersTest.accessToken(accessToken),
+    },
   })
 })

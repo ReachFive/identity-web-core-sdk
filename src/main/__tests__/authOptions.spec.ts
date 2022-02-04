@@ -5,25 +5,25 @@ describe('computeAuthOptions', () => {
     expect(computeAuthOptions()).toEqual({
       display: 'page',
       responseType: 'token',
-      scope: 'openid profile email phone'
+      scope: 'openid profile email phone',
     })
     expect(computeAuthOptions({})).toEqual({
       display: 'page',
       responseType: 'token',
-      scope: 'openid profile email phone'
+      scope: 'openid profile email phone',
     })
   })
 
   test('with redirect uri', () => {
     expect(
       computeAuthOptions({
-        redirectUri: 'https://localhost/login.callback'
+        redirectUri: 'https://localhost/login.callback',
       })
     ).toEqual({
       display: 'page',
       responseType: 'code',
       scope: 'openid profile email phone',
-      redirectUri: 'https://localhost/login.callback'
+      redirectUri: 'https://localhost/login.callback',
     })
   })
 
@@ -31,16 +31,16 @@ describe('computeAuthOptions', () => {
     const result = {
       display: 'page',
       responseType: 'token',
-      scope: 'openid profile email phone address'
+      scope: 'openid profile email phone address',
     }
     expect(
       computeAuthOptions({
-        scope: ['address']
+        scope: ['address'],
       })
     ).toEqual(result)
     expect(
       computeAuthOptions({
-        scope: 'address'
+        scope: 'address',
       })
     ).toEqual(result)
   })
@@ -49,18 +49,18 @@ describe('computeAuthOptions', () => {
     const result = {
       display: 'page',
       responseType: 'token',
-      scope: 'openid profile'
+      scope: 'openid profile',
     }
     expect(
       computeAuthOptions({
         fetchBasicProfile: false,
-        scope: ['openid', 'profile']
+        scope: ['openid', 'profile'],
       })
     ).toEqual(result)
     expect(
       computeAuthOptions({
         fetchBasicProfile: false,
-        scope: 'openid profile'
+        scope: 'openid profile',
       })
     ).toEqual(result)
   })
@@ -70,7 +70,7 @@ describe('computeAuthOptions', () => {
     expect(computeAuthOptions({ popupMode: true }, { acceptPopupMode: true })).toEqual({
       display: 'popup',
       responseType: 'token',
-      scope: 'openid profile email phone'
+      scope: 'openid profile email phone',
     })
   })
 
@@ -78,26 +78,26 @@ describe('computeAuthOptions', () => {
     expect(computeAuthOptions({ popupMode: true })).toEqual({
       display: 'page',
       responseType: 'token',
-      scope: 'openid profile email phone'
+      scope: 'openid profile email phone',
     })
   })
 
   test('with refresh token required', () => {
     expect(
       computeAuthOptions({
-        requireRefreshToken: true
+        requireRefreshToken: true,
       })
     ).toEqual({
       display: 'page',
       responseType: 'token',
-      scope: 'openid profile email phone offline_access'
+      scope: 'openid profile email phone offline_access',
     })
   })
 
   test('origin', () => {
     expect(
       computeAuthOptions({
-        origin: 'single'
+        origin: 'single',
       })
     ).toEqual({
       display: 'page',
@@ -110,7 +110,7 @@ describe('computeAuthOptions', () => {
   test('accessToken', () => {
     expect(
       computeAuthOptions({
-        accessToken: 'abc.123.def'
+        accessToken: 'abc.123.def',
       })
     ).toEqual({
       display: 'page',

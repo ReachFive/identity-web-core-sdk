@@ -2,9 +2,7 @@ declare module 'winchan' {
   type Winchan = {
     open: any
   }
-
   const Winchan: Winchan
-
   export = Winchan
 }
 
@@ -21,7 +19,7 @@ interface Window {
     }
     InAppBrowser?: {
       open(url: string, target: '_self' | '_blank' | '_system'): void | InAppBrowser
-    },
+    }
     platformId?: 'ios' | 'android'
   }
   handleOpenURL?: (url: string) => void
