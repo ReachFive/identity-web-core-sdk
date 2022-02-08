@@ -39,6 +39,7 @@ export type SignupParams = {
   saveCredentials?: boolean
   auth?: AuthOptions
   redirectUrl?: string
+  captchaToken?: string
 }
 export type UpdateEmailParams = { accessToken: string; email: string; redirectUrl?: string }
 export type EmailVerificationParams = { accessToken: string; redirectUrl?: string; returnToAfterEmailConfirmation?: string }
@@ -618,7 +619,7 @@ export default class ApiClient {
   }
 
   signup(params: SignupParams): Promise<AuthResult> {
-    const { data, auth, redirectUrl, returnToAfterEmailConfirmation, saveCredentials } = params
+    const { data, auth, redirectUrl, returnToAfterEmailConfirmation, saveCredentials, captchaToken } = params
     const { clientId } = this.config
     const scope = this.resolveScope(auth)
 
@@ -641,6 +642,7 @@ export default class ApiClient {
               ...pick(auth, 'origin'),
               data,
               returnToAfterEmailConfirmation,
+              captchaToken
             }
           })
           .then(authResult => {
@@ -655,6 +657,7 @@ export default class ApiClient {
               scope,
               data,
               returnToAfterEmailConfirmation,
+              captchaToken
             }
           })
           .then(tkn => this.storeCredentialsInBrowser(loginParams).then(() => tkn))
