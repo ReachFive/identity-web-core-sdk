@@ -139,7 +139,7 @@ describe('with web message', () => {
       } as LoginWithPasswordParams
 
       // When
-      await loginWithPasswordTest(testKit, authParams, credentials)
+      loginWithPasswordTest(testKit, authParams, credentials)
 
       // Then
       const expectedSrc =
@@ -170,7 +170,7 @@ describe('with web message', () => {
           useWebMessage: true,
         },
       }
-      await signupTest(testKit, params)
+      signupTest(testKit, params)
 
       const expectedSrc =
         `https://${domain}/oauth/authorize?` +
@@ -191,7 +191,7 @@ describe('with web message', () => {
       const nonce = 'abc123def'
       mockNextRandom(nonce)
 
-      await client.checkSession({
+      client.checkSession({
         nonce,
         ...responseType,
       })
@@ -231,8 +231,7 @@ describe('with web message', () => {
             useWebMessage: true,
           },
         } as LoginWithPasswordParams
-
-        await loginWithPasswordTest(testKit, authParams, credentials)
+        loginWithPasswordTest(testKit, authParams, credentials)
 
         const expectedSrc =
           `https://${domain}/oauth/authorize?` +
@@ -263,7 +262,7 @@ describe('with web message', () => {
             useWebMessage: true,
           },
         }
-        await signupTest(testKit, params)
+        signupTest(testKit, params)
 
         const expectedSrc =
           `https://${domain}/oauth/authorize?` +
@@ -284,7 +283,7 @@ describe('with web message', () => {
         const nonce = 'abc123def'
         mockNextRandom(nonce)
 
-        await client.checkSession({
+        client.checkSession({
           nonce,
           ...responseType,
         })

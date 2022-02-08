@@ -59,7 +59,7 @@
     "umd"
   ],
   "jest": {
-    "preset": "ts-jest/presets/default-esm",
+    "preset": "ts-jest",
     "testEnvironment": "jsdom",
     "testMatch": [
       "**/src/**/__tests__/*.spec.ts"

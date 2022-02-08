@@ -366,7 +366,7 @@ export default class ApiClient {
   }
 
   logout(opts: { redirectTo?: string; removeCredentials?: boolean } = {}): void {
-    if (navigator.credentials && navigator.credentials.preventSilentAccess && opts.removeCredentials === true) {
+    if (navigator.credentials && navigator.credentials.preventSilentAccess && opts.removeCredentials) {
       navigator.credentials.preventSilentAccess()
     }
     window.location.assign(`${this.baseUrl}/logout?${toQueryString(opts)}`)
