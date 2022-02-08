@@ -13,11 +13,11 @@
   "types": "es/main/main.d.ts",
   "scripts": {
     "build": "rollup --config --environment BUILD:production",
-    "watch": "rollup --config --watch",
-    "test": "jest",
-    "watch:test": "jest --watch",
+    "build:watch": "rollup --config --watch",
     "lint": "eslint '**/src/**/*.ts' --quiet --fix",
-    "lint:check": "eslint '**/src/**/*.ts' --quiet"
+    "lint:check": "eslint '**/src/**/*.ts' --quiet",
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "dependencies": {
     "lodash": "^4.17.21",
@@ -63,7 +63,6 @@
     "testEnvironment": "jsdom",
     "testMatch": [
       "**/src/**/__tests__/*.spec.ts"
-    ],
-    "testURL": "http://localhost"
+    ]
   }
 }

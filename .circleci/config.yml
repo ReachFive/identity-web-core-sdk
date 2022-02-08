@@ -3,7 +3,7 @@ version: 2.1
 defaults: &defaults
   working_directory: ~/repo
   docker:
-    - image: circleci/node:latest
+    - image: circleci/node:17
 
 jobs:
   test:
@@ -13,7 +13,7 @@ jobs:
       - run: npm ci
       - run: npm run lint:check
       - run: npm run build
-      - run: npm run test --ci
+      - run: npm run test
       - persist_to_workspace:
           root: ~/repo
           paths:
