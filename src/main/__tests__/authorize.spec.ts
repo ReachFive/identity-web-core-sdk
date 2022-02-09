@@ -1,4 +1,5 @@
 import fetchMock from 'jest-fetch-mock'
+import { delay } from 'lodash'
 
 import { randomBase64String } from '../../utils/random'
 import { LoginWithPasswordParams } from '../apiClient'
@@ -139,7 +140,7 @@ describe('with web message', () => {
       } as LoginWithPasswordParams
 
       // When
-      loginWithPasswordTest(testKit, authParams, credentials)
+      await loginWithPasswordTest(testKit, authParams, credentials)
 
       // Then
       const expectedSrc =
@@ -150,7 +151,7 @@ describe('with web message', () => {
           ...webMessage,
           ...tkn,
         })
-      await expectIframeWithParams(iframeId, expectedSrc)
+      delay(expectIframeWithParams, 5000, iframeId, expectedSrc)
     })
 
     test('signup', async () => {
@@ -170,7 +171,8 @@ describe('with web message', () => {
           useWebMessage: true,
         },
       }
-      signupTest(testKit, params)
+
+      await signupTest(testKit, params)
 
       const expectedSrc =
         `https://${domain}/oauth/authorize?` +
@@ -180,7 +182,7 @@ describe('with web message', () => {
           ...webMessage,
           ...tkn,
         })
-      await expectIframeWithParams(iframeId, expectedSrc)
+      delay(expectIframeWithParams, 5000, iframeId, expectedSrc)
     })
 
     test('checkSession', async () => {
@@ -191,7 +193,7 @@ describe('with web message', () => {
       const nonce = 'abc123def'
       mockNextRandom(nonce)
 
-      client.checkSession({
+      await client.checkSession({
         nonce,
         ...responseType,
       })
@@ -209,7 +211,7 @@ describe('with web message', () => {
           ...webMessage,
           nonce,
         })
-      await expectIframeWithParams(nonce, expectedSrc)
+      delay(expectIframeWithParams, 5000, nonce, expectedSrc)
     })
   })
 
@@ -231,7 +233,8 @@ describe('with web message', () => {
             useWebMessage: true,
           },
         } as LoginWithPasswordParams
-        loginWithPasswordTest(testKit, authParams, credentials)
+
+        await loginWithPasswordTest(testKit, authParams, credentials)
 
         const expectedSrc =
           `https://${domain}/oauth/authorize?` +
@@ -242,7 +245,7 @@ describe('with web message', () => {
             ...webMessage,
             ...tkn,
           })
-        await expectIframeWithParams(iframeId, expectedSrc)
+        delay(expectIframeWithParams, 5000, iframeId, expectedSrc)
       })
 
       test('signup', async () => {
@@ -262,7 +265,8 @@ describe('with web message', () => {
             useWebMessage: true,
           },
         }
-        signupTest(testKit, params)
+
+        await signupTest(testKit, params)
 
         const expectedSrc =
           `https://${domain}/oauth/authorize?` +
@@ -272,7 +276,8 @@ describe('with web message', () => {
             ...webMessage,
             ...tkn,
           })
-        await expectIframeWithParams(iframeId, expectedSrc)
+
+        delay(expectIframeWithParams, 5000, iframeId, expectedSrc)
       })
 
       test('checkSession', async () => {
@@ -283,7 +288,7 @@ describe('with web message', () => {
         const nonce = 'abc123def'
         mockNextRandom(nonce)
 
-        client.checkSession({
+        await client.checkSession({
           nonce,
           ...responseType,
         })
@@ -300,7 +305,7 @@ describe('with web message', () => {
             ...webMessage,
             nonce,
           })
-        await expectIframeWithParams(nonce, expectedSrc)
+        delay(expectIframeWithParams, 5000, nonce, expectedSrc)
       })
     })
   })

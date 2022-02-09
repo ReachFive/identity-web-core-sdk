@@ -27,11 +27,9 @@ export default class EventManager<EVENTS extends {}> {
 
   private getListeners<K extends keyof EVENTS>(name: K): Array<(data: EVENTS[K]) => void> {
     let listeners: Array<(data: EVENTS[K]) => void> | undefined = this.listeners[name]
-
     if (!listeners) {
       listeners = this.listeners[name] = []
     }
-
     return listeners
   }
 }

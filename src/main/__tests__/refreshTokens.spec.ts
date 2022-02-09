@@ -91,7 +91,8 @@ test('refresh token with a refresh token', async () => {
 
   // When
   const authResult = await client.refreshTokens({ refreshToken, scope })
-  //Then
+
+  // Then
   expect(authResult).toEqual({
     idToken,
     idTokenPayload: {
@@ -103,6 +104,7 @@ test('refresh token with a refresh token', async () => {
     tokenType,
     refreshToken: newRefreshToken,
   })
+
   expect(refreshCallWithRefreshToken).toHaveBeenCalledWith(`https://${domain}/oauth/token`, {
     method: 'POST',
     headers: headersTest.jsonAndDefaultLang,

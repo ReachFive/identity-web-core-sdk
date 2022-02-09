@@ -4,7 +4,6 @@ import createUrlParser from '../urlParser'
 function createServices() {
   const eventManager = createEventManager()
   const urlParser = createUrlParser(eventManager)
-
   return { eventManager, urlParser }
 }
 

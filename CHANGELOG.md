@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+Replaced tslint by eslint.
+
 ## [1.21.1] - 2021-11-30
 
 ### Added 

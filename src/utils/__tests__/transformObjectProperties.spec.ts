@@ -23,7 +23,7 @@ const snakeCaseObject = {
   ],
   tags: ['actor', 'american'],
   is_alive: true,
-  test3: true,
+  number3: true,
 }
 
 const camelCaseObject = {
@@ -49,7 +49,7 @@ const camelCaseObject = {
   ],
   tags: ['actor', 'american'],
   isAlive: true,
-  test3: true,
+  number3: true,
 }
 
 describe('camelCaseProperties', () => {

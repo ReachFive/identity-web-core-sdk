@@ -1,7 +1,4 @@
-import { delay } from '../../../utils/promise'
-
-export async function expectIframeWithParams(iframeId: string, src: string) {
-  await delay(5)
+export function expectIframeWithParams(iframeId: string, src: string) {
   // "wm" needed to make sure the randomized id is valid
   const iframe = document.querySelector(`#wm${iframeId}`)
   expect(iframe).not.toBeNull()

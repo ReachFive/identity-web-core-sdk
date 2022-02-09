@@ -3,41 +3,41 @@ import EventManager from '../eventManager'
 describe('EventManager', () => {
   test('can add and remove a listener', () => {
     type Events = {
-      myEvent: number
+      myEvent1: number
       myEvent2: number
     }
 
-    const em = new EventManager<Events>()
+    const eventManager = new EventManager<Events>()
 
     const handler = jest.fn()
 
-    em.on('myEvent', handler)
+    eventManager.on('myEvent1', handler)
 
-    em.fire('myEvent', 1)
+    eventManager.fire('myEvent1', 1)
 
     expect(handler).toHaveBeenCalledTimes(1)
     expect(handler).toHaveBeenCalledWith(1)
 
     // Wrong event name
-    em.off('myEvent2', handler)
+    eventManager.off('myEvent2', handler)
 
-    em.fire('myEvent', 2)
+    eventManager.fire('myEvent1', 2)
 
     expect(handler).toHaveBeenCalledTimes(2)
     expect(handler).toHaveBeenCalledWith(2)
 
     // Wrong handler
-    em.off('myEvent', () => void {})
+    eventManager.off('myEvent1', () => void {})
 
-    em.fire('myEvent', 3)
+    eventManager.fire('myEvent1', 3)
 
     expect(handler).toHaveBeenCalledTimes(3)
     expect(handler).toHaveBeenCalledWith(3)
 
     // Proper removal logic
-    em.off('myEvent', handler)
+    eventManager.off('myEvent1', handler)
 
-    em.fire('myEvent', 4)
+    eventManager.fire('myEvent1', 4)
 
     expect(handler).toHaveBeenCalledTimes(3)
   })

@@ -23,14 +23,14 @@ test('simple', async () => {
 
   const email = 'john.doe@example.com'
 
-  await client.requestPasswordReset({ email }).then(() => {
-    expect(passwordResetCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/forgot-password`, {
-      method: 'POST',
-      headers: headersTest.jsonAndDefaultLang,
-      body: JSON.stringify({
-        client_id: clientId,
-        email,
-      }),
-    })
+  await client.requestPasswordReset({ email })
+
+  expect(passwordResetCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/forgot-password`, {
+    method: 'POST',
+    headers: headersTest.jsonAndDefaultLang,
+    body: JSON.stringify({
+      client_id: clientId,
+      email,
+    }),
   })
 })

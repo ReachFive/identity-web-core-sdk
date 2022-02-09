@@ -20,13 +20,13 @@ test('send verification for phone number', async () => {
   const apiCall = fetchMock.mockResponseOnce(JSON.stringify(''))
   const accessToken = '123'
 
-  await client.sendPhoneNumberVerification({ accessToken }).then(() => {
-    expect(apiCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/send-phone-number-verification`, {
-      method: 'POST',
-      headers: {
-        ...headersTest.defaultLang,
-        ...headersTest.accessToken(accessToken),
-      },
-    })
+  await client.sendPhoneNumberVerification({ accessToken })
+
+  expect(apiCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/send-phone-number-verification`, {
+    method: 'POST',
+    headers: {
+      ...headersTest.defaultLang,
+      ...headersTest.accessToken(accessToken),
+    },
   })
 })
