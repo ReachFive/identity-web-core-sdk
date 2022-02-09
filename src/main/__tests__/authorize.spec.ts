@@ -1,4 +1,5 @@
 import fetchMock from 'jest-fetch-mock'
+import { delay } from 'lodash'
 
 import { randomBase64String } from '../../utils/random'
 import { LoginWithPasswordParams } from '../apiClient'
@@ -19,7 +20,6 @@ import {
 } from './helpers/oauthHelpers'
 import { mockNextRandom, popNextRandomString } from './helpers/randomStringMock'
 import { defineWindowProperty, mockWindowCrypto } from './helpers/windowHelpers'
-import { delay } from 'lodash'
 
 beforeAll(() => {
   fetchMock.enableMocks()
