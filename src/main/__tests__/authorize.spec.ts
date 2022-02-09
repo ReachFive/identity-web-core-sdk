@@ -125,7 +125,7 @@ describe('with web message', () => {
     ${_public}      | ${code}
     ${confidential} | ${token}
   `('$clientType | $responseType', ({ clientType, responseType }) => {
-    test.each([email, phone])('loginWithPassword: %j', async credentials => {
+    test.each([email, phone])('loginWithPassword: %j', credentials => {
       const testKit = createDefaultTestClient({ ...clientType })
       const { domain } = testKit
       const iframeId = randomBase64String()
@@ -140,7 +140,7 @@ describe('with web message', () => {
       } as LoginWithPasswordParams
 
       // When
-      await loginWithPasswordTest(testKit, authParams, credentials)
+      loginWithPasswordTest(testKit, authParams, credentials)
 
       // Then
       const expectedSrc =
@@ -154,7 +154,7 @@ describe('with web message', () => {
       delay(expectIframeWithParams, 5000, iframeId, expectedSrc)
     })
 
-    test('signup', async () => {
+    test('signup', () => {
       const testKit = createDefaultTestClient({ ...clientType })
       const { domain } = testKit
       const iframeId = randomBase64String()
@@ -172,7 +172,7 @@ describe('with web message', () => {
         },
       }
 
-      await signupTest(testKit, params)
+      signupTest(testKit, params)
 
       const expectedSrc =
         `https://${domain}/oauth/authorize?` +
@@ -185,7 +185,7 @@ describe('with web message', () => {
       delay(expectIframeWithParams, 5000, iframeId, expectedSrc)
     })
 
-    test('checkSession', async () => {
+    test('checkSession', () => {
       const { client, domain } = createDefaultTestClient({
         sso: true,
         ...clientType,
@@ -193,7 +193,7 @@ describe('with web message', () => {
       const nonce = 'abc123def'
       mockNextRandom(nonce)
 
-      await client.checkSession({
+      client.checkSession({
         nonce,
         ...responseType,
       })
@@ -220,7 +220,7 @@ describe('with web message', () => {
       clientType      | responseType
       ${confidential} | ${code}
     `('$clientType | $responseType', ({ clientType, responseType }) => {
-      test.each([email, phone])('loginWithPassword: %j', async credentials => {
+      test.each([email, phone])('loginWithPassword: %j', credentials => {
         const testKit = createDefaultTestClient({ ...clientType })
         const { domain } = testKit
         const iframeId = randomBase64String()
@@ -234,7 +234,7 @@ describe('with web message', () => {
           },
         } as LoginWithPasswordParams
 
-        await loginWithPasswordTest(testKit, authParams, credentials)
+        loginWithPasswordTest(testKit, authParams, credentials)
 
         const expectedSrc =
           `https://${domain}/oauth/authorize?` +
@@ -248,7 +248,7 @@ describe('with web message', () => {
         delay(expectIframeWithParams, 5000, iframeId, expectedSrc)
       })
 
-      test('signup', async () => {
+      test('signup', () => {
         const testKit = createDefaultTestClient({ ...clientType })
         const { domain } = testKit
         const iframeId = randomBase64String()
@@ -266,7 +266,7 @@ describe('with web message', () => {
           },
         }
 
-        await signupTest(testKit, params)
+        signupTest(testKit, params)
 
         const expectedSrc =
           `https://${domain}/oauth/authorize?` +
@@ -280,7 +280,7 @@ describe('with web message', () => {
         delay(expectIframeWithParams, 5000, iframeId, expectedSrc)
       })
 
-      test('checkSession', async () => {
+      test('checkSession', () => {
         const { client, domain } = createDefaultTestClient({
           sso: true,
           ...clientType,
@@ -288,7 +288,7 @@ describe('with web message', () => {
         const nonce = 'abc123def'
         mockNextRandom(nonce)
 
-        await client.checkSession({
+        client.checkSession({
           nonce,
           ...responseType,
         })
