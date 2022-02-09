@@ -1,5 +1,4 @@
 import fetchMock from 'jest-fetch-mock'
-import { delay } from 'lodash'
 
 import { randomBase64String } from '../../utils/random'
 import { LoginWithPasswordParams } from '../apiClient'
@@ -20,6 +19,7 @@ import {
 } from './helpers/oauthHelpers'
 import { mockNextRandom, popNextRandomString } from './helpers/randomStringMock'
 import { defineWindowProperty, mockWindowCrypto } from './helpers/windowHelpers'
+import { delay } from 'lodash'
 
 beforeAll(() => {
   fetchMock.enableMocks()
@@ -140,7 +140,7 @@ describe('with web message', () => {
       } as LoginWithPasswordParams
 
       // When
-      await loginWithPasswordTest(testKit, authParams, credentials)
+      loginWithPasswordTest(testKit, authParams, credentials)
 
       // Then
       const expectedSrc =
@@ -151,7 +151,7 @@ describe('with web message', () => {
           ...webMessage,
           ...tkn,
         })
-      delay(expectIframeWithParams, 5000, iframeId, expectedSrc)
+      delay(expectIframeWithParams, 3000, iframeId, expectedSrc)
     })
 
     test('signup', async () => {
@@ -172,7 +172,7 @@ describe('with web message', () => {
         },
       }
 
-      await signupTest(testKit, params)
+      signupTest(testKit, params)
 
       const expectedSrc =
         `https://${domain}/oauth/authorize?` +
@@ -182,7 +182,7 @@ describe('with web message', () => {
           ...webMessage,
           ...tkn,
         })
-      delay(expectIframeWithParams, 5000, iframeId, expectedSrc)
+      delay(expectIframeWithParams, 3000, iframeId, expectedSrc)
     })
 
     test('checkSession', async () => {
@@ -193,7 +193,7 @@ describe('with web message', () => {
       const nonce = 'abc123def'
       mockNextRandom(nonce)
 
-      await client.checkSession({
+      client.checkSession({
         nonce,
         ...responseType,
       })
@@ -211,7 +211,7 @@ describe('with web message', () => {
           ...webMessage,
           nonce,
         })
-      delay(expectIframeWithParams, 5000, nonce, expectedSrc)
+      delay(expectIframeWithParams, 3000, nonce, expectedSrc)
     })
   })
 
@@ -234,7 +234,7 @@ describe('with web message', () => {
           },
         } as LoginWithPasswordParams
 
-        await loginWithPasswordTest(testKit, authParams, credentials)
+        loginWithPasswordTest(testKit, authParams, credentials)
 
         const expectedSrc =
           `https://${domain}/oauth/authorize?` +
@@ -245,7 +245,7 @@ describe('with web message', () => {
             ...webMessage,
             ...tkn,
           })
-        delay(expectIframeWithParams, 5000, iframeId, expectedSrc)
+        delay(expectIframeWithParams, 3000, iframeId, expectedSrc)
       })
 
       test('signup', async () => {
@@ -266,7 +266,7 @@ describe('with web message', () => {
           },
         }
 
-        await signupTest(testKit, params)
+        signupTest(testKit, params)
 
         const expectedSrc =
           `https://${domain}/oauth/authorize?` +
@@ -277,7 +277,7 @@ describe('with web message', () => {
             ...tkn,
           })
 
-        delay(expectIframeWithParams, 5000, iframeId, expectedSrc)
+        delay(expectIframeWithParams, 3000, iframeId, expectedSrc)
       })
 
       test('checkSession', async () => {
@@ -288,7 +288,7 @@ describe('with web message', () => {
         const nonce = 'abc123def'
         mockNextRandom(nonce)
 
-        await client.checkSession({
+        client.checkSession({
           nonce,
           ...responseType,
         })
@@ -305,7 +305,7 @@ describe('with web message', () => {
             ...webMessage,
             nonce,
           })
-        delay(expectIframeWithParams, 5000, nonce, expectedSrc)
+        delay(expectIframeWithParams, 3000, nonce, expectedSrc)
       })
     })
   })
