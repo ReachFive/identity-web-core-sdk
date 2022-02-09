@@ -13,9 +13,7 @@ jobs:
       - run: npm ci
       - run: npm run lint:check
       - run: npm run build
-      - run:
-          command: npm run test
-          no_output_timeout: 1m
+      - run: npm run test
       - persist_to_workspace:
           root: ~/repo
           paths:
