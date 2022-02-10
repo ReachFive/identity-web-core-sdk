@@ -36,9 +36,9 @@ import {
   SignupWithWebAuthnParams
 } from './webAuthnService'
 import {randomBase64String} from '../utils/random'
-import StepUpResponse = MFA.StepUpResponse;
-import MfaCredentialsResponse = MFA.CredentialsResponse;
-import EmailCredential = MFA.EmailCredential;
+import StepUpResponse = MFA.StepUpResponse
+import MfaCredentialsResponse = MFA.CredentialsResponse
+import EmailCredential = MFA.EmailCredential
 
 export type SignupParams = {
   data: SignupProfile
