@@ -144,19 +144,19 @@ describe('with web message', () => {
         } as LoginWithPasswordParams
 
         // When
-        loginWithPasswordTest(testKit, authParams, credentials)
+        loginWithPasswordTest(testKit, authParams, credentials).then(() => {
+          // Then
+          const expectedSrc =
+            `https://${domain}/oauth/authorize?` +
+            getExpectedQueryString({
+              ...clientType,
+              ...responseType,
+              ...webMessage,
+              ...tkn,
+            })
 
-        // Then
-        const expectedSrc =
-          `https://${domain}/oauth/authorize?` +
-          getExpectedQueryString({
-            ...clientType,
-            ...responseType,
-            ...webMessage,
-            ...tkn,
-          })
-
-        delay(expectIframeWithParams, 5000, iframeId, expectedSrc)
+          delay(expectIframeWithParams, 5000, iframeId, expectedSrc)
+        })
       },
       10000
     )
@@ -166,6 +166,7 @@ describe('with web message', () => {
       const { domain } = testKit
       const iframeId = randomBase64String()
 
+      // Given
       const params = {
         data: {
           givenName: 'John',
@@ -179,18 +180,20 @@ describe('with web message', () => {
         },
       }
 
-      signupTest(testKit, params)
+      // When
+      signupTest(testKit, params).then(() => {
+        // Then
+        const expectedSrc =
+          `https://${domain}/oauth/authorize?` +
+          getExpectedQueryString({
+            ...clientType,
+            ...responseType,
+            ...webMessage,
+            ...tkn,
+          })
 
-      const expectedSrc =
-        `https://${domain}/oauth/authorize?` +
-        getExpectedQueryString({
-          ...clientType,
-          ...responseType,
-          ...webMessage,
-          ...tkn,
-        })
-
-      delay(expectIframeWithParams, 5000, iframeId, expectedSrc)
+        delay(expectIframeWithParams, 5000, iframeId, expectedSrc)
+      })
     }, 10000)
 
     test('checkSession', async () => {
@@ -198,29 +201,35 @@ describe('with web message', () => {
         sso: true,
         ...clientType,
       })
+
+      // Given
       const nonce = 'abc123def'
       mockNextRandom(nonce)
 
-      client.checkSession({
-        nonce,
-        ...responseType,
-      })
-
-      /*
-      Public clients will force to response_type=code.
-      If a redirectUri is provided use it, otherwise omit it as the backend will check using the origin
-       */
-      const expectedSrc =
-        `https://${domain}/oauth/authorize?` +
-        getExpectedQueryString({
-          ...clientType,
-          ...responseType,
-          responseType: clientType.isPublic ? 'code' : 'token',
-          ...webMessage,
+      // When
+      client
+        .checkSession({
           nonce,
+          ...responseType,
         })
+        .then(() => {
+          // Then
+          /*
+            Public clients will force to response_type=code.
+            If a redirectUri is provided use it, otherwise omit it as the backend will check using the origin
+             */
+          const expectedSrc =
+            `https://${domain}/oauth/authorize?` +
+            getExpectedQueryString({
+              ...clientType,
+              ...responseType,
+              responseType: clientType.isPublic ? 'code' : 'token',
+              ...webMessage,
+              nonce,
+            })
 
-      delay(expectIframeWithParams, 5000, nonce, expectedSrc)
+          delay(expectIframeWithParams, 5000, nonce, expectedSrc)
+        })
     }, 10000)
   })
 
@@ -236,7 +245,7 @@ describe('with web message', () => {
           const { domain } = testKit
           const iframeId = randomBase64String()
 
-          // When
+          // Given
           const authParams = {
             ...credentials,
             auth: {
@@ -245,19 +254,21 @@ describe('with web message', () => {
             },
           } as LoginWithPasswordParams
 
-          loginWithPasswordTest(testKit, authParams, credentials)
+          // When
+          loginWithPasswordTest(testKit, authParams, credentials).then(() => {
+            // Then
+            const expectedSrc =
+              `https://${domain}/oauth/authorize?` +
+              getExpectedQueryString({
+                ...clientType,
+                responseType: 'token',
+                ...credentials,
+                ...webMessage,
+                ...tkn,
+              })
 
-          const expectedSrc =
-            `https://${domain}/oauth/authorize?` +
-            getExpectedQueryString({
-              ...clientType,
-              responseType: 'token',
-              ...credentials,
-              ...webMessage,
-              ...tkn,
-            })
-
-          delay(expectIframeWithParams, 5000, iframeId, expectedSrc)
+            delay(expectIframeWithParams, 5000, iframeId, expectedSrc)
+          })
         },
         10000
       )
@@ -267,6 +278,7 @@ describe('with web message', () => {
         const { domain } = testKit
         const iframeId = randomBase64String()
 
+        // Given
         const params = {
           data: {
             givenName: 'John',
@@ -280,18 +292,19 @@ describe('with web message', () => {
           },
         }
 
-        signupTest(testKit, params)
+        // When
+        signupTest(testKit, params).then(() => {
+          const expectedSrc =
+            `https://${domain}/oauth/authorize?` +
+            getExpectedQueryString({
+              ...clientType,
+              responseType: 'token',
+              ...webMessage,
+              ...tkn,
+            })
 
-        const expectedSrc =
-          `https://${domain}/oauth/authorize?` +
-          getExpectedQueryString({
-            ...clientType,
-            responseType: 'token',
-            ...webMessage,
-            ...tkn,
-          })
-
-        delay(expectIframeWithParams, 5000, iframeId, expectedSrc)
+          delay(expectIframeWithParams, 5000, iframeId, expectedSrc)
+        })
       }, 10000)
 
       test('checkSession', async () => {
@@ -299,28 +312,34 @@ describe('with web message', () => {
           sso: true,
           ...clientType,
         })
+
+        // Given
         const nonce = 'abc123def'
         mockNextRandom(nonce)
 
-        client.checkSession({
-          nonce,
-          ...responseType,
-        })
-
-        /*
-        Confidential clients cannot complete a code flow in web messages.
-        In those cases, force response_type=token.
-         */
-        const expectedSrc =
-          `https://${domain}/oauth/authorize?` +
-          getExpectedQueryString({
-            ...clientType,
-            responseType: 'token',
-            ...webMessage,
+        // When
+        client
+          .checkSession({
             nonce,
+            ...responseType,
           })
+          .then(() => {
+            // Then
+            /*
+              Confidential clients cannot complete a code flow in web messages.
+              In those cases, force response_type=token.
+               */
+            const expectedSrc =
+              `https://${domain}/oauth/authorize?` +
+              getExpectedQueryString({
+                ...clientType,
+                responseType: 'token',
+                ...webMessage,
+                nonce,
+              })
 
-        delay(expectIframeWithParams, 5000, nonce, expectedSrc)
+            delay(expectIframeWithParams, 5000, nonce, expectedSrc)
+          })
       }, 10000)
     })
   })
