@@ -1,5 +1,4 @@
 import fetchMock from 'jest-fetch-mock'
-import { delay } from 'lodash'
 
 import { randomBase64String } from '../../utils/random'
 import { LoginWithPasswordParams } from '../apiClient'
@@ -155,7 +154,7 @@ describe('with web message', () => {
               ...tkn,
             })
 
-          delay(expectIframeWithParams, 5000, iframeId, expectedSrc)
+          setTimeout(() => expectIframeWithParams(iframeId, expectedSrc), 5000)
         })
       },
       10000
@@ -192,7 +191,7 @@ describe('with web message', () => {
             ...tkn,
           })
 
-        delay(expectIframeWithParams, 5000, iframeId, expectedSrc)
+        setTimeout(() => expectIframeWithParams(iframeId, expectedSrc), 5000)
       })
     }, 10000)
 
@@ -228,7 +227,7 @@ describe('with web message', () => {
               nonce,
             })
 
-          delay(expectIframeWithParams, 5000, nonce, expectedSrc)
+          setTimeout(() => expectIframeWithParams(nonce, expectedSrc), 5000)
         })
     }, 10000)
   })
@@ -267,7 +266,7 @@ describe('with web message', () => {
                 ...tkn,
               })
 
-            delay(expectIframeWithParams, 5000, iframeId, expectedSrc)
+            setTimeout(() => expectIframeWithParams(iframeId, expectedSrc), 5000)
           })
         },
         10000
@@ -303,7 +302,7 @@ describe('with web message', () => {
               ...tkn,
             })
 
-          delay(expectIframeWithParams, 5000, iframeId, expectedSrc)
+          setTimeout(() => expectIframeWithParams(iframeId, expectedSrc), 5000)
         })
       }, 10000)
 
@@ -338,7 +337,7 @@ describe('with web message', () => {
                 nonce,
               })
 
-            delay(expectIframeWithParams, 5000, nonce, expectedSrc)
+            setTimeout(() => expectIframeWithParams(nonce, expectedSrc), 5000)
           })
       }, 10000)
     })
