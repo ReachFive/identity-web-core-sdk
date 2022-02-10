@@ -45,6 +45,6 @@ describe('error cases', () => {
 
     // Then
     await expect(promise).rejects.toEqual(expectedError)
-    await expect(loginFailedHandler).toHaveBeenCalledWith(expectedError)
+    expect(loginFailedHandler).toHaveBeenCalledWith(expectedError)
   })
 })

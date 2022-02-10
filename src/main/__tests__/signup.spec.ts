@@ -49,7 +49,7 @@ test('with user error', async () => {
   })
 
   await expect(promise).rejects.toEqual(expectedError)
-  await expect(signupFailedHandler).toHaveBeenCalledWith(expectedError)
+  expect(signupFailedHandler).toHaveBeenCalledWith(expectedError)
 })
 
 test('with unexpected error', async () => {
@@ -71,5 +71,5 @@ test('with unexpected error', async () => {
   })
 
   await expect(promise).rejects.toThrow(expectedError)
-  await expect(signupFailedHandler).not.toHaveBeenCalled()
+  expect(signupFailedHandler).not.toHaveBeenCalled()
 })

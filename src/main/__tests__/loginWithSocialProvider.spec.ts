@@ -112,9 +112,9 @@ test('with popup mode with expected failure', async () => {
   await client.loginWithSocialProvider('facebook', { popupMode: true })
 
   // Then
-  await expect(authenticatedHandler).not.toHaveBeenCalled()
+  expect(authenticatedHandler).not.toHaveBeenCalled()
 
-  await expect(authenticationFailedHandler).toHaveBeenCalledWith({
+  expect(authenticationFailedHandler).toHaveBeenCalledWith({
     error: 'access_denied',
     errorDescription: 'The user cancelled the login process',
     errorUsrMsg: 'Login cancelled',

@@ -39,7 +39,6 @@ beforeEach(() => {
   jest.resetAllMocks()
   fetchMock.resetMocks()
   delete window.handleOpenURL
-
   defineWindowProperty('cordova', {})
 })
 
@@ -72,7 +71,6 @@ describe('signup', () => {
     const familyName = 'Doe'
 
     // When
-
     await client.signup({
       data: {
         email,
@@ -83,7 +81,6 @@ describe('signup', () => {
     })
 
     // Then
-
     expect(signupCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/signup-token`, {
       method: 'POST',
       headers: headersTest.jsonAndDefaultLang,
@@ -218,12 +215,10 @@ describe('signup', () => {
 
     // Then
     await expect(promise).rejects.toStrictEqual(expectedError)
-    await expect(signupFailedHandler).toHaveBeenCalledWith(expectedError)
+    expect(signupFailedHandler).toHaveBeenCalledWith(expectedError)
   })
 
   test('with an unexpected error', async () => {
-    expect.assertions(2)
-
     // Given
     const { client, eventManager } = apiClientAndEventManager()
 
@@ -244,14 +239,12 @@ describe('signup', () => {
 
     // Then
     await expect(promise).rejects.toThrow(error)
-    await expect(signupFailedHandler).not.toHaveBeenCalled()
+    expect(signupFailedHandler).not.toHaveBeenCalled()
   })
 })
 
 describe('loginWithPassword', () => {
   test('with default authentication options (email/password)', async () => {
-    expect.assertions(2)
-
     // Given
     const { client, eventManager } = apiClientAndEventManager()
 
@@ -305,8 +298,6 @@ describe('loginWithPassword', () => {
   })
 
   test('with default authentication options (phone/password)', async () => {
-    expect.assertions(2)
-
     // Given
     const { client, eventManager } = apiClientAndEventManager()
 
@@ -360,8 +351,6 @@ describe('loginWithPassword', () => {
   })
 
   test('with the origin option', async () => {
-    expect.assertions(2)
-
     // Given
     const { client, eventManager } = apiClientAndEventManager()
 
@@ -510,14 +499,12 @@ describe('loginWithPassword', () => {
     })
 
     await expect(promise).rejects.toStrictEqual(expectedError)
-    await expect(loginFailedHandler).toHaveBeenCalledWith(expectedError)
+    expect(loginFailedHandler).toHaveBeenCalledWith(expectedError)
   })
 })
 
 describe('loginWithSocialProvider', () => {
   test('with the browsertab plugin present and available', async () => {
-    expect.assertions(3)
-
     // Given
     const { client } = apiClientAndEventManager()
 
@@ -560,14 +547,13 @@ describe('loginWithSocialProvider', () => {
     const { client } = apiClientAndEventManager()
 
     // When
-    await expect(client.loginWithSocialProvider('facebook'))
-      // Then
-      .rejects.toThrow(new Error('Cordova plugin "InAppBrowser" is required.'))
+    const promise = client.loginWithSocialProvider('facebook')
+
+    // Then
+    await expect(promise).rejects.toThrow(new Error('Cordova plugin "InAppBrowser" is required.'))
   })
 
   test('with the browsertab plugin present but not available (on Android)', async () => {
-    expect.assertions(3)
-
     // Given
     const { client } = apiClientAndEventManager()
 
@@ -608,8 +594,6 @@ describe('loginWithSocialProvider', () => {
   })
 
   test('with the browsertab plugin present but not available (on iOS)', async () => {
-    expect.assertions(3)
-
     // Given
     const { client } = apiClientAndEventManager()
 
@@ -650,8 +634,6 @@ describe('loginWithSocialProvider', () => {
   })
 
   test('with the browsertab plugin not present (on Android)', async () => {
-    expect.assertions(1)
-
     // Given
     const { client } = apiClientAndEventManager()
 
@@ -680,8 +662,6 @@ describe('loginWithSocialProvider', () => {
   })
 
   test('with the browsertab plugin not present (on iOS)', async () => {
-    expect.assertions(1)
-
     // Given
     const { client } = apiClientAndEventManager()
 
@@ -710,8 +690,6 @@ describe('loginWithSocialProvider', () => {
   })
 
   test('with specified auth params (on Android)', async () => {
-    expect.assertions(1)
-
     // Given
     const { client } = apiClientAndEventManager()
 
@@ -746,8 +724,6 @@ describe('loginWithSocialProvider', () => {
   })
 
   test('with specified auth params (on iOS)', async () => {
-    expect.assertions(1)
-
     // Given
     const { client } = apiClientAndEventManager()
 
@@ -782,8 +758,6 @@ describe('loginWithSocialProvider', () => {
   })
 
   test('with popup mode ignored (on Android)', async () => {
-    expect.assertions(1)
-
     // Given
     const { client } = apiClientAndEventManager()
 
@@ -814,8 +788,6 @@ describe('loginWithSocialProvider', () => {
   })
 
   test('with popup mode ignored (on iOS)', async () => {
-    expect.assertions(1)
-
     // Given
     const { client } = apiClientAndEventManager()
 
@@ -885,8 +857,6 @@ describe('handleOpenURL', () => {
   })
 
   test('when already defined outside', async () => {
-    expect.assertions(2)
-
     // Given
     const handleOpenURL = jest.fn()
     window.handleOpenURL = handleOpenURL
@@ -919,8 +889,6 @@ describe('handleOpenURL', () => {
   })
 
   test('with the browsertab plugin', async () => {
-    expect.assertions(2)
-
     // Given
     const { eventManager } = apiClientAndEventManager()
 

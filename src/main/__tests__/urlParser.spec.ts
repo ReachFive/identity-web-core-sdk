@@ -9,8 +9,6 @@ function createServices() {
 
 describe('parseUrlFragment', () => {
   test('with success url', () => {
-    expect.assertions(3)
-
     // Given
     const { eventManager, urlParser } = createServices()
 
@@ -53,8 +51,6 @@ describe('parseUrlFragment', () => {
   })
 
   test('with error url', () => {
-    expect.assertions(3)
-
     // Given
     const { eventManager, urlParser } = createServices()
 
@@ -85,8 +81,6 @@ describe('parseUrlFragment', () => {
   })
 
   test('with url to be ignored', () => {
-    expect.assertions(3)
-
     // Given
     const { eventManager, urlParser } = createServices()
 
