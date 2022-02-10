@@ -1,15 +1,15 @@
 export const log = (message: string) => {
-  if (window.console?.log) window.console.log(message)
+  if (window?.console?.log) window.console.log(message)
 }
 
 export const logError = (messageOrException: string | Error, exception?: Error) => {
-  if (window.console?.error) {
+  if (window?.console?.error) {
     if (exception) {
-      window.console?.error(messageOrException, exception)
+      window.console.error(messageOrException, exception)
     } else {
-      window.console?.error(messageOrException)
+      window.console.error(messageOrException)
     }
-  } else if (window.console?.log) {
+  } else if (window?.console?.log) {
     window.console.log(messageOrException)
   }
 }
