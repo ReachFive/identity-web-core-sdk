@@ -16,8 +16,8 @@
     "build:watch": "rollup --config --watch",
     "lint": "eslint '**/src/**/*.ts' --quiet --fix",
     "lint:check": "eslint '**/src/**/*.ts' --quiet",
-    "test": "jest",
-    "test:watch": "jest --watch"
+    "test": "npx jest",
+    "test:watch": "npx jest --watch"
   },
   "dependencies": {
     "lodash": "^4.17.21",
