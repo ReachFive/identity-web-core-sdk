@@ -1,37 +1,44 @@
 import WinChan from 'winchan'
 import pick from 'lodash/pick'
 import isUndefined from 'lodash/isUndefined'
-import { logError } from '../utils/logger'
-import { QueryString, toQueryString } from '../utils/queryString'
-import { camelCaseProperties } from '../utils/transformObjectProperties'
+import {logError} from '../utils/logger'
+import {QueryString, toQueryString} from '../utils/queryString'
+import {camelCaseProperties} from '../utils/transformObjectProperties'
 import {
   ErrorResponse,
-  Profile,
-  SessionInfo,
-  SignupProfile,
+  MFA,
   OpenIdUser,
   PasswordlessResponse,
-  MFA,
-  Scope
+  Profile,
+  Scope,
+  SessionInfo,
+  SignupProfile
 } from './models'
-import { AuthOptions, AuthParameters, computeAuthOptions, resolveScope } from './authOptions'
-import { AuthResult, enrichAuthResult } from './authResult'
-import { IdentityEventManager } from './identityEventManager'
-import { UrlParser } from './urlParser'
-import { popupSize } from './providerPopupSize'
-import { createHttpClient, HttpClient } from './httpClient'
-import { computePkceParams, PkceParams } from './pkceService'
+import {AuthOptions, AuthParameters, computeAuthOptions, resolveScope} from './authOptions'
+import {AuthResult, enrichAuthResult} from './authResult'
+import {IdentityEventManager} from './identityEventManager'
+import {UrlParser} from './urlParser'
+import {popupSize} from './providerPopupSize'
+import {createHttpClient, HttpClient} from './httpClient'
+import {computePkceParams, PkceParams} from './pkceService'
 import {
-  encodePublicKeyCredentialCreationOptions, encodePublicKeyCredentialRequestOptions,
-  serializeRegistrationPublicKeyCredential, serializeAuthenticationPublicKeyCredential,
-  RegistrationOptions, CredentialRequestOptionsSerialized, DeviceCredential,
-  EmailLoginWithWebAuthnParams, PhoneNumberLoginWithWebAuthnParams, LoginWithWebAuthnParams, SignupWithWebAuthnParams,
-  publicKeyCredentialType
+  CredentialRequestOptionsSerialized,
+  DeviceCredential,
+  EmailLoginWithWebAuthnParams,
+  encodePublicKeyCredentialCreationOptions,
+  encodePublicKeyCredentialRequestOptions,
+  LoginWithWebAuthnParams,
+  PhoneNumberLoginWithWebAuthnParams,
+  publicKeyCredentialType,
+  RegistrationOptions,
+  serializeAuthenticationPublicKeyCredential,
+  serializeRegistrationPublicKeyCredential,
+  SignupWithWebAuthnParams
 } from './webAuthnService'
-import { randomBase64String } from '../utils/random'
-import StepUpResponse = MFA.StepUpResponse
-import MfaCredentialsResponse = MFA.CredentialsResponse
-import EmailCredential = MFA.EmailCredential
+import {randomBase64String} from '../utils/random'
+import StepUpResponse = MFA.StepUpResponse;
+import MfaCredentialsResponse = MFA.CredentialsResponse;
+import EmailCredential = MFA.EmailCredential;
 
 export type SignupParams = {
   data: SignupProfile
@@ -92,16 +99,15 @@ type SingleFactorPasswordlessParams = {
   authType: 'magic_link' | 'sms'
   email?: string
   phoneNumber?: string
+  captchaToken?: string
 }
-
-type SingleFactorPasswordlessWithCaptcha = SingleFactorPasswordlessParams & {  captchaToken?: string }
 
 type StepUpPasswordlessParams = {
   authType: 'email' | 'sms'
   stepUp: string
 }
 
-export type PasswordlessParams = SingleFactorPasswordlessWithCaptcha | StepUpPasswordlessParams
+export type PasswordlessParams = SingleFactorPasswordlessParams | StepUpPasswordlessParams
 
 export type VerifyMfaPasswordlessParams = {
   challengeId: string
@@ -109,7 +115,12 @@ export type VerifyMfaPasswordlessParams = {
   accessToken: string
 }
 
-export type VerifyPasswordlessParams = SingleFactorPasswordlessParams & { verificationCode: string }
+export type VerifyPasswordlessParams = {
+  authType: 'magic_link' | 'sms'
+  email?: string
+  phoneNumber?: string
+  verificationCode: string
+}
 
 export type ApiClientConfig = {
   clientId: string
@@ -573,7 +584,7 @@ export default class ApiClient {
     )
   }
 
-  private resolveSingleFactorPasswordlessParams(params: SingleFactorPasswordlessWithCaptcha, auth: Omit<AuthOptions, 'useWebMessage'> = {}): Promise<{}> {
+  private resolveSingleFactorPasswordlessParams(params: SingleFactorPasswordlessParams, auth: Omit<AuthOptions, 'useWebMessage'> = {}): Promise<{}> {
     const { authType, email, phoneNumber, captchaToken } = params
     const authParams = this.authParams(auth)
 
