@@ -59,8 +59,12 @@ type EmailRequestPasswordResetParams = {
   redirectUrl?: string
   loginLink?: string
   returnToAfterPasswordReset?: string
+  captchaToken?: string
 }
-type SmsRequestPasswordResetParams = { phoneNumber: string }
+type SmsRequestPasswordResetParams = {
+  phoneNumber: string
+  captchaToken?: string
+}
 export type RequestPasswordResetParams = EmailRequestPasswordResetParams | SmsRequestPasswordResetParams
 
 type AccessTokenUpdatePasswordParams = {
