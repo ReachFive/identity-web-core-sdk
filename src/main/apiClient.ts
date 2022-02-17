@@ -97,6 +97,7 @@ type SingleFactorPasswordlessParams = {
   authType: 'magic_link' | 'sms'
   email?: string
   phoneNumber?: string
+  captchaToken?: string
 }
 
 type StepUpPasswordlessParams = {
@@ -112,7 +113,12 @@ export type VerifyMfaPasswordlessParams = {
   accessToken: string
 }
 
-export type VerifyPasswordlessParams = SingleFactorPasswordlessParams & { verificationCode: string }
+export type VerifyPasswordlessParams = {
+  authType: 'magic_link' | 'sms'
+  email?: string
+  phoneNumber?: string
+  verificationCode: string
+}
 
 export type ApiClientConfig = {
   clientId: string
@@ -577,7 +583,7 @@ export default class ApiClient {
   }
 
   private resolveSingleFactorPasswordlessParams(params: SingleFactorPasswordlessParams, auth: Omit<AuthOptions, 'useWebMessage'> = {}): Promise<{}> {
-    const { authType, email, phoneNumber } = params
+    const { authType, email, phoneNumber, captchaToken } = params
     const authParams = this.authParams(auth)
 
     return this.getPkceParams(authParams).then(maybeChallenge => {
@@ -586,6 +592,7 @@ export default class ApiClient {
         authType,
         email,
         phoneNumber,
+        captchaToken,
         ...maybeChallenge,
       }
     })
