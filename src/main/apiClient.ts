@@ -39,6 +39,7 @@ export type SignupParams = {
   saveCredentials?: boolean
   auth?: AuthOptions
   redirectUrl?: string
+  captchaToken?: string
 }
 export type UpdateEmailParams = { accessToken: string; email: string; redirectUrl?: string }
 export type EmailVerificationParams = { accessToken: string; redirectUrl?: string; returnToAfterEmailConfirmation?: string }
@@ -58,8 +59,12 @@ type EmailRequestPasswordResetParams = {
   redirectUrl?: string
   loginLink?: string
   returnToAfterPasswordReset?: string
+  captchaToken?: string
 }
-type SmsRequestPasswordResetParams = { phoneNumber: string }
+type SmsRequestPasswordResetParams = {
+  phoneNumber: string
+  captchaToken?: string
+}
 export type RequestPasswordResetParams = EmailRequestPasswordResetParams | SmsRequestPasswordResetParams
 
 type AccessTokenUpdatePasswordParams = {
@@ -92,6 +97,7 @@ type SingleFactorPasswordlessParams = {
   authType: 'magic_link' | 'sms'
   email?: string
   phoneNumber?: string
+  captchaToken?: string
 }
 
 type StepUpPasswordlessParams = {
@@ -107,7 +113,12 @@ export type VerifyMfaPasswordlessParams = {
   accessToken: string
 }
 
-export type VerifyPasswordlessParams = SingleFactorPasswordlessParams & { verificationCode: string }
+export type VerifyPasswordlessParams = {
+  authType: 'magic_link' | 'sms'
+  email?: string
+  phoneNumber?: string
+  verificationCode: string
+}
 
 export type ApiClientConfig = {
   clientId: string
@@ -572,7 +583,7 @@ export default class ApiClient {
   }
 
   private resolveSingleFactorPasswordlessParams(params: SingleFactorPasswordlessParams, auth: Omit<AuthOptions, 'useWebMessage'> = {}): Promise<{}> {
-    const { authType, email, phoneNumber } = params
+    const { authType, email, phoneNumber, captchaToken } = params
     const authParams = this.authParams(auth)
 
     return this.getPkceParams(authParams).then(maybeChallenge => {
@@ -581,6 +592,7 @@ export default class ApiClient {
         authType,
         email,
         phoneNumber,
+        captchaToken,
         ...maybeChallenge,
       }
     })
@@ -618,7 +630,7 @@ export default class ApiClient {
   }
 
   signup(params: SignupParams): Promise<AuthResult> {
-    const { data, auth, redirectUrl, returnToAfterEmailConfirmation, saveCredentials } = params
+    const { data, auth, redirectUrl, returnToAfterEmailConfirmation, saveCredentials, captchaToken } = params
     const { clientId } = this.config
     const scope = this.resolveScope(auth)
 
@@ -641,6 +653,7 @@ export default class ApiClient {
               ...pick(auth, 'origin'),
               data,
               returnToAfterEmailConfirmation,
+              captchaToken
             }
           })
           .then(authResult => {
@@ -655,6 +668,7 @@ export default class ApiClient {
               scope,
               data,
               returnToAfterEmailConfirmation,
+              captchaToken
             }
           })
           .then(tkn => this.storeCredentialsInBrowser(loginParams).then(() => tkn))
