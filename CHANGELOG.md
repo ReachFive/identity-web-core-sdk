@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.22.0] - 2022-02-22
+
+### Added 
+
+- Allow to enable/disable users' mfa email identifier with removeMfaEmail
+- Introduce `verifyMfaPasswordless` to complete an MFA passwordless flow
+- Add new functions:
+  - `verifyMfaEmailRegistration`
+  - `startMfaEmailRegistration`
+- Add an optional parameter `captchaToken` for captcha support in [signup](https://developer.reachfive.com/sdk-core/signup.html), [startPasswordless](https://developer.reachfive.com/sdk-core/startPasswordless.html) and [requestPasswordReset](https://developer.reachfive.com/sdk-core/requestPasswordReset.html)
+
+### Changed
+- Support the step up form a fresh access token
+
 ## [1.21.1] - 2021-11-30
 
 ### Added 
