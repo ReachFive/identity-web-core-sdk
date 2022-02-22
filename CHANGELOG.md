@@ -9,15 +9,15 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added 
 
-- Allow to enable/disable users' mfa email identifier with removeMfaEmail
 - Introduce `verifyMfaPasswordless` to complete an MFA passwordless flow
-- Add new functions:
+- Add new 2nd factor email identifier management functions:
   - `verifyMfaEmailRegistration`
   - `startMfaEmailRegistration`
+  - `removeMfaEmail`
 - Add an optional parameter `captchaToken` for captcha support in [signup](https://developer.reachfive.com/sdk-core/signup.html), [startPasswordless](https://developer.reachfive.com/sdk-core/startPasswordless.html) and [requestPasswordReset](https://developer.reachfive.com/sdk-core/requestPasswordReset.html)
 
 ### Changed
-- Support the step up form a fresh access token
+- Support the step up from a fresh access token with function `getMfaStepUpToken`
 
 ## [1.21.1] - 2021-11-30
 
