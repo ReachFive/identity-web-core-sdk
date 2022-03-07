@@ -1,7 +1,9 @@
 import { MFA } from './models'
-import { AuthOptions } from './authOptions'
+import {AuthOptions, AuthParameters, computeAuthOptions} from './authOptions'
 import { HttpClient } from './httpClient'
 import { AuthResult } from './authResult'
+import { computePkceParams, PkceParams } from './pkceService'
+import { ApiClientConfig } from './main'
 import EmailCredential = MFA.EmailCredential
 import MfaCredentialsResponse = MFA.CredentialsResponse
 import StepUpResponse = MFA.StepUpResponse
@@ -51,9 +53,11 @@ export type RemoveMfaPhoneNumberParams = {
  * Identity Rest API Client
  */
 export default class MfaClient {
+  private config: ApiClientConfig
   private http: HttpClient
 
-  constructor(props: { http: HttpClient }) {
+  constructor(props: { config: ApiClientConfig; http: HttpClient }) {
+    this.config = props.config
     this.http = props.http
   }
 
@@ -141,5 +145,35 @@ export default class MfaClient {
       },
       accessToken,
     })
+  }
+
+  // TODO SZA Copy-paste
+  private authParams(opts: AuthOptions, { acceptPopupMode = false } = {}) {
+    const isConfidentialCodeWebMsg = !this.config.isPublic && !!opts.useWebMessage && (opts.responseType === 'code' || opts.redirectUri)
+
+    const overrideResponseType: Partial<AuthOptions> = isConfidentialCodeWebMsg
+        ? { responseType: 'token', redirectUri: undefined }
+        : {}
+
+    return {
+      clientId: this.config.clientId,
+      ...computeAuthOptions(
+          {
+            ...opts,
+            ...overrideResponseType
+          },
+          { acceptPopupMode },
+          this.config.scope
+      )
+    }
+  }
+
+  private getPkceParams(authParams: AuthParameters): Promise<PkceParams | {}> {
+    if (this.config.isPublic && authParams.responseType === 'code')
+      return computePkceParams()
+    else if (authParams.responseType === 'token' && this.config.pkceEnforced)
+      return Promise.reject(new Error('Cannot use implicit flow when PKCE is enforced'))
+    else
+      return Promise.resolve({})
   }
 }

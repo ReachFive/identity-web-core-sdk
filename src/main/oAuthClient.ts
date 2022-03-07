@@ -38,7 +38,7 @@ export type LoginWithCredentialsParams = {
   auth?: AuthOptions
 }
 
-type SingleFactorPasswordlessParams = {
+export type SingleFactorPasswordlessParams = {
   authType: 'magic_link' | 'sms'
   email?: string
   phoneNumber?: string
