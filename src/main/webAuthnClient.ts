@@ -1,5 +1,5 @@
-import {AuthOptions, AuthParameters, computeAuthOptions} from './authOptions'
-import {AuthResult, enrichAuthResult} from './authResult'
+import { AuthOptions, AuthParameters, computeAuthOptions } from './authOptions'
+import { AuthResult, enrichAuthResult } from './authResult'
 import { IdentityEventManager } from './identityEventManager'
 import { HttpClient } from './httpClient'
 import {
@@ -16,7 +16,7 @@ import {
   serializeRegistrationPublicKeyCredential,
   SignupWithWebAuthnParams
 } from './webAuthnService'
-import {ApiClientConfig, ErrorResponse} from './main'
+import { ApiClientConfig, ErrorResponse } from './main'
 import { computePkceParams, PkceParams } from './pkceService'
 import { resolveScope } from './authOptions'
 import { toQueryString } from '../utils/queryString'

@@ -1,5 +1,5 @@
 import { MFA } from './models'
-import {AuthOptions, AuthParameters, computeAuthOptions} from './authOptions'
+import { AuthOptions, AuthParameters, computeAuthOptions } from './authOptions'
 import { HttpClient } from './httpClient'
 import { AuthResult } from './authResult'
 import { computePkceParams, PkceParams } from './pkceService'
