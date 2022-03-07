@@ -1,7 +1,7 @@
 import fetchMock from 'jest-fetch-mock'
 
 import { defineWindowProperty, headers, mockWindowCrypto } from './helpers/testHelpers'
-import ApiClient from '../apiClient'
+import OauthClient from '../apiClient'
 import createEventManager from '../identityEventManager'
 import createUrlParser from '../urlParser'
 import { toQueryString } from '../../utils/queryString'
@@ -12,7 +12,7 @@ const domain = 'local.reach5.net'
 
 function apiClientAndEventManager() {
   const eventManager = createEventManager()
-  const client = new ApiClient({
+  const client = new OauthClient({
     config: {
       clientId,
       domain,

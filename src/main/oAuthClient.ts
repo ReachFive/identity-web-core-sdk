@@ -6,32 +6,19 @@ import { QueryString, toQueryString } from '../utils/queryString'
 import { camelCaseProperties } from '../utils/transformObjectProperties'
 import {
   ErrorResponse,
-  Profile,
   SessionInfo,
   SignupProfile,
-  OpenIdUser,
   PasswordlessResponse,
-  MFA,
   Scope
 } from './models'
 import { AuthOptions, AuthParameters, computeAuthOptions, resolveScope } from './authOptions'
 import { AuthResult, enrichAuthResult } from './authResult'
 import { IdentityEventManager } from './identityEventManager'
-import { UrlParser } from './urlParser'
 import { popupSize } from './providerPopupSize'
-import { createHttpClient, HttpClient } from './httpClient'
+import { HttpClient } from './httpClient'
 import { computePkceParams, PkceParams } from './pkceService'
-import {
-  encodePublicKeyCredentialCreationOptions, encodePublicKeyCredentialRequestOptions,
-  serializeRegistrationPublicKeyCredential, serializeAuthenticationPublicKeyCredential,
-  RegistrationOptions, CredentialRequestOptionsSerialized, DeviceCredential,
-  EmailLoginWithWebAuthnParams, PhoneNumberLoginWithWebAuthnParams, LoginWithWebAuthnParams, SignupWithWebAuthnParams,
-  publicKeyCredentialType
-} from './webAuthnService'
 import { randomBase64String } from '../utils/random'
-import StepUpResponse = MFA.StepUpResponse
-import MfaCredentialsResponse = MFA.CredentialsResponse
-import EmailCredential = MFA.EmailCredential
+import { ApiClientConfig } from './main'
 
 export type SignupParams = {
   data: SignupProfile
@@ -41,9 +28,6 @@ export type SignupParams = {
   redirectUrl?: string
   captchaToken?: string
 }
-export type UpdateEmailParams = { accessToken: string; email: string; redirectUrl?: string }
-export type EmailVerificationParams = { accessToken: string; redirectUrl?: string; returnToAfterEmailConfirmation?: string }
-export type PhoneNumberVerificationParams = { accessToken: string }
 type LoginWithPasswordOptions = { password: string; saveCredentials?: boolean; auth?: AuthOptions, captchaToken?: string }
 type EmailLoginWithPasswordParams = LoginWithPasswordOptions & { email: string }
 type PhoneNumberLoginWithPasswordParams = LoginWithPasswordOptions & { phoneNumber: string }
@@ -54,63 +38,11 @@ export type LoginWithCredentialsParams = {
   auth?: AuthOptions
 }
 
-type EmailRequestPasswordResetParams = {
-  email: string
-  redirectUrl?: string
-  loginLink?: string
-  returnToAfterPasswordReset?: string
-  captchaToken?: string
-}
-type SmsRequestPasswordResetParams = {
-  phoneNumber: string
-  captchaToken?: string
-}
-export type RequestPasswordResetParams = EmailRequestPasswordResetParams | SmsRequestPasswordResetParams
-
-type AccessTokenUpdatePasswordParams = {
-  accessToken?: string
-  password: string
-  oldPassword?: string
-  userId?: string
-}
-
-type EmailVerificationCodeUpdatePasswordParams = {
-  accessToken?: string
-  email: string
-  verificationCode: string
-  password: string
-}
-
-type SmsVerificationCodeUpdatePasswordParams = {
-  accessToken?: string
-  phoneNumber: string
-  verificationCode: string
-  password: string
-}
-
-export type UpdatePasswordParams =
-  | AccessTokenUpdatePasswordParams
-  | EmailVerificationCodeUpdatePasswordParams
-  | SmsVerificationCodeUpdatePasswordParams
-
 type SingleFactorPasswordlessParams = {
   authType: 'magic_link' | 'sms'
   email?: string
   phoneNumber?: string
   captchaToken?: string
-}
-
-type StepUpPasswordlessParams = {
-  authType: 'email' | 'sms'
-  stepUp: string
-}
-
-export type PasswordlessParams = SingleFactorPasswordlessParams | StepUpPasswordlessParams
-
-export type VerifyMfaPasswordlessParams = {
-  challengeId: string
-  verificationCode: string
-  accessToken: string
 }
 
 export type VerifyPasswordlessParams = {
@@ -120,55 +52,10 @@ export type VerifyPasswordlessParams = {
   verificationCode: string
 }
 
-export type ApiClientConfig = {
-  clientId: string
-  domain: string
-  language?: string
-  scope?: string
-  sso: boolean
-  pkceEnforced: boolean
-  isPublic: boolean
-}
-
 export type TokenRequestParameters = {
   code: string
   redirectUri: string
   persistent?: boolean // Whether the remember me is enabled
-}
-
-export type StartMfaPhoneNumberRegistrationParams = {
-  accessToken: string
-  phoneNumber: string
-}
-
-export type VerifyMfaPhoneNumberRegistrationParams = {
-  accessToken: string
-  verificationCode: string
-}
-
-export type StartMfaEmailRegistrationParams = {
-  accessToken: string
-}
-
-export type StartMfaEmailRegistrationResponse = { status: 'email_sent' } | { status: 'enabled', credential: EmailCredential }
-
-export type VerifyMfaEmailRegistrationParams = {
-  accessToken: string
-  verificationCode: string
-}
-
-export type StepUpParams = {
-  options?: AuthOptions
-  accessToken?: string
-}
-
-export type RemoveMfaPhoneNumberParams = {
-  accessToken: string
-  phoneNumber: string
-}
-
-export type RemoveMfaEmailParams = {
-  accessToken: string
 }
 
 type AuthenticationToken = { tkn: string }
@@ -178,40 +65,21 @@ export type RefreshTokenParams = { accessToken: string } | { refreshToken: strin
 /**
  * Identity Rest API Client
  */
-export default class ApiClient {
-  constructor(props: { config: ApiClientConfig; eventManager: IdentityEventManager; urlParser: UrlParser }) {
-    this.config = props.config
-    this.eventManager = props.eventManager
-    this.urlParser = props.urlParser
-    this.baseUrl = `https://${this.config.domain}/identity/v1`
-    this.http = createHttpClient({
-      baseUrl: this.baseUrl,
-      language: this.config.language,
-      acceptCookies: this.config.sso
-    })
-    this.authorizeUrl = `https://${this.config.domain}/oauth/authorize`
-    this.tokenUrl = `https://${this.config.domain}/oauth/token`
-    this.popupRelayUrl = `https://${this.config.domain}/popup/relay`
-
-    this.initCordovaCallbackIfNecessary()
-  }
-
+export default class OAuthClient {
   private config: ApiClientConfig
   private http: HttpClient
   private eventManager: IdentityEventManager
-  private urlParser: UrlParser
-  private baseUrl: string
   private authorizeUrl: string
   private tokenUrl: string
   private popupRelayUrl: string
 
-  getSignupData(signupToken: string): Promise<OpenIdUser> {
-    return this.http.get<OpenIdUser>(`${this.baseUrl}/signup/data`, {
-      query: {
-        clientId: this.config.clientId,
-        token: signupToken
-      }
-    })
+  constructor(props: { config: ApiClientConfig; http: HttpClient; eventManager: IdentityEventManager }) {
+    this.config = props.config
+    this.http = props.http
+    this.eventManager = props.eventManager
+    this.authorizeUrl = `https://${this.config.domain}/oauth/authorize`
+    this.tokenUrl = `https://${this.config.domain}/oauth/token`
+    this.popupRelayUrl = `https://${this.config.domain}/popup/relay`
   }
 
   loginWithSocialProvider(provider: string, opts: AuthOptions = {}): Promise<void | InAppBrowser> {
@@ -365,7 +233,7 @@ export default class ApiClient {
     if (navigator.credentials && navigator.credentials.preventSilentAccess && opts.removeCredentials === true) {
       navigator.credentials.preventSilentAccess()
     }
-    window.location.assign(`${this.baseUrl}/logout?${toQueryString(opts)}`)
+    window.location.assign(`https://${this.config.domain}/identity/v1/logout?${toQueryString(opts)}`)
   }
 
   private loginWithRedirect(queryString: Record<string, string | boolean | undefined>): Promise<void> {
@@ -419,22 +287,6 @@ export default class ApiClient {
 
       plugin.isAvailable(isAvailable => resolve(isAvailable ? plugin : undefined), reject)
     })
-  }
-
-  private initCordovaCallbackIfNecessary(): void {
-    if (!window.cordova) return
-    if (window.handleOpenURL) return
-
-    window.handleOpenURL = url => {
-      const cordova = window.cordova
-      if (!cordova) return
-
-      const parsed = this.urlParser.checkUrlFragment(url)
-
-      if (parsed && cordova.plugins && cordova.plugins.browsertab) {
-        cordova.plugins.browsertab.close()
-      }
-    }
   }
 
   private loginWithPopup(opts: AuthOptions & { provider: string }): Promise<void> {
@@ -569,7 +421,7 @@ export default class ApiClient {
 
   // TODO: Make passwordless able to handle web_message
   // Asana https://app.asana.com/0/982150578058310/1200173806808689/f
-  startPasswordless(params: PasswordlessParams, auth: Omit<AuthOptions, 'useWebMessage'> = {}): Promise<PasswordlessResponse> {
+  startPasswordless(params: SingleFactorPasswordlessParams, auth: Omit<AuthOptions, 'useWebMessage'> = {}): Promise<PasswordlessResponse> {
     const passwordlessPayload =
       ('stepUp' in params)
         ? Promise.resolve(params)
@@ -603,18 +455,7 @@ export default class ApiClient {
       ...this.authParams(auth),
       ...params
     })
-    window.location.assign(`${this.baseUrl}/passwordless/verify?${queryString}`)
-  }
-
-  verifyMfaPasswordless(params: VerifyMfaPasswordlessParams): Promise<AuthResult> {
-    const { challengeId, verificationCode, accessToken } = params
-
-    return this.http.post<AuthResult>('/passwordless/verify',{
-      body: {
-        challengeId, verificationCode
-      },
-      accessToken
-    })
+    window.location.assign(`https://${this.config.domain}/identity/v1/passwordless/verify?${queryString}`)
   }
 
   verifyPasswordless(params: VerifyPasswordlessParams, auth: AuthOptions = {}): Promise<void> {
@@ -645,7 +486,7 @@ export default class ApiClient {
 
     const resultPromise = window.cordova
       ? this.http
-          .post<AuthResult>(`${this.baseUrl}/signup-token`, {
+          .post<AuthResult>(`/signup-token`, {
             body: {
               clientId,
               redirectUrl,
@@ -682,61 +523,6 @@ export default class ApiClient {
     })
   }
 
-  sendEmailVerification(params: EmailVerificationParams): Promise<void> {
-    const { accessToken, ...data } = params
-    return this.http.post('/send-email-verification', { body: { ...data }, accessToken })
-  }
-
-  sendPhoneNumberVerification(params: PhoneNumberVerificationParams): Promise<void> {
-    const { accessToken } = params
-    return this.http.post('/send-phone-number-verification', { accessToken })
-  }
-
-  requestPasswordReset(params: RequestPasswordResetParams): Promise<void> {
-    return this.http.post('/forgot-password', {
-      body: {
-        clientId: this.config.clientId,
-        ...params
-      }
-    })
-  }
-
-  updatePassword(params: UpdatePasswordParams): Promise<void> {
-    const { accessToken, ...data } = params
-    return this.http.post('/update-password', {
-      body: { clientId: this.config.clientId, ...data },
-      accessToken
-    })
-  }
-
-  updateEmail(params: { accessToken: string; email: string; redirectUrl?: string }): Promise<void> {
-    const { accessToken, email, redirectUrl } = params
-    return this.http.post('/update-email', { body: { email, redirectUrl }, accessToken })
-  }
-
-  updatePhoneNumber(params: { accessToken: string; phoneNumber: string }): Promise<void> {
-    const { accessToken, ...data } = params
-    return this.http.post('/update-phone-number', { body: data, accessToken })
-  }
-
-  verifyPhoneNumber({
-    accessToken,
-    ...data
-  }: {
-    accessToken: string
-    phoneNumber: string
-    verificationCode: string
-  }): Promise<void> {
-    const { phoneNumber } = data
-    return this.http
-      .post('/verify-phone-number', { body: data, accessToken })
-      .then(() => this.eventManager.fireEvent('profile_updated', { phoneNumber, phoneNumberVerified: true }))
-  }
-
-  unlink({ accessToken, ...data }: { accessToken: string; identityId: string; fields?: string }): Promise<void> {
-    return this.http.post('/unlink', { body: data, accessToken })
-  }
-
   refreshTokens(params: RefreshTokenParams): Promise<AuthResult> {
     const result =
       ('refreshToken' in params)
@@ -758,30 +544,13 @@ export default class ApiClient {
     return result.then(enrichAuthResult)
   }
 
-  getUser({ accessToken, fields }: { accessToken: string; fields?: string }): Promise<Profile> {
-    return this.http.get<Profile>('/userinfo', { query: { fields }, accessToken })
-  }
-
-  updateProfile({
-    accessToken,
-    redirectUrl,
-    data
-  }: {
-    accessToken: string
-    redirectUrl?: string
-    data: Profile
-  }): Promise<void> {
-    return this.http
-      .post('/update-profile', { body: { ...data, redirectUrl }, accessToken })
-      .then(() => this.eventManager.fireEvent('profile_updated', data))
-  }
-
   loginWithCustomToken({ token, auth }: { token: string; auth: AuthOptions }): void {
     const queryString = toQueryString({
       ...this.authParams(auth),
       token
     })
-    window.location.assign(`${this.baseUrl}/custom-token/login?${queryString}`)
+    // Non existent endpoint URL
+    window.location.assign(`https://${this.config.domain}/identity/v1/custom-token/login?${queryString}`)
   }
 
   loginWithCredentials(params: LoginWithCredentialsParams): Promise<AuthResult> {
@@ -804,206 +573,6 @@ export default class ApiClient {
     } else {
       return Promise.reject(new Error('Unsupported Credentials Management API'))
     }
-  }
-
-  signupWithWebAuthn(params: SignupWithWebAuthnParams, auth?: AuthOptions): Promise<AuthResult> {
-    if (window.PublicKeyCredential) {
-      const body = {
-        origin: window.location.origin,
-        clientId: this.config.clientId,
-        friendlyName: params.friendlyName || window.navigator.platform,
-        profile: params.profile,
-        scope: this.resolveScope(auth),
-        redirectUrl: params.redirectUrl,
-        returnToAfterEmailConfirmation: params.returnToAfterEmailConfirmation
-      }
-
-      const registrationOptionsPromise = this.http.post<RegistrationOptions>('/webauthn/signup-options', { body })
-
-      const credentialsPromise = registrationOptionsPromise.then(response => {
-        const publicKey = encodePublicKeyCredentialCreationOptions(response.options.publicKey)
-
-        return navigator.credentials.create({ publicKey })
-      })
-
-      return Promise.all([registrationOptionsPromise, credentialsPromise])
-        .then(([registrationOptions, credentials]) => {
-          if (!credentials || credentials.type !== publicKeyCredentialType) {
-            return Promise.reject(new Error('Unable to register invalid public key credentials.'))
-          }
-
-          const serializedCredentials = serializeRegistrationPublicKeyCredential(credentials)
-
-          return this.http
-            .post<AuthenticationToken>('/webauthn/signup', {
-              body: {
-                publicKeyCredential: serializedCredentials,
-                webauthnId: registrationOptions.options.publicKey.user.id
-              }
-            })
-            .then(tkn => this.loginCallback(tkn, auth))
-        })
-        .catch(err => {
-          if (err.error) this.eventManager.fireEvent('login_failed', err)
-
-          return Promise.reject(err)
-        })
-    } else {
-      return Promise.reject(new Error('Unsupported WebAuthn API'))
-    }
-  }
-
-  addNewWebAuthnDevice(accessToken: string, friendlyName?: string): Promise<void> {
-    if (window.PublicKeyCredential) {
-      const body = {
-        origin: window.location.origin,
-        friendlyName: friendlyName || window.navigator.platform
-      }
-
-      return this.http
-        .post<RegistrationOptions>('/webauthn/registration-options', { body, accessToken })
-        .then(response => {
-          const publicKey = encodePublicKeyCredentialCreationOptions(response.options.publicKey)
-
-          return navigator.credentials.create({ publicKey })
-        })
-        .then(credentials => {
-          if (!credentials || credentials.type !== publicKeyCredentialType) {
-            return Promise.reject(new Error('Unable to register invalid public key credentials.'))
-          }
-
-          const serializedCredentials = serializeRegistrationPublicKeyCredential(credentials)
-
-          return this.http.post<void>('/webauthn/registration', { body: { ...serializedCredentials }, accessToken })
-        })
-        .catch(err => {
-          if (err.error) this.eventManager.fireEvent('login_failed', err)
-
-          return Promise.reject(err)
-        })
-    } else {
-      return Promise.reject(new Error('Unsupported WebAuthn API'))
-    }
-  }
-
-  loginWithWebAuthn(params: LoginWithWebAuthnParams): Promise<AuthResult> {
-    if (window.PublicKeyCredential) {
-      const body = {
-        clientId: this.config.clientId,
-        origin: window.location.origin,
-        scope: this.resolveScope(params.auth),
-        email: (params as EmailLoginWithWebAuthnParams).email,
-        phoneNumber: (params as PhoneNumberLoginWithWebAuthnParams).phoneNumber
-      }
-
-      return this.http
-        .post<CredentialRequestOptionsSerialized>('/webauthn/authentication-options', { body })
-        .then(response => {
-          const options = encodePublicKeyCredentialRequestOptions(response.publicKey)
-
-          return navigator.credentials.get({ publicKey: options })
-        })
-        .then(credentials => {
-            if (!credentials || credentials.type !== publicKeyCredentialType) {
-              return Promise.reject(new Error('Unable to authenticate with invalid public key credentials.'))
-            }
-
-            const serializedCredentials = serializeAuthenticationPublicKeyCredential(credentials)
-
-            return this.http
-              .post<AuthenticationToken>('/webauthn/authentication', { body: { ...serializedCredentials } })
-              .then(tkn => this.loginCallback(tkn, params.auth))
-        })
-        .catch(err => {
-          if (err.error) this.eventManager.fireEvent('login_failed', err)
-
-          return Promise.reject(err)
-        })
-    } else {
-      return Promise.reject(new Error('Unsupported WebAuthn API'))
-    }
-  }
-
-  listWebAuthnDevices(accessToken: string): Promise<DeviceCredential[]> {
-    return this.http.get<DeviceCredential[]>('/webauthn/registration', { accessToken })
-  }
-
-  removeWebAuthnDevice(accessToken: string, deviceId: string): Promise<void> {
-    return this.http.remove<void>(`/webauthn/registration/${deviceId}`, { accessToken })
-  }
-
-  startMfaPhoneNumberRegistration(params: StartMfaPhoneNumberRegistrationParams): Promise<void> {
-    const { accessToken, phoneNumber } = params
-    return this.http.post<void>('/mfa/credentials/phone-numbers', {
-      body: {
-        phoneNumber
-      },
-      accessToken
-    })
-  }
-
-  verifyMfaPhoneNumberRegistration(params: VerifyMfaPhoneNumberRegistrationParams): Promise<void> {
-    const { accessToken, verificationCode } = params
-    return this.http.post<void>('/mfa/credentials/phone-numbers/verify', {
-      body: {
-        verificationCode
-      },
-      accessToken
-    })
-  }
-
-  startMfaEmailRegistration(params: StartMfaEmailRegistrationParams): Promise<StartMfaEmailRegistrationResponse> {
-    const { accessToken } = params
-    return this.http.post<StartMfaEmailRegistrationResponse>('/mfa/credentials/emails', {
-      accessToken
-    })
-  }
-
-  verifyMfaEmailRegistration(params: VerifyMfaEmailRegistrationParams): Promise<void> {
-    const { accessToken, verificationCode } = params
-    return this.http.post<void>('/mfa/credentials/emails/verify', {
-      body: {
-        verificationCode
-      },
-      accessToken
-    })
-  }
-
-  getMfaStepUpToken(params: StepUpParams): Promise<StepUpResponse> {
-    const authParams = this.authParams(params.options ?? {})
-    return this.getPkceParams(authParams).then(challenge => {
-      return this.http.post<StepUpResponse>('/mfa/stepup', {
-        body: {
-          ...authParams,
-          ...challenge
-        },
-        withCookies: params.accessToken === undefined,
-        accessToken: params.accessToken
-      })
-    })
-  }
-
-  listMfaCredentials(accessToken: string): Promise<MfaCredentialsResponse> {
-    return this.http.get<MfaCredentialsResponse>('/mfa/credentials', {
-      accessToken
-    })
-  }
-
-  removeMfaPhoneNumber(params: RemoveMfaPhoneNumberParams): Promise<void> {
-    const { accessToken, phoneNumber } = params
-    return this.http.remove<void>('/mfa/credentials/phone-numbers', {
-      body: {
-        phoneNumber
-      },
-      accessToken,
-    })
-  }
-
-  removeMfaEmail(params: RemoveMfaEmailParams): Promise<void> {
-    const { accessToken } = params
-    return this.http.remove<void>('/mfa/credentials/emails', {
-      accessToken,
-    })
   }
 
   getSessionInfo(): Promise<SessionInfo> {

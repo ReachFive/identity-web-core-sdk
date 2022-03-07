@@ -6,36 +6,25 @@ import {
   PasswordlessResponse,
   MFA,
 } from './models'
-import ApiClient, {
+import OauthClient, {
   LoginWithPasswordParams,
   LoginWithCredentialsParams,
-  PasswordlessParams,
   VerifyPasswordlessParams,
-  RequestPasswordResetParams,
   SignupParams,
-  UpdatePasswordParams,
-  UpdateEmailParams,
   TokenRequestParameters,
-  EmailVerificationParams,
-  PhoneNumberVerificationParams,
-  StartMfaPhoneNumberRegistrationParams,
-  VerifyMfaPhoneNumberRegistrationParams,
-  StepUpParams,
-  RemoveMfaPhoneNumberParams,
-  VerifyMfaEmailRegistrationParams,
-  StartMfaEmailRegistrationParams,
-  RemoveMfaEmailParams,
   RefreshTokenParams,
-  StartMfaEmailRegistrationResponse,
-  VerifyMfaPasswordlessParams,
-} from './apiClient'
+} from './oAuthClient'
 import { AuthOptions } from './authOptions'
 import { AuthResult } from './authResult'
 import { DeviceCredential, LoginWithWebAuthnParams, SignupWithWebAuthnParams } from './webAuthnService'
 import createEventManager, { Events } from './identityEventManager'
 import createUrlParser from './urlParser'
 import { toQueryString } from '../utils/queryString'
-import { rawRequest } from './httpClient'
+import { createHttpClient, rawRequest } from './httpClient'
+import { initCordovaCallbackIfNecessary } from './cordovaHelper'
+import MfaClient from './mfaClient'
+import ProfileClient from './profileClient'
+import WebAuthnClient from './webAuthnClient'
 import StepUpResponse = MFA.StepUpResponse
 import MfaCredentialsResponse = MFA.CredentialsResponse
 
@@ -48,6 +37,16 @@ export interface Config {
   clientId: string
   domain: string
   language?: string
+}
+
+export type ApiClientConfig = {
+  clientId: string
+  domain: string
+  language?: string
+  scope?: string
+  sso: boolean
+  pkceEnforced: boolean
+  isPublic: boolean
 }
 
 export type Client = {
@@ -109,30 +108,65 @@ export function createClient(creationConfig: Config): Client {
   const { domain, clientId, language } = creationConfig
 
   const eventManager = createEventManager()
+
   const urlParser = createUrlParser(eventManager)
+
+  initCordovaCallbackIfNecessary(urlParser)
+
+  const baseUrl = `https://${domain}/identity/v1`
 
   const remoteSettings = rawRequest<RemoteSettings>(
     `https://${domain}/identity/v1/config?${toQueryString({ clientId, lang: language })}`
   )
 
-  const apiClient = remoteSettings.then(
-    remoteConfig =>
-      new ApiClient({
-        config: {
-          ...creationConfig,
-          ...remoteConfig
-        },
-        eventManager,
-        urlParser
+  const apiClients = remoteSettings.then(
+    remoteConfig => {
+
+      const config = {
+        ...creationConfig,
+        ...remoteConfig
+      }
+
+      const http = createHttpClient({
+        baseUrl,
+        language,
+        acceptCookies: remoteConfig.sso
       })
+
+      return {
+        api: new OauthClient({
+          config,
+          http,
+          eventManager
+        }),
+        mfa: new MfaClient({
+          http
+        }),
+        oAuth: new OAuthClient({
+          config,
+          http,
+          eventManager
+        }),
+        profile: new ProfileClient({
+          config,
+          http,
+          eventManager
+        }),
+        webAuthn: new WebAuthnClient({
+          config,
+          http,
+          eventManager
+        })
+      }
+    }
   )
 
   function addNewWebAuthnDevice(accessToken: string, friendlyName?: string) {
-    return apiClient.then(api => api.addNewWebAuthnDevice(accessToken, friendlyName))
+    return apiClients.then(api => api.addNewWebAuthnDevice(accessToken, friendlyName))
   }
 
   function checkSession(options: AuthOptions = {}) {
-    return apiClient.then(api => api.checkSession(options))
+    return apiClients.then(api => api.checkSession(options))
   }
 
   function checkUrlFragment(url: string = window.location.href): boolean {
@@ -144,51 +178,51 @@ export function createClient(creationConfig: Config): Client {
   }
 
   function exchangeAuthorizationCodeWithPkce(params: TokenRequestParameters) {
-    return apiClient.then(api => api.exchangeAuthorizationCodeWithPkce(params))
+    return apiClients.then(api => api.exchangeAuthorizationCodeWithPkce(params))
   }
 
   function getSessionInfo() {
-    return apiClient.then(api => api.getSessionInfo())
+    return apiClients.then(api => api.getSessionInfo())
   }
 
   function getSignupData(signupToken: string) {
-    return apiClient.then(api => api.getSignupData(signupToken))
+    return apiClients.then(api => api.getSignupData(signupToken))
   }
 
   function getUser(params: { accessToken: string; fields?: string }) {
-    return apiClient.then(api => api.getUser(params))
+    return apiClients.then(api => api.getUser(params))
   }
 
   function listWebAuthnDevices(accessToken: string) {
-    return apiClient.then(api => api.listWebAuthnDevices(accessToken))
+    return apiClients.then(api => api.listWebAuthnDevices(accessToken))
   }
 
   function loginFromSession(options: AuthOptions = {}) {
-    return apiClient.then(api => api.loginFromSession(options))
+    return apiClients.then(api => api.loginFromSession(options))
   }
 
   function loginWithCredentials(params: LoginWithCredentialsParams) {
-    return apiClient.then(api => api.loginWithCredentials(params))
+    return apiClients.then(api => api.loginWithCredentials(params))
   }
 
   function loginWithCustomToken(params: { token: string; auth: AuthOptions }) {
-    return apiClient.then(api => api.loginWithCustomToken(params))
+    return apiClients.then(api => api.loginWithCustomToken(params))
   }
 
   function loginWithPassword(params: LoginWithPasswordParams) {
-    return apiClient.then(api => api.loginWithPassword(params))
+    return apiClients.then(api => api.loginWithPassword(params))
   }
 
   function loginWithSocialProvider(provider: string, options: AuthOptions = {}) {
-    return apiClient.then(api => api.loginWithSocialProvider(provider, options))
+    return apiClients.then(api => api.loginWithSocialProvider(provider, options))
   }
 
   function loginWithWebAuthn(params: LoginWithWebAuthnParams) {
-    return apiClient.then(api => api.loginWithWebAuthn(params))
+    return apiClients.then(api => api.loginWithWebAuthn(params))
   }
 
   function logout(params: { redirectTo?: string; removeCredentials?: boolean } = {}) {
-    return apiClient.then(api => api.logout(params))
+    return apiClients.then(api => api.logout(params))
   }
 
   function off<K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void): void {
@@ -206,99 +240,99 @@ export function createClient(creationConfig: Config): Client {
   }
 
   function refreshTokens(params: RefreshTokenParams) {
-    return apiClient.then(api => api.refreshTokens(params))
+    return apiClients.then(api => api.refreshTokens(params))
   }
 
   function removeWebAuthnDevice(accessToken: string, deviceId: string) {
-    return apiClient.then(api => api.removeWebAuthnDevice(accessToken, deviceId))
+    return apiClients.then(api => api.removeWebAuthnDevice(accessToken, deviceId))
   }
 
   function requestPasswordReset(params: RequestPasswordResetParams) {
-    return apiClient.then(api => api.requestPasswordReset(params))
+    return apiClients.then(api => api.requestPasswordReset(params))
   }
 
   function sendEmailVerification(params: EmailVerificationParams) {
-    return apiClient.then(api => api.sendEmailVerification(params))
+    return apiClients.then(api => api.sendEmailVerification(params))
   }
 
   function sendPhoneNumberVerification(params: PhoneNumberVerificationParams) {
-    return apiClient.then(api => api.sendPhoneNumberVerification(params))
+    return apiClients.then(api => api.sendPhoneNumberVerification(params))
   }
 
   function signup(params: SignupParams) {
-    return apiClient.then(api => api.signup(params))
+    return apiClients.then(api => api.signup(params))
   }
 
   function signupWithWebAuthn(params: SignupWithWebAuthnParams, auth?: AuthOptions) {
-    return apiClient.then(api => api.signupWithWebAuthn(params, auth))
+    return apiClients.then(api => api.signupWithWebAuthn(params, auth))
   }
 
   function startMfaEmailRegistration(params: StartMfaEmailRegistrationParams) {
-    return apiClient.then(api => api.startMfaEmailRegistration(params))
+    return apiClients.then(api => api.startMfaEmailRegistration(params))
   }
 
   function startMfaPhoneNumberRegistration(params: StartMfaPhoneNumberRegistrationParams) {
-    return apiClient.then(api => api.startMfaPhoneNumberRegistration(params))
+    return apiClients.then(api => api.startMfaPhoneNumberRegistration(params))
   }
 
   function startPasswordless(params: PasswordlessParams, options: AuthOptions = {}) {
-    return apiClient.then(api => api.startPasswordless(params, options))
+    return apiClients.then(api => api.startPasswordless(params, options))
   }
 
   function unlink(params: { accessToken: string; identityId: string; fields?: string }) {
-    return apiClient.then(api => api.unlink(params))
+    return apiClients.then(api => api.unlink(params))
   }
 
   function updateEmail(params: UpdateEmailParams) {
-    return apiClient.then(api => api.updateEmail(params))
+    return apiClients.then(api => api.updateEmail(params))
   }
 
   function updatePassword(params: UpdatePasswordParams) {
-    return apiClient.then(api => api.updatePassword(params))
+    return apiClients.then(api => api.updatePassword(params))
   }
 
   function updatePhoneNumber(params: { accessToken: string; phoneNumber: string }) {
-    return apiClient.then(api => api.updatePhoneNumber(params))
+    return apiClients.then(api => api.updatePhoneNumber(params))
   }
 
   function updateProfile(params: { accessToken: string; redirectUrl?: string; data: Profile }) {
-    return apiClient.then(api => api.updateProfile(params))
+    return apiClients.then(api => api.updateProfile(params))
   }
 
   function verifyMfaPasswordless(params: VerifyMfaPasswordlessParams) {
-    return apiClient.then(api => api.verifyMfaPasswordless(params))
+    return apiClients.then(api => api.verifyMfaPasswordless(params))
   }
 
   function verifyMfaEmailRegistration(params: VerifyMfaEmailRegistrationParams) {
-    return apiClient.then(api => api.verifyMfaEmailRegistration(params))
+    return apiClients.then(api => api.verifyMfaEmailRegistration(params))
   }
 
   function verifyMfaPhoneNumberRegistration(params: VerifyMfaPhoneNumberRegistrationParams) {
-    return apiClient.then(api => api.verifyMfaPhoneNumberRegistration(params))
+    return apiClients.then(api => api.verifyMfaPhoneNumberRegistration(params))
   }
 
   function verifyPasswordless(params: VerifyPasswordlessParams, auth?: AuthOptions) {
-    return apiClient.then(api => api.verifyPasswordless(params, auth))
+    return apiClients.then(api => api.verifyPasswordless(params, auth))
   }
 
   function verifyPhoneNumber(params: { accessToken: string; phoneNumber: string; verificationCode: string }) {
-    return apiClient.then(api => api.verifyPhoneNumber(params))
+    return apiClients.then(api => api.verifyPhoneNumber(params))
   }
 
   function getMfaStepUpToken(params: StepUpParams) {
-    return apiClient.then(api => api.getMfaStepUpToken(params))
+    return apiClients.then(api => api.getMfaStepUpToken(params))
   }
 
   function listMfaCredentials(accessToken: string) {
-    return apiClient.then(api => api.listMfaCredentials(accessToken))
+    return apiClients.then(api => api.listMfaCredentials(accessToken))
   }
 
   function removeMfaPhoneNumber(params: RemoveMfaPhoneNumberParams) {
-    return apiClient.then(api => api.removeMfaPhoneNumber(params))
+    return apiClients.then(api => api.removeMfaPhoneNumber(params))
   }
 
   function removeMfaEmail(params: RemoveMfaEmailParams) {
-    return apiClient.then(api => api.removeMfaEmail(params))
+    return apiClients.then(api => api.removeMfaEmail(params))
   }
 
   return {
