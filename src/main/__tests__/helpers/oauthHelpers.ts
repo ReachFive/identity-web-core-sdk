@@ -1,6 +1,7 @@
-import { AuthParameters, ResponseType } from '../../authOptions'
+import { ResponseType } from '../../authOptions'
 import { toQueryString } from '../../../utils/queryString'
 import pick from 'lodash/pick'
+import { AuthParameters } from '../../authParameters'
 
 export const mockPkceValues = {
   code_challenge: 'KBHQASQDHCtWjDGVGQaPjsK8c8SlrH2yfm3nQh75o14',

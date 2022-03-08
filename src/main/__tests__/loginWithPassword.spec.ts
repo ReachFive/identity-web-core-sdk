@@ -1,6 +1,6 @@
 import { TestKit, createDefaultTestClient } from './helpers/clientFactory'
 import fetchMock from 'jest-fetch-mock'
-import { LoginWithPasswordParams } from '../apiClient'
+import { LoginWithPasswordParams } from '../oAuthClient'
 import { scope, tkn } from './helpers/oauthHelpers'
 import { defineWindowProperty, headers, mockWindowCrypto } from './helpers/testHelpers'
 

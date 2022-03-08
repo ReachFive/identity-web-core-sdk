@@ -9,9 +9,10 @@ import {
   SessionInfo,
   SignupProfile,
   PasswordlessResponse,
-  Scope
+  Scope,
+  AuthenticationToken
 } from './models'
-import { AuthOptions, AuthParameters, computeAuthOptions, resolveScope } from './authOptions'
+import { AuthOptions, computeAuthOptions } from './authOptions'
 import { AuthResult, enrichAuthResult } from './authResult'
 import { IdentityEventManager } from './identityEventManager'
 import { popupSize } from './providerPopupSize'
@@ -19,6 +20,37 @@ import { HttpClient } from './httpClient'
 import { computePkceParams, PkceParams } from './pkceService'
 import { randomBase64String } from '../utils/random'
 import { ApiClientConfig } from './main'
+import { AuthParameters } from './authParameters'
+import { resolveScope } from './scopeHelper'
+
+export type LoginWithCredentialsParams = {
+  mediation?: 'silent' | 'optional' | 'required'
+  auth?: AuthOptions
+}
+
+export type LoginWithCustomTokenParams = {
+  token: string
+  auth: AuthOptions
+}
+
+type LoginWithPasswordOptions = { password: string; saveCredentials?: boolean; auth?: AuthOptions, captchaToken?: string }
+type EmailLoginWithPasswordParams = LoginWithPasswordOptions & { email: string }
+type PhoneNumberLoginWithPasswordParams = LoginWithPasswordOptions & { phoneNumber: string }
+export type LoginWithPasswordParams = EmailLoginWithPasswordParams | PhoneNumberLoginWithPasswordParams
+
+export type LogoutParams = {
+  redirectTo?: string
+  removeCredentials?: boolean
+}
+
+export type RefreshTokenParams = { accessToken: string } | { refreshToken: string, scope?: Scope }
+
+export type SingleFactorPasswordlessParams = {
+  authType: 'magic_link' | 'sms'
+  email?: string
+  phoneNumber?: string
+  captchaToken?: string
+}
 
 export type SignupParams = {
   data: SignupProfile
@@ -28,21 +60,11 @@ export type SignupParams = {
   redirectUrl?: string
   captchaToken?: string
 }
-type LoginWithPasswordOptions = { password: string; saveCredentials?: boolean; auth?: AuthOptions, captchaToken?: string }
-type EmailLoginWithPasswordParams = LoginWithPasswordOptions & { email: string }
-type PhoneNumberLoginWithPasswordParams = LoginWithPasswordOptions & { phoneNumber: string }
 
-export type LoginWithPasswordParams = EmailLoginWithPasswordParams | PhoneNumberLoginWithPasswordParams
-export type LoginWithCredentialsParams = {
-  mediation?: 'silent' | 'optional' | 'required'
-  auth?: AuthOptions
-}
-
-export type SingleFactorPasswordlessParams = {
-  authType: 'magic_link' | 'sms'
-  email?: string
-  phoneNumber?: string
-  captchaToken?: string
+export type TokenRequestParameters = {
+  code: string
+  redirectUri: string
+  persistent?: boolean // Whether the remember me is enabled
 }
 
 export type VerifyPasswordlessParams = {
@@ -52,16 +74,6 @@ export type VerifyPasswordlessParams = {
   verificationCode: string
 }
 
-export type TokenRequestParameters = {
-  code: string
-  redirectUri: string
-  persistent?: boolean // Whether the remember me is enabled
-}
-
-type AuthenticationToken = { tkn: string }
-
-export type RefreshTokenParams = { accessToken: string } | { refreshToken: string, scope?: Scope }
-
 /**
  * Identity Rest API Client
  */
@@ -69,17 +81,176 @@ export default class OAuthClient {
   private config: ApiClientConfig
   private http: HttpClient
   private eventManager: IdentityEventManager
+
   private authorizeUrl: string
-  private tokenUrl: string
+  private customTokenUrl: string
+  private logoutUrl: string
+  private passwordlessVerifyUrl: string
   private popupRelayUrl: string
+  private tokenUrl: string
+
+  private passwordLoginUrl: string
+  private passwordlessStartUrl: string
+  private passwordlessVerifyAuthCodeUrl: string
+  private refreshTokenUrl: string
+  private sessionInfoUrl: string
+  private signupUrl: string
+  private signupTokenUrl: string
 
   constructor(props: { config: ApiClientConfig; http: HttpClient; eventManager: IdentityEventManager }) {
     this.config = props.config
     this.http = props.http
     this.eventManager = props.eventManager
-    this.authorizeUrl = `https://${this.config.domain}/oauth/authorize`
-    this.tokenUrl = `https://${this.config.domain}/oauth/token`
-    this.popupRelayUrl = `https://${this.config.domain}/popup/relay`
+
+    this.authorizeUrl = `${this.config.baseUrl}/oauth/authorize`
+    this.customTokenUrl = `${this.config.baseUrl}/identity/v1/custom-token/login`
+    this.logoutUrl = `${this.config.baseUrl}/identity/v1/logout`
+    this.passwordlessVerifyUrl = `${this.config.baseUrl}/identity/v1/passwordless/verify`
+    this.popupRelayUrl = `${this.config.baseUrl}/popup/relay`
+    this.tokenUrl = `${this.config.baseUrl}/oauth/token`
+
+    this.passwordlessVerifyAuthCodeUrl = '/verify-auth-code'
+    this.passwordLoginUrl = '/password/login'
+    this.passwordlessStartUrl = '/passwordless/start'
+    this.refreshTokenUrl = '/token/access-token'
+    this.sessionInfoUrl = '/sso/data'
+    this.signupUrl = '/signup'
+    this.signupTokenUrl = '/signup-token'
+  }
+
+  checkSession(opts: AuthOptions = {}): Promise<AuthResult> {
+    if (!this.config.sso)
+      return Promise.reject(
+          new Error("Cannot call 'checkSession' if SSO is not enabled.")
+      )
+
+    const authParams = this.authParams({
+      ...opts,
+      responseType: 'code',
+      useWebMessage: true,
+    })
+
+    return this.getPkceParams(authParams).then(maybeChallenge => {
+
+      const params = {
+        ...authParams,
+        ...maybeChallenge,
+      }
+
+      const authorizationUrl = this.getAuthorizationUrl(params)
+
+      return this.getWebMessage(
+          authorizationUrl,
+          this.config.baseUrl,
+          opts.redirectUri,
+      )
+    })
+  }
+
+  exchangeAuthorizationCodeWithPkce(params: TokenRequestParameters): Promise<AuthResult> {
+    return this.http
+        .post<AuthResult>(this.tokenUrl, {
+          body: {
+            clientId: this.config.clientId,
+            grantType: 'authorization_code',
+            codeVerifier: sessionStorage.getItem('verifier_key'),
+            ...params
+          }
+        })
+        .then(authResult => {
+          this.eventManager.fireEvent('authenticated', authResult)
+          return enrichAuthResult(authResult)
+        })
+  }
+
+  getSessionInfo(): Promise<SessionInfo> {
+    return this.http.get<SessionInfo>(this.sessionInfoUrl, {
+      query: { clientId: this.config.clientId },
+      withCookies: true
+    })
+  }
+
+  loginFromSession(opts: AuthOptions = {}): Promise<void> {
+    if (!this.config.sso)
+      return Promise.reject(
+          new Error("Cannot call 'loginFromSession' if SSO is not enabled.")
+      )
+
+    const authParams = this.authParams({
+      ...opts,
+      useWebMessage: false,
+      prompt: 'none',
+    })
+
+    return this.getPkceParams(authParams).then(maybeChallenge => {
+      const params = {
+        ...authParams,
+        ...maybeChallenge,
+      }
+
+      return this.loginWithRedirect(params)
+    })
+  }
+
+  loginWithCredentials(params: LoginWithCredentialsParams): Promise<AuthResult> {
+    if (navigator.credentials && navigator.credentials.get) {
+      const request: CredentialRequestOptions = {
+        password: true,
+        mediation: params.mediation || 'silent'
+      }
+      return navigator.credentials.get(request).then(credentials => {
+        if (!isUndefined(credentials) && credentials instanceof PasswordCredential && credentials.password) {
+          const loginParams: EmailLoginWithPasswordParams = {
+            email: credentials.id,
+            password: credentials.password,
+            auth: params.auth
+          }
+          return this.ropcPasswordLogin(loginParams)
+        }
+        return Promise.reject(new Error('Invalid credentials'))
+      })
+    } else {
+      return Promise.reject(new Error('Unsupported Credentials Management API'))
+    }
+  }
+
+  loginWithCustomToken(params: LoginWithCustomTokenParams): void {
+    const { token, auth } = params
+    const queryString = toQueryString({
+      ...this.authParams(auth),
+      token
+
+    })
+    // Non existent endpoint URL
+    window.location.assign(`${this.customTokenUrl}?${queryString}`)
+  }
+
+  loginWithPassword(params: LoginWithPasswordParams): Promise<AuthResult> {
+    const { auth = {}, ...rest } = params
+
+    const loginPromise =
+        window.cordova
+            ? this.ropcPasswordLogin(params)
+                .then(authResult =>
+                    this.storeCredentialsInBrowser(params).then(() => enrichAuthResult(authResult))
+                )
+            : this.http
+                .post<AuthenticationToken>(this.passwordLoginUrl, {
+                  body: {
+                    clientId: this.config.clientId,
+                    scope: resolveScope(auth, this.config.scope),
+                    ...rest
+                  }
+                })
+                .then(tkn => this.storeCredentialsInBrowser(params).then(() => tkn))
+                .then(tkn => this.loginCallback(tkn, auth))
+
+    return loginPromise.catch((err: any) => {
+      if (err.error) {
+        this.eventManager.fireEvent('login_failed', err)
+      }
+      return Promise.reject(err)
+    })
   }
 
   loginWithSocialProvider(provider: string, opts: AuthOptions = {}): Promise<void | InAppBrowser> {
@@ -105,71 +276,115 @@ export default class OAuthClient {
     })
   }
 
-  exchangeAuthorizationCodeWithPkce(params: TokenRequestParameters): Promise<AuthResult> {
-    return this.http
-      .post<AuthResult>(this.tokenUrl, {
-        body: {
-          clientId: this.config.clientId,
-          grantType: 'authorization_code',
-          codeVerifier: sessionStorage.getItem('verifier_key'),
-          ...params
-        }
-      })
-      .then(authResult => {
-        this.eventManager.fireEvent('authenticated', authResult)
-        return enrichAuthResult(authResult)
-      })
+  logout(opts: LogoutParams = {}): void {
+    if (navigator.credentials && navigator.credentials.preventSilentAccess && opts.removeCredentials === true) {
+      navigator.credentials.preventSilentAccess()
+    }
+    window.location.assign(`${this.logoutUrl}?${toQueryString(opts)}`)
   }
 
-  loginFromSession(opts: AuthOptions = {}): Promise<void> {
-    if (!this.config.sso)
-      return Promise.reject(
-        new Error("Cannot call 'loginFromSession' if SSO is not enabled.")
-      )
+  // TODO: Typo on the name of the method
+  refreshTokens(params: RefreshTokenParams): Promise<AuthResult> {
+    const result =
+        ('refreshToken' in params)
+            ? this.http.post<AuthResult>(this.tokenUrl, {
+              body: {
+                clientId: this.config.clientId,
+                grantType: 'refresh_token',
+                refreshToken: params.refreshToken,
+                ...pick(params, 'scope'),
+              }
+            })
+            : this.http.post<AuthResult>(this.refreshTokenUrl, {
+              body: {
+                clientId: this.config.clientId,
+                accessToken: params.accessToken
+              }
+            })
 
-    const authParams = this.authParams({
-      ...opts,
-      useWebMessage: false,
-      prompt: 'none',
-    })
+    return result.then(enrichAuthResult)
+  }
 
-    return this.getPkceParams(authParams).then(maybeChallenge => {
-      const params = {
-        ...authParams,
-        ...maybeChallenge,
+  signup(params: SignupParams): Promise<AuthResult> {
+    const { data, auth, redirectUrl, returnToAfterEmailConfirmation, saveCredentials, captchaToken } = params
+    const { clientId } = this.config
+    const scope = resolveScope(auth, this.config.scope)
+
+    const loginParams: LoginWithPasswordParams = {
+      ...(data.phoneNumber)
+          ? { phoneNumber: data.phoneNumber }
+          : { email: data.email || "" },
+      password: data.password,
+      saveCredentials,
+      auth
+    }
+
+    const resultPromise = window.cordova
+        ? this.http
+            .post<AuthResult>(this.signupTokenUrl, {
+              body: {
+                clientId,
+                redirectUrl,
+                scope,
+                ...pick(auth, 'origin'),
+                data,
+                returnToAfterEmailConfirmation,
+                captchaToken
+              }
+            })
+            .then(authResult => {
+              this.eventManager.fireEvent('authenticated', authResult)
+              return this.storeCredentialsInBrowser(loginParams).then(() => enrichAuthResult(authResult))
+            })
+        : this.http
+            .post<AuthenticationToken>(this.signupUrl, {
+              body: {
+                clientId,
+                redirectUrl,
+                scope,
+                data,
+                returnToAfterEmailConfirmation,
+                captchaToken
+              }
+            })
+            .then(tkn => this.storeCredentialsInBrowser(loginParams).then(() => tkn))
+            .then(tkn => this.loginCallback(tkn, auth))
+
+    return resultPromise.catch(err => {
+      if (err.error) {
+        this.eventManager.fireEvent('signup_failed', err)
       }
-
-      return this.loginWithRedirect(params)
+      return Promise.reject(err)
     })
   }
 
-  checkSession(opts: AuthOptions = {}): Promise<AuthResult> {
-    if (!this.config.sso)
-      return Promise.reject(
-        new Error("Cannot call 'checkSession' if SSO is not enabled.")
-      )
+  startPasswordless(params: SingleFactorPasswordlessParams, auth: Omit<AuthOptions, 'useWebMessage'> = {}): Promise<PasswordlessResponse> {
+    const passwordlessPayload =
+        ('stepUp' in params)
+            ? Promise.resolve(params)
+            : this.resolveSingleFactorPasswordlessParams(params, auth)
 
-    const authParams = this.authParams({
-      ...opts,
-      responseType: 'code',
-      useWebMessage: true,
-    })
+    return passwordlessPayload.then(payload =>
+        this.http.post<PasswordlessResponse>(this.passwordlessStartUrl, {
+          body: payload
+        })
+    )
+  }
 
-    return this.getPkceParams(authParams).then(maybeChallenge => {
+  verifyPasswordless(params: VerifyPasswordlessParams, auth: AuthOptions = {}): Promise<void> {
+    return ('challengeId' in params)
+        ? Promise.resolve(this.loginWithVerificationCode(params))
+        : this.http
+            .post(this.passwordlessVerifyAuthCodeUrl, { body: params })
+            .catch(err => {
+              if (err.error) this.eventManager.fireEvent('login_failed', err)
+              return Promise.reject(err)
+            })
+            .then(() => this.loginWithVerificationCode(params, auth))
+  }
 
-      const params = {
-        ...authParams,
-        ...maybeChallenge,
-      }
-
-      const authorizationUrl = this.getAuthorizationUrl(params)
-
-      return this.getWebMessage(
-        authorizationUrl,
-        `https://${this.config.domain}`,
-        opts.redirectUri,
-      )
-    })
+  private getAuthorizationUrl(queryString: Record<string, string | boolean | undefined>): string {
+    return `${this.authorizeUrl}?${toQueryString(queryString)}`
   }
 
   private getWebMessage(
@@ -229,19 +444,85 @@ export default class OAuthClient {
     })
   }
 
-  logout(opts: { redirectTo?: string; removeCredentials?: boolean } = {}): void {
-    if (navigator.credentials && navigator.credentials.preventSilentAccess && opts.removeCredentials === true) {
-      navigator.credentials.preventSilentAccess()
+  private loginWithPopup(opts: AuthOptions & { provider: string }): Promise<void> {
+    type WinChanResponse<D> = { success: true; data: D } | { success: false; data: ErrorResponse }
+    const { responseType, redirectUri, provider } = opts
+
+    WinChan.open(
+        {
+          url: `${this.authorizeUrl}?${toQueryString(opts)}`,
+          relay_url: this.popupRelayUrl,
+          window_features: this.computeProviderPopupOptions(provider)
+        },
+        (err: string, result: WinChanResponse<object>) => {
+          if (err) {
+            logError(err)
+            this.eventManager.fireEvent('authentication_failed', {
+              errorDescription: 'Unexpected error occurred',
+              error: 'server_error'
+            })
+            return
+          }
+
+          const r = camelCaseProperties(result) as WinChanResponse<AuthResult>
+
+          if (r.success) {
+            if (responseType === 'code') {
+              window.location.assign(`${redirectUri}?code=${r.data.code}`)
+            } else {
+              this.eventManager.fireEvent('authenticated', r.data)
+            }
+          } else {
+            this.eventManager.fireEvent('authentication_failed', r.data)
+          }
+        }
+    )
+    return Promise.resolve()
+  }
+
+  private computeProviderPopupOptions(provider: string): string {
+    try {
+      const opts = popupSize(provider)
+      const left = Math.max(0, (screen.width - opts.width) / 2)
+      const top = Math.max(0, (screen.height - opts.height) / 2)
+      const width = Math.min(screen.width, opts.width)
+      const height = Math.min(screen.height, opts.height)
+      return `menubar=0,toolbar=0,resizable=1,scrollbars=1,width=${width},height=${height},top=${top},left=${left}`
+    } catch (e) {
+      return 'menubar=0,toolbar=0,resizable=1,scrollbars=1,width=960,height=680'
     }
-    window.location.assign(`https://${this.config.domain}/identity/v1/logout?${toQueryString(opts)}`)
   }
 
   private loginWithRedirect(queryString: Record<string, string | boolean | undefined>): Promise<void> {
-    return redirect(this.getAuthorizationUrl(queryString))
+    return this.redirect(this.getAuthorizationUrl(queryString))
   }
 
-  private getAuthorizationUrl(queryString: Record<string, string | boolean | undefined>): string {
-    return `${this.authorizeUrl}?${toQueryString(queryString)}`
+  private loginWithVerificationCode(params: VerifyPasswordlessParams, auth: AuthOptions = {}): void {
+    const queryString = toQueryString({
+      ...this.authParams(auth),
+      ...params
+    })
+    window.location.assign(`${this.passwordlessVerifyUrl}?${queryString}`)
+  }
+
+  private ropcPasswordLogin(params: LoginWithPasswordParams): Promise<AuthResult> {
+    const auth = params.auth
+
+    return this.http
+        .post<AuthResult>(this.tokenUrl, {
+          body: {
+            clientId: this.config.clientId,
+            grantType: 'password',
+            username: this.hasLoggedWithEmail(params) ? params.email : params.phoneNumber,
+            password: params.password,
+            scope: resolveScope(auth, this.config.scope),
+            ...pick(auth, 'origin')
+          }
+        })
+        .then(authResult => {
+          this.eventManager.fireEvent('authenticated', authResult)
+          return enrichAuthResult(authResult)
+        })
   }
 
   private loginWithCordovaInAppBrowser(opts: QueryString): Promise<void | InAppBrowser> {
@@ -289,70 +570,6 @@ export default class OAuthClient {
     })
   }
 
-  private loginWithPopup(opts: AuthOptions & { provider: string }): Promise<void> {
-    type WinChanResponse<D> = { success: true; data: D } | { success: false; data: ErrorResponse }
-    const { responseType, redirectUri, provider } = opts
-
-    WinChan.open(
-      {
-        url: `${this.authorizeUrl}?${toQueryString(opts)}`,
-        relay_url: this.popupRelayUrl,
-        window_features: computeProviderPopupOptions(provider)
-      },
-      (err: string, result: WinChanResponse<object>) => {
-        if (err) {
-          logError(err)
-          this.eventManager.fireEvent('authentication_failed', {
-            errorDescription: 'Unexpected error occurred',
-            error: 'server_error'
-          })
-          return
-        }
-
-        const r = camelCaseProperties(result) as WinChanResponse<AuthResult>
-
-        if (r.success) {
-          if (responseType === 'code') {
-            window.location.assign(`${redirectUri}?code=${r.data.code}`)
-          } else {
-            this.eventManager.fireEvent('authenticated', r.data)
-          }
-        } else {
-          this.eventManager.fireEvent('authentication_failed', r.data)
-        }
-      }
-    )
-    return Promise.resolve()
-  }
-
-  loginWithPassword(params: LoginWithPasswordParams): Promise<AuthResult> {
-    const { auth = {}, ...rest } = params
-
-    const loginPromise =
-      window.cordova
-        ? this.ropcPasswordLogin(params)
-          .then(authResult =>
-            this.storeCredentialsInBrowser(params).then(() => enrichAuthResult(authResult))
-          )
-        : this.http
-            .post<AuthenticationToken>('/password/login', {
-              body: {
-                clientId: this.config.clientId,
-                scope: this.resolveScope(auth),
-                ...rest
-              }
-            })
-            .then(tkn => this.storeCredentialsInBrowser(params).then(() => tkn))
-            .then(tkn => this.loginCallback(tkn, auth))
-
-    return loginPromise.catch((err: any) => {
-      if (err.error) {
-        this.eventManager.fireEvent('login_failed', err)
-      }
-      return Promise.reject(err)
-    })
-  }
-
   private storeCredentialsInBrowser(params: LoginWithPasswordParams): Promise<void> {
     if (!params.saveCredentials) return Promise.resolve()
 
@@ -360,7 +577,7 @@ export default class OAuthClient {
       const credentialParams = {
         password: {
           password: params.password,
-          id: hasLoggedWithEmail(params) ? params.email : params.phoneNumber
+          id: this.hasLoggedWithEmail(params) ? params.email : params.phoneNumber
         }
       }
 
@@ -377,63 +594,8 @@ export default class OAuthClient {
     }
   }
 
-  private ropcPasswordLogin(params: LoginWithPasswordParams): Promise<AuthResult> {
-    const auth = params.auth
-
-    return this.http
-      .post<AuthResult>(this.tokenUrl, {
-        body: {
-          clientId: this.config.clientId,
-          grantType: 'password',
-          username: hasLoggedWithEmail(params) ? params.email : params.phoneNumber,
-          password: params.password,
-          scope: this.resolveScope(auth),
-          ...pick(auth, 'origin')
-        }
-      })
-      .then(authResult => {
-        this.eventManager.fireEvent('authenticated', authResult)
-        return enrichAuthResult(authResult)
-      })
-  }
-
-  private loginCallback(tkn: AuthenticationToken, auth: AuthOptions = {}): Promise<AuthResult> {
-    const authParams = this.authParams(auth)
-
-    return this.getPkceParams(authParams).then(maybeChallenge => {
-      const queryString = toQueryString({
-        ...authParams,
-        ...maybeChallenge,
-        ...pick(tkn, 'tkn')
-      })
-
-      if (auth.useWebMessage) {
-        return this.getWebMessage(
-          `${this.authorizeUrl}?${queryString}`,
-          `https://${this.config.domain}`,
-          auth.redirectUri,
-        )
-      } else {
-        return redirect(`${this.authorizeUrl}?${queryString}`) as AuthResult
-      }
-    })
-  }
-
   // TODO: Make passwordless able to handle web_message
   // Asana https://app.asana.com/0/982150578058310/1200173806808689/f
-  startPasswordless(params: SingleFactorPasswordlessParams, auth: Omit<AuthOptions, 'useWebMessage'> = {}): Promise<PasswordlessResponse> {
-    const passwordlessPayload =
-      ('stepUp' in params)
-        ? Promise.resolve(params)
-        : this.resolveSingleFactorPasswordlessParams(params, auth)
-
-    return passwordlessPayload.then(payload =>
-      this.http.post<PasswordlessResponse>('/passwordless/start', {
-        body: payload
-      })
-    )
-  }
-
   private resolveSingleFactorPasswordlessParams(params: SingleFactorPasswordlessParams, auth: Omit<AuthOptions, 'useWebMessage'> = {}): Promise<{}> {
     const { authType, email, phoneNumber, captchaToken } = params
     const authParams = this.authParams(auth)
@@ -450,139 +612,55 @@ export default class OAuthClient {
     })
   }
 
-  private loginWithVerificationCode(params: VerifyPasswordlessParams, auth: AuthOptions = {}): void {
-    const queryString = toQueryString({
-      ...this.authParams(auth),
-      ...params
-    })
-    window.location.assign(`https://${this.config.domain}/identity/v1/passwordless/verify?${queryString}`)
+  private hasLoggedWithEmail(params: LoginWithPasswordParams): params is EmailLoginWithPasswordParams {
+    return (params as EmailLoginWithPasswordParams).email !== undefined
   }
 
-  verifyPasswordless(params: VerifyPasswordlessParams, auth: AuthOptions = {}): Promise<void> {
-   return ('challengeId' in params)
-      ? Promise.resolve(this.loginWithVerificationCode(params))
-      : this.http
-        .post('/verify-auth-code', { body: params })
-        .catch(err => {
-          if (err.error) this.eventManager.fireEvent('login_failed', err)
-          return Promise.reject(err)
-        })
-        .then(() => this.loginWithVerificationCode(params, auth))
-  }
 
-  signup(params: SignupParams): Promise<AuthResult> {
-    const { data, auth, redirectUrl, returnToAfterEmailConfirmation, saveCredentials, captchaToken } = params
-    const { clientId } = this.config
-    const scope = this.resolveScope(auth)
+  // TODO: Shared among the clients
+  loginCallback(tkn: AuthenticationToken, auth: AuthOptions = {}): Promise<AuthResult> {
+    const authParams = this.authParams(auth)
 
-    const loginParams: LoginWithPasswordParams = {
-      ...(data.phoneNumber)
-        ? { phoneNumber: data.phoneNumber }
-        : { email: data.email || "" },
-      password: data.password,
-      saveCredentials,
-      auth
-    }
-
-    const resultPromise = window.cordova
-      ? this.http
-          .post<AuthResult>(`/signup-token`, {
-            body: {
-              clientId,
-              redirectUrl,
-              scope,
-              ...pick(auth, 'origin'),
-              data,
-              returnToAfterEmailConfirmation,
-              captchaToken
-            }
-          })
-          .then(authResult => {
-            this.eventManager.fireEvent('authenticated', authResult)
-            return this.storeCredentialsInBrowser(loginParams).then(() => enrichAuthResult(authResult))
-          })
-      : this.http
-          .post<AuthenticationToken>('/signup', {
-            body: {
-              clientId,
-              redirectUrl,
-              scope,
-              data,
-              returnToAfterEmailConfirmation,
-              captchaToken
-            }
-          })
-          .then(tkn => this.storeCredentialsInBrowser(loginParams).then(() => tkn))
-          .then(tkn => this.loginCallback(tkn, auth))
-
-    return resultPromise.catch(err => {
-      if (err.error) {
-        this.eventManager.fireEvent('signup_failed', err)
-      }
-      return Promise.reject(err)
-    })
-  }
-
-  refreshTokens(params: RefreshTokenParams): Promise<AuthResult> {
-    const result =
-      ('refreshToken' in params)
-        ? this.http.post<AuthResult>(this.tokenUrl, {
-          body: {
-            clientId: this.config.clientId,
-            grantType: 'refresh_token',
-            refreshToken: params.refreshToken,
-            ...pick(params, 'scope'),
-          }
-        })
-        : this.http.post<AuthResult>('/token/access-token', {
-          body: {
-            clientId: this.config.clientId,
-            accessToken: params.accessToken
-          }
-        })
-
-    return result.then(enrichAuthResult)
-  }
-
-  loginWithCustomToken({ token, auth }: { token: string; auth: AuthOptions }): void {
-    const queryString = toQueryString({
-      ...this.authParams(auth),
-      token
-    })
-    // Non existent endpoint URL
-    window.location.assign(`https://${this.config.domain}/identity/v1/custom-token/login?${queryString}`)
-  }
-
-  loginWithCredentials(params: LoginWithCredentialsParams): Promise<AuthResult> {
-    if (navigator.credentials && navigator.credentials.get) {
-      const request: CredentialRequestOptions = {
-        password: true,
-        mediation: params.mediation || 'silent'
-      }
-      return navigator.credentials.get(request).then(credentials => {
-        if (!isUndefined(credentials) && credentials instanceof PasswordCredential && credentials.password) {
-          const loginParams: EmailLoginWithPasswordParams = {
-            email: credentials.id,
-            password: credentials.password,
-            auth: params.auth
-          }
-          return this.ropcPasswordLogin(loginParams)
-        }
-        return Promise.reject(new Error('Invalid credentials'))
+    return this.getPkceParams(authParams).then(maybeChallenge => {
+      const queryString = toQueryString({
+        ...authParams,
+        ...maybeChallenge,
+        ...pick(tkn, 'tkn')
       })
-    } else {
-      return Promise.reject(new Error('Unsupported Credentials Management API'))
-    }
-  }
 
-  getSessionInfo(): Promise<SessionInfo> {
-    return this.http.get<SessionInfo>('/sso/data', {
-      query: { clientId: this.config.clientId },
-      withCookies: true
+      if (auth.useWebMessage) {
+        return this.getWebMessage(
+            `${this.authorizeUrl}?${queryString}`,
+            this.config.baseUrl,
+            auth.redirectUri,
+        )
+      } else {
+        return this.redirect(`${this.authorizeUrl}?${queryString}`) as AuthResult
+      }
     })
   }
 
-  private getPkceParams(authParams: AuthParameters): Promise<PkceParams | {}> {
+  authParams(opts: AuthOptions, { acceptPopupMode = false } = {}) {
+    const isConfidentialCodeWebMsg = !this.config.isPublic && !!opts.useWebMessage && (opts.responseType === 'code' || opts.redirectUri)
+
+    const overrideResponseType: Partial<AuthOptions> = isConfidentialCodeWebMsg
+        ? { responseType: 'token', redirectUri: undefined }
+        : {}
+
+    return {
+      clientId: this.config.clientId,
+      ...computeAuthOptions(
+          {
+            ...opts,
+            ...overrideResponseType
+          },
+          { acceptPopupMode },
+          this.config.scope
+      )
+    }
+  }
+
+  getPkceParams(authParams: AuthParameters): Promise<PkceParams | {}> {
     if (this.config.isPublic && authParams.responseType === 'code')
       return computePkceParams()
     else if (authParams.responseType === 'token' && this.config.pkceEnforced)
@@ -591,49 +669,8 @@ export default class OAuthClient {
       return Promise.resolve({})
   }
 
-  private resolveScope(opts: AuthOptions = {}) {
-    return resolveScope(opts, this.config.scope)
-  }
-
-  private authParams(opts: AuthOptions, { acceptPopupMode = false } = {}) {
-    const isConfidentialCodeWebMsg = !this.config.isPublic && !!opts.useWebMessage && (opts.responseType === 'code' || opts.redirectUri)
-
-    const overrideResponseType: Partial<AuthOptions> = isConfidentialCodeWebMsg
-      ? { responseType: 'token', redirectUri: undefined }
-      : {}
-
-    return {
-      clientId: this.config.clientId,
-      ...computeAuthOptions(
-        {
-          ...opts,
-          ...overrideResponseType
-        },
-        { acceptPopupMode },
-        this.config.scope
-      )
-    }
-  }
-}
-
-function redirect(location: string): Promise<void> {
-  window.location.assign(location)
-  return Promise.resolve()
-}
-
-function hasLoggedWithEmail(params: LoginWithPasswordParams): params is EmailLoginWithPasswordParams {
-  return (params as EmailLoginWithPasswordParams).email !== undefined
-}
-
-function computeProviderPopupOptions(provider: string): string {
-  try {
-    const opts = popupSize(provider)
-    const left = Math.max(0, (screen.width - opts.width) / 2)
-    const top = Math.max(0, (screen.height - opts.height) / 2)
-    const width = Math.min(screen.width, opts.width)
-    const height = Math.min(screen.height, opts.height)
-    return `menubar=0,toolbar=0,resizable=1,scrollbars=1,width=${width},height=${height},top=${top},left=${left}`
-  } catch (e) {
-    return 'menubar=0,toolbar=0,resizable=1,scrollbars=1,width=960,height=680'
+  redirect(location: string): Promise<void> {
+    window.location.assign(location)
+    return Promise.resolve()
   }
 }

@@ -12,7 +12,7 @@ import OAuthClient, {
   VerifyPasswordlessParams,
   SignupParams,
   TokenRequestParameters,
-  RefreshTokenParams, SingleFactorPasswordlessParams,
+  RefreshTokenParams, SingleFactorPasswordlessParams, LogoutParams, LoginWithCustomTokenParams,
 } from './oAuthClient'
 import { AuthOptions } from './authOptions'
 import { AuthResult } from './authResult'
@@ -34,12 +34,18 @@ import MfaClient, {
 } from './mfaClient'
 import ProfileClient, {
   EmailVerificationParams,
+  GetUserParams,
   PhoneNumberVerificationParams,
-  RequestPasswordResetParams, UpdateEmailParams, UpdatePasswordParams
+  RequestPasswordResetParams,
+  UnlinkParams,
+  UpdateEmailParams,
+  UpdatePasswordParams,
+  UpdatePhoneNumberParams,
+  UpdateProfileParams, VerifyPhoneNumberParams
 } from './profileClient'
 import WebAuthnClient from './webAuthnClient'
+import CredentialsResponse = MFA.CredentialsResponse
 import StepUpResponse = MFA.StepUpResponse
-import MfaCredentialsResponse = MFA.CredentialsResponse
 
 export { AuthResult } from './authResult'
 export { AuthOptions } from './authOptions'
@@ -54,12 +60,12 @@ export interface Config {
 
 export type ApiClientConfig = {
   clientId: string
-  domain: string
   language?: string
   scope?: string
   sso: boolean
   pkceEnforced: boolean
   isPublic: boolean
+  baseUrl: string
 }
 
 export type Client = {
@@ -67,21 +73,25 @@ export type Client = {
   checkSession: (options?: AuthOptions) => Promise<AuthResult>
   checkUrlFragment: (url: string) => boolean
   exchangeAuthorizationCodeWithPkce: (params: TokenRequestParameters) => Promise<AuthResult>
+  getMfaStepUpToken: (params: StepUpParams) => Promise<StepUpResponse>
   getSessionInfo: () => Promise<SessionInfo>
   getSignupData: (signupToken: string) => Promise<OpenIdUser>
-  getUser: (params: { accessToken: string; fields?: string }) => Promise<Profile>
+  getUser: (params: GetUserParams) => Promise<Profile>
+  listMfaCredentials: (accessToken: string) => Promise<CredentialsResponse>
   listWebAuthnDevices: (accessToken: string) => Promise<DeviceCredential[]>
   loginFromSession: (options?: AuthOptions) => Promise<void>
   loginWithCredentials: (params: LoginWithCredentialsParams) => Promise<AuthResult>
-  loginWithCustomToken: (params: { token: string; auth: AuthOptions }) => Promise<void>
+  loginWithCustomToken: (params: LoginWithCustomTokenParams) => Promise<void>
   loginWithPassword: (params: LoginWithPasswordParams) => Promise<AuthResult>
   loginWithSocialProvider: (provider: string, options?: AuthOptions) => Promise<void | InAppBrowser>
   loginWithWebAuthn: (params: LoginWithWebAuthnParams) => Promise<AuthResult>
-  logout: (params?: { redirectTo?: string; removeCredentials?: boolean }) => Promise<void>
+  logout: (params?: LogoutParams) => Promise<void>
   off: <K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) => void
   on: <K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) => void
   refreshTokens: (params: RefreshTokenParams) => Promise<AuthResult>
   remoteSettings: Promise<RemoteSettings>
+  removeMfaEmail: (params: RemoveMfaEmailParams) => Promise<void>
+  removeMfaPhoneNumber: (params: RemoveMfaPhoneNumberParams) => Promise<void>
   removeWebAuthnDevice: (accessToken: string, deviceId: string) => Promise<void>
   requestPasswordReset: (params: RequestPasswordResetParams) => Promise<void>
   sendEmailVerification: (params: EmailVerificationParams) => Promise<void>
@@ -91,20 +101,16 @@ export type Client = {
   startMfaEmailRegistration: (params: StartMfaEmailRegistrationParams) => Promise<StartMfaEmailRegistrationResponse>
   startMfaPhoneNumberRegistration: (params: StartMfaPhoneNumberRegistrationParams) => Promise<void>
   startPasswordless: (params: SingleFactorPasswordlessParams, options?: Omit<AuthOptions, 'useWebMessage'>) => Promise<PasswordlessResponse>
-  unlink: (params: { accessToken: string; identityId: string; fields?: string }) => Promise<void>
+  unlink: (params: UnlinkParams) => Promise<void>
   updateEmail: (params: UpdateEmailParams) => Promise<void>
   updatePassword: (params: UpdatePasswordParams) => Promise<void>
-  updatePhoneNumber: (params: { accessToken: string; phoneNumber: string }) => Promise<void>
-  updateProfile: (params: { accessToken: string; redirectUrl?: string; data: Profile }) => Promise<void>
-  verifyPasswordless: (params: VerifyPasswordlessParams) => Promise<void>
-  verifyMfaPasswordless: (params: VerifyMfaPasswordlessParams) => Promise<AuthResult>
+  updatePhoneNumber: (params: UpdatePhoneNumberParams) => Promise<void>
+  updateProfile: (params: UpdateProfileParams) => Promise<void>
   verifyMfaEmailRegistration: (params: VerifyMfaEmailRegistrationParams) => Promise<void>
+  verifyMfaPasswordless: (params: VerifyMfaPasswordlessParams) => Promise<AuthResult>
   verifyMfaPhoneNumberRegistration: (params: VerifyMfaPhoneNumberRegistrationParams) => Promise<void>
-  verifyPhoneNumber: (params: { accessToken: string; phoneNumber: string; verificationCode: string }) => Promise<void>
-  getMfaStepUpToken: (params: StepUpParams) => Promise<StepUpResponse>
-  listMfaCredentials: (accessToken: string) => Promise<MfaCredentialsResponse>
-  removeMfaPhoneNumber: (params: RemoveMfaPhoneNumberParams) => Promise<void>
-  removeMfaEmail: (params: RemoveMfaEmailParams) => Promise<void>
+  verifyPasswordless: (params: VerifyPasswordlessParams) => Promise<void>
+  verifyPhoneNumber: (params: VerifyPhoneNumberParams) => Promise<void>
 }
 
 function checkParam<T>(data: T, key: keyof T) {
@@ -126,7 +132,9 @@ export function createClient(creationConfig: Config): Client {
 
   initCordovaCallbackIfNecessary(urlParser)
 
-  const baseUrl = `https://${domain}/identity/v1`
+  const baseUrl = `https://${domain}`
+
+  const baseIdentityUrl = `${baseUrl}/identity/v1`
 
   const remoteSettings = rawRequest<RemoteSettings>(
     `https://${domain}/identity/v1/config?${toQueryString({ clientId, lang: language })}`
@@ -135,31 +143,37 @@ export function createClient(creationConfig: Config): Client {
   const apiClients = remoteSettings.then(
     remoteConfig => {
 
+      const { language, sso } = remoteConfig
+
       const config = {
-        ...creationConfig,
+        clientId,
+        baseUrl,
         ...remoteConfig
       }
 
       const http = createHttpClient({
-        baseUrl,
+        baseUrl: baseIdentityUrl,
         language,
-        acceptCookies: remoteConfig.sso
+        acceptCookies: sso
+      })
+
+      const oAuthClient = new OAuthClient({
+        config,
+        http,
+        eventManager
       })
 
       return {
-        oAuth: new OAuthClient({
-          config,
-          http,
-          eventManager
-        }),
+        oAuth: oAuthClient,
         mfa: new MfaClient({
-          config,
-          http
+          http,
+          oAuthClient
         }),
         webAuthn: new WebAuthnClient({
           config,
           http,
-          eventManager
+          eventManager,
+          oAuthClient
         }),
         profile: new ProfileClient({
           config,
@@ -202,7 +216,7 @@ export function createClient(creationConfig: Config): Client {
     return apiClients.then(clients => clients.profile.getSignupData(signupToken))
   }
 
-  function getUser(params: { accessToken: string; fields?: string }) {
+  function getUser(params: GetUserParams) {
     return apiClients.then(clients => clients.profile.getUser(params))
   }
 
@@ -222,7 +236,7 @@ export function createClient(creationConfig: Config): Client {
     return apiClients.then(clients => clients.oAuth.loginWithCredentials(params))
   }
 
-  function loginWithCustomToken(params: { token: string; auth: AuthOptions }) {
+  function loginWithCustomToken(params: LoginWithCustomTokenParams) {
     return apiClients.then(clients => clients.oAuth.loginWithCustomToken(params))
   }
 
@@ -238,7 +252,7 @@ export function createClient(creationConfig: Config): Client {
     return apiClients.then(clients => clients.webAuthn.loginWithWebAuthn(params))
   }
 
-  function logout(params: { redirectTo?: string; removeCredentials?: boolean } = {}) {
+  function logout(params: LogoutParams = {}) {
     return apiClients.then(clients => clients.oAuth.logout(params))
   }
 
@@ -304,7 +318,7 @@ export function createClient(creationConfig: Config): Client {
     return apiClients.then(clients => clients.oAuth.startPasswordless(params, options))
   }
 
-  function unlink(params: { accessToken: string; identityId: string; fields?: string }) {
+  function unlink(params: UnlinkParams) {
     return apiClients.then(clients => clients.profile.unlink(params))
   }
 
@@ -316,11 +330,11 @@ export function createClient(creationConfig: Config): Client {
     return apiClients.then(clients => clients.profile.updatePassword(params))
   }
 
-  function updatePhoneNumber(params: { accessToken: string; phoneNumber: string }) {
+  function updatePhoneNumber(params: UpdatePhoneNumberParams) {
     return apiClients.then(clients => clients.profile.updatePhoneNumber(params))
   }
 
-  function updateProfile(params: { accessToken: string; redirectUrl?: string; data: Profile }) {
+  function updateProfile(params: UpdateProfileParams) {
     return apiClients.then(clients => clients.profile.updateProfile(params))
   }
 
@@ -340,7 +354,7 @@ export function createClient(creationConfig: Config): Client {
     return apiClients.then(clients => clients.oAuth.verifyPasswordless(params, auth))
   }
 
-  function verifyPhoneNumber(params: { accessToken: string; phoneNumber: string; verificationCode: string }) {
+  function verifyPhoneNumber(params: VerifyPhoneNumberParams) {
     return apiClients.then(clients => clients.profile.verifyPhoneNumber(params))
   }
 

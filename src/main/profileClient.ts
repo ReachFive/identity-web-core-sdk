@@ -48,6 +48,34 @@ export type UpdatePasswordParams =
   | EmailVerificationCodeUpdatePasswordParams
   | SmsVerificationCodeUpdatePasswordParams
 
+export type GetUserParams = {
+  accessToken: string
+  fields?: string
+}
+
+export type UnlinkParams = {
+  accessToken: string
+  identityId: string
+  fields?: string
+}
+
+export type UpdatePhoneNumberParams = {
+  accessToken: string
+  phoneNumber: string
+}
+
+export type UpdateProfileParams = {
+  accessToken: string
+  redirectUrl?: string
+  data: Profile
+}
+
+export type VerifyPhoneNumberParams = {
+  accessToken: string
+  phoneNumber: string
+  verificationCode: string
+}
+
 /**
  * Identity Rest API Client
  */
@@ -56,14 +84,36 @@ export default class ProfileClient {
   private http: HttpClient
   private eventManager: IdentityEventManager
 
+  private sendEmailVerificationUrl: string
+  private sendPhoneNumberVerificationUrl: string
+  private signupDataUrl: string
+  private unlinkUrl: string
+  private updateEmailUrl: string
+  private updatePasswordUrl: string
+  private updatePhoneNumberUrl: string
+  private updateProfileUrl: string
+  private userInfoUrl: string
+  private verifyPhoneNumberUrl: string
+
   constructor(props: { config: ApiClientConfig; http: HttpClient; eventManager: IdentityEventManager }) {
     this.config = props.config
     this.http = props.http
     this.eventManager = props.eventManager
+
+    this.sendEmailVerificationUrl = '/send-email-verification'
+    this.sendPhoneNumberVerificationUrl = '/send-phone-number-verification'
+    this.signupDataUrl = '/signup/data'
+    this.unlinkUrl = '/unlink'
+    this.updateEmailUrl = '/update-email'
+    this.updatePasswordUrl = '/update-password'
+    this.updatePhoneNumberUrl = '/update-phone-number'
+    this.updateProfileUrl = '/update-profile'
+    this.userInfoUrl = '/userinfo'
+    this.verifyPhoneNumberUrl = '/verify-phone-number'
   }
 
   getSignupData(signupToken: string): Promise<OpenIdUser> {
-    return this.http.get<OpenIdUser>('/signup/data', {
+    return this.http.get<OpenIdUser>(this.signupDataUrl, {
       query: {
         clientId: this.config.clientId,
         token: signupToken
@@ -71,56 +121,9 @@ export default class ProfileClient {
     })
   }
 
-  getUser({ accessToken, fields }: { accessToken: string; fields?: string }): Promise<Profile> {
-    return this.http.get<Profile>('/userinfo', { query: { fields }, accessToken })
-  }
-
-  updateProfile({
-    accessToken,
-    redirectUrl,
-    data
-  }: {
-    accessToken: string
-    redirectUrl?: string
-    data: Profile
-  }): Promise<void> {
-    return this.http
-        .post('/update-profile', { body: { ...data, redirectUrl }, accessToken })
-        .then(() => this.eventManager.fireEvent('profile_updated', data))
-  }
-
-  sendEmailVerification(params: EmailVerificationParams): Promise<void> {
-    const { accessToken, ...data } = params
-    return this.http.post('/send-email-verification', { body: { ...data }, accessToken })
-  }
-
-  sendPhoneNumberVerification(params: PhoneNumberVerificationParams): Promise<void> {
-    const { accessToken } = params
-    return this.http.post('/send-phone-number-verification', { accessToken })
-  }
-
-  updateEmail(params: UpdateEmailParams): Promise<void> {
-    const { accessToken, email, redirectUrl } = params
-    return this.http.post('/update-email', { body: { email, redirectUrl }, accessToken })
-  }
-
-  updatePhoneNumber(params: { accessToken: string; phoneNumber: string }): Promise<void> {
-    const { accessToken, ...data } = params
-    return this.http.post('/update-phone-number', { body: data, accessToken })
-  }
-
-  verifyPhoneNumber({
-    accessToken,
-    ...data
-  }: {
-    accessToken: string
-    phoneNumber: string
-    verificationCode: string
-  }): Promise<void> {
-    const { phoneNumber } = data
-    return this.http
-      .post('/verify-phone-number', { body: data, accessToken })
-      .then(() => this.eventManager.fireEvent('profile_updated', { phoneNumber, phoneNumberVerified: true }))
+  getUser(params: GetUserParams): Promise<Profile> {
+    const { accessToken, fields } = params
+    return this.http.get<Profile>(this.userInfoUrl, { query: { fields }, accessToken })
   }
 
   requestPasswordReset(params: RequestPasswordResetParams): Promise<void> {
@@ -132,15 +135,51 @@ export default class ProfileClient {
     })
   }
 
+  sendEmailVerification(params: EmailVerificationParams): Promise<void> {
+    const { accessToken, ...data } = params
+    return this.http.post(this.sendEmailVerificationUrl, { body: { ...data }, accessToken })
+  }
+
+  sendPhoneNumberVerification(params: PhoneNumberVerificationParams): Promise<void> {
+    const { accessToken } = params
+    return this.http.post(this.sendPhoneNumberVerificationUrl, { accessToken })
+  }
+
+  unlink(params: UnlinkParams): Promise<void> {
+    const { accessToken, ...data } = params
+    return this.http.post(this.unlinkUrl, { body: data, accessToken })
+  }
+
+  updateEmail(params: UpdateEmailParams): Promise<void> {
+    const { accessToken, email, redirectUrl } = params
+    return this.http.post(this.updateEmailUrl, { body: { email, redirectUrl }, accessToken })
+  }
+
+  updatePhoneNumber(params: UpdatePhoneNumberParams): Promise<void> {
+    const { accessToken, ...data } = params
+    return this.http.post(this.updatePhoneNumberUrl, { body: data, accessToken })
+  }
+
+  updateProfile(params: UpdateProfileParams): Promise<void> {
+    const { accessToken, redirectUrl, data } = params
+    return this.http
+        .post(this.updateProfileUrl, { body: { ...data, redirectUrl }, accessToken })
+        .then(() => this.eventManager.fireEvent('profile_updated', data))
+  }
+
   updatePassword(params: UpdatePasswordParams): Promise<void> {
     const { accessToken, ...data } = params
-    return this.http.post('/update-password', {
+    return this.http.post(this.updatePasswordUrl, {
       body: { clientId: this.config.clientId, ...data },
       accessToken
     })
   }
 
-  unlink({ accessToken, ...data }: { accessToken: string; identityId: string; fields?: string }): Promise<void> {
-    return this.http.post('/unlink', { body: data, accessToken })
+  verifyPhoneNumber(params: VerifyPhoneNumberParams): Promise<void> {
+    const { accessToken, ...data } = params
+    const { phoneNumber } = data
+    return this.http
+        .post(this.verifyPhoneNumberUrl, { body: data, accessToken })
+        .then(() => this.eventManager.fireEvent('profile_updated', { phoneNumber, phoneNumberVerified: true }))
   }
 }
