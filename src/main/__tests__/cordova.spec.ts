@@ -6,6 +6,8 @@ import createEventManager from '../identityEventManager'
 import { toQueryString } from '../../utils/queryString'
 import { mockPkceValues } from './helpers/oauthHelpers'
 import { createHttpClient } from '../httpClient'
+import { initCordovaCallbackIfNecessary } from '../cordovaHelper'
+import createUrlParser from '../urlParser'
 
 const clientId = 'kqIJE'
 const baseUrl = 'https://local.reach5.net'
@@ -30,6 +32,9 @@ function apiClientAndEventManager() {
     http,
     eventManager,
   })
+  const urlParser = createUrlParser(eventManager)
+  initCordovaCallbackIfNecessary(urlParser)
+
   return { client, eventManager }
 }
 
