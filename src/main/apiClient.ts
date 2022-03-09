@@ -664,7 +664,7 @@ export default class ApiClient {
               ...pick(auth, 'origin'),
               data,
               returnToAfterEmailConfirmation,
-              captchaToken
+              captchaToken,
             },
           })
           .then(authResult => {
@@ -679,7 +679,7 @@ export default class ApiClient {
               scope,
               data,
               returnToAfterEmailConfirmation,
-              captchaToken
+              captchaToken,
             },
           })
           .then(tkn => this.storeCredentialsInBrowser(loginParams).then(() => tkn))
