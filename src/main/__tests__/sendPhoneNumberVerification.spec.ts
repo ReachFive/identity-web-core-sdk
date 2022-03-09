@@ -28,5 +28,6 @@ test('send verification for phone number', async () => {
       ...headersTest.defaultLang,
       ...headersTest.accessToken(accessToken),
     },
+    body: JSON.stringify({}),
   })
 })
