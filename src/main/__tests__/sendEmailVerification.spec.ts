@@ -9,11 +9,6 @@ beforeAll(() => {
   defineWindowProperty('location')
 })
 
-beforeEach(() => {
-  jest.resetAllMocks()
-  fetchMock.resetMocks()
-})
-
 test('send verification for email', async () => {
   const { client, domain } = createDefaultTestClient()
 
