@@ -14,28 +14,19 @@ beforeEach(() => {
   fetchMock.resetMocks()
 })
 
-test('send verification for email', async () => {
+test('send verification for phone number', async () => {
   const { client, domain } = createDefaultTestClient()
 
   const apiCall = fetchMock.mockResponseOnce(JSON.stringify({}))
-  const accessToken = '456'
-  const params = {
-    accessToken,
-    redirectUrl: 'http://toto.com',
-    returnToAfterEmailConfirmation: 'http://confirmation.com',
-  }
+  const accessToken = '123'
 
-  await client.sendEmailVerification(params)
+  await client.sendPhoneNumberVerification({ accessToken })
 
-  expect(apiCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/send-email-verification`, {
+  expect(apiCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/send-phone-number-verification`, {
     method: 'POST',
     headers: {
-      ...headersTest.jsonAndDefaultLang,
+      ...headersTest.defaultLang,
       ...headersTest.accessToken(accessToken),
     },
-    body: JSON.stringify({
-      redirect_url: 'http://toto.com',
-      return_to_after_email_confirmation: 'http://confirmation.com',
-    }),
   })
 })
