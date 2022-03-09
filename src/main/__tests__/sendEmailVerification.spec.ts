@@ -1,7 +1,7 @@
 import fetchMock from 'jest-fetch-mock'
 
 import { createDefaultTestClient } from './helpers/clientFactory'
-import { headerTests } from './helpers/identityHelpers'
+import { headersTest } from './helpers/identityHelpers'
 import { defineWindowProperty } from './helpers/windowHelpers'
 
 beforeAll(() => {
@@ -17,7 +17,7 @@ beforeEach(() => {
 test('send verification mail', async () => {
   const { client, domain } = createDefaultTestClient()
 
-  const apiCall = fetchMock.mockResponseOnce(JSON.stringify(''))
+  const apiCall = fetchMock.mockResponseOnce(JSON.stringify({}))
 
   const accessToken = '456'
   const params = {
@@ -31,8 +31,8 @@ test('send verification mail', async () => {
   expect(apiCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/send-email-verification`, {
     method: 'POST',
     headers: {
-      ...headerTests.jsonAndDefaultLang,
-      ...headerTests.accessToken(accessToken),
+      ...headersTest.jsonAndDefaultLang,
+      ...headersTest.accessToken(accessToken),
     },
     body: JSON.stringify({
       redirect_url: 'http://toto.com',
