@@ -9,7 +9,9 @@ import pkg from './package.json'
 const plugins = [
   resolve(),
   commonjs({
-    namedExports: { 'node_modules/winchan/winchan.js': ['open'] }
+    namedExports: {
+      'node_modules/winchan/winchan.js': ['open']
+    }
   }),
   babel({ 
     exclude: [/\/core-js\//]
@@ -23,11 +25,11 @@ const plugins = [
 
 function createBundle({ file, format, name, external, withUglify = false }) {
   return {
-		input: 'src/main/index.ts',
-		output: { file, format, name },
+    input: 'src/main/index.ts',
+    output: { file, format, name },
     plugins: withUglify ? [terser(), ...plugins] : plugins,
     external,
-	}
+  }
 }
 
 const externalDependencies = Object.keys(pkg.dependencies)
@@ -40,6 +42,6 @@ function isNpmDependency(name) {
 export default [
   createBundle({ file: pkg.main, format: 'cjs', external: isNpmDependency }),
   createBundle({ file: pkg.module, format: 'es', external: isNpmDependency }),
-  createBundle({ file: 'umd/identity-core.min.js', format: 'umd', name: 'reach5', withUglify: true }),
-  createBundle({ file: 'umd/identity-core.js', format: 'umd', name: 'reach5' })
+  createBundle({ file: 'umd/identity-core.js', format: 'umd', name: 'reach5' }),
+  createBundle({ file: 'umd/identity-core.min.js', format: 'umd', name: 'reach5', withUglify: true })
 ]
