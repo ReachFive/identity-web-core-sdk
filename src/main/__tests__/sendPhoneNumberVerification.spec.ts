@@ -25,9 +25,8 @@ test('send verification for phone number', async () => {
   expect(apiCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/send-phone-number-verification`, {
     method: 'POST',
     headers: {
-      ...headersTest.defaultLang,
+      ...headersTest.jsonAndDefaultLang,
       ...headersTest.accessToken(accessToken),
     },
-    body: JSON.stringify({}),
   })
 })
