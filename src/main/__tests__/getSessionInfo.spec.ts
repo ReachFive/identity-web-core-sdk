@@ -3,10 +3,6 @@ import fetchMock from 'jest-fetch-mock'
 import { toQueryString } from '../../utils/queryString'
 import { createDefaultTestClient } from './helpers/clientFactory'
 
-beforeAll(() => {
-  fetchMock.enableMocks()
-})
-
 beforeEach(() => {
   jest.resetAllMocks()
   fetchMock.resetMocks()

@@ -5,8 +5,12 @@ import { headersTest } from './helpers/identityHelpers'
 import { defineWindowProperty } from './helpers/windowHelpers'
 
 beforeAll(() => {
-  fetchMock.enableMocks()
   defineWindowProperty('location')
+})
+
+beforeEach(() => {
+  jest.resetAllMocks()
+  fetchMock.resetMocks()
 })
 
 test('send verification for email', async () => {

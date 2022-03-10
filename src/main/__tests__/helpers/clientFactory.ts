@@ -3,8 +3,6 @@ import fetchMock from 'jest-fetch-mock'
 import { Client, Config, createClient } from '../../main'
 import { RemoteSettings } from '../../models'
 
-fetchMock.enableMocks()
-
 export type TestKit = {
   client: Client
   remoteSettings: RemoteSettings

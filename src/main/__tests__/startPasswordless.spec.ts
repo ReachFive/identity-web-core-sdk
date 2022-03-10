@@ -8,7 +8,6 @@ import { _public, confidential, mockPkceValues, pageDisplay, scope } from './hel
 import { defineWindowProperty, mockWindowCrypto } from './helpers/windowHelpers'
 
 beforeAll(() => {
-  fetchMock.enableMocks()
   defineWindowProperty('location')
   defineWindowProperty('crypto', mockWindowCrypto)
 })
