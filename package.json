@@ -60,6 +60,7 @@
   ],
   "jest": {
     "resetMocks": true,
+    "preset": "ts-jest",
     "setupFiles": [
       "<rootDir>/src/main/__tests__/helpers/setupJest.ts"
     ],
