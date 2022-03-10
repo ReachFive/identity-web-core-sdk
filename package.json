@@ -66,6 +66,7 @@
     "testEnvironment": "jsdom",
     "testMatch": [
       "**/src/**/__tests__/*.spec.ts"
-    ]
+    ],
+    "testTimeout": 5000
   }
 }
