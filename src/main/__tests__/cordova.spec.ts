@@ -819,7 +819,7 @@ describe('loginWithSocialProvider', () => {
 })
 
 describe('handleOpenURL', () => {
-  test('when defined by the sdk', async () => {
+  test('when defined by the sdk', () => {
     // Given
     const { eventManager } = apiClientAndEventManager()
 
@@ -856,7 +856,7 @@ describe('handleOpenURL', () => {
     })
   })
 
-  test('when already defined outside', async () => {
+  test('when already defined outside', () => {
     // Given
     const handleOpenURL = jest.fn()
     window.handleOpenURL = handleOpenURL
@@ -888,7 +888,7 @@ describe('handleOpenURL', () => {
     expect(authenticatedHandler).not.toHaveBeenCalled()
   })
 
-  test('with the browsertab plugin', async () => {
+  test('with the browsertab plugin', () => {
     // Given
     const { eventManager } = apiClientAndEventManager()
 
