@@ -29,7 +29,6 @@ function apiClientAndEventManager() {
 }
 
 beforeAll(() => {
-  fetchMock.enableMocks()
   defineWindowProperty('location')
   defineWindowProperty('crypto', mockWindowCrypto)
 })
