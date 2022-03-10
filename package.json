@@ -59,6 +59,7 @@
     "umd"
   ],
   "jest": {
+    "resetMocks": true,
     "preset": "ts-jest/presets/default-esm",
     "setupFiles": [
       "<rootDir>/src/main/__tests__/helpers/setupJest.ts"
