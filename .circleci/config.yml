@@ -16,7 +16,7 @@ jobs:
       - run:
           name: Run test
           command: npm run test
-          no_output_timeout: 2m
+          no_output_timeout: 5m
       - persist_to_workspace:
           root: ~/repo
           paths:
