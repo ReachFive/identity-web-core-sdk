@@ -1,7 +1,6 @@
 version: 2.1
 
 defaults: &defaults
-  timeout: 300s
   working_directory: ~/repo
   docker:
     - image: cimg/node:17.6.0
@@ -17,6 +16,7 @@ jobs:
       - run:
           name: Run test
           command: npm run test
+          no_output_timeout: 2m
       - persist_to_workspace:
           root: ~/repo
           paths:
