@@ -24,26 +24,26 @@
     "winchan": "^0.2.2"
   },
   "devDependencies": {
-    "@babel/core": "^7.17.5",
+    "@babel/core": "^7.17.7",
     "@babel/preset-typescript": "^7.16.7",
     "@types/jest": "^27.4.1",
-    "@types/lodash": "^4.14.179",
+    "@types/lodash": "^4.14.180",
     "@types/webappsec-credential-management": "^0.6.2",
-    "@typescript-eslint/eslint-plugin": "^5.14.0",
-    "@typescript-eslint/parser": "^5.14.0",
+    "@typescript-eslint/eslint-plugin": "^5.15.0",
+    "@typescript-eslint/parser": "^5.15.0",
     "buffer": "^6.0.3",
     "cordova-plugin-inappbrowser": "^5.0.0",
     "core-js": "^3.21.1",
-    "eslint": "^8.10.0",
+    "eslint": "^8.11.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-jest": "^26.1.1",
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-simple-import-sort": "^7.0.0",
     "jest": "27.5.1",
     "jest-fetch-mock": "^3.0.3",
-    "prettier": "^2.5.1",
+    "prettier": "^2.6.0",
     "regenerator-runtime": "^0.13.9",
-    "rollup": "2.70.0",
+    "rollup": "2.70.1",
     "rollup-plugin-babel": "^4.4.0",
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-node-resolve": "^5.2.0",
@@ -64,13 +64,9 @@
     "setupFiles": [
       "<rootDir>/src/main/__tests__/helpers/setupJest.ts"
     ],
-    "setupFilesAfterEnv": [
-      "<rootDir>/src/main/__tests__/helpers/timeoutJest.ts"
-    ],
     "testEnvironment": "jsdom",
     "testMatch": [
       "**/src/**/__tests__/*.spec.ts"
-    ],
-    "testTimeout": 5000
+    ]
   }
 }
