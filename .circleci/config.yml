@@ -3,20 +3,22 @@ version: 2.1
 defaults: &defaults
   working_directory: ~/repo
   docker:
-    - image: cimg/node:17.6.0
+    - image: cimg/node:17.7.2
 
 jobs:
   test:
     <<: *defaults
     steps:
       - checkout
+      - run: node --version
+      - run: npm --version
       - run: npm ci
       - run: npm run lint:check
       - run: npm run build
       - run:
           name: Run test
           command: npm run test
-          no_output_timeout: 5m
+          no_output_timeout: 30s
       - persist_to_workspace:
           root: ~/repo
           paths:
