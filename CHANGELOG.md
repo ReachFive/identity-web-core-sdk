@@ -7,6 +7,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.22.1] - 2022-03-29
+
+### Changed
+
+Align `startMfaPhoneNumberRegistration` response on the `startMfaEmailRegistration` one.
+
 ## [1.22.0] - 2022-02-22
 
 ### Added 
@@ -21,7 +27,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 and [requestPasswordReset](https://developer.reachfive.com/sdk-core/requestPasswordReset.html)
 
 ### Changed
-- Support the step up from a fresh access token with function `getMfaStepUpToken`
+
+Support the step up from a fresh access token with function `getMfaStepUpToken`
 
 ## [1.21.1] - 2021-11-30
 
@@ -325,7 +332,9 @@ Automatise the deployment of a new release with `circleci`.
 - Implement `tslint`.
 - Remove `yarn`.
 
-[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.22.0...HEAD
+[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.22.1...HEAD
+
+[1.22.1]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.22.0...v1.22.1
 
 [1.22.0]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.21.1...v1.22.0
 
