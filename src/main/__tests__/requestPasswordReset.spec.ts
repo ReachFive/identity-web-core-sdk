@@ -11,14 +11,17 @@ beforeEach(() => {
 test('simple', async () => {
   const { client, clientId, domain } = createDefaultTestClient()
 
+  // Given
   const passwordResetCall = fetchMock.mockResponseOnce('', {
     status: 204,
   })
 
   const email = 'john.doe@example.com'
 
+  // When
   await client.requestPasswordReset({ email })
 
+  // Then
   expect(passwordResetCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/forgot-password`, {
     method: 'POST',
     headers: headersTest.jsonAndDefaultLang,

@@ -39,6 +39,7 @@ export async function signupTest(testKit: TestKit, params: SignupParams) {
   // When
   await client.signup(params)
 
+  // Then
   expect(signupCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/signup`, {
     method: 'POST',
     headers: headersTest.jsonAndDefaultLang,
@@ -51,7 +52,7 @@ export async function signupTest(testKit: TestKit, params: SignupParams) {
 }
 
 export async function loginWithPasswordTest(testKit: TestKit, params: LoginWithPasswordParams, credentials: {}) {
-  const { domain, clientId, client } = testKit
+  const { client, clientId, domain } = testKit
 
   // Given
   const passwordLoginCall = fetchMock.mockResponseOnce(JSON.stringify(tkn))

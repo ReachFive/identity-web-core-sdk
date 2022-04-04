@@ -5,7 +5,7 @@ import ApiClient from '../apiClient'
 import createEventManager from '../identityEventManager'
 import createUrlParser from '../urlParser'
 import { headersTest } from './helpers/identityHelpers'
-import { mockPkceValues } from './helpers/oauthHelpers'
+import { defaultScope, mockPkceValues } from './helpers/oauthHelpers'
 import { defineWindowProperty, mockWindowCrypto } from './helpers/windowHelpers'
 
 const clientId = 'kqIJE'
@@ -85,7 +85,7 @@ describe('signup', () => {
       headers: headersTest.jsonAndDefaultLang,
       body: JSON.stringify({
         client_id: clientId,
-        scope: 'openid profile email phone',
+        scope: defaultScope,
         data: {
           email,
           password,
@@ -155,7 +155,7 @@ describe('signup', () => {
       headers: headersTest.jsonAndDefaultLang,
       body: JSON.stringify({
         client_id: clientId,
-        scope: 'openid profile email phone',
+        scope: defaultScope,
         origin,
         data: {
           email,
@@ -280,7 +280,7 @@ describe('loginWithPassword', () => {
         grant_type: 'password',
         username: email,
         password,
-        scope: 'openid profile email phone',
+        scope: defaultScope,
       }),
     })
 
@@ -333,7 +333,7 @@ describe('loginWithPassword', () => {
         grant_type: 'password',
         username: phoneNumber,
         password,
-        scope: 'openid profile email phone',
+        scope: defaultScope,
       }),
     })
 
@@ -392,7 +392,7 @@ describe('loginWithPassword', () => {
         grant_type: 'password',
         username: email,
         password,
-        scope: 'openid profile email phone',
+        scope: defaultScope,
         origin,
       }),
     })
@@ -453,7 +453,7 @@ describe('loginWithPassword', () => {
         grant_type: 'password',
         username: email,
         password,
-        scope: 'openid profile email phone',
+        scope: defaultScope,
       }),
     })
 
@@ -534,7 +534,7 @@ describe('loginWithSocialProvider', () => {
         toQueryString({
           client_id: clientId,
           response_type: 'token',
-          scope: 'openid profile email phone',
+          scope: defaultScope,
           display: 'page',
           provider: 'facebook',
         })
@@ -584,7 +584,7 @@ describe('loginWithSocialProvider', () => {
         toQueryString({
           client_id: clientId,
           response_type: 'token',
-          scope: 'openid profile email phone',
+          scope: defaultScope,
           display: 'page',
           provider: 'facebook',
         }),
@@ -624,7 +624,7 @@ describe('loginWithSocialProvider', () => {
         toQueryString({
           client_id: clientId,
           response_type: 'token',
-          scope: 'openid profile email phone',
+          scope: defaultScope,
           display: 'page',
           provider: 'facebook',
         }),
@@ -652,7 +652,7 @@ describe('loginWithSocialProvider', () => {
         toQueryString({
           client_id: clientId,
           response_type: 'token',
-          scope: 'openid profile email phone',
+          scope: defaultScope,
           display: 'page',
           provider: 'facebook',
         }),
@@ -680,7 +680,7 @@ describe('loginWithSocialProvider', () => {
         toQueryString({
           client_id: clientId,
           response_type: 'token',
-          scope: 'openid profile email phone',
+          scope: defaultScope,
           display: 'page',
           provider: 'facebook',
         }),
@@ -713,7 +713,7 @@ describe('loginWithSocialProvider', () => {
           client_id: clientId,
           response_type: 'code',
           redirect_uri: redirectUri,
-          scope: 'openid profile email phone',
+          scope: defaultScope,
           display: 'page',
           provider: 'facebook',
           ...mockPkceValues,
@@ -747,7 +747,7 @@ describe('loginWithSocialProvider', () => {
           client_id: clientId,
           response_type: 'code',
           redirect_uri: redirectUri,
-          scope: 'openid profile email phone',
+          scope: defaultScope,
           display: 'page',
           provider: 'facebook',
           ...mockPkceValues,
@@ -778,7 +778,7 @@ describe('loginWithSocialProvider', () => {
         toQueryString({
           client_id: clientId,
           response_type: 'token',
-          scope: 'openid profile email phone',
+          scope: defaultScope,
           display: 'page',
           provider: 'facebook',
         }),
@@ -808,7 +808,7 @@ describe('loginWithSocialProvider', () => {
         toQueryString({
           client_id: clientId,
           response_type: 'token',
-          scope: 'openid profile email phone',
+          scope: defaultScope,
           display: 'page',
           provider: 'facebook',
         }),

@@ -2,6 +2,7 @@ import fetchMock from 'jest-fetch-mock'
 
 import { toQueryString } from '../../utils/queryString'
 import { createDefaultTestClient } from './helpers/clientFactory'
+import { defaultScope } from './helpers/oauthHelpers'
 import { popNextRandomString } from './helpers/randomStringMock'
 import winchanMocker from './helpers/winchanMocker'
 import { defineWindowProperty, mockWindowCrypto } from './helpers/windowHelpers'
@@ -19,16 +20,19 @@ beforeEach(() => {
 })
 
 test('with default auth', async () => {
+  // Given
   const { client, clientId, domain } = createDefaultTestClient()
 
+  // When
   await client.loginWithSocialProvider('google', {})
 
+  // Then
   expect(window.location.assign).toHaveBeenCalledWith(
     `https://${domain}/oauth/authorize?` +
       toQueryString({
         client_id: clientId,
         response_type: 'token',
-        scope: 'openid profile email phone',
+        scope: defaultScope,
         display: 'page',
         provider: 'google',
       })
@@ -68,7 +72,7 @@ test('with popup mode', async () => {
       toQueryString({
         client_id: clientId,
         response_type: 'token',
-        scope: 'openid profile email phone',
+        scope: defaultScope,
         display: 'popup',
         provider: 'facebook',
       }),

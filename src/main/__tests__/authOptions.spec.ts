@@ -1,16 +1,17 @@
 import { computeAuthOptions } from '../authOptions'
+import { defaultScope } from './helpers/oauthHelpers'
 
 describe('computeAuthOptions', () => {
   test('responseType defaults', () => {
     expect(computeAuthOptions()).toEqual({
       display: 'page',
       responseType: 'token',
-      scope: 'openid profile email phone',
+      scope: defaultScope,
     })
     expect(computeAuthOptions({})).toEqual({
       display: 'page',
       responseType: 'token',
-      scope: 'openid profile email phone',
+      scope: defaultScope,
     })
   })
 
@@ -22,7 +23,7 @@ describe('computeAuthOptions', () => {
     ).toEqual({
       display: 'page',
       responseType: 'code',
-      scope: 'openid profile email phone',
+      scope: defaultScope,
       redirectUri: 'https://localhost/login.callback',
     })
   })
@@ -31,7 +32,7 @@ describe('computeAuthOptions', () => {
     const result = {
       display: 'page',
       responseType: 'token',
-      scope: 'openid profile email phone address',
+      scope: `${defaultScope} address`,
     }
     expect(
       computeAuthOptions({
@@ -70,7 +71,7 @@ describe('computeAuthOptions', () => {
     expect(computeAuthOptions({ popupMode: true }, { acceptPopupMode: true })).toEqual({
       display: 'popup',
       responseType: 'token',
-      scope: 'openid profile email phone',
+      scope: defaultScope,
     })
   })
 
@@ -78,7 +79,7 @@ describe('computeAuthOptions', () => {
     expect(computeAuthOptions({ popupMode: true })).toEqual({
       display: 'page',
       responseType: 'token',
-      scope: 'openid profile email phone',
+      scope: defaultScope,
     })
   })
 
@@ -90,7 +91,7 @@ describe('computeAuthOptions', () => {
     ).toEqual({
       display: 'page',
       responseType: 'token',
-      scope: 'openid profile email phone offline_access',
+      scope: `${defaultScope} offline_access`,
     })
   })
 
@@ -102,7 +103,7 @@ describe('computeAuthOptions', () => {
     ).toEqual({
       display: 'page',
       responseType: 'token',
-      scope: 'openid profile email phone',
+      scope: defaultScope,
       origin: 'single',
     })
   })
@@ -115,7 +116,7 @@ describe('computeAuthOptions', () => {
     ).toEqual({
       display: 'page',
       responseType: 'token',
-      scope: 'openid profile email phone',
+      scope: defaultScope,
       accessToken: 'abc.123.def',
     })
   })

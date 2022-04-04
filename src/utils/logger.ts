@@ -1,7 +1,3 @@
-export const log = (message: string) => {
-  if (window?.console?.log) window.console.log(message)
-}
-
 export const logError = (messageOrException: string | Error, exception?: Error) => {
   if (window?.console?.error) {
     if (exception) {

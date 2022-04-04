@@ -16,6 +16,7 @@ beforeEach(() => {
 test('send verification for email', async () => {
   const { client, domain } = createDefaultTestClient()
 
+  // Given
   const apiCall = fetchMock.mockResponseOnce(JSON.stringify({}))
   const accessToken = '456'
   const params = {
@@ -24,8 +25,10 @@ test('send verification for email', async () => {
     returnToAfterEmailConfirmation: 'http://confirmation.com',
   }
 
+  // When
   await client.sendEmailVerification(params)
 
+  // Then
   expect(apiCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/send-email-verification`, {
     method: 'POST',
     headers: {

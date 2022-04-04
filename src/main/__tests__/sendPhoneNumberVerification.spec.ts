@@ -16,11 +16,14 @@ beforeEach(() => {
 test('send verification for phone number', async () => {
   const { client, domain } = createDefaultTestClient()
 
+  // Given
   const apiCall = fetchMock.mockResponseOnce(JSON.stringify({}))
   const accessToken = '123'
 
+  // When
   await client.sendPhoneNumberVerification({ accessToken })
 
+  // Then
   expect(apiCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/send-phone-number-verification`, {
     method: 'POST',
     headers: {

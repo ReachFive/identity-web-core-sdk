@@ -62,7 +62,7 @@ test('refresh token with a refresh token', async () => {
   const newAccessToken = 'newAccessToken'
   const expiresIn = 1800
   const tokenType = 'Bearer'
-  const scope = 'openId external offline_access'
+  const scope = 'openid offline_access'
   const idToken =
     'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.Pd6t82tPL3EZdkeYxw_DV2KimE1U2FvuLHmfR_mimJ5US3JFU4J2Gd94O7rwpSTGN1B9h-_lsTebo4ua4xHsTtmczZ9xa8a_kWKaSkqFjNFaFp6zcoD6ivCu03SlRqsQzSRHXo6TKbnqOt9D6Y2rNa3C4igSwoS0jUE4BgpXbc0'
   const refreshToken = 'refreshToken'

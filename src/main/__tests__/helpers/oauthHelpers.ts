@@ -37,7 +37,7 @@ export const phone = {
 type ClientType = {
   isPublic: boolean
 }
-// Can't use `public` since it's a language attribute
+
 export const _public = { isPublic: true }
 export const confidential = { isPublic: false }
 

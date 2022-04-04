@@ -47,6 +47,7 @@ test('with user error', async () => {
     },
   })
 
+  // Then
   await expect(promise).rejects.toEqual(expectedError)
   expect(signupFailedHandler).toHaveBeenCalledWith(expectedError)
 })
