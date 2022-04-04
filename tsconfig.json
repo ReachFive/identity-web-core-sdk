@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
     "lib": [
-      "es2021",
+      "esNext",
       "dom"
     ],
-    "target": "es6",
+    "target": "es5",
     "module": "esNext",
     "moduleResolution": "node",
     "strict": true,

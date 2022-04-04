@@ -10,12 +10,15 @@ jobs:
     <<: *defaults
     steps:
       - checkout
-      - run: npm ci
+      - run:
           name: Run clean install
-      - run: npm run lint:check
+          command: npm ci
+      - run:
           name: Run lint checks
-      - run: npm run build
+          command: npm run lint:check
+      - run:
           name: Run build
+          command: npm run build
       - run:
           name: Run test
           command: npm run test
