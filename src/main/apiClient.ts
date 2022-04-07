@@ -32,6 +32,7 @@ import { randomBase64String } from '../utils/random'
 import StepUpResponse = MFA.StepUpResponse
 import MfaCredentialsResponse = MFA.CredentialsResponse
 import EmailCredential = MFA.EmailCredential
+import PhoneCredential = MFA.PhoneCredential
 
 export type SignupParams = {
   data: SignupProfile
@@ -140,6 +141,8 @@ export type StartMfaPhoneNumberRegistrationParams = {
   accessToken: string
   phoneNumber: string
 }
+
+export type StartMfaPhoneNumberRegistrationResponse = { status: 'sms_sent' } | { status: 'enabled', credential: PhoneCredential }
 
 export type VerifyMfaPhoneNumberRegistrationParams = {
   accessToken: string
@@ -932,9 +935,9 @@ export default class ApiClient {
     return this.http.remove<void>(`/webauthn/registration/${deviceId}`, { accessToken })
   }
 
-  startMfaPhoneNumberRegistration(params: StartMfaPhoneNumberRegistrationParams): Promise<void> {
+  startMfaPhoneNumberRegistration(params: StartMfaPhoneNumberRegistrationParams): Promise<StartMfaPhoneNumberRegistrationResponse> {
     const { accessToken, phoneNumber } = params
-    return this.http.post<void>('/mfa/credentials/phone-numbers', {
+    return this.http.post<StartMfaPhoneNumberRegistrationResponse>('/mfa/credentials/phone-numbers', {
       body: {
         phoneNumber
       },

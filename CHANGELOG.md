@@ -7,6 +7,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+Align `startMfaPhoneNumberRegistration` response on the `startMfaEmailRegistration` one.
+
 ## [1.22.0] - 2022-02-22
 
 ### Added 
@@ -21,7 +25,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 and [requestPasswordReset](https://developer.reachfive.com/sdk-core/requestPasswordReset.html)
 
 ### Changed
-- Support the step up from a fresh access token with function `getMfaStepUpToken`
+
+Support the step up from a fresh access token with function `getMfaStepUpToken`
 
 ## [1.21.1] - 2021-11-30
 
