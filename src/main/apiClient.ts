@@ -176,7 +176,7 @@ export type RemoveMfaEmailParams = {
 
 type AuthenticationToken = { tkn: string }
 
-export type RefreshTokenParams = { accessToken: string } | { refreshToken: string, scope?: Scope }
+export type RefreshTokenParams = { refreshToken: string, scope?: Scope }
 
 /**
  * Identity Rest API Client
@@ -742,19 +742,12 @@ export default class ApiClient {
 
   refreshTokens(params: RefreshTokenParams): Promise<AuthResult> {
     const result =
-      ('refreshToken' in params)
-        ? this.http.post<AuthResult>(this.tokenUrl, {
+      this.http.post<AuthResult>(this.tokenUrl, {
           body: {
             clientId: this.config.clientId,
             grantType: 'refresh_token',
             refreshToken: params.refreshToken,
             ...pick(params, 'scope'),
-          }
-        })
-        : this.http.post<AuthResult>('/token/access-token', {
-          body: {
-            clientId: this.config.clientId,
-            accessToken: params.accessToken
           }
         })
 
