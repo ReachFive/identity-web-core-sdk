@@ -11,6 +11,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Align `startMfaPhoneNumberRegistration` response on the `startMfaEmailRegistration` one.
 
+### Removed
+
+Removed possibility to get a refresh token from an access token.
+
 ## [1.22.0] - 2022-02-22
 
 ### Added 
