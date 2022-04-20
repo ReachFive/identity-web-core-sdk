@@ -6,6 +6,7 @@ import OAuthClient from './oAuthClient'
 import CredentialsResponse = MFA.CredentialsResponse
 import EmailCredential = MFA.EmailCredential
 import StepUpResponse = MFA.StepUpResponse
+import PhoneCredential = MFA.PhoneCredential
 
 export type RemoveMfaEmailParams = {
   accessToken: string
@@ -26,6 +27,8 @@ export type StartMfaPhoneNumberRegistrationParams = {
   accessToken: string
   phoneNumber: string
 }
+
+export type StartMfaPhoneNumberRegistrationResponse = { status: 'sms_sent' } | { status: 'enabled', credential: PhoneCredential }
 
 export type StepUpParams = {
   options?: AuthOptions
@@ -120,9 +123,9 @@ export default class MfaClient {
     })
   }
 
-  startMfaPhoneNumberRegistration(params: StartMfaPhoneNumberRegistrationParams): Promise<void> {
+  startMfaPhoneNumberRegistration(params: StartMfaPhoneNumberRegistrationParams): Promise<StartMfaPhoneNumberRegistrationResponse> {
     const { accessToken, phoneNumber } = params
-    return this.http.post<void>(this.phoneNumberCredentialUrl, {
+    return this.http.post<StartMfaPhoneNumberRegistrationResponse>(this.phoneNumberCredentialUrl, {
       body: {
         phoneNumber
       },

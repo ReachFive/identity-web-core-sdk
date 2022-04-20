@@ -27,10 +27,10 @@ import MfaClient, {
   RemoveMfaPhoneNumberParams,
   StartMfaEmailRegistrationParams,
   StartMfaEmailRegistrationResponse,
-  StartMfaPhoneNumberRegistrationParams,
+  StartMfaPhoneNumberRegistrationParams, StartMfaPhoneNumberRegistrationResponse,
   StepUpParams, VerifyMfaEmailRegistrationParams,
   VerifyMfaPasswordlessParams,
-  VerifyMfaPhoneNumberRegistrationParams
+  VerifyMfaPhoneNumberRegistrationParams,
 } from './mfaClient'
 import ProfileClient, {
   EmailVerificationParams,
@@ -99,7 +99,7 @@ export type Client = {
   signup: (params: SignupParams) => Promise<AuthResult>
   signupWithWebAuthn: (params: SignupWithWebAuthnParams, auth?: AuthOptions) => Promise<AuthResult>
   startMfaEmailRegistration: (params: StartMfaEmailRegistrationParams) => Promise<StartMfaEmailRegistrationResponse>
-  startMfaPhoneNumberRegistration: (params: StartMfaPhoneNumberRegistrationParams) => Promise<void>
+  startMfaPhoneNumberRegistration: (params: StartMfaPhoneNumberRegistrationParams) => Promise<StartMfaPhoneNumberRegistrationResponse>
   startPasswordless: (params: SingleFactorPasswordlessParams, options?: Omit<AuthOptions, 'useWebMessage'>) => Promise<PasswordlessResponse>
   unlink: (params: UnlinkParams) => Promise<void>
   updateEmail: (params: UpdateEmailParams) => Promise<void>
