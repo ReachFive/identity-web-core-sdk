@@ -1,3 +1,4 @@
+// TODO: To sort
 export type Profile = Record<string, any>
 
 export type ProfileAddress = {
@@ -72,6 +73,8 @@ export type SessionInfo = {
   hasPassword?: boolean
   socialProviders?: string[]
 }
+
+export type AuthenticationToken = { tkn: string }
 
 export type PasswordlessResponse = MFA.ChallengeId
 

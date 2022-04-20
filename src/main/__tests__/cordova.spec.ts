@@ -1,29 +1,40 @@
 import fetchMock from 'jest-fetch-mock'
 
 import { defineWindowProperty, headers, mockWindowCrypto } from './helpers/testHelpers'
-import ApiClient from '../apiClient'
+import OauthClient from '../oAuthClient'
 import createEventManager from '../identityEventManager'
-import createUrlParser from '../urlParser'
 import { toQueryString } from '../../utils/queryString'
 import { mockPkceValues } from './helpers/oauthHelpers'
+import { createHttpClient } from '../httpClient'
+import { initCordovaCallbackIfNecessary } from '../cordovaHelper'
+import createUrlParser from '../urlParser'
 
 const clientId = 'kqIJE'
-const domain = 'local.reach5.net'
+const baseUrl = 'https://local.reach5.net'
+const baseIdentityUrl = `${baseUrl}/identity/v1`
+const http = createHttpClient({
+  baseUrl: baseIdentityUrl,
+  language: 'en',
+  acceptCookies: false
+})
 
 function apiClientAndEventManager() {
   const eventManager = createEventManager()
-  const client = new ApiClient({
+  const client = new OauthClient({
     config: {
       clientId,
-      domain,
+      baseUrl,
       language: 'en',
       sso: false,
       pkceEnforced: false,
       isPublic: true
     },
+    http,
     eventManager,
-    urlParser: createUrlParser(eventManager)
   })
+  const urlParser = createUrlParser(eventManager)
+  initCordovaCallbackIfNecessary(urlParser)
+
   return { client, eventManager }
 }
 
@@ -83,7 +94,7 @@ describe('signup', () => {
 
     // Then
 
-    expect(signupCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/signup-token`, {
+    expect(signupCall).toHaveBeenCalledWith(`${baseIdentityUrl}/signup-token`, {
       method: 'POST',
       headers: headers.jsonAndDefaultLang,
       body: JSON.stringify({
@@ -153,7 +164,7 @@ describe('signup', () => {
     })
 
     // Then
-    expect(signupCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/signup-token`, {
+    expect(signupCall).toHaveBeenCalledWith(`${baseIdentityUrl}/signup-token`, {
       method: 'POST',
       headers: headers.jsonAndDefaultLang,
       body: JSON.stringify({
@@ -279,7 +290,7 @@ describe('loginWithPassword', () => {
     await client.loginWithPassword({ email, password })
 
     // Then
-    expect(passwordLoginCall).toHaveBeenCalledWith(`https://${domain}/oauth/token`, {
+    expect(passwordLoginCall).toHaveBeenCalledWith(`${baseUrl}/oauth/token`, {
       method: 'POST',
       headers: headers.jsonAndDefaultLang,
       body: JSON.stringify({
@@ -334,7 +345,7 @@ describe('loginWithPassword', () => {
     await client.loginWithPassword({ phoneNumber, password })
 
     // Then
-    expect(passwordLoginCall).toHaveBeenCalledWith(`https://${domain}/oauth/token`, {
+    expect(passwordLoginCall).toHaveBeenCalledWith(`${baseUrl}/oauth/token`, {
       method: 'POST',
       headers: headers.jsonAndDefaultLang,
       body: JSON.stringify({
@@ -395,7 +406,7 @@ describe('loginWithPassword', () => {
     })
 
     // Then
-    expect(passwordLoginCall).toHaveBeenCalledWith(`https://${domain}/oauth/token`, {
+    expect(passwordLoginCall).toHaveBeenCalledWith(`${baseUrl}/oauth/token`, {
       method: 'POST',
       headers: headers.jsonAndDefaultLang,
       body: JSON.stringify({
@@ -456,7 +467,7 @@ describe('loginWithPassword', () => {
 
     // Then
 
-    expect(passwordLoginCall).toHaveBeenCalledWith(`https://${domain}/oauth/token`, {
+    expect(passwordLoginCall).toHaveBeenCalledWith(`${baseUrl}/oauth/token`, {
       method: 'POST',
       headers: headers.jsonAndDefaultLang,
       body: JSON.stringify({
@@ -543,7 +554,7 @@ describe('loginWithSocialProvider', () => {
     expect(window.cordova.plugins!.browsertab!.openUrl).toHaveBeenCalledTimes(1)
 
     expect(calledUrl).toEqual(
-      `https://${domain}/oauth/authorize?` +
+      `${baseUrl}/oauth/authorize?` +
         toQueryString({
           client_id: clientId,
           response_type: 'token',
@@ -594,7 +605,7 @@ describe('loginWithSocialProvider', () => {
     expect(window.cordova.plugins!.browsertab!.openUrl).not.toHaveBeenCalled()
 
     expect(window.cordova.InAppBrowser!.open).toHaveBeenCalledWith(
-      `https://${domain}/oauth/authorize?` +
+      `${baseUrl}/oauth/authorize?` +
         toQueryString({
           client_id: clientId,
           response_type: 'token',
@@ -636,7 +647,7 @@ describe('loginWithSocialProvider', () => {
     expect(window.cordova.plugins!.browsertab!.openUrl).not.toHaveBeenCalled()
 
     expect(window.cordova.InAppBrowser!.open).toHaveBeenCalledWith(
-      `https://${domain}/oauth/authorize?` +
+      `${baseUrl}/oauth/authorize?` +
         toQueryString({
           client_id: clientId,
           response_type: 'token',
@@ -666,7 +677,7 @@ describe('loginWithSocialProvider', () => {
 
     // Then
     expect(window.cordova.InAppBrowser!.open).toHaveBeenCalledWith(
-      `https://${domain}/oauth/authorize?` +
+      `${baseUrl}/oauth/authorize?` +
         toQueryString({
           client_id: clientId,
           response_type: 'token',
@@ -696,7 +707,7 @@ describe('loginWithSocialProvider', () => {
 
     // Then
     expect(window.cordova.InAppBrowser!.open).toHaveBeenCalledWith(
-      `https://${domain}/oauth/authorize?` +
+      `${baseUrl}/oauth/authorize?` +
         toQueryString({
           client_id: clientId,
           response_type: 'token',
@@ -730,7 +741,7 @@ describe('loginWithSocialProvider', () => {
 
     // Then
     expect(window.cordova.InAppBrowser!.open).toHaveBeenCalledWith(
-      `https://${domain}/oauth/authorize?` +
+      `${baseUrl}/oauth/authorize?` +
         toQueryString({
           client_id: clientId,
           response_type: 'code',
@@ -766,7 +777,7 @@ describe('loginWithSocialProvider', () => {
 
     // Then
     expect(window.cordova.InAppBrowser!.open).toHaveBeenCalledWith(
-      `https://${domain}/oauth/authorize?` +
+      `${baseUrl}/oauth/authorize?` +
         toQueryString({
           client_id: clientId,
           response_type: 'code',
@@ -800,7 +811,7 @@ describe('loginWithSocialProvider', () => {
 
     // Then
     expect(window.cordova.InAppBrowser!.open).toHaveBeenCalledWith(
-      `https://${domain}/oauth/authorize?` +
+      `${baseUrl}/oauth/authorize?` +
         toQueryString({
           client_id: clientId,
           response_type: 'token',
@@ -832,7 +843,7 @@ describe('loginWithSocialProvider', () => {
 
     // Then
     expect(window.cordova.InAppBrowser!.open).toHaveBeenCalledWith(
-      `https://${domain}/oauth/authorize?` +
+      `${baseUrl}/oauth/authorize?` +
         toQueryString({
           client_id: clientId,
           response_type: 'token',

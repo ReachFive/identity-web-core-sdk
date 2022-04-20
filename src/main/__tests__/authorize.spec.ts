@@ -19,7 +19,7 @@ import {
   token, webMessage
 } from './helpers/oauthHelpers'
 import { createDefaultTestClient } from './helpers/clientFactory'
-import { LoginWithPasswordParams } from '../apiClient'
+import { LoginWithPasswordParams } from '../oAuthClient'
 import { loginWithPasswordTest } from './loginWithPassword.spec'
 import { signupTest } from './signup.spec'
 
