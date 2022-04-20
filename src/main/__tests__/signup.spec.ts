@@ -1,6 +1,10 @@
 import fetchMock from 'jest-fetch-mock'
 
-import { createDefaultTestClient } from './helpers/clientFactory'
+import { snakeCaseProperties } from '../../utils/transformObjectProperties'
+import { SignupParams } from '../oAuthClient'
+import { createDefaultTestClient, TestKit } from './helpers/clientFactory'
+import { headersTest } from './helpers/identityHelpers'
+import { scope, tkn } from './helpers/oauthHelpers'
 import { defineWindowProperty, mockWindowCrypto } from './helpers/windowHelpers'
 
 beforeAll(() => {

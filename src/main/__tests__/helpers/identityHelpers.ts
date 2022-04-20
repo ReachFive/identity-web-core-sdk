@@ -1,7 +1,7 @@
 import fetchMock from 'jest-fetch-mock'
 
 import { snakeCaseProperties } from '../../../utils/transformObjectProperties'
-import { LoginWithPasswordParams, SignupParams } from '../../apiClient'
+import { LoginWithPasswordParams, SignupParams } from '../../oAuthClient'
 import { TestKit } from './clientFactory'
 import { scope, tkn } from './oauthHelpers'
 

@@ -1,7 +1,8 @@
 import pick from 'lodash/pick'
 
 import { toQueryString } from '../../../utils/queryString'
-import { AuthParameters, ResponseType } from '../../authOptions'
+import { ResponseType } from '../../authOptions'
+import { AuthParameters } from '../../authParameters'
 import { PkceParams } from '../../pkceService'
 
 export const mockPkceValues = {

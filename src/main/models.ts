@@ -1,3 +1,4 @@
+// TODO: To sort
 export type Profile = Record<string, any>
 
 export type ProfileAddress = {
@@ -73,19 +74,13 @@ export type SessionInfo = {
   socialProviders?: string[]
 }
 
+export type AuthenticationToken = { tkn: string }
+
 export type PasswordlessResponse = MFA.ChallengeId
 
 export namespace MFA {
   export type ChallengeId = {
     challengeId?: string
-  }
-
-  export function isPhoneCredential(credential: Credential): credential is PhoneCredential {
-    return credential.type === 'sms'
-  }
-
-  export function isEmailCredential(credential: Credential): credential is EmailCredential {
-    return credential.type === 'email'
   }
 
   type CredentialType = 'sms' | 'email'

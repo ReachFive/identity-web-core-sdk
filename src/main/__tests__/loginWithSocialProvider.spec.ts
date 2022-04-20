@@ -90,6 +90,9 @@ test('with popup mode', async () => {
     expiresIn,
     tokenType,
   })
+
+  // Cleanup
+  winchanMocker.reset()
 })
 
 test('with popup mode with expected failure', async () => {
@@ -122,6 +125,9 @@ test('with popup mode with expected failure', async () => {
     errorDescription: 'The user cancelled the login process',
     errorUsrMsg: 'Login cancelled',
   })
+
+  // Cleanup
+  winchanMocker.reset()
 })
 
 test('with popup mode with unexpected failure', async () => {
@@ -146,4 +152,7 @@ test('with popup mode with unexpected failure', async () => {
     errorDescription: 'Unexpected error occurred',
     error: 'server_error',
   })
+
+  // Cleanup
+  winchanMocker.reset()
 })

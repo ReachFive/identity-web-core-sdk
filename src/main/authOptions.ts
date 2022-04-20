@@ -1,10 +1,8 @@
-import isArray from 'lodash/isArray'
-import isString from 'lodash/isString'
-import isUndefined from 'lodash/isUndefined'
 import pick from 'lodash/pick'
-import uniq from 'lodash/uniq'
 
+import { AuthParameters } from './authParameters'
 import { Scope } from './models'
+import { resolveScope } from './scopeHelper'
 
 export type ResponseType = 'code' | 'token'
 export type Prompt = 'none' | 'login' | 'consent' | 'select_account'
@@ -29,42 +27,6 @@ export type AuthOptions = {
   accessToken?: string
   requireRefreshToken?: boolean
   persistent?: boolean
-}
-
-type ResponseMode = 'web_message'
-type Display = 'page' | 'popup' | 'touch' | 'wap'
-
-/**
- * This type represents the parameters that are actually sent to the HTTP API
- */
-export type AuthParameters = {
-  responseType: ResponseType
-  responseMode?: ResponseMode
-  scope: string
-  display?: Display
-  redirectUri?: string
-  prompt?: Prompt
-  origin?: string
-  state?: string
-  nonce?: string
-  providerScope?: string
-  idTokenHint?: string
-  loginHint?: string
-  accessToken?: string
-  persistent?: boolean
-}
-
-/**
- * Resolve the actual oauth2 scope according to the authentication options.
- */
-export function resolveScope(opts: AuthOptions = {}, defaultScopes?: string): string {
-  const fetchBasicProfile = isUndefined(opts.fetchBasicProfile) || opts.fetchBasicProfile
-  const scopes = opts.scope || defaultScopes
-  return uniq([
-    ...(fetchBasicProfile ? ['openid', 'profile', 'email', 'phone'] : []),
-    ...(opts.requireRefreshToken ? ['offline_access'] : []),
-    ...parseScope(scopes),
-  ]).join(' ')
 }
 
 /**
@@ -107,15 +69,4 @@ export function computeAuthOptions(
     responseMode,
     prompt,
   }
-}
-
-/**
- * Normalize the scope format (e.g. "openid email" => ["openid", "email"])
- * @param scope Scope entered by the user
- */
-function parseScope(scope?: string[] | string): string[] {
-  if (isUndefined(scope)) return []
-  if (isArray(scope)) return scope
-  if (isString(scope)) return scope.split(' ')
-  throw new Error('Invalid scope format: string or array expected.')
 }

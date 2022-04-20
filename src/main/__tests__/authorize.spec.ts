@@ -1,7 +1,7 @@
 import fetchMock from 'jest-fetch-mock'
 
 import { randomBase64String } from '../../utils/random'
-import { LoginWithPasswordParams } from '../apiClient'
+import { LoginWithPasswordParams } from '../oAuthClient'
 import { createDefaultTestClient } from './helpers/clientFactory'
 import { loginWithPasswordTest, signupTest } from './helpers/identityHelpers'
 import { expectIframeWithParams } from './helpers/iframeHelpers'
