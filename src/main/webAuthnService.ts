@@ -115,9 +115,9 @@ export function encodePublicKeyCredentialRequestOptions(
   return {
     ...serializedOptions,
     challenge: Buffer.from(serializedOptions.challenge, 'base64'),
-    allowCredentials: serializedOptions.allowCredentials.map(allowCrendential => ({
-      ...allowCrendential,
-      id: Buffer.from(allowCrendential.id, 'base64'),
+    allowCredentials: serializedOptions.allowCredentials.map(allowCredential => ({
+      ...allowCredential,
+      id: Buffer.from(allowCredential.id, 'base64'),
     })),
   }
 }

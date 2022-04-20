@@ -1,4 +1,3 @@
-// TODO: To sort
 export type Profile = Record<string, any>
 
 export type ProfileAddress = {
