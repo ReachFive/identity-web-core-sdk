@@ -13,7 +13,7 @@ Align `startMfaPhoneNumberRegistration` response on the `startMfaEmailRegistrati
 
 ### Removed
 
-Removed possibility to get a refresh token from an access token.
+A deprecated legacy endpoint limited to a specific customer has been removed for security reasons.
 
 ## [1.22.0] - 2022-02-22
 
