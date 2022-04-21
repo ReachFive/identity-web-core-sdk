@@ -25,7 +25,6 @@
   },
   "devDependencies": {
     "@babel/core": "^7.17.9",
-    "@babel/preset-typescript": "^7.16.7",
     "@types/jest": "^27.4.1",
     "@types/lodash": "^4.14.182",
     "@types/webappsec-credential-management": "^0.6.2",
@@ -59,8 +58,8 @@
     "umd"
   ],
   "jest": {
+    "preset": "ts-jest",
     "resetMocks": true,
-    "preset": "ts-jest/presets/default-esm",
     "setupFiles": [
       "<rootDir>/src/main/__tests__/helpers/setupJest.ts"
     ],
