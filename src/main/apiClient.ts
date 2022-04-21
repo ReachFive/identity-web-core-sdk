@@ -217,6 +217,20 @@ export default class ApiClient {
     })
   }
 
+  idTokenRequest(provider: string, idToken: string, nonce: string, opts: AuthOptions = {}): Promise<void> {
+    const authParams = this.authParams({
+      ...opts,
+      useWebMessage: false
+    }, { acceptPopupMode: true })
+
+    return this.loginWithRedirect({
+      provider,
+      idToken,
+      nonce,
+      ...authParams
+    })
+  }
+
   loginWithSocialProvider(provider: string, opts: AuthOptions = {}): Promise<void | InAppBrowser> {
     const authParams = this.authParams({
       ...opts,
@@ -478,7 +492,7 @@ export default class ApiClient {
 
   loginWithPassword(params: LoginWithPasswordParams): Promise<AuthResult> {
     const { auth = {}, ...rest } = params
-
+    console.debug("Login Password")
     const loginPromise =
       window.cordova
         ? this.ropcPasswordLogin(params)

@@ -38,6 +38,10 @@ import { toQueryString } from '../utils/queryString'
 import { rawRequest } from './httpClient'
 import StepUpResponse = MFA.StepUpResponse
 import MfaCredentialsResponse = MFA.CredentialsResponse
+import {randomBase64String} from "../utils/random"
+import * as OneTap from "google-one-tap"
+import {encodeToBase64} from "../utils/base64"
+import { Buffer } from 'buffer/'
 
 export { AuthResult } from './authResult'
 export { AuthOptions } from './authOptions'
@@ -102,7 +106,7 @@ function checkParam<T>(data: T, key: keyof T) {
   }
 }
 
-export function createClient(creationConfig: Config): Client {
+export function createClient(creationConfig: Config, oneTap = false): Client {
   checkParam(creationConfig, 'domain')
   checkParam(creationConfig, 'clientId')
 
@@ -177,6 +181,10 @@ export function createClient(creationConfig: Config): Client {
 
   function loginWithPassword(params: LoginWithPasswordParams) {
     return apiClient.then(api => api.loginWithPassword(params))
+  }
+
+  function idTokenRequest(provider: string, idToken: string, nonce: string, opts: AuthOptions = {}): Promise<void> {
+    return apiClient.then(api => api.idTokenRequest(provider, idToken, nonce, opts))
   }
 
   function loginWithSocialProvider(provider: string, options: AuthOptions = {}) {
@@ -299,6 +307,37 @@ export function createClient(creationConfig: Config): Client {
 
   function removeMfaEmail(params: RemoveMfaEmailParams) {
     return apiClient.then(api => api.removeMfaEmail(params))
+  }
+
+  function instanceOneTap() {
+    const GOOGLE_CLIENT_ID = "188556846346-u43frvituh5k9nore8aggnue1j1679h9.apps.googleusercontent.com"
+    const nonce = randomBase64String()
+    const binaryNonce = Buffer.from(nonce, 'utf-8')
+
+    window.crypto.subtle.digest('SHA-256', binaryNonce).then(hash => {
+      const googleIdConfiguration: OneTap.IdConfiguration = {
+        client_id: GOOGLE_CLIENT_ID,
+        callback: (response: OneTap.CredentialResponse) => idTokenRequest("google", response.credential, nonce),
+        nonce: encodeToBase64(hash),
+        // Enable auto sign-in
+        auto_select: true,
+      }
+
+      window.google.accounts.id.initialize(googleIdConfiguration)
+
+      // Activate Google One Tap
+      window.google.accounts.id.prompt()
+
+    })
+  }
+
+  if (oneTap === true) {
+    const script = document.createElement("script")
+    script.src = "https://accounts.google.com/gsi/client"
+    script.onload = instanceOneTap
+    script.async = true
+    script.defer = true
+    document.querySelector("body")?.appendChild(script)
   }
 
   return {
