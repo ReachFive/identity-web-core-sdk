@@ -33,6 +33,9 @@ import StepUpResponse = MFA.StepUpResponse
 import MfaCredentialsResponse = MFA.CredentialsResponse
 import EmailCredential = MFA.EmailCredential
 import PhoneCredential = MFA.PhoneCredential
+import * as OneTap from "google-one-tap"
+import {encodeToBase64} from "../utils/base64"
+import { Buffer } from 'buffer/'
 
 export type SignupParams = {
   data: SignupProfile
@@ -214,6 +217,37 @@ export default class ApiClient {
         clientId: this.config.clientId,
         token: signupToken
       }
+    })
+  }
+
+  instantiateOneTap(opts: AuthOptions = {}) {
+    const script = document.createElement("script")
+    script.src = "https://accounts.google.com/gsi/client"
+    script.onload = () => this.googleOneTap(opts)
+    script.async = true
+    script.defer = true
+    document.querySelector("body")?.appendChild(script)
+  }
+
+  googleOneTap(opts: AuthOptions = {}) {
+    const GOOGLE_CLIENT_ID = "188556846346-u43frvituh5k9nore8aggnue1j1679h9.apps.googleusercontent.com"
+    const nonce = randomBase64String()
+    const binaryNonce = Buffer.from(nonce, 'utf-8')
+
+    window.crypto.subtle.digest('SHA-256', binaryNonce).then(hash => {
+      const googleIdConfiguration: OneTap.IdConfiguration = {
+        client_id: GOOGLE_CLIENT_ID,
+        callback: (response: OneTap.CredentialResponse) => this.idTokenRequest("google", response.credential, nonce, opts),
+        nonce: encodeToBase64(hash),
+        // Enable auto sign-in
+        auto_select: true,
+      }
+
+      window.google.accounts.id.initialize(googleIdConfiguration)
+
+      // Activate Google One Tap
+      window.google.accounts.id.prompt()
+
     })
   }
 
