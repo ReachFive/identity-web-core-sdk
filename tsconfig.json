@@ -1,14 +1,14 @@
 {
   "compilerOptions": {
+    "esModuleInterop": true,
     "lib": [
       "esNext",
       "dom"
     ],
-    "target": "es5",
     "module": "esNext",
     "moduleResolution": "node",
     "strict": true,
-    "esModuleInterop": true,
+    "target": "es5",
     "types": [
       "cordova-plugin-inappbrowser",
       "lodash",
@@ -17,10 +17,10 @@
       "webappsec-credential-management"
     ]
   },
-  "include": [
-    "src/**/*"
-  ],
   "exclude": [
     "node_modules"
+  ],
+  "include": [
+    "src/**/*"
   ]
 }
