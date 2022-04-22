@@ -132,6 +132,7 @@ export type ApiClientConfig = {
   sso: boolean
   pkceEnforced: boolean
   isPublic: boolean
+  googleClientId?: string
 }
 
 export type TokenRequestParameters = {
@@ -230,25 +231,26 @@ export default class ApiClient {
   }
 
   googleOneTap(opts: AuthOptions = {}) {
-    const GOOGLE_CLIENT_ID = "188556846346-u43frvituh5k9nore8aggnue1j1679h9.apps.googleusercontent.com"
-    const nonce = randomBase64String()
-    const binaryNonce = Buffer.from(nonce, 'utf-8')
+    if (!isUndefined(this.config.googleClientId)) {
+      const nonce = randomBase64String()
+      const binaryNonce = Buffer.from(nonce, 'utf-8')
 
-    window.crypto.subtle.digest('SHA-256', binaryNonce).then(hash => {
-      const googleIdConfiguration: OneTap.IdConfiguration = {
-        client_id: GOOGLE_CLIENT_ID,
-        callback: (response: OneTap.CredentialResponse) => this.idTokenRequest("google", response.credential, nonce, opts),
-        nonce: encodeToBase64(hash),
-        // Enable auto sign-in
-        auto_select: true,
-      }
+      window.crypto.subtle.digest('SHA-256', binaryNonce).then(hash => {
+        const googleIdConfiguration: OneTap.IdConfiguration = {
+          client_id: this.config.googleClientId,
+          callback: (response: OneTap.CredentialResponse) => this.idTokenRequest("google", response.credential, nonce, opts),
+          nonce: encodeToBase64(hash),
+          // Enable auto sign-in
+          auto_select: true,
+        }
 
-      window.google.accounts.id.initialize(googleIdConfiguration)
+        window.google.accounts.id.initialize(googleIdConfiguration)
 
-      // Activate Google One Tap
-      window.google.accounts.id.prompt()
+        // Activate Google One Tap
+        window.google.accounts.id.prompt()
 
-    })
+      })
+    }
   }
 
   idTokenRequest(provider: string, idToken: string, nonce: string, opts: AuthOptions = {}): Promise<void> {
