@@ -257,7 +257,7 @@ export default class ApiClient {
     const authParams = this.authParams({
       ...opts,
       useWebMessage: false
-    }, { acceptPopupMode: true })
+    })
 
     return this.loginWithRedirect({
       provider,
