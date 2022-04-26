@@ -1,6 +1,6 @@
 import { createDefaultTestClient } from './helpers/clientFactory'
 import fetchMock from 'jest-fetch-mock'
-import { PasswordlessParams } from '../apiClient'
+import { SingleFactorPasswordlessParams } from '../oAuthClient'
 import { confidential, mockPkceValues, pageDisplay, pblic, scope } from './helpers/oauthHelpers'
 import { defineWindowProperty, headers, mockWindowCrypto } from './helpers/testHelpers'
 import { AuthOptions } from '../authOptions'
@@ -16,7 +16,7 @@ beforeEach(() => {
   fetchMock.resetMocks()
 })
 
-const authParams: PasswordlessParams = { authType: 'magic_link', email: 'john.doe@example.com' }
+const authParams: SingleFactorPasswordlessParams = { authType: 'magic_link', email: 'john.doe@example.com' }
 const authOptions: AuthOptions = { responseType: 'code', redirectUri: 'http://toto.com' }
 
 test('with default client', async () => {
