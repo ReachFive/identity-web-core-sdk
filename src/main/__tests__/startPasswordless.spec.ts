@@ -1,7 +1,7 @@
 import fetchMock from 'jest-fetch-mock'
 
 import { AuthOptions } from '../authOptions'
-import { SingleFactorPasswordlessParams } from '../oAuthClient'
+import { PasswordlessParams } from '../oAuthClient'
 import { createDefaultTestClient } from './helpers/clientFactory'
 import { headersTest } from './helpers/identityHelpers'
 import { _public, confidential, mockPkceValues, pageDisplay, scope } from './helpers/oauthHelpers'
@@ -17,7 +17,7 @@ beforeEach(() => {
   fetchMock.resetMocks()
 })
 
-const authParams: SingleFactorPasswordlessParams = {
+const authParams: PasswordlessParams = {
   authType: 'magic_link',
   email: 'john.doe@example.com',
 }

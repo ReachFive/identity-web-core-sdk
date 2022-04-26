@@ -44,7 +44,7 @@ export type LogoutParams = {
 
 export type RefreshTokenParams = { accessToken: string } | { refreshToken: string; scope?: Scope }
 
-export type SingleFactorPasswordlessParams = {
+export type PasswordlessParams = {
   authType: 'magic_link' | 'sms'
   email?: string
   phoneNumber?: string
@@ -345,7 +345,7 @@ export default class OAuthClient {
   }
 
   startPasswordless(
-    params: SingleFactorPasswordlessParams,
+    params: PasswordlessParams,
     auth: Omit<AuthOptions, 'useWebMessage'> = {}
   ): Promise<PasswordlessResponse> {
     const passwordlessPayload =
@@ -583,7 +583,7 @@ export default class OAuthClient {
   // TODO: Make passwordless able to handle web_message
   // Asana https://app.asana.com/0/982150578058310/1200173806808689/f
   private resolveSingleFactorPasswordlessParams(
-    params: SingleFactorPasswordlessParams,
+    params: PasswordlessParams,
     auth: Omit<AuthOptions, 'useWebMessage'> = {}
   ): Promise<{}> {
     const { authType, email, phoneNumber, captchaToken } = params
