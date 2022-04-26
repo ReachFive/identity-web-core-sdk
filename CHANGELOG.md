@@ -11,6 +11,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Align `startMfaPhoneNumberRegistration` response on the `startMfaEmailRegistration` one.
 
+### Removed
+
+A deprecated legacy endpoint limited to a specific customer has been removed for security reasons.
+
 ## [1.22.0] - 2022-02-22
 
 ### Added 
