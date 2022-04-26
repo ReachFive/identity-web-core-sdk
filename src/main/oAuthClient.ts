@@ -48,12 +48,19 @@ export type LogoutParams = {
 
 export type RefreshTokenParams = { accessToken: string } | { refreshToken: string, scope?: Scope }
 
-export type SingleFactorPasswordlessParams = {
+type SingleFactorPasswordlessParams = {
   authType: 'magic_link' | 'sms'
   email?: string
   phoneNumber?: string
   captchaToken?: string
 }
+
+type StepUpPasswordlessParams = {
+  authType: 'email' | 'sms'
+  stepUp: string
+}
+
+export type PasswordlessParams = SingleFactorPasswordlessParams | StepUpPasswordlessParams
 
 export type SignupParams = {
   data: SignupProfile
@@ -407,7 +414,7 @@ export default class OAuthClient {
     })
   }
 
-  startPasswordless(params: SingleFactorPasswordlessParams, auth: Omit<AuthOptions, 'useWebMessage'> = {}): Promise<PasswordlessResponse> {
+  startPasswordless(params: PasswordlessParams, auth: Omit<AuthOptions, 'useWebMessage'> = {}): Promise<PasswordlessResponse> {
     const passwordlessPayload =
         ('stepUp' in params)
             ? Promise.resolve(params)
