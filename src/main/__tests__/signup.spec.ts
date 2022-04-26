@@ -7,7 +7,7 @@ import {
 } from './helpers/testHelpers'
 import { createDefaultTestClient, TestKit } from './helpers/clientFactory'
 import { scope, tkn } from './helpers/oauthHelpers'
-import { SignupParams } from '../apiClient'
+import { SignupParams } from '../oAuthClient'
 import { snakeCaseProperties } from '../../utils/transformObjectProperties'
 
 beforeAll(() => {
