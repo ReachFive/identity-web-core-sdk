@@ -42,7 +42,7 @@ export type LogoutParams = {
   removeCredentials?: boolean
 }
 
-export type RefreshTokenParams = { accessToken: string } | { refreshToken: string; scope?: Scope }
+export type RefreshTokenParams = { refreshToken: string; scope?: Scope }
 
 export type PasswordlessParams = {
   authType: 'magic_link' | 'sms'
@@ -91,8 +91,7 @@ export default class OAuthClient {
   private passwordLoginUrl: string
   private readonly passwordlessStartUrl: string
   private passwordlessVerifyAuthCodeUrl: string
-  private readonly refreshTokenUrl: string
-  private readonly sessionInfoUrl: string
+  private sessionInfoUrl: string
   private signupUrl: string
   private signupTokenUrl: string
 
@@ -111,7 +110,6 @@ export default class OAuthClient {
     this.passwordlessVerifyAuthCodeUrl = '/verify-auth-code'
     this.passwordLoginUrl = '/password/login'
     this.passwordlessStartUrl = '/passwordless/start'
-    this.refreshTokenUrl = '/token/access-token'
     this.sessionInfoUrl = '/sso/data'
     this.signupUrl = '/signup'
     this.signupTokenUrl = '/signup-token'
@@ -271,24 +269,16 @@ export default class OAuthClient {
     window.location.assign(`${this.logoutUrl}?${toQueryString(opts)}`)
   }
 
-  // TODO: Typo on the name of the method
   refreshTokens(params: RefreshTokenParams): Promise<AuthResult> {
     const result =
-      'refreshToken' in params
-        ? this.http.post<AuthResult>(this.tokenUrl, {
-            body: {
-              clientId: this.config.clientId,
-              grantType: 'refresh_token',
-              refreshToken: params.refreshToken,
-              ...pick(params, 'scope'),
-            },
-          })
-        : this.http.post<AuthResult>(this.refreshTokenUrl, {
-            body: {
-              clientId: this.config.clientId,
-              accessToken: params.accessToken,
-            },
-          })
+      this.http.post<AuthResult>(this.tokenUrl, {
+        body: {
+          clientId: this.config.clientId,
+          grantType: 'refresh_token',
+          refreshToken: params.refreshToken,
+          ...pick(params, 'scope'),
+        }
+      })
 
     return result.then(enrichAuthResult)
   }
