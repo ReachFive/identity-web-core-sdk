@@ -286,7 +286,7 @@ export default class OAuthClient {
     })
   }
 
-  loginWithIdToken(provider: string, idToken: string, nonce: string, opts: AuthOptions = {}): Promise<void> {
+  private loginWithIdToken(provider: string, idToken: string, nonce: string, opts: AuthOptions = {}): Promise<void> {
     const authParams = this.authParams({
       ...opts,
       useWebMessage: false
@@ -300,7 +300,7 @@ export default class OAuthClient {
     })
   }
 
-  googleOneTap(opts: AuthOptions = {}): void {
+  private googleOneTap(opts: AuthOptions = {}): void {
     if (this.config?.googleClientId) {
       const nonce = randomBase64String()
       const binaryNonce = Buffer.from(nonce, 'utf-8')
