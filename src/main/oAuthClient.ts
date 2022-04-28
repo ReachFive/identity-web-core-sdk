@@ -293,15 +293,15 @@ export default class OAuthClient {
     })
 
     return this.loginWithRedirect({
+      ...authParams,
       provider,
       idToken,
       nonce,
-      ...authParams
     })
   }
 
   googleOneTap(opts: AuthOptions = {}) {
-    if (!isUndefined(this.config.googleClientId)) {
+    if (this.config?.googleClientId) {
       const nonce = randomBase64String()
       const binaryNonce = Buffer.from(nonce, 'utf-8')
 
@@ -320,6 +320,8 @@ export default class OAuthClient {
         window.google.accounts.id.prompt()
 
       })
+    } else {
+      logError("Google configuration missing.")
     }
   }
 
