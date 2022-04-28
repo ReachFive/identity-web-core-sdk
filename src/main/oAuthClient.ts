@@ -300,7 +300,7 @@ export default class OAuthClient {
     })
   }
 
-  googleOneTap(opts: AuthOptions = {}) {
+  googleOneTap(opts: AuthOptions = {}): void {
     if (this.config?.googleClientId) {
       const nonce = randomBase64String()
       const binaryNonce = Buffer.from(nonce, 'utf-8')
@@ -325,7 +325,7 @@ export default class OAuthClient {
     }
   }
 
-  instantiateOneTap(opts: AuthOptions = {}) {
+  instantiateOneTap(opts: AuthOptions = {}): void {
     const script = document.createElement("script")
     script.src = "https://accounts.google.com/gsi/client"
     script.onload = () => this.googleOneTap(opts)
