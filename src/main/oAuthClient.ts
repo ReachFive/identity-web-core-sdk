@@ -300,12 +300,10 @@ export default class OAuthClient {
     })
   }
 
-  private googleOneTap(opts: AuthOptions = {}): void {
-    if (this.config?.googleClientId) {
-      const nonce = randomBase64String()
+  private googleOneTap(opts: AuthOptions = {}, nonce: string = randomBase64String()): Promise<void> {
       const binaryNonce = Buffer.from(nonce, 'utf-8')
 
-      window.crypto.subtle.digest('SHA-256', binaryNonce).then(hash => {
+      return window.crypto.subtle.digest('SHA-256', binaryNonce).then(hash => {
         const googleIdConfiguration: OneTap.IdConfiguration = {
           client_id: this.config.googleClientId,
           callback: (response: OneTap.CredentialResponse) => this.loginWithIdToken("google", response.credential, nonce, opts),
@@ -320,18 +318,21 @@ export default class OAuthClient {
         window.google.accounts.id.prompt()
 
       })
-    } else {
-      logError("Google configuration missing.")
-    }
   }
 
-  instantiateOneTap(opts: AuthOptions = {}): void {
-    const script = document.createElement("script")
-    script.src = "https://accounts.google.com/gsi/client"
-    script.onload = () => this.googleOneTap(opts)
-    script.async = true
-    script.defer = true
-    document.querySelector("body")?.appendChild(script)
+  instantiateOneTap(opts: AuthOptions = {}): Promise<void> {
+    if (this.config?.googleClientId) {
+      const script = document.createElement("script")
+      script.src = "https://accounts.google.com/gsi/client"
+      script.onload = () => this.googleOneTap(opts)
+      script.async = true
+      script.defer = true
+      document.querySelector("body")?.appendChild(script)
+
+      return Promise.resolve()
+    } else {
+      return Promise.reject(new Error('Google configuration missing.'))
+    }
   }
 
   logout(opts: LogoutParams = {}): void {
