@@ -289,15 +289,29 @@ export default class OAuthClient {
   private loginWithIdToken(provider: string, idToken: string, nonce: string, opts: AuthOptions = {}): Promise<void> {
     const authParams = this.authParams({
       ...opts,
-      useWebMessage: false
     })
 
-    return this.loginWithRedirect({
-      ...authParams,
-      provider,
-      idToken,
-      nonce,
-    })
+    if(opts.useWebMessage) {
+      const queryString = toQueryString({
+        ...authParams,
+        provider,
+        idToken,
+        nonce,
+      })
+
+      return this.getWebMessage(
+        `${this.authorizeUrl}?${queryString}`,
+        this.config.baseUrl,
+        opts.redirectUri,
+      ).then()
+    } else {
+      return this.loginWithRedirect({
+        ...authParams,
+        provider,
+        idToken,
+        nonce,
+      })
+    }
   }
 
   private googleOneTap(opts: AuthOptions = {}, nonce: string = randomBase64String()): Promise<void> {
