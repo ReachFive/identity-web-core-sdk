@@ -12,7 +12,7 @@ import OAuthClient, {
   VerifyPasswordlessParams,
   SignupParams,
   TokenRequestParameters,
-  RefreshTokenParams, SingleFactorPasswordlessParams, LogoutParams, LoginWithCustomTokenParams,
+  RefreshTokenParams, PasswordlessParams, LogoutParams, LoginWithCustomTokenParams,
 } from './oAuthClient'
 import { AuthOptions } from './authOptions'
 import { AuthResult } from './authResult'
@@ -100,7 +100,7 @@ export type Client = {
   signupWithWebAuthn: (params: SignupWithWebAuthnParams, auth?: AuthOptions) => Promise<AuthResult>
   startMfaEmailRegistration: (params: StartMfaEmailRegistrationParams) => Promise<StartMfaEmailRegistrationResponse>
   startMfaPhoneNumberRegistration: (params: StartMfaPhoneNumberRegistrationParams) => Promise<StartMfaPhoneNumberRegistrationResponse>
-  startPasswordless: (params: SingleFactorPasswordlessParams, options?: Omit<AuthOptions, 'useWebMessage'>) => Promise<PasswordlessResponse>
+  startPasswordless: (params: PasswordlessParams, options?: Omit<AuthOptions, 'useWebMessage'>) => Promise<PasswordlessResponse>
   unlink: (params: UnlinkParams) => Promise<void>
   updateEmail: (params: UpdateEmailParams) => Promise<void>
   updatePassword: (params: UpdatePasswordParams) => Promise<void>
@@ -314,7 +314,7 @@ export function createClient(creationConfig: Config): Client {
     return apiClients.then(clients => clients.mfa.startMfaPhoneNumberRegistration(params))
   }
 
-  function startPasswordless(params: SingleFactorPasswordlessParams, options: AuthOptions = {}) {
+  function startPasswordless(params: PasswordlessParams, options: AuthOptions = {}) {
     return apiClients.then(clients => clients.oAuth.startPasswordless(params, options))
   }
 
