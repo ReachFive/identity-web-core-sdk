@@ -334,7 +334,7 @@ export default class OAuthClient {
       })
   }
 
-  instantiateOneTap(opts: AuthOptions = {}): Promise<void> {
+  instantiateOneTap(opts: AuthOptions = {}): void {
     if (this.config?.googleClientId) {
       const script = document.createElement("script")
       script.src = "https://accounts.google.com/gsi/client"
@@ -342,10 +342,8 @@ export default class OAuthClient {
       script.async = true
       script.defer = true
       document.querySelector("body")?.appendChild(script)
-
-      return Promise.resolve()
     } else {
-      return Promise.reject(new Error('Google configuration missing.'))
+      logError('Google configuration missing.')
     }
   }
 

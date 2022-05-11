@@ -246,7 +246,7 @@ export function createClient(creationConfig: Config): Client {
     return apiClients.then(clients => clients.oAuth.loginWithPassword(params))
   }
 
-  function instantiateOneTap(opts: AuthOptions = {}): Promise<void> {
+  function instantiateOneTap(opts: AuthOptions = {}) {
     return apiClients.then(clients => clients.oAuth.instantiateOneTap(opts))
   }
 
