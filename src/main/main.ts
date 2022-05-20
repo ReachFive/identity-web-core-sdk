@@ -66,6 +66,7 @@ export type ApiClientConfig = {
   pkceEnforced: boolean
   isPublic: boolean
   baseUrl: string
+  googleClientId?: string
 }
 
 export type Client = {
@@ -83,6 +84,7 @@ export type Client = {
   loginWithCredentials: (params: LoginWithCredentialsParams) => Promise<AuthResult>
   loginWithCustomToken: (params: LoginWithCustomTokenParams) => Promise<void>
   loginWithPassword: (params: LoginWithPasswordParams) => Promise<AuthResult>
+  instantiateOneTap: (opts?: AuthOptions) => void
   loginWithSocialProvider: (provider: string, options?: AuthOptions) => Promise<void | InAppBrowser>
   loginWithWebAuthn: (params: LoginWithWebAuthnParams) => Promise<AuthResult>
   logout: (params?: LogoutParams) => Promise<void>
@@ -244,6 +246,10 @@ export function createClient(creationConfig: Config): Client {
     return apiClients.then(clients => clients.oAuth.loginWithPassword(params))
   }
 
+  function instantiateOneTap(opts: AuthOptions = {}) {
+    return apiClients.then(clients => clients.oAuth.instantiateOneTap(opts))
+  }
+
   function loginWithSocialProvider(provider: string, options: AuthOptions = {}) {
     return apiClients.then(clients => clients.oAuth.loginWithSocialProvider(provider, options))
   }
@@ -373,6 +379,7 @@ export function createClient(creationConfig: Config): Client {
     loginWithCredentials,
     loginWithCustomToken,
     loginWithPassword,
+    instantiateOneTap,
     loginWithSocialProvider,
     loginWithWebAuthn,
     logout,

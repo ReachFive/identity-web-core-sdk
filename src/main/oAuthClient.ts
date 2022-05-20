@@ -22,6 +22,9 @@ import { randomBase64String } from '../utils/random'
 import { ApiClientConfig } from './main'
 import { AuthParameters } from './authParameters'
 import { resolveScope } from './scopeHelper'
+import * as OneTap from "google-one-tap"
+import { encodeToBase64 } from "../utils/base64"
+import { Buffer } from 'buffer/'
 
 export type LoginWithCredentialsParams = {
   mediation?: 'silent' | 'optional' | 'required'
@@ -279,6 +282,67 @@ export default class OAuthClient {
         return this.loginWithRedirect(params)
       }
     })
+  }
+
+  private loginWithIdToken(provider: string, idToken: string, nonce: string, opts: AuthOptions = {}): Promise<void> {
+    const authParams = this.authParams({
+      ...opts,
+    })
+
+    if(opts.useWebMessage) {
+      const queryString = toQueryString({
+        ...authParams,
+        provider,
+        idToken,
+        nonce,
+      })
+
+      return this.getWebMessage(
+        `${this.authorizeUrl}?${queryString}`,
+        this.config.baseUrl,
+        opts.redirectUri,
+      ).then()
+    } else {
+      return this.loginWithRedirect({
+        ...authParams,
+        provider,
+        idToken,
+        nonce,
+      })
+    }
+  }
+
+  private googleOneTap(opts: AuthOptions = {}, nonce: string = randomBase64String()): Promise<void> {
+      const binaryNonce = Buffer.from(nonce, 'utf-8')
+
+      return window.crypto.subtle.digest('SHA-256', binaryNonce).then(hash => {
+        const googleIdConfiguration: OneTap.IdConfiguration = {
+          client_id: this.config.googleClientId,
+          callback: (response: OneTap.CredentialResponse) => this.loginWithIdToken("google", response.credential, nonce, opts),
+          nonce: encodeToBase64(hash),
+          // Enable auto sign-in
+          auto_select: true,
+        }
+
+        window.google.accounts.id.initialize(googleIdConfiguration)
+
+        // Activate Google One Tap
+        window.google.accounts.id.prompt()
+
+      })
+  }
+
+  instantiateOneTap(opts: AuthOptions = {}): void {
+    if (this.config?.googleClientId) {
+      const script = document.createElement("script")
+      script.src = "https://accounts.google.com/gsi/client"
+      script.onload = () => this.googleOneTap(opts)
+      script.async = true
+      script.defer = true
+      document.querySelector("body")?.appendChild(script)
+    } else {
+      logError('Google configuration missing.')
+    }
   }
 
   logout(opts: LogoutParams = {}): void {
