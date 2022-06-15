@@ -7,6 +7,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.23.0] - 2022-06-15
+
+### Added
+
+Google One Tap instantiation method.
+
 ### Changed
 
 Align `startMfaPhoneNumberRegistration` response on the `startMfaEmailRegistration` one.
@@ -334,7 +340,9 @@ Automatise the deployment of a new release with `circleci`.
 - Implement `tslint`.
 - Remove `yarn`.
 
-[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.22.0...HEAD
+[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.23.0...HEAD
+
+[1.23.0]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.22.0...v1.23.0
 
 [1.22.0]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.21.1...v1.22.0
 
