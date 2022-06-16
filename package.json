@@ -1,6 +1,6 @@
 {
   "name": "@reachfive/identity-core",
-  "version": "1.22.0",
+  "version": "1.23.0",
   "description": "ReachFive Identity Web Core SDK",
   "license": "MIT",
   "repository": {
@@ -36,6 +36,7 @@
     "@typescript-eslint/parser": "^5.21.0",
     "buffer": "^6.0.3",
     "cordova-plugin-inappbrowser": "^5.0.0",
+    "@types/google-one-tap": "1.1.0",
     "core-js": "^3.22.2",
     "eslint": "^8.14.0",
     "eslint-config-prettier": "^8.5.0",

@@ -75,7 +75,7 @@ export default class MfaClient {
     this.oAuthClient = props.oAuthClient
 
     this.credentialsUrl = '/mfa/credentials'
-    this.emailCredentialUrl = `${this.credentialsUrl}/mfa/credentials/emails`
+    this.emailCredentialUrl = `${this.credentialsUrl}/emails`
     this.emailCredentialVerifyUrl = `${this.emailCredentialUrl}/verify`
     this.passwordlessVerifyUrl = '/passwordless/verify'
     this.phoneNumberCredentialUrl = `${this.credentialsUrl}/phone-numbers`

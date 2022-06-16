@@ -118,6 +118,7 @@ export type RemoteSettings = {
   pkceEnforced: boolean
   isPublic: boolean
   language: string
+  googleClientId?: string
 }
 
 export type ErrorResponse = {
