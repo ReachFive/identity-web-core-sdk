@@ -1,7 +1,10 @@
+import { Buffer } from 'buffer/'
+import * as OneTap from 'google-one-tap'
 import isUndefined from 'lodash/isUndefined'
 import pick from 'lodash/pick'
 import WinChan from 'winchan'
 
+import { encodeToBase64 } from '../utils/base64'
 import { logError } from '../utils/logger'
 import { QueryString, toQueryString } from '../utils/queryString'
 import { randomBase64String } from '../utils/random'
@@ -16,9 +19,6 @@ import { AuthenticationToken, ErrorResponse, PasswordlessResponse, Scope, Sessio
 import { computePkceParams, PkceParams } from './pkceService'
 import { popupSize } from './providerPopupSize'
 import { resolveScope } from './scopeHelper'
-import * as OneTap from "google-one-tap"
-import { encodeToBase64 } from "../utils/base64"
-import { Buffer } from 'buffer/'
 
 export type LoginWithCredentialsParams = {
   mediation?: 'silent' | 'optional' | 'required'
@@ -47,7 +47,7 @@ export type LogoutParams = {
 
 export type RefreshTokenParams = { refreshToken: string; scope?: Scope }
 
-type PasswordlessParams = {
+type SingleFactorPasswordlessParams = {
   authType: 'magic_link' | 'sms'
   email?: string
   phoneNumber?: string
@@ -277,7 +277,7 @@ export default class OAuthClient {
       ...opts,
     })
 
-    if(opts.useWebMessage) {
+    if (opts.useWebMessage) {
       const queryString = toQueryString({
         ...authParams,
         provider,
@@ -285,11 +285,7 @@ export default class OAuthClient {
         nonce,
       })
 
-      return this.getWebMessage(
-        `${this.authorizeUrl}?${queryString}`,
-        this.config.baseUrl,
-        opts.redirectUri,
-      ).then()
+      return this.getWebMessage(`${this.authorizeUrl}?${queryString}`, this.config.baseUrl, opts.redirectUri).then()
     } else {
       return this.loginWithRedirect({
         ...authParams,
@@ -301,33 +297,33 @@ export default class OAuthClient {
   }
 
   private googleOneTap(opts: AuthOptions = {}, nonce: string = randomBase64String()): Promise<void> {
-      const binaryNonce = Buffer.from(nonce, 'utf-8')
+    const binaryNonce = Buffer.from(nonce, 'utf-8')
 
-      return window.crypto.subtle.digest('SHA-256', binaryNonce).then(hash => {
-        const googleIdConfiguration: OneTap.IdConfiguration = {
-          client_id: this.config.googleClientId,
-          callback: (response: OneTap.CredentialResponse) => this.loginWithIdToken("google", response.credential, nonce, opts),
-          nonce: encodeToBase64(hash),
-          // Enable auto sign-in
-          auto_select: true,
-        }
+    return window.crypto.subtle.digest('SHA-256', binaryNonce).then(hash => {
+      const googleIdConfiguration: OneTap.IdConfiguration = {
+        client_id: this.config.googleClientId!,
+        callback: (response: OneTap.CredentialResponse) =>
+          this.loginWithIdToken('google', response.credential, nonce, opts),
+        nonce: encodeToBase64(hash),
+        // Enable auto sign-in
+        auto_select: true,
+      }
 
-        window.google.accounts.id.initialize(googleIdConfiguration)
+      window.google.accounts.id.initialize(googleIdConfiguration)
 
-        // Activate Google One Tap
-        window.google.accounts.id.prompt()
-
-      })
+      // Activate Google One Tap
+      window.google.accounts.id.prompt()
+    })
   }
 
   instantiateOneTap(opts: AuthOptions = {}): void {
     if (this.config?.googleClientId) {
-      const script = document.createElement("script")
-      script.src = "https://accounts.google.com/gsi/client"
+      const script = document.createElement('script')
+      script.src = 'https://accounts.google.com/gsi/client'
       script.onload = () => this.googleOneTap(opts)
       script.async = true
       script.defer = true
-      document.querySelector("body")?.appendChild(script)
+      document.querySelector('body')?.appendChild(script)
     } else {
       logError('Google configuration missing.')
     }
@@ -341,15 +337,14 @@ export default class OAuthClient {
   }
 
   refreshTokens(params: RefreshTokenParams): Promise<AuthResult> {
-    const result =
-      this.http.post<AuthResult>(this.tokenUrl, {
-        body: {
-          clientId: this.config.clientId,
-          grantType: 'refresh_token',
-          refreshToken: params.refreshToken,
-          ...pick(params, 'scope'),
-        }
-      })
+    const result = this.http.post<AuthResult>(this.tokenUrl, {
+      body: {
+        clientId: this.config.clientId,
+        grantType: 'refresh_token',
+        refreshToken: params.refreshToken,
+        ...pick(params, 'scope'),
+      },
+    })
 
     return result.then(enrichAuthResult)
   }
@@ -559,7 +554,7 @@ export default class OAuthClient {
         body: {
           clientId: this.config.clientId,
           grantType: 'password',
-          username: this.hasLoggedWithEmail(params) ? params.email : params.phoneNumber,
+          username: OAuthClient.hasLoggedWithEmail(params) ? params.email : params.phoneNumber,
           password: params.password,
           scope: resolveScope(auth, this.config.scope),
           ...pick(auth, 'origin'),
@@ -624,7 +619,7 @@ export default class OAuthClient {
       const credentialParams = {
         password: {
           password: params.password,
-          id: this.hasLoggedWithEmail(params) ? params.email : params.phoneNumber,
+          id: OAuthClient.hasLoggedWithEmail(params) ? params.email : params.phoneNumber,
         },
       }
 
@@ -644,7 +639,7 @@ export default class OAuthClient {
   // TODO: Make passwordless able to handle web_message
   // Asana https://app.asana.com/0/982150578058310/1200173806808689/f
   private resolveSingleFactorPasswordlessParams(
-    params: PasswordlessParams,
+    params: SingleFactorPasswordlessParams,
     auth: Omit<AuthOptions, 'useWebMessage'> = {}
   ): Promise<{}> {
     const { authType, email, phoneNumber, captchaToken } = params
@@ -662,7 +657,7 @@ export default class OAuthClient {
     })
   }
 
-  private hasLoggedWithEmail(params: LoginWithPasswordParams): params is EmailLoginWithPasswordParams {
+  private static hasLoggedWithEmail(params: LoginWithPasswordParams): params is EmailLoginWithPasswordParams {
     return (params as EmailLoginWithPasswordParams).email !== undefined
   }
 

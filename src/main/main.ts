@@ -22,9 +22,9 @@ import OAuthClient, {
   LoginWithCustomTokenParams,
   LoginWithPasswordParams,
   LogoutParams,
+  PasswordlessParams,
   RefreshTokenParams,
   SignupParams,
-  PasswordlessParams,
   TokenRequestParameters,
   VerifyPasswordlessParams,
 } from './oAuthClient'

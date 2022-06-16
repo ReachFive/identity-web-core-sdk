@@ -7,7 +7,9 @@ import typescript from 'rollup-plugin-typescript2'
 import pkg from './package.json'
 
 const plugins = [
-  resolve(),
+  resolve({
+    preferBuiltins: true
+  }),
   commonjs(),
   babel({
     babelHelpers: 'bundled',
@@ -25,7 +27,7 @@ function createBundle({ file, format, name, external, withUglify = false }) {
     input: 'src/main/index.ts',
     output: { file, format, name },
     plugins: withUglify ? [terser(), ...plugins] : plugins,
-    external,
+    external
   }
 }
 
