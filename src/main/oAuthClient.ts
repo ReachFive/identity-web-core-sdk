@@ -427,7 +427,10 @@ export default class OAuthClient {
 
     return passwordlessPayload.then(payload =>
         this.http.post<PasswordlessResponse>(this.passwordlessStartUrl, {
-          body: payload
+          body: {
+            r5_request_token: this.config.orchestrationToken,
+            ...payload
+          }
         })
     )
   }
