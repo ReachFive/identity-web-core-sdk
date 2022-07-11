@@ -684,6 +684,7 @@ export default class OAuthClient {
 
     return this.getPkceParams(authParams).then(maybeChallenge => {
       const queryString = toQueryString({
+        r5_request_token: this.config.orchestrationToken,
         ...authParams,
         ...maybeChallenge,
         ...pick(tkn, 'tkn')
@@ -722,9 +723,9 @@ export default class OAuthClient {
   }
 
   getPkceParams(authParams: AuthParameters): Promise<PkceParams | {}> {
-    if (this.config.isPublic && authParams.responseType === 'code')
+    if (this.config.isPublic && authParams.responseType === 'code' && !this.config.orchestrationToken)
       return computePkceParams()
-    else if (authParams.responseType === 'token' && this.config.pkceEnforced)
+    else if (authParams.responseType === 'token' && this.config.pkceEnforced && !this.config.orchestrationToken)
       return Promise.reject(new Error('Cannot use implicit flow when PKCE is enforced'))
     else
       return Promise.resolve({})
