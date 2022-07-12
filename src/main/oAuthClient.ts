@@ -694,8 +694,9 @@ export default class OAuthClient {
           ...pick(tkn, 'tkn')
         })
 
-      if (this.config.orchestrationToken) {
-        console.warn("Orchestration flow: provided parameters "+ this.reduce(authParams, correctedAuthParams) + " ignored.")
+      const uselessParams = difference(keys(authParams), keys(correctedAuthParams))
+      if (this.config.orchestrationToken && uselessParams.length !== 0) {
+        console.warn("Orchestration flow: provided parameters "+ uselessParams + " ignored.")
       }
 
       if (auth.useWebMessage) {
@@ -742,9 +743,5 @@ export default class OAuthClient {
   redirect(location: string): Promise<void> {
     window.location.assign(location)
     return Promise.resolve()
-  }
-
-  reduce(orig: object, reduced: object) {
-    return difference(keys(orig), keys(reduced))
   }
 }
