@@ -683,12 +683,17 @@ export default class OAuthClient {
     const authParams = this.authParams(auth)
 
     return this.getPkceParams(authParams).then(maybeChallenge => {
-      const queryString = toQueryString({
+      const queryString = (this.config.orchestrationToken) ?
+        toQueryString({
         r5_request_token: this.config.orchestrationToken,
-        ...authParams,
-        ...maybeChallenge,
+        ...pick(authParams,'persistent'),
         ...pick(tkn, 'tkn')
-      })
+      }) :
+        toQueryString({
+          ...authParams,
+          ...maybeChallenge,
+          ...pick(tkn, 'tkn')
+        })
 
       if (auth.useWebMessage) {
         return this.getWebMessage(
