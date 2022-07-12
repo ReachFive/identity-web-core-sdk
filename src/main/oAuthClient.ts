@@ -1,5 +1,7 @@
 import WinChan from 'winchan'
 import pick from 'lodash/pick'
+import keys from 'lodash/keys'
+import difference from 'lodash/difference'
 import isUndefined from 'lodash/isUndefined'
 import { logError } from '../utils/logger'
 import { QueryString, toQueryString } from '../utils/queryString'
@@ -683,17 +685,18 @@ export default class OAuthClient {
     const authParams = this.authParams(auth)
 
     return this.getPkceParams(authParams).then(maybeChallenge => {
-      const queryString = (this.config.orchestrationToken) ?
-        toQueryString({
+      const correctedAuthParams = this.config.orchestrationToken ? pick(authParams, 'persistent') : authParams
+
+      const queryString = toQueryString({
         r5_request_token: this.config.orchestrationToken,
-        ...pick(authParams,'persistent'),
-        ...pick(tkn, 'tkn')
-      }) :
-        toQueryString({
-          ...authParams,
+          ...correctedAuthParams,
           ...maybeChallenge,
           ...pick(tkn, 'tkn')
         })
+
+      if (this.config.orchestrationToken) {
+        console.warn("Orchestration flow: provided parameters "+ this.reduce(authParams, correctedAuthParams) + " ignored.")
+      }
 
       if (auth.useWebMessage) {
         return this.getWebMessage(
@@ -739,5 +742,9 @@ export default class OAuthClient {
   redirect(location: string): Promise<void> {
     window.location.assign(location)
     return Promise.resolve()
+  }
+
+  reduce(orig: object, reduced: object) {
+    return difference(keys(orig), keys(reduced))
   }
 }
