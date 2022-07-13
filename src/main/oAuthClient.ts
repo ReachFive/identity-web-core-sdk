@@ -1,5 +1,7 @@
 import WinChan from 'winchan'
 import pick from 'lodash/pick'
+import keys from 'lodash/keys'
+import difference from 'lodash/difference'
 import isUndefined from 'lodash/isUndefined'
 import { logError } from '../utils/logger'
 import { QueryString, toQueryString } from '../utils/queryString'
@@ -686,14 +688,24 @@ export default class OAuthClient {
     const authParams = this.authParams(auth)
 
     return this.getPkceParams(authParams).then(maybeChallenge => {
-      const queryString = toQueryString({
+      const correctedAuthParams = this.config.orchestrationToken ? {
         r5_request_token: this.config.orchestrationToken,
-        ...authParams,
+        ...pick(authParams, 'persistent')
+      } : authParams
+
+      const queryString = toQueryString({
+        ...correctedAuthParams,
         ...maybeChallenge,
         ...pick(tkn, 'tkn')
       })
 
-      if (auth.useWebMessage) {
+      const uselessParams = difference(keys(authParams), keys(correctedAuthParams))
+      if (this.config.orchestrationToken && uselessParams.length !== 0) {
+        console.warn("Orchestrated flow: provided parameters "+ uselessParams + " ignored.")
+      }
+
+      // Don't use web messages in orchestrated flows
+      if (auth.useWebMessage && !this.config.orchestrationToken) {
         return this.getWebMessage(
             `${this.authorizeUrl}?${queryString}`,
             this.config.baseUrl,
