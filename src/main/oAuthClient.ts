@@ -430,7 +430,6 @@ export default class OAuthClient {
     return passwordlessPayload.then(payload =>
         this.http.post<PasswordlessResponse>(this.passwordlessStartUrl, {
           body: {
-            r5_request_token: this.config.orchestrationToken,
             ...payload
           }
         })
@@ -667,8 +666,10 @@ export default class OAuthClient {
     const authParams = this.authParams(auth)
 
     return this.getPkceParams(authParams).then(maybeChallenge => {
+      const correctedAuthParams = this.correctAuthParams(authParams)
+
       return {
-        ...authParams,
+        ...correctedAuthParams,
         authType,
         email,
         phoneNumber,
@@ -688,21 +689,13 @@ export default class OAuthClient {
     const authParams = this.authParams(auth)
 
     return this.getPkceParams(authParams).then(maybeChallenge => {
-      const correctedAuthParams = this.config.orchestrationToken ? {
-        r5_request_token: this.config.orchestrationToken,
-        ...pick(authParams, 'persistent')
-      } : authParams
+      const correctedAuthParams = this.correctAuthParams(authParams)
 
       const queryString = toQueryString({
         ...correctedAuthParams,
         ...maybeChallenge,
         ...pick(tkn, 'tkn')
       })
-
-      const uselessParams = difference(keys(authParams), keys(correctedAuthParams))
-      if (this.config.orchestrationToken && uselessParams.length !== 0) {
-        console.warn("Orchestrated flow: provided parameters "+ uselessParams + " ignored.")
-      }
 
       // Don't use web messages in orchestrated flows
       if (auth.useWebMessage && !this.config.orchestrationToken) {
@@ -715,6 +708,23 @@ export default class OAuthClient {
         return this.redirect(`${this.authorizeUrl}?${queryString}`) as AuthResult
       }
     })
+  }
+
+  // In an orchestrated flow, only parameters from the original request are to be considered,
+  // as well as parameters that depend on user action
+  private correctAuthParams(authParams: AuthParameters) {
+    const correctedAuthParams = this.config.orchestrationToken ? {
+      r5_request_token: this.config.orchestrationToken,
+      ...pick(authParams, 'persistent')
+    } : authParams
+
+    if (this.config.orchestrationToken) {
+      const uselessParams = difference(keys(authParams), keys(correctedAuthParams))
+      if (uselessParams.length !== 0)
+        console.warn("Orchestrated flow: provided parameters " + uselessParams + " ignored.")
+    }
+
+    return correctedAuthParams
   }
 
   authParams(opts: AuthOptions, { acceptPopupMode = false } = {}) {
