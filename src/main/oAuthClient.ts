@@ -270,15 +270,17 @@ export default class OAuthClient {
     }, { acceptPopupMode: true })
 
     return this.getPkceParams(authParams).then(maybeChallenge => {
+      const correctedAuthParams = this.correctAuthParams(authParams)
+
       const params = {
-        ...authParams,
+        ...correctedAuthParams,
         provider,
         ...maybeChallenge
       }
 
-      if ('cordova' in window) {
+      if (!this.config.orchestrationToken && 'cordova' in window) {
         return this.loginWithCordovaInAppBrowser(params)
-      } else if (params.display === 'popup') {
+      } else if (!this.config.orchestrationToken && authParams.display === 'popup') {
         return this.loginWithPopup(params)
       } else {
         return this.loginWithRedirect(params)
