@@ -685,21 +685,24 @@ export default class OAuthClient {
     const authParams = this.authParams(auth)
 
     return this.getPkceParams(authParams).then(maybeChallenge => {
-      const correctedAuthParams = this.config.orchestrationToken ? pick(authParams, 'persistent') : authParams
+      const correctedAuthParams = this.config.orchestrationToken ? {
+        r5_request_token: this.config.orchestrationToken,
+        ...pick(authParams, 'persistent')
+      } : authParams
 
       const queryString = toQueryString({
-        r5_request_token: this.config.orchestrationToken,
-          ...correctedAuthParams,
-          ...maybeChallenge,
-          ...pick(tkn, 'tkn')
-        })
+        ...correctedAuthParams,
+        ...maybeChallenge,
+        ...pick(tkn, 'tkn')
+      })
 
       const uselessParams = difference(keys(authParams), keys(correctedAuthParams))
       if (this.config.orchestrationToken && uselessParams.length !== 0) {
-        console.warn("Orchestration flow: provided parameters "+ uselessParams + " ignored.")
+        console.warn("Orchestrated flow: provided parameters "+ uselessParams + " ignored.")
       }
 
-      if (auth.useWebMessage) {
+      // Don't use web messages in orchestrated flows
+      if (auth.useWebMessage && !this.config.orchestrationToken) {
         return this.getWebMessage(
             `${this.authorizeUrl}?${queryString}`,
             this.config.baseUrl,
