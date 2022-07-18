@@ -713,7 +713,7 @@ export default class OAuthClient {
   private correctAuthParams(authParams: AuthParameters) {
     const correctedAuthParams = this.config.orchestrationToken ? {
       r5_request_token: this.config.orchestrationToken,
-      ...pick(authParams, 'persistent')
+      ...pick(authParams, 'response_type', 'redirect_uri', 'client_id', 'persistent')
     } : authParams
 
     if (this.config.orchestrationToken) {
