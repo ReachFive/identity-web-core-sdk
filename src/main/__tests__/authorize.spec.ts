@@ -108,7 +108,6 @@ describe('with redirection', () => {
           ...clientType,
           ...responseType,
           ...pageDisplay,
-          prompt: 'none',
         })
       )
     })
