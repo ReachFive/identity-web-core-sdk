@@ -12,7 +12,7 @@ import {
   SignupProfile,
   PasswordlessResponse,
   Scope,
-  AuthenticationToken
+  AuthenticationToken, OrchestrationToken
 } from './models'
 import { AuthOptions, computeAuthOptions } from './authOptions'
 import { AuthResult, enrichAuthResult } from './authResult'
@@ -556,7 +556,9 @@ export default class OAuthClient {
   }
 
   private loginWithRedirect(queryString: Record<string, string | boolean | undefined>): Promise<void> {
-    return this.redirect(this.getAuthorizationUrl(queryString))
+    const location = this.getAuthorizationUrl(queryString)
+    window.location.assign(location)
+    return Promise.resolve()
   }
 
   private loginWithVerificationCode(params: VerifyPasswordlessParams, auth: AuthOptions = {}): void {
@@ -681,43 +683,45 @@ export default class OAuthClient {
 
   // TODO: Shared among the clients
   loginCallback(tkn: AuthenticationToken, auth: AuthOptions = {}): Promise<AuthResult> {
-    const authParams = this.authParams(auth)
+    if (this.config.orchestrationToken) {
+      const authParams = this.orchestratedFlowParams(this.config.orchestrationToken, tkn, auth)
 
-    return this.getPkceParams(authParams).then(maybeChallenge => {
-      const correctedAuthParams = this.correctAuthParams(authParams)
+      return Promise.resolve().then(_ => this.loginWithRedirect(authParams) as AuthResult)
+    } else {
+      const authParams = this.authParams(auth)
 
-      const queryString = toQueryString({
-        ...correctedAuthParams,
-        ...maybeChallenge,
-        ...pick(tkn, 'tkn')
+      return this.getPkceParams(authParams).then(maybeChallenge => {
+        const params = {
+          ...authParams,
+          ...maybeChallenge,
+          ...pick(tkn, 'tkn')
+        }
+
+        if (auth.useWebMessage) {
+          return this.getWebMessage(this.getAuthorizationUrl(params), auth.redirectUri)
+        } else {
+          return this.loginWithRedirect(params) as AuthResult
+        }
       })
-
-      // Don't use web messages in orchestrated flows
-      if (auth.useWebMessage && !this.config.orchestrationToken) {
-        return this.getWebMessage(
-            `${this.authorizeUrl}?${queryString}`,
-            this.config.baseUrl,
-            auth.redirectUri,
-        )
-      } else {
-        return this.redirect(`${this.authorizeUrl}?${queryString}`) as AuthResult
-      }
-    })
+    }
   }
 
   // In an orchestrated flow, only parameters from the original request are to be considered,
   // as well as parameters that depend on user action
-  private correctAuthParams(authParams: AuthParameters) {
-    const correctedAuthParams = this.config.orchestrationToken ? {
-      r5_request_token: this.config.orchestrationToken,
-      ...pick(authParams, 'response_type', 'redirect_uri', 'client_id', 'persistent')
-    } : authParams
+  private orchestratedFlowParams(orchestrationToken: OrchestrationToken, tkn: AuthenticationToken, authOptions: AuthOptions = {}) {
+    // TODO/cbu we need redirect_uri : issue if none configured
+    const authParams = computeAuthOptions(authOptions)
 
-    if (this.config.orchestrationToken) {
-      const uselessParams = difference(keys(authParams), keys(correctedAuthParams))
-      if (uselessParams.length !== 0)
-        console.warn("Orchestrated flow: provided parameters " + uselessParams + " ignored.")
+    const correctedAuthParams = {
+      clientId: this.config.clientId,
+      r5_request_token: orchestrationToken,
+      ...pick(authParams, 'response_type', 'redirect_uri', 'client_id', 'persistent'),
+      ...pick(tkn, 'tkn')
     }
+
+    const uselessParams: string[] = difference(keys(authParams), keys(correctedAuthParams))
+    if (uselessParams.length !== 0)
+      console.debug("Orchestrated flow: pruned parameters: " + uselessParams)
 
     return correctedAuthParams
   }
@@ -743,16 +747,11 @@ export default class OAuthClient {
   }
 
   getPkceParams(authParams: AuthParameters): Promise<PkceParams | {}> {
-    if (this.config.isPublic && authParams.responseType === 'code' && !this.config.orchestrationToken)
+    if (this.config.isPublic && authParams.responseType === 'code')
       return computePkceParams()
-    else if (authParams.responseType === 'token' && this.config.pkceEnforced && !this.config.orchestrationToken)
+    else if (authParams.responseType === 'token' && this.config.pkceEnforced)
       return Promise.reject(new Error('Cannot use implicit flow when PKCE is enforced'))
     else
       return Promise.resolve({})
-  }
-
-  redirect(location: string): Promise<void> {
-    window.location.assign(location)
-    return Promise.resolve()
   }
 }
