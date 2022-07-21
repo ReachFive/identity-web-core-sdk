@@ -74,6 +74,8 @@ export type SessionInfo = {
   socialProviders?: string[]
 }
 
+export type OrchestrationToken = string
+
 export type AuthenticationToken = { tkn: string }
 
 export type PasswordlessResponse = MFA.ChallengeId
