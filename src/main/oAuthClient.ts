@@ -151,7 +151,6 @@ export default class OAuthClient {
 
       return this.getWebMessage(
           authorizationUrl,
-          this.config.baseUrl,
           opts.redirectUri,
       )
     })
@@ -300,7 +299,6 @@ export default class OAuthClient {
 
       return this.getWebMessage(
         `${this.authorizeUrl}?${queryString}`,
-        this.config.baseUrl,
         opts.redirectUri,
       ).then()
     } else {
@@ -451,7 +449,6 @@ export default class OAuthClient {
 
   private getWebMessage(
     src: string,
-    origin: string,
     redirectUri?: string,
   ): Promise<AuthResult> {
     const iframe = document.createElement('iframe')
