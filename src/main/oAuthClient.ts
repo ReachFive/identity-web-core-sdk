@@ -744,7 +744,7 @@ export default class OAuthClient {
     const correctedAuthParams = {
       clientId: this.config.clientId,
       r5_request_token: orchestrationToken,
-      ...pick(authParams, 'response_type', 'redirect_uri', 'client_id', 'persistent'),
+      ...pick(authParams, 'responseType', 'redirectUri', 'clientId', 'persistent'),
     }
 
     const uselessParams: string[] = difference(keys(authParams), keys(correctedAuthParams))
