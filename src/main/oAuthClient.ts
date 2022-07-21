@@ -659,31 +659,44 @@ export default class OAuthClient {
   // Asana https://app.asana.com/0/982150578058310/1200173806808689/f
   private resolveSingleFactorPasswordlessParams(params: SingleFactorPasswordlessParams, auth: Omit<AuthOptions, 'useWebMessage'> = {}): Promise<{}> {
     const { authType, email, phoneNumber, captchaToken } = params
-    const authParams = this.authParams(auth)
 
-    return this.getPkceParams(authParams).then(maybeChallenge => {
-      const correctedAuthParams = this.correctAuthParams(authParams)
+    if (this.config.orchestrationToken) {
+      const authParams = this.orchestratedFlowParams(this.config.orchestrationToken, auth)
 
-      return {
-        ...correctedAuthParams,
+      return Promise.resolve({
+        ...authParams,
         authType,
         email,
         phoneNumber,
         captchaToken,
-        ...maybeChallenge,
-      }
-    })
+      })
+    } else {
+      const authParams = this.authParams(auth)
+
+      return this.getPkceParams(authParams).then(maybeChallenge => {
+        return {
+          ...authParams,
+          authType,
+          email,
+          phoneNumber,
+          captchaToken,
+          ...maybeChallenge,
+        }
+      })
+    }
   }
 
   private hasLoggedWithEmail(params: LoginWithPasswordParams): params is EmailLoginWithPasswordParams {
     return (params as EmailLoginWithPasswordParams).email !== undefined
   }
 
-
   // TODO: Shared among the clients
   loginCallback(tkn: AuthenticationToken, auth: AuthOptions = {}): Promise<AuthResult> {
     if (this.config.orchestrationToken) {
-      const authParams = this.orchestratedFlowParams(this.config.orchestrationToken, tkn, auth)
+      const authParams = {
+        ...this.orchestratedFlowParams(this.config.orchestrationToken, auth),
+        ...pick(tkn, 'tkn')
+      }
 
       return Promise.resolve().then(_ => this.redirectThruAuthorization(authParams) as AuthResult)
     } else {
@@ -707,14 +720,13 @@ export default class OAuthClient {
 
   // In an orchestrated flow, only parameters from the original request are to be considered,
   // as well as parameters that depend on user action
-  private orchestratedFlowParams(orchestrationToken: OrchestrationToken, tkn: AuthenticationToken, authOptions: AuthOptions = {}) {
+  private orchestratedFlowParams(orchestrationToken: OrchestrationToken, authOptions: AuthOptions = {}) {
     const authParams = computeAuthOptions(authOptions)
 
     const correctedAuthParams = {
       clientId: this.config.clientId,
       r5_request_token: orchestrationToken,
       ...pick(authParams, 'response_type', 'redirect_uri', 'client_id', 'persistent'),
-      ...pick(tkn, 'tkn')
     }
 
     const uselessParams: string[] = difference(keys(authParams), keys(correctedAuthParams))
