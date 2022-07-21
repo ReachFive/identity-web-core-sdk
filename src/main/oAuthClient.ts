@@ -262,28 +262,44 @@ export default class OAuthClient {
   }
 
   loginWithSocialProvider(provider: string, opts: AuthOptions = {}): Promise<void | InAppBrowser> {
-    const authParams = this.authParams({
-      ...opts,
-      useWebMessage: false
-    }, { acceptPopupMode: true })
-
-    return this.getPkceParams(authParams).then(maybeChallenge => {
-      const correctedAuthParams = this.correctAuthParams(authParams)
-
+    if (this.config.orchestrationToken) {
       const params = {
-        ...correctedAuthParams,
+        ...(this.orchestratedFlowParams(this.config.orchestrationToken, {
+          ...opts,
+          useWebMessage: false,
+        })),
         provider,
-        ...maybeChallenge
       }
 
-      if (!this.config.orchestrationToken && 'cordova' in window) {
+      if ('cordova' in window) {
         return this.loginWithCordovaInAppBrowser(params)
-      } else if (!this.config.orchestrationToken && authParams.display === 'popup') {
+      } else if (params.display === 'popup') {
         return this.loginWithPopup(params)
       } else {
         return this.redirectThruAuthorization(params)
       }
-    })
+    } else {
+      const authParams = this.authParams({
+        ...opts,
+        useWebMessage: false
+      }, { acceptPopupMode: true })
+
+      return this.getPkceParams(authParams).then(maybeChallenge => {
+        const params = {
+          ...authParams,
+          provider,
+          ...maybeChallenge
+        }
+
+        if ('cordova' in window) {
+          return this.loginWithCordovaInAppBrowser(params)
+        } else if (params.display === 'popup') {
+          return this.loginWithPopup(params)
+        } else {
+          return this.redirectThruAuthorization(params)
+        }
+      })
+    }
   }
 
   private loginWithIdToken(provider: string, idToken: string, nonce: string, opts: AuthOptions = {}): Promise<void> {
