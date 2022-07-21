@@ -189,7 +189,6 @@ export default class OAuthClient {
     const authParams = this.authParams({
       ...opts,
       useWebMessage: false,
-      prompt: 'none',
     })
 
     return this.getPkceParams(authParams).then(maybeChallenge => {
