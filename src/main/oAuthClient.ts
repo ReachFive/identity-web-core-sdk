@@ -262,16 +262,13 @@ export default class OAuthClient {
   }
 
   loginWithSocialProvider(provider: string, opts: AuthOptions = {}): Promise<void | InAppBrowser> {
-    const authParams = this.authParams({
-      ...opts,
-      useWebMessage: false
-    }, { acceptPopupMode: true })
-
-    return this.getPkceParams(authParams).then(maybeChallenge => {
+    if (this.config.orchestrationToken) {
       const params = {
-        ...authParams,
+        ...(this.orchestratedFlowParams(this.config.orchestrationToken, {
+          ...opts,
+          useWebMessage: false,
+        })),
         provider,
-        ...maybeChallenge
       }
 
       if ('cordova' in window) {
@@ -281,7 +278,28 @@ export default class OAuthClient {
       } else {
         return this.redirectThruAuthorization(params)
       }
-    })
+    } else {
+      const authParams = this.authParams({
+        ...opts,
+        useWebMessage: false
+      }, { acceptPopupMode: true })
+
+      return this.getPkceParams(authParams).then(maybeChallenge => {
+        const params = {
+          ...authParams,
+          provider,
+          ...maybeChallenge
+        }
+
+        if ('cordova' in window) {
+          return this.loginWithCordovaInAppBrowser(params)
+        } else if (params.display === 'popup') {
+          return this.loginWithPopup(params)
+        } else {
+          return this.redirectThruAuthorization(params)
+        }
+      })
+    }
   }
 
   private loginWithIdToken(provider: string, idToken: string, nonce: string, opts: AuthOptions = {}): Promise<void> {
@@ -726,7 +744,7 @@ export default class OAuthClient {
     const correctedAuthParams = {
       clientId: this.config.clientId,
       r5_request_token: orchestrationToken,
-      ...pick(authParams, 'response_type', 'redirect_uri', 'client_id', 'persistent'),
+      ...pick(authParams, 'responseType', 'redirectUri', 'clientId', 'persistent'),
     }
 
     const uselessParams: string[] = difference(keys(authParams), keys(correctedAuthParams))
