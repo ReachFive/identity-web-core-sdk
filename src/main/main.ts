@@ -4,7 +4,7 @@ import {
   SessionInfo,
   OpenIdUser,
   PasswordlessResponse,
-  MFA,
+  MFA, OrchestrationToken,
 } from './models'
 import OAuthClient, {
   LoginWithPasswordParams,
@@ -62,7 +62,7 @@ export type ApiClientConfig = {
   clientId: string
   language?: string
   scope?: string
-  orchestrationToken?: string
+  orchestrationToken?: OrchestrationToken
   sso: boolean
   pkceEnforced: boolean
   isPublic: boolean
