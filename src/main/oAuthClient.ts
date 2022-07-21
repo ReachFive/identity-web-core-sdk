@@ -196,7 +196,7 @@ export default class OAuthClient {
         ...maybeChallenge,
       }
 
-      return this.loginWithRedirect(params)
+      return this.redirectThruAuthorization(params)
     })
   }
 
@@ -279,7 +279,7 @@ export default class OAuthClient {
       } else if (params.display === 'popup') {
         return this.loginWithPopup(params)
       } else {
-        return this.loginWithRedirect(params)
+        return this.redirectThruAuthorization(params)
       }
     })
   }
@@ -302,7 +302,7 @@ export default class OAuthClient {
         opts.redirectUri,
       ).then()
     } else {
-      return this.loginWithRedirect({
+      return this.redirectThruAuthorization({
         ...authParams,
         provider,
         idToken,
@@ -552,7 +552,7 @@ export default class OAuthClient {
     }
   }
 
-  private loginWithRedirect(queryString: Record<string, string | boolean | undefined>): Promise<void> {
+  private redirectThruAuthorization(queryString: Record<string, string | boolean | undefined>): Promise<void> {
     const location = this.getAuthorizationUrl(queryString)
     window.location.assign(location)
     return Promise.resolve()
@@ -683,7 +683,7 @@ export default class OAuthClient {
     if (this.config.orchestrationToken) {
       const authParams = this.orchestratedFlowParams(this.config.orchestrationToken, tkn, auth)
 
-      return Promise.resolve().then(_ => this.loginWithRedirect(authParams) as AuthResult)
+      return Promise.resolve().then(_ => this.redirectThruAuthorization(authParams) as AuthResult)
     } else {
       const authParams = this.authParams(auth)
 
@@ -697,7 +697,7 @@ export default class OAuthClient {
         if (auth.useWebMessage) {
           return this.getWebMessage(this.getAuthorizationUrl(params), auth.redirectUri)
         } else {
-          return this.loginWithRedirect(params) as AuthResult
+          return this.redirectThruAuthorization(params) as AuthResult
         }
       })
     }
