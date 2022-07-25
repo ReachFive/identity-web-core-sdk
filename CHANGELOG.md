@@ -7,6 +7,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.24.0] - 2022-07-25
+
+### Added
+
+Support for orchestrated flows.
+
 ## [1.23.0] - 2022-06-15
 
 ### Added
