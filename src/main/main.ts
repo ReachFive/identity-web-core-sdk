@@ -4,7 +4,7 @@ import {
   SessionInfo,
   OpenIdUser,
   PasswordlessResponse,
-  MFA,
+  MFA, OrchestrationToken,
 } from './models'
 import OAuthClient, {
   LoginWithPasswordParams,
@@ -62,6 +62,7 @@ export type ApiClientConfig = {
   clientId: string
   language?: string
   scope?: string
+  orchestrationToken?: OrchestrationToken
   sso: boolean
   pkceEnforced: boolean
   isPublic: boolean
@@ -147,10 +148,14 @@ export function createClient(creationConfig: Config): Client {
 
       const { language, sso } = remoteConfig
 
+      const params = new URLSearchParams(window.location.search)
+      const orchestrationToken = params.get('r5_request_token') || undefined
+
       const config = {
         clientId,
         baseUrl,
-        ...remoteConfig
+        orchestrationToken,
+        ...remoteConfig,
       }
 
       const http = createHttpClient({
