@@ -596,7 +596,7 @@ export default class OAuthClient {
           body: {
             clientId: this.config.clientId,
             grantType: 'password',
-            username: this.hasLoggedWithEmail(params) ? params.email : params.phoneNumber,
+            username: this.getAuthenticationId(params),
             password: params.password,
             scope: resolveScope(auth, this.config.scope),
             ...pick(auth, 'origin')
@@ -660,7 +660,7 @@ export default class OAuthClient {
       const credentialParams = {
         password: {
           password: params.password,
-          id: this.hasLoggedWithEmail(params) ? params.email : params.phoneNumber
+          id: this.getAuthenticationId(params)
         }
       }
 
@@ -710,6 +710,20 @@ export default class OAuthClient {
 
   private hasLoggedWithEmail(params: LoginWithPasswordParams): params is EmailLoginWithPasswordParams {
     return (params as EmailLoginWithPasswordParams).email !== undefined
+  }
+
+  private hasLoggedWithPhoneNumber(params: LoginWithPasswordParams): params is PhoneNumberLoginWithPasswordParams {
+    return (params as PhoneNumberLoginWithPasswordParams).phoneNumber !== undefined
+  }
+
+  private getAuthenticationId(params: LoginWithPasswordParams): string {
+    if(this.hasLoggedWithEmail(params)) {
+      return params.email
+    } else if (this.hasLoggedWithPhoneNumber(params)) {
+      return params.phoneNumber
+    } else {
+      return params.customIdentifier
+    }
   }
 
   // TODO: Shared among the clients
