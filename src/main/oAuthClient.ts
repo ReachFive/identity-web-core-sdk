@@ -41,7 +41,8 @@ export type LoginWithCustomTokenParams = {
 type LoginWithPasswordOptions = { password: string; saveCredentials?: boolean; auth?: AuthOptions, captchaToken?: string }
 type EmailLoginWithPasswordParams = LoginWithPasswordOptions & { email: string }
 type PhoneNumberLoginWithPasswordParams = LoginWithPasswordOptions & { phoneNumber: string }
-export type LoginWithPasswordParams = EmailLoginWithPasswordParams | PhoneNumberLoginWithPasswordParams
+type CustomIdentifierLoginWithPasswordParams = LoginWithPasswordOptions & { customIdentifier: string }
+export type LoginWithPasswordParams = EmailLoginWithPasswordParams | PhoneNumberLoginWithPasswordParams | CustomIdentifierLoginWithPasswordParams
 
 export type LogoutParams = {
   redirectTo?: string
