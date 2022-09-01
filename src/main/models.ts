@@ -37,6 +37,7 @@ export type SignupProfileData = {
   consents?: Record<string, any>
   company?: string
   liteOnly?: boolean
+  customIdentifier?: string
 }
 
 export type SignupProfile = SignupProfileData & { password: string }
