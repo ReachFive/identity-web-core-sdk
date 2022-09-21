@@ -1,6 +1,8 @@
 import { Buffer } from 'buffer/'
 import * as OneTap from 'google-one-tap'
+import difference from 'lodash/difference'
 import isUndefined from 'lodash/isUndefined'
+import keys from 'lodash/keys'
 import pick from 'lodash/pick'
 import WinChan from 'winchan'
 
@@ -15,7 +17,15 @@ import { AuthResult, enrichAuthResult } from './authResult'
 import { HttpClient } from './httpClient'
 import { IdentityEventManager } from './identityEventManager'
 import { ApiClientConfig } from './main'
-import { AuthenticationToken, ErrorResponse, PasswordlessResponse, Scope, SessionInfo, SignupProfile } from './models'
+import {
+  AuthenticationToken,
+  ErrorResponse,
+  OrchestrationToken,
+  PasswordlessResponse,
+  Scope,
+  SessionInfo,
+  SignupProfile,
+} from './models'
 import { computePkceParams, PkceParams } from './pkceService'
 import { popupSize } from './providerPopupSize'
 import { resolveScope } from './scopeHelper'
@@ -38,7 +48,11 @@ type LoginWithPasswordOptions = {
 }
 type EmailLoginWithPasswordParams = LoginWithPasswordOptions & { email: string }
 type PhoneNumberLoginWithPasswordParams = LoginWithPasswordOptions & { phoneNumber: string }
-export type LoginWithPasswordParams = EmailLoginWithPasswordParams | PhoneNumberLoginWithPasswordParams
+type CustomIdentifierLoginWithPasswordParams = LoginWithPasswordOptions & { customIdentifier: string }
+export type LoginWithPasswordParams =
+  | EmailLoginWithPasswordParams
+  | PhoneNumberLoginWithPasswordParams
+  | CustomIdentifierLoginWithPasswordParams
 
 export type LogoutParams = {
   redirectTo?: string
@@ -175,7 +189,6 @@ export default class OAuthClient {
     const authParams = this.authParams({
       ...opts,
       useWebMessage: false,
-      prompt: 'none',
     })
 
     return this.getPkceParams(authParams).then(maybeChallenge => {
@@ -184,7 +197,7 @@ export default class OAuthClient {
         ...maybeChallenge,
       }
 
-      return this.loginWithRedirect(params)
+      return this.redirectThruAuthorization(params)
     })
   }
 
@@ -247,19 +260,13 @@ export default class OAuthClient {
   }
 
   loginWithSocialProvider(provider: string, opts: AuthOptions = {}): Promise<void | InAppBrowser> {
-    const authParams = this.authParams(
-      {
-        ...opts,
-        useWebMessage: false,
-      },
-      { acceptPopupMode: true }
-    )
-
-    return this.getPkceParams(authParams).then(maybeChallenge => {
+    if (this.config.orchestrationToken) {
       const params = {
-        ...authParams,
+        ...this.orchestratedFlowParams(this.config.orchestrationToken, {
+          ...opts,
+          useWebMessage: false,
+        }),
         provider,
-        ...maybeChallenge,
       }
 
       if ('cordova' in window) {
@@ -267,9 +274,33 @@ export default class OAuthClient {
       } else if (params.display === 'popup') {
         return this.loginWithPopup(params)
       } else {
-        return this.loginWithRedirect(params)
+        return this.redirectThruAuthorization(params)
       }
-    })
+    } else {
+      const authParams = this.authParams(
+        {
+          ...opts,
+          useWebMessage: false,
+        },
+        { acceptPopupMode: true }
+      )
+
+      return this.getPkceParams(authParams).then(maybeChallenge => {
+        const params = {
+          ...authParams,
+          provider,
+          ...maybeChallenge,
+        }
+
+        if ('cordova' in window) {
+          return this.loginWithCordovaInAppBrowser(params)
+        } else if (params.display === 'popup') {
+          return this.loginWithPopup(params)
+        } else {
+          return this.redirectThruAuthorization(params)
+        }
+      })
+    }
   }
 
   private loginWithIdToken(provider: string, idToken: string, nonce: string, opts: AuthOptions = {}): Promise<void> {
@@ -287,7 +318,7 @@ export default class OAuthClient {
 
       return this.getWebMessage(`${this.authorizeUrl}?${queryString}`, this.config.baseUrl, opts.redirectUri).then()
     } else {
-      return this.loginWithRedirect({
+      return this.redirectThruAuthorization({
         ...authParams,
         provider,
         idToken,
@@ -534,8 +565,10 @@ export default class OAuthClient {
     }
   }
 
-  private loginWithRedirect(queryString: Record<string, string | boolean | undefined>): Promise<void> {
-    return this.redirect(this.getAuthorizationUrl(queryString))
+  private redirectThruAuthorization(queryString: Record<string, string | boolean | undefined>): Promise<void> {
+    const location = this.getAuthorizationUrl(queryString)
+    window.location.assign(location)
+    return Promise.resolve()
   }
 
   private loginWithVerificationCode(params: VerifyPasswordlessParams, auth: AuthOptions = {}): void {
@@ -554,7 +587,7 @@ export default class OAuthClient {
         body: {
           clientId: this.config.clientId,
           grantType: 'password',
-          username: OAuthClient.hasLoggedWithEmail(params) ? params.email : params.phoneNumber,
+          username: this.getAuthenticationId(params),
           password: params.password,
           scope: resolveScope(auth, this.config.scope),
           ...pick(auth, 'origin'),
@@ -619,7 +652,7 @@ export default class OAuthClient {
       const credentialParams = {
         password: {
           password: params.password,
-          id: OAuthClient.hasLoggedWithEmail(params) ? params.email : params.phoneNumber,
+          id: this.getAuthenticationId(params),
         },
       }
 
@@ -643,41 +676,94 @@ export default class OAuthClient {
     auth: Omit<AuthOptions, 'useWebMessage'> = {}
   ): Promise<{}> {
     const { authType, email, phoneNumber, captchaToken } = params
-    const authParams = this.authParams(auth)
 
-    return this.getPkceParams(authParams).then(maybeChallenge => {
-      return {
+    if (this.config.orchestrationToken) {
+      const authParams = this.orchestratedFlowParams(this.config.orchestrationToken, auth)
+
+      return Promise.resolve({
         ...authParams,
         authType,
         email,
         phoneNumber,
         captchaToken,
-        ...maybeChallenge,
-      }
-    })
+      })
+    } else {
+      const authParams = this.authParams(auth)
+
+      return this.getPkceParams(authParams).then(maybeChallenge => {
+        return {
+          ...authParams,
+          authType,
+          email,
+          phoneNumber,
+          captchaToken,
+          ...maybeChallenge,
+        }
+      })
+    }
   }
 
   private static hasLoggedWithEmail(params: LoginWithPasswordParams): params is EmailLoginWithPasswordParams {
     return (params as EmailLoginWithPasswordParams).email !== undefined
   }
 
+  private hasLoggedWithPhoneNumber(params: LoginWithPasswordParams): params is PhoneNumberLoginWithPasswordParams {
+    return (params as PhoneNumberLoginWithPasswordParams).phoneNumber !== undefined
+  }
+
+  private getAuthenticationId(params: LoginWithPasswordParams): string {
+    if (OAuthClient.hasLoggedWithEmail(params)) {
+      return params.email
+    } else if (this.hasLoggedWithPhoneNumber(params)) {
+      return params.phoneNumber
+    } else {
+      return params.customIdentifier
+    }
+  }
+
   // TODO: Shared among the clients
   loginCallback(tkn: AuthenticationToken, auth: AuthOptions = {}): Promise<AuthResult> {
-    const authParams = this.authParams(auth)
-
-    return this.getPkceParams(authParams).then(maybeChallenge => {
-      const queryString = toQueryString({
-        ...authParams,
-        ...maybeChallenge,
+    if (this.config.orchestrationToken) {
+      const authParams = {
+        ...this.orchestratedFlowParams(this.config.orchestrationToken, auth),
         ...pick(tkn, 'tkn'),
-      })
-
-      if (auth.useWebMessage) {
-        return this.getWebMessage(`${this.authorizeUrl}?${queryString}`, this.config.baseUrl, auth.redirectUri)
-      } else {
-        return this.redirect(`${this.authorizeUrl}?${queryString}`) as AuthResult
       }
-    })
+
+      return Promise.resolve().then(_ => this.redirectThruAuthorization(authParams) as AuthResult)
+    } else {
+      const authParams = this.authParams(auth)
+
+      return this.getPkceParams(authParams).then(maybeChallenge => {
+        const params = {
+          ...authParams,
+          ...maybeChallenge,
+          ...pick(tkn, 'tkn'),
+        }
+
+        if (auth.useWebMessage) {
+          return this.getWebMessage(this.getAuthorizationUrl(params), this.config.baseUrl, auth.redirectUri)
+        } else {
+          return this.redirectThruAuthorization(params) as AuthResult
+        }
+      })
+    }
+  }
+
+  // In an orchestrated flow, only parameters from the original request are to be considered,
+  // as well as parameters that depend on user action
+  private orchestratedFlowParams(orchestrationToken: OrchestrationToken, authOptions: AuthOptions = {}) {
+    const authParams = computeAuthOptions(authOptions)
+
+    const correctedAuthParams = {
+      clientId: this.config.clientId,
+      r5_request_token: orchestrationToken,
+      ...pick(authParams, 'responseType', 'redirectUri', 'clientId', 'persistent'),
+    }
+
+    const uselessParams: string[] = difference(keys(authParams), keys(correctedAuthParams))
+    if (uselessParams.length !== 0) console.debug('Orchestrated flow: pruned parameters: ' + uselessParams)
+
+    return correctedAuthParams
   }
 
   authParams(opts: AuthOptions, { acceptPopupMode = false } = {}) {
@@ -706,10 +792,5 @@ export default class OAuthClient {
     else if (authParams.responseType === 'token' && this.config.pkceEnforced)
       return Promise.reject(new Error('Cannot use implicit flow when PKCE is enforced'))
     else return Promise.resolve({})
-  }
-
-  redirect(location: string): Promise<void> {
-    window.location.assign(location)
-    return Promise.resolve()
   }
 }

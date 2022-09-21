@@ -16,7 +16,15 @@ import MfaClient, {
   VerifyMfaPasswordlessParams,
   VerifyMfaPhoneNumberRegistrationParams,
 } from './mfaClient'
-import { MFA, OpenIdUser, PasswordlessResponse, Profile, RemoteSettings, SessionInfo } from './models'
+import {
+  MFA,
+  OpenIdUser,
+  OrchestrationToken,
+  PasswordlessResponse,
+  Profile,
+  RemoteSettings,
+  SessionInfo,
+} from './models'
 import OAuthClient, {
   LoginWithCredentialsParams,
   LoginWithCustomTokenParams,
@@ -61,6 +69,7 @@ export type ApiClientConfig = {
   clientId: string
   language?: string
   scope?: string
+  orchestrationToken?: OrchestrationToken
   sso: boolean
   pkceEnforced: boolean
   isPublic: boolean
@@ -152,9 +161,12 @@ export function createClient(creationConfig: Config): Client {
   const apiClients = remoteSettings.then(remoteConfig => {
     const { language, sso } = remoteConfig
 
+    const params = new URLSearchParams(window.location.search)
+    const orchestrationToken = params.get('r5_request_token') || undefined
     const config = {
       clientId,
       baseUrl,
+      orchestrationToken,
       ...remoteConfig,
     }
 

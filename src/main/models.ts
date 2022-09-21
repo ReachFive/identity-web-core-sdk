@@ -36,6 +36,7 @@ export type SignupProfileData = {
   consents?: Record<string, any>
   company?: string
   liteOnly?: boolean
+  customIdentifier?: string
 }
 
 export type SignupProfile = SignupProfileData & { password: string }
@@ -72,6 +73,8 @@ export type SessionInfo = {
   hasPassword?: boolean
   socialProviders?: string[]
 }
+
+export type OrchestrationToken = string
 
 export type AuthenticationToken = { tkn: string }
 
