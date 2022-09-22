@@ -7,6 +7,13 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.25.0] - 2022-09-22
+
+### Added
+
+- Support authentication with the field custom_identifier
+- Field custom_identifier is now allowed during signup
+
 ## [1.24.1] - 2022-08-03
 
 ### Fixes
