@@ -77,7 +77,7 @@ export type SessionInfo = {
 
 export type OrchestrationToken = string
 
-export type AuthenticationToken = { tkn: string }
+export type AuthenticationToken = { tkn: string, mfaRequired?: boolean }
 
 export type PasswordlessResponse = MFA.ChallengeId
 

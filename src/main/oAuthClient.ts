@@ -27,6 +27,7 @@ import { resolveScope } from './scopeHelper'
 import * as OneTap from "google-one-tap"
 import { encodeToBase64 } from "../utils/base64"
 import { Buffer } from 'buffer/'
+import MfaClient from './mfaClient'
 
 export type LoginWithCredentialsParams = {
   mediation?: 'silent' | 'optional' | 'required'
@@ -94,6 +95,7 @@ export default class OAuthClient {
   private config: ApiClientConfig
   private http: HttpClient
   private eventManager: IdentityEventManager
+  private mfaClient: MfaClient | undefined
 
   private authorizeUrl: string
   private customTokenUrl: string
@@ -127,6 +129,10 @@ export default class OAuthClient {
     this.sessionInfoUrl = '/sso/data'
     this.signupUrl = '/signup'
     this.signupTokenUrl = '/signup-token'
+  }
+
+  setMfaClient(mfaClient: MfaClient): void {
+    this.mfaClient = mfaClient
   }
 
   checkSession(opts: AuthOptions = {}): Promise<AuthResult> {
@@ -253,7 +259,12 @@ export default class OAuthClient {
                   }
                 })
                 .then(tkn => this.storeCredentialsInBrowser(params).then(() => tkn))
-                .then(tkn => this.loginCallback(tkn, auth))
+            .then(authenticationToken => {
+              if (authenticationToken.mfaRequired) {
+                return this.mfaClient?.getMfaStepUpToken({tkn: authenticationToken.tkn, options: auth}).then(res => ({stepUpToken: res.token, amr: res.amr})) || Promise.resolve({})
+              }
+              return this.loginCallback(authenticationToken, auth)
+            })
 
     return loginPromise.catch((err: any) => {
       if (err.error) {

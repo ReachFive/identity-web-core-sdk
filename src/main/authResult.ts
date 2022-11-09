@@ -12,6 +12,8 @@ export interface AuthResult {
   code?: string
   state?: string
   refreshToken?: string
+  stepUpToken?: string
+  amr?: string[]
 }
 
 /**

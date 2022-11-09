@@ -33,6 +33,7 @@ export type StartMfaPhoneNumberRegistrationResponse = { status: 'sms_sent' } | {
 export type StepUpParams = {
   options?: AuthOptions
   accessToken?: string
+  tkn?: string
 }
 
 export type VerifyMfaEmailRegistrationParams = {
@@ -85,6 +86,7 @@ export default class MfaClient {
       return this.http.post<StepUpResponse>(this.stepUpUrl, {
         body: {
           ...authParams,
+          tkn: params.tkn,
           ...challenge
         },
         withCookies: params.accessToken === undefined,
