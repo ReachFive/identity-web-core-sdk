@@ -261,7 +261,7 @@ export default class OAuthClient {
                 .then(tkn => this.storeCredentialsInBrowser(params).then(() => tkn))
             .then(authenticationToken => {
               if (authenticationToken.mfaRequired) {
-                return this.mfaClient?.getMfaStepUpToken({tkn: authenticationToken.tkn, options: auth}).then(res => ({stepUpToken: res.token, amr: res.amr})) || Promise.resolve({})
+                return this.mfaClient ? this.mfaClient?.getMfaStepUpToken({tkn: authenticationToken.tkn, options: auth}).then(res => ({stepUpToken: res.token, amr: res.amr})) : Promise.resolve({})
               }
               return this.loginCallback(authenticationToken, auth)
             })
