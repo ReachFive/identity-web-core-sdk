@@ -169,13 +169,15 @@ export function createClient(creationConfig: Config): Client {
         http,
         eventManager
       })
+      const mfaClient = new MfaClient({
+        http,
+        oAuthClient
+      })
+      oAuthClient.setMfaClient(mfaClient)
 
       return {
         oAuth: oAuthClient,
-        mfa: new MfaClient({
-          http,
-          oAuthClient
-        }),
+        mfa: mfaClient,
         webAuthn: new WebAuthnClient({
           config,
           http,
