@@ -50,11 +50,8 @@ export type LogoutParams = {
 }
 
 export type RevocationParams = {
-  token: string
-  tokenTypeHint: TokenTypeHint
+  tokens: string[]
 }
-
-export type TokenTypeHint = 'access_token' | 'refresh_token'
 
 export type RefreshTokenParams = { refreshToken: string, scope?: Scope }
 
@@ -386,14 +383,15 @@ export default class OAuthClient {
     }
   }
 
-  private revokeToken(revocationParams: RevocationParams): Promise<void> {
-    return this.http.post<void>(this.revokeUrl, {
+  private revokeToken(revocationParams: RevocationParams): Promise<void[]> {
+    const revocationsCalls = revocationParams.tokens.map(token => this.http.post<void>(this.revokeUrl, {
       body: {
         clientId: this.config.clientId,
-        token: revocationParams.token,
-        tokenTypeHint: revocationParams.tokenTypeHint
+        token
       }
-    })
+    }))
+
+   return Promise.all(revocationsCalls)
   }
 
   refreshTokens(params: RefreshTokenParams): Promise<AuthResult> {
