@@ -88,7 +88,7 @@ export type Client = {
   instantiateOneTap: (opts?: AuthOptions) => void
   loginWithSocialProvider: (provider: string, options?: AuthOptions) => Promise<void | InAppBrowser>
   loginWithWebAuthn: (params: LoginWithWebAuthnParams) => Promise<AuthResult>
-  logout: (params?: LogoutParams) => Promise<void>
+  logout: (params?: LogoutParams, revocationParams?: RevocationParams) => Promise<void>
   off: <K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) => void
   on: <K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) => void
   refreshTokens: (params: RefreshTokenParams) => Promise<AuthResult>
