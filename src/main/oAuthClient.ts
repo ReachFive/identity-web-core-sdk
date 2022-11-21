@@ -50,6 +50,10 @@ export type LogoutParams = {
   removeCredentials?: boolean
 }
 
+export type RevocationParams = {
+  tokens: string[]
+}
+
 export type RefreshTokenParams = { refreshToken: string, scope?: Scope }
 
 type SingleFactorPasswordlessParams = {
@@ -100,6 +104,7 @@ export default class OAuthClient {
   private authorizeUrl: string
   private customTokenUrl: string
   private logoutUrl: string
+  private revokeUrl: string
   private passwordlessVerifyUrl: string
   private popupRelayUrl: string
   private tokenUrl: string
@@ -119,6 +124,7 @@ export default class OAuthClient {
     this.authorizeUrl = `${this.config.baseUrl}/oauth/authorize`
     this.customTokenUrl = `${this.config.baseUrl}/identity/v1/custom-token/login`
     this.logoutUrl = `${this.config.baseUrl}/identity/v1/logout`
+    this.revokeUrl = `${this.config.baseUrl}/oauth/revoke`
     this.passwordlessVerifyUrl = `${this.config.baseUrl}/identity/v1/passwordless/verify`
     this.popupRelayUrl = `${this.config.baseUrl}/popup/relay`
     this.tokenUrl = `${this.config.baseUrl}/oauth/token`
@@ -379,11 +385,27 @@ export default class OAuthClient {
     }
   }
 
-  logout(opts: LogoutParams = {}): void {
+  logout(opts: LogoutParams = {}, revocationParams?: RevocationParams): Promise<void> {
     if (navigator.credentials && navigator.credentials.preventSilentAccess && opts.removeCredentials === true) {
       navigator.credentials.preventSilentAccess()
     }
-    window.location.assign(`${this.logoutUrl}?${toQueryString(opts)}`)
+    if (this.config.isPublic && revocationParams) {
+      return this.revokeToken(revocationParams)
+          .then(_ => window.location.assign(`${this.logoutUrl}?${toQueryString(opts)}`))
+    } else {
+      return Promise.resolve(window.location.assign(`${this.logoutUrl}?${toQueryString(opts)}`))
+    }
+  }
+
+  private revokeToken(revocationParams: RevocationParams): Promise<void[]> {
+    const revocationsCalls = revocationParams.tokens.map(token => this.http.post<void>(this.revokeUrl, {
+      body: {
+        clientId: this.config.clientId,
+        token
+      }
+    }))
+
+   return Promise.all(revocationsCalls)
   }
 
   refreshTokens(params: RefreshTokenParams): Promise<AuthResult> {
