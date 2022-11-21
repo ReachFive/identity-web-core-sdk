@@ -12,7 +12,7 @@ import OAuthClient, {
   VerifyPasswordlessParams,
   SignupParams,
   TokenRequestParameters,
-  RefreshTokenParams, PasswordlessParams, LogoutParams, LoginWithCustomTokenParams,
+  RefreshTokenParams, PasswordlessParams, LogoutParams, LoginWithCustomTokenParams, RevocationParams,
 } from './oAuthClient'
 import { AuthOptions } from './authOptions'
 import { AuthResult } from './authResult'
@@ -88,7 +88,7 @@ export type Client = {
   instantiateOneTap: (opts?: AuthOptions) => void
   loginWithSocialProvider: (provider: string, options?: AuthOptions) => Promise<void | InAppBrowser>
   loginWithWebAuthn: (params: LoginWithWebAuthnParams) => Promise<AuthResult>
-  logout: (params?: LogoutParams) => Promise<void>
+  logout: (params?: LogoutParams, revocationParams?: RevocationParams) => Promise<void>
   off: <K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) => void
   on: <K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) => void
   refreshTokens: (params: RefreshTokenParams) => Promise<AuthResult>
@@ -265,8 +265,8 @@ export function createClient(creationConfig: Config): Client {
     return apiClients.then(clients => clients.webAuthn.loginWithWebAuthn(params))
   }
 
-  function logout(params: LogoutParams = {}) {
-    return apiClients.then(clients => clients.oAuth.logout(params))
+  function logout(params: LogoutParams = {}, revocationParams?: RevocationParams) {
+    return apiClients.then(clients => clients.oAuth.logout(params, revocationParams))
   }
 
   function off<K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void): void {
