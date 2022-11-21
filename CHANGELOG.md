@@ -12,6 +12,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 
 - Initiate an MFA step-up challenge in loginWithPassword when the mfa verification is required
+- Added an optional parameter in the `logout` function to revoke tokens
 
 ## [1.25.0] - 2022-09-22
 
