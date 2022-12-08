@@ -7,6 +7,13 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.26.0] - 2022-11-17
+
+### Added
+
+- Initiate an MFA step-up challenge in loginWithPassword when the mfa verification is required
+- Added an optional parameter in the `logout` function to revoke tokens
+
 ## [1.25.0] - 2022-09-22
 
 ### Added
@@ -359,9 +366,13 @@ Automatise the deployment of a new release with `circleci`.
 - Implement `tslint`.
 - Remove `yarn`.
 
-[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.24.1...HEAD
+[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.26.0...HEAD
 
-[1.24.0]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.24.0...v1.24.1
+[1.26.0]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.25.0...v1.26.0
+
+[1.25.0]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.24.1...v1.25.0
+
+[1.24.1]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.24.0...v1.24.1
 
 [1.24.0]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.23.0...v1.24.0
 
