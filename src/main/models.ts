@@ -6,6 +6,7 @@ export type ProfileAddress = {
   isDefault?: boolean
   addressType?: 'billing' | 'delivery'
   streetAddress?: string
+  addressComplement?: string
   locality?: string
   region?: string
   postalCode?: string
