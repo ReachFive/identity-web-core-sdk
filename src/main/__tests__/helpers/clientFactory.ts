@@ -17,8 +17,8 @@ export function createDefaultTestClient(remoteSettings: Partial<RemoteSettings> 
     pkceEnforced: false,
     isPublic: false,
     language: 'en',
+    rbaEnabled: false,
     ...remoteSettings,
-    rbaEnabled: false
   }
 
   const clientId = 'ijzdfpidjf'
