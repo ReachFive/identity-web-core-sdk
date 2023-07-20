@@ -132,6 +132,7 @@ export type RemoteSettings = {
   isPublic: boolean
   language: string
   googleClientId?: string
+  rbaEnabled: boolean
 }
 
 export type ErrorResponse = {
