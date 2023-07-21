@@ -15,7 +15,7 @@ export interface AuthResult {
   stepUpToken?: string
   amr?: string[]
   providerName?: string
-  providerToken?: string
+  providerAccessToken?: string
 }
 
 /**
