@@ -83,6 +83,7 @@ export type TokenRequestParameters = {
   code: string
   redirectUri: string
   persistent?: boolean // Whether the remember me is enabled
+  returnProviderToken?: boolean
 }
 
 export type VerifyPasswordlessParams = {

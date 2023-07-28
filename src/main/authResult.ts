@@ -14,6 +14,8 @@ export interface AuthResult {
   refreshToken?: string
   stepUpToken?: string
   amr?: string[]
+  providerName?: string
+  providerAccessToken?: string
 }
 
 /**
