@@ -7,6 +7,15 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.27.0] - 2023-08-01
+
+### Added
+
+- Added an optional parameter `trustDevice` in the `verifyMfaPasswordless` function
+- Added `addressComplement` field in the `ProfileAddress` model.
+- Added `rbaEnabled` field in `RemoteSettings` model.
+- Added and optional parameter `returnProviderToken` in `TokenRequestParameters` and returns `providerAccessToken` and `providerName` fields in `AuthResult` if `returnProviderToken` is set to `true`.
+
 ## [1.26.0] - 2022-11-17
 
 ### Added
@@ -18,8 +27,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- Support authentication with the field custom_identifier
-- Field custom_identifier is now allowed during signup
+- Support authentication with the field `custom_identifier`
+- Field `custom_identifier` is now allowed during signup
 
 ## [1.24.1] - 2022-08-03
 
