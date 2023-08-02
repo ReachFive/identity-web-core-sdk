@@ -28,6 +28,7 @@ import * as OneTap from "google-one-tap"
 import { encodeToBase64 } from "../utils/base64"
 import { Buffer } from 'buffer/'
 import MfaClient from './mfaClient'
+import {getWithExpiry, setWithExpiry} from "../utils/sessionStorage"
 
 export type LoginWithCredentialsParams = {
   mediation?: 'silent' | 'optional' | 'required'
@@ -172,16 +173,20 @@ export default class OAuthClient {
   }
 
   exchangeAuthorizationCodeWithPkce(params: TokenRequestParameters): Promise<AuthResult> {
+    const verifierKey = getWithExpiry('verifier_key')
+    sessionStorage.removeItem('verifier_key')
+
     return this.http
         .post<AuthResult>(this.tokenUrl, {
           body: {
             clientId: this.config.clientId,
             grantType: 'authorization_code',
-            codeVerifier: sessionStorage.getItem('verifier_key'),
+            codeVerifier: verifierKey,
             ...params
           }
         })
         .then(authResult => {
+          sessionStorage.removeItem('authorize_state')
           this.eventManager.fireEvent('authenticated', authResult)
           return enrichAuthResult(authResult)
         })
@@ -510,6 +515,11 @@ export default class OAuthClient {
     origin: string,
     redirectUri?: string,
   ): Promise<AuthResult> {
+
+    if(getWithExpiry('authorize_state') !== null) {
+      return Promise.resolve({})
+    }
+    setWithExpiry('authorize_state', 'state', 1000)
     const iframe = document.createElement('iframe')
     // "wm" needed to make sure the randomized id is valid
     const id = `wm${randomBase64String()}`
@@ -833,9 +843,12 @@ export default class OAuthClient {
   }
 
   getPkceParams(authParams: AuthParameters): Promise<PkceParams | {}> {
-    if (this.config.isPublic && authParams.responseType === 'code')
-      return computePkceParams()
-    else if (authParams.responseType === 'token' && this.config.pkceEnforced)
+    if (this.config.isPublic && authParams.responseType === 'code') {
+      if (getWithExpiry('verifier_key') !== null && getWithExpiry('authorize_state') !== null) return Promise.resolve({})
+      else {
+        return computePkceParams()
+      }
+    } else if (authParams.responseType === 'token' && this.config.pkceEnforced)
       return Promise.reject(new Error('Cannot use implicit flow when PKCE is enforced'))
     else
       return Promise.resolve({})
