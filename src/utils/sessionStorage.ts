@@ -1,6 +1,6 @@
 export function getWithExpiry(key: string) {
   const storedValue = sessionStorage.getItem(key)
-  if(!storedValue) {
+  if (!storedValue) {
     return null
   }
   try {
