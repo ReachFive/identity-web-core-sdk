@@ -155,6 +155,7 @@ export default class OAuthClient {
       useWebMessage: true,
     })
 
+    if (getWithExpiry('authorize_state') !== null) return Promise.reject(new Error("A previous authorization flow is not completed."))
     return this.getPkceParams(authParams).then(maybeChallenge => {
 
       const params = {
@@ -173,15 +174,12 @@ export default class OAuthClient {
   }
 
   exchangeAuthorizationCodeWithPkce(params: TokenRequestParameters): Promise<AuthResult> {
-    const verifierKey = getWithExpiry('verifier_key')
-    sessionStorage.removeItem('verifier_key')
-
     return this.http
         .post<AuthResult>(this.tokenUrl, {
           body: {
             clientId: this.config.clientId,
             grantType: 'authorization_code',
-            codeVerifier: verifierKey,
+            codeVerifier: sessionStorage.getItem('verifier_key'),
             ...params
           }
         })
@@ -255,6 +253,8 @@ export default class OAuthClient {
 
   loginWithPassword(params: LoginWithPasswordParams): Promise<AuthResult> {
     const { auth = {}, ...rest } = params
+
+    setWithExpiry('authorize_state', 'state', 20000)
 
     const loginPromise =
         window.cordova
@@ -515,11 +515,6 @@ export default class OAuthClient {
     origin: string,
     redirectUri?: string,
   ): Promise<AuthResult> {
-
-    if(getWithExpiry('authorize_state') !== null) {
-      return Promise.resolve({})
-    }
-    setWithExpiry('authorize_state', 'state', 1000)
     const iframe = document.createElement('iframe')
     // "wm" needed to make sure the randomized id is valid
     const id = `wm${randomBase64String()}`
@@ -624,6 +619,7 @@ export default class OAuthClient {
   private redirectThruAuthorization(queryString: Record<string, string | boolean | undefined>): Promise<void> {
     const location = this.getAuthorizationUrl(queryString)
     window.location.assign(location)
+    sessionStorage.removeItem('authorization_flow')
     return Promise.resolve()
   }
 
@@ -844,10 +840,7 @@ export default class OAuthClient {
 
   getPkceParams(authParams: AuthParameters): Promise<PkceParams | {}> {
     if (this.config.isPublic && authParams.responseType === 'code') {
-      if (getWithExpiry('verifier_key') !== null && getWithExpiry('authorize_state') !== null) return Promise.resolve({})
-      else {
-        return computePkceParams()
-      }
+      return computePkceParams()
     } else if (authParams.responseType === 'token' && this.config.pkceEnforced)
       return Promise.reject(new Error('Cannot use implicit flow when PKCE is enforced'))
     else

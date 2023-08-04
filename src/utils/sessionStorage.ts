@@ -7,7 +7,7 @@ export function getWithExpiry(key: string) {
     const item = JSON.parse(storedValue)
     const now = new Date()
     if (now.getTime() > item.expiry) {
-      localStorage.removeItem(key)
+      sessionStorage.removeItem(key)
       return null
     }
     return item.value
