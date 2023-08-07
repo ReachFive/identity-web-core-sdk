@@ -155,8 +155,8 @@ export default class OAuthClient {
       useWebMessage: true,
     })
 
-    if (getWithExpiry('authorize_state') !== null)
-      return Promise.reject(new Error('A previous authorization flow is not completed.'))
+    if (this.isAuthorizationLocked())
+      return Promise.reject(new Error('An ongoing authorization flow has not yet completed.'))
 
     return this.getPkceParams(authParams).then((maybeChallenge) => {
       const params = {
@@ -185,7 +185,7 @@ export default class OAuthClient {
           }
         })
         .then(authResult => {
-          sessionStorage.removeItem('authorize_state')
+          this.releaseAuthorizationLock()
           this.eventManager.fireEvent('authenticated', authResult)
           return enrichAuthResult(authResult)
         })
@@ -255,7 +255,7 @@ export default class OAuthClient {
   loginWithPassword(params: LoginWithPasswordParams): Promise<AuthResult> {
     const { auth = {}, ...rest } = params
 
-    setWithExpiry('authorize_state', 'state', 20000)
+    this.acquireAuthorizationLock()
 
     const loginPromise =
         window.cordova
@@ -620,7 +620,7 @@ export default class OAuthClient {
   private redirectThruAuthorization(queryString: Record<string, string | boolean | undefined>): Promise<void> {
     const location = this.getAuthorizationUrl(queryString)
     window.location.assign(location)
-    sessionStorage.removeItem('authorization_flow')
+    this.releaseAuthorizationLock()
     return Promise.resolve()
   }
 
@@ -846,5 +846,17 @@ export default class OAuthClient {
       return Promise.reject(new Error('Cannot use implicit flow when PKCE is enforced'))
     else
       return Promise.resolve({})
+  }
+
+  acquireAuthorizationLock(): void {
+    setWithExpiry('authorize_state', 'state', 20000)
+  }
+
+  releaseAuthorizationLock(): void {
+    sessionStorage.removeItem('authorize_state')
+  }
+
+  isAuthorizationLocked(): boolean {
+    return getWithExpiry('authorize_state') !== null
   }
 }
