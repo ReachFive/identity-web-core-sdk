@@ -12,8 +12,7 @@ import {
   SignupProfile,
   PasswordlessResponse,
   Scope,
-  AuthenticationToken,
-  OrchestrationToken
+  AuthenticationToken, OrchestrationToken
 } from './models'
 import { AuthOptions, computeAuthOptions } from './authOptions'
 import { AuthResult, enrichAuthResult } from './authResult'
@@ -25,8 +24,8 @@ import { randomBase64String } from '../utils/random'
 import { ApiClientConfig } from './main'
 import { AuthParameters } from './authParameters'
 import { resolveScope } from './scopeHelper'
-import * as OneTap from 'google-one-tap'
-import { encodeToBase64 } from '../utils/base64'
+import * as OneTap from "google-one-tap"
+import { encodeToBase64 } from "../utils/base64"
 import { Buffer } from 'buffer/'
 import MfaClient from './mfaClient'
 import { getWithExpiry, setWithExpiry } from '../utils/sessionStorage'
@@ -41,19 +40,11 @@ export type LoginWithCustomTokenParams = {
   auth: AuthOptions
 }
 
-type LoginWithPasswordOptions = {
-  password: string
-  saveCredentials?: boolean
-  auth?: AuthOptions
-  captchaToken?: string
-}
+type LoginWithPasswordOptions = { password: string; saveCredentials?: boolean; auth?: AuthOptions, captchaToken?: string }
 type EmailLoginWithPasswordParams = LoginWithPasswordOptions & { email: string }
 type PhoneNumberLoginWithPasswordParams = LoginWithPasswordOptions & { phoneNumber: string }
 type CustomIdentifierLoginWithPasswordParams = LoginWithPasswordOptions & { customIdentifier: string }
-export type LoginWithPasswordParams =
-  | EmailLoginWithPasswordParams
-  | PhoneNumberLoginWithPasswordParams
-  | CustomIdentifierLoginWithPasswordParams
+export type LoginWithPasswordParams = EmailLoginWithPasswordParams | PhoneNumberLoginWithPasswordParams | CustomIdentifierLoginWithPasswordParams
 
 export type LogoutParams = {
   redirectTo?: string
@@ -64,7 +55,7 @@ export type RevocationParams = {
   tokens: string[]
 }
 
-export type RefreshTokenParams = { refreshToken: string; scope?: Scope }
+export type RefreshTokenParams = { refreshToken: string, scope?: Scope }
 
 type SingleFactorPasswordlessParams = {
   authType: 'magic_link' | 'sms'
@@ -153,43 +144,51 @@ export default class OAuthClient {
   }
 
   checkSession(opts: AuthOptions = {}): Promise<AuthResult> {
-    if (!this.config.sso) return Promise.reject(new Error("Cannot call 'checkSession' if SSO is not enabled."))
+    if (!this.config.sso)
+      return Promise.reject(
+          new Error("Cannot call 'checkSession' if SSO is not enabled.")
+      )
 
     const authParams = this.authParams({
       ...opts,
       responseType: 'code',
-      useWebMessage: true
+      useWebMessage: true,
     })
 
     if (getWithExpiry('authorize_state') !== null)
       return Promise.reject(new Error('A previous authorization flow is not completed.'))
+
     return this.getPkceParams(authParams).then((maybeChallenge) => {
       const params = {
         ...authParams,
-        ...maybeChallenge
+        ...maybeChallenge,
       }
 
       const authorizationUrl = this.getAuthorizationUrl(params)
 
-      return this.getWebMessage(authorizationUrl, this.config.baseUrl, opts.redirectUri)
+      return this.getWebMessage(
+          authorizationUrl,
+          this.config.baseUrl,
+          opts.redirectUri,
+      )
     })
   }
 
   exchangeAuthorizationCodeWithPkce(params: TokenRequestParameters): Promise<AuthResult> {
     return this.http
-      .post<AuthResult>(this.tokenUrl, {
-        body: {
-          clientId: this.config.clientId,
-          grantType: 'authorization_code',
-          codeVerifier: sessionStorage.getItem('verifier_key'),
-          ...params
-        }
-      })
-      .then((authResult) => {
-        sessionStorage.removeItem('authorize_state')
-        this.eventManager.fireEvent('authenticated', authResult)
-        return enrichAuthResult(authResult)
-      })
+        .post<AuthResult>(this.tokenUrl, {
+          body: {
+            clientId: this.config.clientId,
+            grantType: 'authorization_code',
+            codeVerifier: sessionStorage.getItem('verifier_key'),
+            ...params
+          }
+        })
+        .then(authResult => {
+          sessionStorage.removeItem('authorize_state')
+          this.eventManager.fireEvent('authenticated', authResult)
+          return enrichAuthResult(authResult)
+        })
   }
 
   getSessionInfo(): Promise<SessionInfo> {
@@ -200,17 +199,20 @@ export default class OAuthClient {
   }
 
   loginFromSession(opts: AuthOptions = {}): Promise<void> {
-    if (!this.config.sso) return Promise.reject(new Error("Cannot call 'loginFromSession' if SSO is not enabled."))
+    if (!this.config.sso)
+      return Promise.reject(
+          new Error("Cannot call 'loginFromSession' if SSO is not enabled.")
+      )
 
     const authParams = this.authParams({
       ...opts,
-      useWebMessage: false
+      useWebMessage: false,
     })
 
-    return this.getPkceParams(authParams).then((maybeChallenge) => {
+    return this.getPkceParams(authParams).then(maybeChallenge => {
       const params = {
         ...authParams,
-        ...maybeChallenge
+        ...maybeChallenge,
       }
 
       return this.redirectThruAuthorization(params)
@@ -223,7 +225,7 @@ export default class OAuthClient {
         password: true,
         mediation: params.mediation || 'silent'
       }
-      return navigator.credentials.get(request).then((credentials) => {
+      return navigator.credentials.get(request).then(credentials => {
         if (!isUndefined(credentials) && credentials instanceof PasswordCredential && credentials.password) {
           const loginParams: EmailLoginWithPasswordParams = {
             email: credentials.id,
@@ -244,6 +246,7 @@ export default class OAuthClient {
     const queryString = toQueryString({
       ...this.authParams(auth),
       token
+
     })
     // Non existent endpoint URL
     window.location.assign(`${this.customTokenUrl}?${queryString}`)
@@ -254,29 +257,30 @@ export default class OAuthClient {
 
     setWithExpiry('authorize_state', 'state', 20000)
 
-    const loginPromise = window.cordova
-      ? this.ropcPasswordLogin(params).then((authResult) =>
-          this.storeCredentialsInBrowser(params).then(() => enrichAuthResult(authResult))
-        )
-      : this.http
-          .post<AuthenticationToken>(this.passwordLoginUrl, {
-            body: {
-              clientId: this.config.clientId,
-              scope: resolveScope(auth, this.config.scope),
-              ...rest
-            }
-          })
-          .then((tkn) => this.storeCredentialsInBrowser(params).then(() => tkn))
-          .then((authenticationToken) => {
-            if (authenticationToken.mfaRequired) {
-              return this.mfaClient
-                ? this.mfaClient
-                    ?.getMfaStepUpToken({ tkn: authenticationToken.tkn, options: auth })
-                    .then((res) => ({ stepUpToken: res.token, amr: res.amr }))
-                : Promise.reject(new Error('Error during client instantiation'))
-            }
-            return this.loginCallback(authenticationToken, auth)
-          })
+    const loginPromise =
+        window.cordova
+            ? this.ropcPasswordLogin(params)
+                .then(authResult =>
+                    this.storeCredentialsInBrowser(params).then(() => enrichAuthResult(authResult))
+                )
+            : this.http
+                .post<AuthenticationToken>(this.passwordLoginUrl, {
+                  body: {
+                    clientId: this.config.clientId,
+                    scope: resolveScope(auth, this.config.scope),
+                    ...rest
+                  }
+                })
+                .then(tkn => this.storeCredentialsInBrowser(params).then(() => tkn))
+            .then(authenticationToken => {
+              if (authenticationToken.mfaRequired) {
+                return this.mfaClient ?
+                  this.mfaClient?.getMfaStepUpToken({tkn: authenticationToken.tkn, options: auth})
+                    .then(res => ({stepUpToken: res.token, amr: res.amr}))
+                  : Promise.reject(new Error("Error during client instantiation"))
+              }
+              return this.loginCallback(authenticationToken, auth)
+            })
 
     return loginPromise.catch((err: any) => {
       if (err.error) {
@@ -289,11 +293,11 @@ export default class OAuthClient {
   loginWithSocialProvider(provider: string, opts: AuthOptions = {}): Promise<void | InAppBrowser> {
     if (this.config.orchestrationToken) {
       const params = {
-        ...this.orchestratedFlowParams(this.config.orchestrationToken, {
+        ...(this.orchestratedFlowParams(this.config.orchestrationToken, {
           ...opts,
-          useWebMessage: false
-        }),
-        provider
+          useWebMessage: false,
+        })),
+        provider,
       }
 
       if ('cordova' in window) {
@@ -304,15 +308,12 @@ export default class OAuthClient {
         return this.redirectThruAuthorization(params)
       }
     } else {
-      const authParams = this.authParams(
-        {
-          ...opts,
-          useWebMessage: false
-        },
-        { acceptPopupMode: true }
-      )
+      const authParams = this.authParams({
+        ...opts,
+        useWebMessage: false
+      }, { acceptPopupMode: true })
 
-      return this.getPkceParams(authParams).then((maybeChallenge) => {
+      return this.getPkceParams(authParams).then(maybeChallenge => {
         const params = {
           ...authParams,
           provider,
@@ -332,56 +333,60 @@ export default class OAuthClient {
 
   private loginWithIdToken(provider: string, idToken: string, nonce: string, opts: AuthOptions = {}): Promise<void> {
     const authParams = this.authParams({
-      ...opts
+      ...opts,
     })
 
-    if (opts.useWebMessage) {
+    if(opts.useWebMessage) {
       const queryString = toQueryString({
         ...authParams,
         provider,
         idToken,
-        nonce
+        nonce,
       })
 
-      return this.getWebMessage(`${this.authorizeUrl}?${queryString}`, this.config.baseUrl, opts.redirectUri).then()
+      return this.getWebMessage(
+        `${this.authorizeUrl}?${queryString}`,
+        this.config.baseUrl,
+        opts.redirectUri,
+      ).then()
     } else {
       return this.redirectThruAuthorization({
         ...authParams,
         provider,
         idToken,
-        nonce
+        nonce,
       })
     }
   }
 
   private googleOneTap(opts: AuthOptions = {}, nonce: string = randomBase64String()): Promise<void> {
-    const binaryNonce = Buffer.from(nonce, 'utf-8')
+      const binaryNonce = Buffer.from(nonce, 'utf-8')
 
-    return window.crypto.subtle.digest('SHA-256', binaryNonce).then((hash) => {
-      const googleIdConfiguration: OneTap.IdConfiguration = {
-        client_id: this.config.googleClientId,
-        callback: (response: OneTap.CredentialResponse) =>
-          this.loginWithIdToken('google', response.credential, nonce, opts),
-        nonce: encodeToBase64(hash),
-        // Enable auto sign-in
-        auto_select: true
-      }
+      return window.crypto.subtle.digest('SHA-256', binaryNonce).then(hash => {
+        const googleIdConfiguration: OneTap.IdConfiguration = {
+          client_id: this.config.googleClientId,
+          callback: (response: OneTap.CredentialResponse) => this.loginWithIdToken("google", response.credential, nonce, opts),
+          nonce: encodeToBase64(hash),
+          // Enable auto sign-in
+          auto_select: true,
+        }
 
-      window.google.accounts.id.initialize(googleIdConfiguration)
+        window.google.accounts.id.initialize(googleIdConfiguration)
 
-      // Activate Google One Tap
-      window.google.accounts.id.prompt()
-    })
+        // Activate Google One Tap
+        window.google.accounts.id.prompt()
+
+      })
   }
 
   instantiateOneTap(opts: AuthOptions = {}): void {
     if (this.config?.googleClientId) {
-      const script = document.createElement('script')
-      script.src = 'https://accounts.google.com/gsi/client'
+      const script = document.createElement("script")
+      script.src = "https://accounts.google.com/gsi/client"
       script.onload = () => this.googleOneTap(opts)
       script.async = true
       script.defer = true
-      document.querySelector('body')?.appendChild(script)
+      document.querySelector("body")?.appendChild(script)
     } else {
       logError('Google configuration missing.')
     }
@@ -392,36 +397,34 @@ export default class OAuthClient {
       navigator.credentials.preventSilentAccess()
     }
     if (this.config.isPublic && revocationParams) {
-      return this.revokeToken(revocationParams).then((_) =>
-        window.location.assign(`${this.logoutUrl}?${toQueryString(opts)}`)
-      )
+      return this.revokeToken(revocationParams)
+          .then(_ => window.location.assign(`${this.logoutUrl}?${toQueryString(opts)}`))
     } else {
       return Promise.resolve(window.location.assign(`${this.logoutUrl}?${toQueryString(opts)}`))
     }
   }
 
   private revokeToken(revocationParams: RevocationParams): Promise<void[]> {
-    const revocationsCalls = revocationParams.tokens.map((token) =>
-      this.http.post<void>(this.revokeUrl, {
-        body: {
-          clientId: this.config.clientId,
-          token
-        }
-      })
-    )
+    const revocationsCalls = revocationParams.tokens.map(token => this.http.post<void>(this.revokeUrl, {
+      body: {
+        clientId: this.config.clientId,
+        token
+      }
+    }))
 
-    return Promise.all(revocationsCalls)
+   return Promise.all(revocationsCalls)
   }
 
   refreshTokens(params: RefreshTokenParams): Promise<AuthResult> {
-    const result = this.http.post<AuthResult>(this.tokenUrl, {
-      body: {
-        clientId: this.config.clientId,
-        grantType: 'refresh_token',
-        refreshToken: params.refreshToken,
-        ...pick(params, 'scope')
-      }
-    })
+    const result =
+      this.http.post<AuthResult>(this.tokenUrl, {
+        body: {
+          clientId: this.config.clientId,
+          grantType: 'refresh_token',
+          refreshToken: params.refreshToken,
+          ...pick(params, 'scope'),
+        }
+      })
 
     return result.then(enrichAuthResult)
   }
@@ -432,44 +435,46 @@ export default class OAuthClient {
     const scope = resolveScope(auth, this.config.scope)
 
     const loginParams: LoginWithPasswordParams = {
-      ...(data.phoneNumber ? { phoneNumber: data.phoneNumber } : { email: data.email || '' }),
+      ...(data.phoneNumber)
+          ? { phoneNumber: data.phoneNumber }
+          : { email: data.email || "" },
       password: data.password,
       saveCredentials,
       auth
     }
 
     const resultPromise = window.cordova
-      ? this.http
-          .post<AuthResult>(this.signupTokenUrl, {
-            body: {
-              clientId,
-              redirectUrl,
-              scope,
-              ...pick(auth, 'origin'),
-              data,
-              returnToAfterEmailConfirmation,
-              captchaToken
-            }
-          })
-          .then((authResult) => {
-            this.eventManager.fireEvent('authenticated', authResult)
-            return this.storeCredentialsInBrowser(loginParams).then(() => enrichAuthResult(authResult))
-          })
-      : this.http
-          .post<AuthenticationToken>(this.signupUrl, {
-            body: {
-              clientId,
-              redirectUrl,
-              scope,
-              data,
-              returnToAfterEmailConfirmation,
-              captchaToken
-            }
-          })
-          .then((tkn) => this.storeCredentialsInBrowser(loginParams).then(() => tkn))
-          .then((tkn) => this.loginCallback(tkn, auth))
+        ? this.http
+            .post<AuthResult>(this.signupTokenUrl, {
+              body: {
+                clientId,
+                redirectUrl,
+                scope,
+                ...pick(auth, 'origin'),
+                data,
+                returnToAfterEmailConfirmation,
+                captchaToken
+              }
+            })
+            .then(authResult => {
+              this.eventManager.fireEvent('authenticated', authResult)
+              return this.storeCredentialsInBrowser(loginParams).then(() => enrichAuthResult(authResult))
+            })
+        : this.http
+            .post<AuthenticationToken>(this.signupUrl, {
+              body: {
+                clientId,
+                redirectUrl,
+                scope,
+                data,
+                returnToAfterEmailConfirmation,
+                captchaToken
+              }
+            })
+            .then(tkn => this.storeCredentialsInBrowser(loginParams).then(() => tkn))
+            .then(tkn => this.loginCallback(tkn, auth))
 
-    return resultPromise.catch((err) => {
+    return resultPromise.catch(err => {
       if (err.error) {
         this.eventManager.fireEvent('signup_failed', err)
       }
@@ -477,37 +482,40 @@ export default class OAuthClient {
     })
   }
 
-  startPasswordless(
-    params: PasswordlessParams,
-    auth: Omit<AuthOptions, 'useWebMessage'> = {}
-  ): Promise<PasswordlessResponse> {
+  startPasswordless(params: PasswordlessParams, auth: Omit<AuthOptions, 'useWebMessage'> = {}): Promise<PasswordlessResponse> {
     const passwordlessPayload =
-      'stepUp' in params ? Promise.resolve(params) : this.resolveSingleFactorPasswordlessParams(params, auth)
+        ('stepUp' in params)
+            ? Promise.resolve(params)
+            : this.resolveSingleFactorPasswordlessParams(params, auth)
 
-    return passwordlessPayload.then((payload) =>
-      this.http.post<PasswordlessResponse>(this.passwordlessStartUrl, {
-        body: payload
-      })
+    return passwordlessPayload.then(payload =>
+        this.http.post<PasswordlessResponse>(this.passwordlessStartUrl, {
+          body: payload
+        })
     )
   }
 
   verifyPasswordless(params: VerifyPasswordlessParams, auth: AuthOptions = {}): Promise<void> {
-    return 'challengeId' in params
-      ? Promise.resolve(this.loginWithVerificationCode(params))
-      : this.http
-          .post(this.passwordlessVerifyAuthCodeUrl, { body: params })
-          .catch((err) => {
-            if (err.error) this.eventManager.fireEvent('login_failed', err)
-            return Promise.reject(err)
-          })
-          .then(() => this.loginWithVerificationCode(params, auth))
+    return ('challengeId' in params)
+        ? Promise.resolve(this.loginWithVerificationCode(params))
+        : this.http
+            .post(this.passwordlessVerifyAuthCodeUrl, { body: params })
+            .catch(err => {
+              if (err.error) this.eventManager.fireEvent('login_failed', err)
+              return Promise.reject(err)
+            })
+            .then(() => this.loginWithVerificationCode(params, auth))
   }
 
   private getAuthorizationUrl(queryString: Record<string, string | boolean | undefined>): string {
     return `${this.authorizeUrl}?${toQueryString(queryString)}`
   }
 
-  private getWebMessage(src: string, origin: string, redirectUri?: string): Promise<AuthResult> {
+  private getWebMessage(
+    src: string,
+    origin: string,
+    redirectUri?: string,
+  ): Promise<AuthResult> {
     const iframe = document.createElement('iframe')
     // "wm" needed to make sure the randomized id is valid
     const id = `wm${randomBase64String()}`
@@ -535,12 +543,10 @@ export default class OAuthClient {
 
         if (AuthResult.isAuthResult(result)) {
           if (result.code) {
-            resolve(
-              this.exchangeAuthorizationCodeWithPkce({
-                code: result.code,
-                redirectUri: redirectUri || window.location.origin
-              })
-            )
+            resolve(this.exchangeAuthorizationCodeWithPkce({
+              code: result.code,
+              redirectUri: redirectUri || window.location.origin,
+            }))
           } else {
             this.eventManager.fireEvent('authenticated', data.response)
             resolve(enrichAuthResult(data.response))
@@ -567,33 +573,33 @@ export default class OAuthClient {
     const { responseType, redirectUri, provider } = opts
 
     WinChan.open(
-      {
-        url: `${this.authorizeUrl}?${toQueryString(opts)}`,
-        relay_url: this.popupRelayUrl,
-        window_features: this.computeProviderPopupOptions(provider)
-      },
-      (err: string, result: WinChanResponse<object>) => {
-        if (err) {
-          logError(err)
-          this.eventManager.fireEvent('authentication_failed', {
-            errorDescription: 'Unexpected error occurred',
-            error: 'server_error'
-          })
-          return
-        }
-
-        const r = camelCaseProperties(result) as WinChanResponse<AuthResult>
-
-        if (r.success) {
-          if (responseType === 'code') {
-            window.location.assign(`${redirectUri}?code=${r.data.code}`)
-          } else {
-            this.eventManager.fireEvent('authenticated', r.data)
+        {
+          url: `${this.authorizeUrl}?${toQueryString(opts)}`,
+          relay_url: this.popupRelayUrl,
+          window_features: this.computeProviderPopupOptions(provider)
+        },
+        (err: string, result: WinChanResponse<object>) => {
+          if (err) {
+            logError(err)
+            this.eventManager.fireEvent('authentication_failed', {
+              errorDescription: 'Unexpected error occurred',
+              error: 'server_error'
+            })
+            return
           }
-        } else {
-          this.eventManager.fireEvent('authentication_failed', r.data)
+
+          const r = camelCaseProperties(result) as WinChanResponse<AuthResult>
+
+          if (r.success) {
+            if (responseType === 'code') {
+              window.location.assign(`${redirectUri}?code=${r.data.code}`)
+            } else {
+              this.eventManager.fireEvent('authenticated', r.data)
+            }
+          } else {
+            this.eventManager.fireEvent('authentication_failed', r.data)
+          }
         }
-      }
     )
     return Promise.resolve()
   }
@@ -630,20 +636,20 @@ export default class OAuthClient {
     const auth = params.auth
 
     return this.http
-      .post<AuthResult>(this.tokenUrl, {
-        body: {
-          clientId: this.config.clientId,
-          grantType: 'password',
-          username: this.getAuthenticationId(params),
-          password: params.password,
-          scope: resolveScope(auth, this.config.scope),
-          ...pick(auth, 'origin')
-        }
-      })
-      .then((authResult) => {
-        this.eventManager.fireEvent('authenticated', authResult)
-        return enrichAuthResult(authResult)
-      })
+        .post<AuthResult>(this.tokenUrl, {
+          body: {
+            clientId: this.config.clientId,
+            grantType: 'password',
+            username: this.getAuthenticationId(params),
+            password: params.password,
+            scope: resolveScope(auth, this.config.scope),
+            ...pick(auth, 'origin')
+          }
+        })
+        .then(authResult => {
+          this.eventManager.fireEvent('authenticated', authResult)
+          return enrichAuthResult(authResult)
+        })
   }
 
   private loginWithCordovaInAppBrowser(opts: QueryString): Promise<void | InAppBrowser> {
@@ -656,7 +662,7 @@ export default class OAuthClient {
   }
 
   private openInCordovaSystemBrowser(url: string): Promise<void | InAppBrowser> {
-    return this.getAvailableBrowserTabPlugin().then((maybeBrowserTab) => {
+    return this.getAvailableBrowserTabPlugin().then(maybeBrowserTab => {
       if (!window.cordova) {
         return Promise.reject(new Error('Cordova environnement not detected.'))
       }
@@ -667,12 +673,11 @@ export default class OAuthClient {
       }
 
       if (window.cordova.InAppBrowser) {
-        const ref =
-          window.cordova.platformId === 'ios'
-            ? // Open a webview (to pass Apple validation tests)
-              window.cordova.InAppBrowser.open(url, '_blank')
-            : // Open the system browser
-              window.cordova.InAppBrowser.open(url, '_system')
+        const ref = window.cordova.platformId === 'ios' ?
+          // Open a webview (to pass Apple validation tests)
+          window.cordova.InAppBrowser.open(url, '_blank') :
+          // Open the system browser
+          window.cordova.InAppBrowser.open(url, '_system')
         return Promise.resolve(ref)
       }
 
@@ -688,7 +693,7 @@ export default class OAuthClient {
 
       const plugin = cordova.plugins.browsertab
 
-      plugin.isAvailable((isAvailable) => resolve(isAvailable ? plugin : undefined), reject)
+      plugin.isAvailable(isAvailable => resolve(isAvailable ? plugin : undefined), reject)
     })
   }
 
@@ -705,7 +710,7 @@ export default class OAuthClient {
 
       return navigator.credentials
         .create(credentialParams)
-        .then((credentials) =>
+        .then(credentials =>
           !isUndefined(credentials) && credentials
             ? navigator.credentials.store(credentials).then(() => {})
             : Promise.resolve()
@@ -718,10 +723,7 @@ export default class OAuthClient {
 
   // TODO: Make passwordless able to handle web_message
   // Asana https://app.asana.com/0/982150578058310/1200173806808689/f
-  private resolveSingleFactorPasswordlessParams(
-    params: SingleFactorPasswordlessParams,
-    auth: Omit<AuthOptions, 'useWebMessage'> = {}
-  ): Promise<{}> {
+  private resolveSingleFactorPasswordlessParams(params: SingleFactorPasswordlessParams, auth: Omit<AuthOptions, 'useWebMessage'> = {}): Promise<{}> {
     const { authType, email, phoneNumber, captchaToken } = params
 
     if (this.config.orchestrationToken) {
@@ -732,19 +734,19 @@ export default class OAuthClient {
         authType,
         email,
         phoneNumber,
-        captchaToken
+        captchaToken,
       })
     } else {
       const authParams = this.authParams(auth)
 
-      return this.getPkceParams(authParams).then((maybeChallenge) => {
+      return this.getPkceParams(authParams).then(maybeChallenge => {
         return {
           ...authParams,
           authType,
           email,
           phoneNumber,
           captchaToken,
-          ...maybeChallenge
+          ...maybeChallenge,
         }
       })
     }
@@ -759,7 +761,7 @@ export default class OAuthClient {
   }
 
   private getAuthenticationId(params: LoginWithPasswordParams): string {
-    if (this.hasLoggedWithEmail(params)) {
+    if(this.hasLoggedWithEmail(params)) {
       return params.email
     } else if (this.hasLoggedWithPhoneNumber(params)) {
       return params.phoneNumber
@@ -776,11 +778,11 @@ export default class OAuthClient {
         ...pick(tkn, 'tkn')
       }
 
-      return Promise.resolve().then((_) => this.redirectThruAuthorization(authParams) as AuthResult)
+      return Promise.resolve().then(_ => this.redirectThruAuthorization(authParams) as AuthResult)
     } else {
       const authParams = this.authParams(auth)
 
-      return this.getPkceParams(authParams).then((maybeChallenge) => {
+      return this.getPkceParams(authParams).then(maybeChallenge => {
         const params = {
           ...authParams,
           ...maybeChallenge,
@@ -788,7 +790,10 @@ export default class OAuthClient {
         }
 
         if (auth.useWebMessage) {
-          return this.getWebMessage(this.getAuthorizationUrl(params), this.config.baseUrl, auth.redirectUri)
+          return this.getWebMessage(
+            this.getAuthorizationUrl(params),
+            this.config.baseUrl,
+            auth.redirectUri)
         } else {
           return this.redirectThruAuthorization(params) as AuthResult
         }
@@ -804,41 +809,42 @@ export default class OAuthClient {
     const correctedAuthParams = {
       clientId: this.config.clientId,
       r5_request_token: orchestrationToken,
-      ...pick(authParams, 'responseType', 'redirectUri', 'clientId', 'persistent')
+      ...pick(authParams, 'responseType', 'redirectUri', 'clientId', 'persistent'),
     }
 
     const uselessParams: string[] = difference(keys(authParams), keys(correctedAuthParams))
-    if (uselessParams.length !== 0) console.debug('Orchestrated flow: pruned parameters: ' + uselessParams)
+    if (uselessParams.length !== 0)
+      console.debug("Orchestrated flow: pruned parameters: " + uselessParams)
 
     return correctedAuthParams
   }
 
   authParams(opts: AuthOptions, { acceptPopupMode = false } = {}) {
-    const isConfidentialCodeWebMsg =
-      !this.config.isPublic && !!opts.useWebMessage && (opts.responseType === 'code' || opts.redirectUri)
+    const isConfidentialCodeWebMsg = !this.config.isPublic && !!opts.useWebMessage && (opts.responseType === 'code' || opts.redirectUri)
 
     const overrideResponseType: Partial<AuthOptions> = isConfidentialCodeWebMsg
-      ? { responseType: 'token', redirectUri: undefined }
-      : {}
+        ? { responseType: 'token', redirectUri: undefined }
+        : {}
 
     return {
       clientId: this.config.clientId,
       ...computeAuthOptions(
-        {
-          ...opts,
-          ...overrideResponseType
-        },
-        { acceptPopupMode },
-        this.config.scope
+          {
+            ...opts,
+            ...overrideResponseType
+          },
+          { acceptPopupMode },
+          this.config.scope
       )
     }
   }
 
   getPkceParams(authParams: AuthParameters): Promise<PkceParams | {}> {
-    if (this.config.isPublic && authParams.responseType === 'code') {
+    if (this.config.isPublic && authParams.responseType === 'code')
       return computePkceParams()
-    } else if (authParams.responseType === 'token' && this.config.pkceEnforced)
+    else if (authParams.responseType === 'token' && this.config.pkceEnforced)
       return Promise.reject(new Error('Cannot use implicit flow when PKCE is enforced'))
-    else return Promise.resolve({})
+    else
+      return Promise.resolve({})
   }
 }
