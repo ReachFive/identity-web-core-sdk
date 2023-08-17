@@ -189,6 +189,7 @@ export default class OAuthClient {
           this.eventManager.fireEvent('authenticated', authResult)
           return enrichAuthResult(authResult)
         })
+      .finally(() => this.releaseAuthorizationLock())
   }
 
   getSessionInfo(): Promise<SessionInfo> {
@@ -619,8 +620,8 @@ export default class OAuthClient {
 
   private redirectThruAuthorization(queryString: Record<string, string | boolean | undefined>): Promise<void> {
     const location = this.getAuthorizationUrl(queryString)
-    window.location.assign(location)
     this.releaseAuthorizationLock()
+    window.location.assign(location)
     return Promise.resolve()
   }
 
