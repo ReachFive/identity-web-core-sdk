@@ -16,6 +16,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Added `rbaEnabled` field in `RemoteSettings` model.
 - Added and optional parameter `returnProviderToken` in `TokenRequestParameters` and returns `providerAccessToken` and `providerName` fields in `AuthResult` if `returnProviderToken` is set to `true`.
 
+### Fixes
+
+- Fix error occurring when checkSession is called quickly after a loginWithPassword
+
 ## [1.26.0] - 2022-11-17
 
 ### Added
