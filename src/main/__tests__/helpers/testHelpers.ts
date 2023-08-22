@@ -31,6 +31,7 @@ export async function expectIframeWithParams(
   src: string
 ) {
   await delay(5)
+  sessionStorage.clear()
   // "wm" needed to make sure the randomized id is valid
   const iframe = document.querySelector('#wm' + iframeId)
   expect(iframe).not.toBeNull()
