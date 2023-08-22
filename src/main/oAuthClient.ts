@@ -28,6 +28,7 @@ import * as OneTap from "google-one-tap"
 import { encodeToBase64 } from "../utils/base64"
 import { Buffer } from 'buffer/'
 import MfaClient from './mfaClient'
+import { getWithExpiry, setWithExpiry } from '../utils/sessionStorage'
 
 export type LoginWithCredentialsParams = {
   mediation?: 'silent' | 'optional' | 'required'
@@ -154,8 +155,10 @@ export default class OAuthClient {
       useWebMessage: true,
     })
 
-    return this.getPkceParams(authParams).then(maybeChallenge => {
+    if (this.isAuthorizationLocked())
+      return Promise.reject(new Error('An ongoing authorization flow has not yet completed.'))
 
+    return this.getPkceParams(authParams).then((maybeChallenge) => {
       const params = {
         ...authParams,
         ...maybeChallenge,
@@ -182,9 +185,11 @@ export default class OAuthClient {
           }
         })
         .then(authResult => {
+          this.releaseAuthorizationLock()
           this.eventManager.fireEvent('authenticated', authResult)
           return enrichAuthResult(authResult)
         })
+      .finally(() => this.releaseAuthorizationLock())
   }
 
   getSessionInfo(): Promise<SessionInfo> {
@@ -250,6 +255,8 @@ export default class OAuthClient {
 
   loginWithPassword(params: LoginWithPasswordParams): Promise<AuthResult> {
     const { auth = {}, ...rest } = params
+
+    this.acquireAuthorizationLock()
 
     const loginPromise =
         window.cordova
@@ -613,6 +620,7 @@ export default class OAuthClient {
 
   private redirectThruAuthorization(queryString: Record<string, string | boolean | undefined>): Promise<void> {
     const location = this.getAuthorizationUrl(queryString)
+    this.releaseAuthorizationLock()
     window.location.assign(location)
     return Promise.resolve()
   }
@@ -839,5 +847,17 @@ export default class OAuthClient {
       return Promise.reject(new Error('Cannot use implicit flow when PKCE is enforced'))
     else
       return Promise.resolve({})
+  }
+
+  acquireAuthorizationLock(): void {
+    setWithExpiry('authorize_state', 'state', 20000)
+  }
+
+  releaseAuthorizationLock(): void {
+    sessionStorage.removeItem('authorize_state')
+  }
+
+  isAuthorizationLocked(): boolean {
+    return getWithExpiry('authorize_state') !== null
   }
 }
