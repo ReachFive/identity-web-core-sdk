@@ -6,7 +6,7 @@ import { IdentityEventManager } from './identityEventManager'
 import { HttpClient } from './httpClient'
 import { ApiClientConfig } from './main'
 
-export type UpdateEmailParams = { accessToken: string; email: string; redirectUrl?: string }
+export type UpdateEmailParams = { accessToken: string; email: string; redirectUrl?: string; captchaToken?: string }
 
 export type EmailVerificationParams = { accessToken: string; redirectUrl?: string; returnToAfterEmailConfirmation?: string }
 
@@ -151,8 +151,8 @@ export default class ProfileClient {
   }
 
   updateEmail(params: UpdateEmailParams): Promise<void> {
-    const { accessToken, email, redirectUrl } = params
-    return this.http.post(this.updateEmailUrl, { body: { email, redirectUrl }, accessToken })
+    const { accessToken, email, redirectUrl, captchaToken } = params
+    return this.http.post(this.updateEmailUrl, { body: { email, redirectUrl, captchaToken }, accessToken })
   }
 
   updatePhoneNumber(params: UpdatePhoneNumberParams): Promise<void> {
