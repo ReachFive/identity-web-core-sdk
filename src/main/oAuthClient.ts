@@ -155,8 +155,10 @@ export default class OAuthClient {
       useWebMessage: true,
     })
 
-    if (this.isAuthorizationLocked())
+    if (this.isAuthorizationLocked() || this.isSessionLocked())
       return Promise.reject(new Error('An ongoing authorization flow has not yet completed.'))
+
+    this.acquireSessionLock()
 
     return this.getPkceParams(authParams).then((maybeChallenge) => {
       const params = {
@@ -185,11 +187,13 @@ export default class OAuthClient {
           }
         })
         .then(authResult => {
-          this.releaseAuthorizationLock()
           this.eventManager.fireEvent('authenticated', authResult)
           return enrichAuthResult(authResult)
         })
-      .finally(() => this.releaseAuthorizationLock())
+      .finally(() => {
+        this.releaseAuthorizationLock()
+        this.releaseSessionLock()
+      })
   }
 
   getSessionInfo(): Promise<SessionInfo> {
@@ -204,6 +208,10 @@ export default class OAuthClient {
       return Promise.reject(
           new Error("Cannot call 'loginFromSession' if SSO is not enabled.")
       )
+    if (this.isAuthorizationLocked() || this.isSessionLocked())
+      return Promise.reject(new Error('An ongoing authorization flow has not yet completed.'))
+
+    this.acquireSessionLock()
 
     const authParams = this.authParams({
       ...opts,
@@ -621,6 +629,7 @@ export default class OAuthClient {
   private redirectThruAuthorization(queryString: Record<string, string | boolean | undefined>): Promise<void> {
     const location = this.getAuthorizationUrl(queryString)
     this.releaseAuthorizationLock()
+    this.releaseSessionLock()
     window.location.assign(location)
     return Promise.resolve()
   }
@@ -851,6 +860,18 @@ export default class OAuthClient {
 
   acquireAuthorizationLock(): void {
     setWithExpiry('authorize_state', 'state', 20000)
+  }
+
+  acquireSessionLock(): void {
+    setWithExpiry('session_state', 'state', 20000)
+  }
+
+  releaseSessionLock(): void {
+    sessionStorage.removeItem('session_state')
+  }
+
+  isSessionLocked(): boolean {
+    return getWithExpiry('session_state') !== null
   }
 
   releaseAuthorizationLock(): void {
