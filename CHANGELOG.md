@@ -7,6 +7,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.28.0] - 2023-09-13
+### Fixes
+- Fix error occuring when checkSession is called quickly after another checkSession
+- Fix error occuring when loginFromSession is called quickly after another loginFromSession
+
 ## [1.27.0] - 2023-08-01
 
 ### Added
@@ -381,6 +386,10 @@ Automatise the deployment of a new release with `circleci`.
 - Remove `yarn`.
 
 [Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.26.0...HEAD
+
+[1.28.0]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.27.0...v1.28.0
+
+[1.27.0]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.26.0...v1.27.0
 
 [1.26.0]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.25.0...v1.26.0
 
