@@ -1,4 +1,4 @@
-import { MFA } from './models'
+import {MFA, TrustedDevice} from './models'
 import { AuthOptions } from './authOptions'
 import { HttpClient } from './httpClient'
 import { AuthResult } from './authResult'
@@ -53,6 +53,14 @@ export type VerifyMfaPhoneNumberRegistrationParams = {
   verificationCode: string
 }
 
+export type DeleteTrustedDeviceParams = {
+  accessToken: string
+  trustedDeviceId: string
+}
+export type ListTrustedDevicesResponse = {
+  trustedDevices: TrustedDevice[]
+}
+
 /**
  * Identity Rest API Client
  */
@@ -67,6 +75,7 @@ export default class MfaClient {
   private phoneNumberCredentialUrl: string
   private phoneNumberCredentialVerifyUrl: string
   private stepUpUrl: string
+  private trustedDeviceUrl: string
 
   constructor(props: { http: HttpClient; oAuthClient: OAuthClient }) {
     this.http = props.http
@@ -79,6 +88,7 @@ export default class MfaClient {
     this.phoneNumberCredentialUrl = `${this.credentialsUrl}/phone-numbers`
     this.phoneNumberCredentialVerifyUrl = `${this.phoneNumberCredentialUrl}/verify`
     this.stepUpUrl = '/mfa/stepup'
+    this.trustedDeviceUrl = '/mfa/trusteddevices'
   }
 
   getMfaStepUpToken(params: StepUpParams): Promise<StepUpResponse> {
@@ -167,5 +177,16 @@ export default class MfaClient {
       },
       accessToken
     })
+  }
+
+  listTrustedDevices(accessToken: string): Promise<ListTrustedDevicesResponse> {
+    return this.http.get<ListTrustedDevicesResponse>(this.trustedDeviceUrl, {
+      accessToken
+    })
+  }
+
+  deleteTrustedDevices(params: DeleteTrustedDeviceParams): Promise<void> {
+    const { accessToken, trustedDeviceId } = params
+    return this.http.remove<void>(this.trustedDeviceUrl + '/' + trustedDeviceId, {accessToken})
   }
 }
