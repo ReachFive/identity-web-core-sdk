@@ -123,6 +123,20 @@ export namespace MFA {
   }
 }
 
+export type TrustedDevice = {
+  id: string
+  metadata: TrustedDeviceMetadata
+  userId: string
+  createdAt: string
+}
+
+export type TrustedDeviceMetadata = {
+  ip?: string
+  operatingSystem?: string
+  userAgent?: string
+  deviceClass?: string
+  deviceName?: string
+}
 /**
  * This type represents the settings of a ReachFive account's stored in the backend.
  */

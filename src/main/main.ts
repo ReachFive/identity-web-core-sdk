@@ -23,6 +23,8 @@ import { toQueryString } from '../utils/queryString'
 import { createHttpClient, rawRequest } from './httpClient'
 import { initCordovaCallbackIfNecessary } from './cordovaHelper'
 import MfaClient, {
+  DeleteTrustedDeviceParams,
+  ListTrustedDevicesResponse,
   RemoveMfaEmailParams,
   RemoveMfaPhoneNumberParams,
   StartMfaEmailRegistrationParams,
@@ -80,6 +82,7 @@ export type Client = {
   getSignupData: (signupToken: string) => Promise<OpenIdUser>
   getUser: (params: GetUserParams) => Promise<Profile>
   listMfaCredentials: (accessToken: string) => Promise<CredentialsResponse>
+  listTrustedDevices: (accessToken: string) => Promise<ListTrustedDevicesResponse>
   listWebAuthnDevices: (accessToken: string) => Promise<DeviceCredential[]>
   loginFromSession: (options?: AuthOptions) => Promise<void>
   loginWithCredentials: (params: LoginWithCredentialsParams) => Promise<AuthResult>
@@ -95,6 +98,7 @@ export type Client = {
   remoteSettings: Promise<RemoteSettings>
   removeMfaEmail: (params: RemoveMfaEmailParams) => Promise<void>
   removeMfaPhoneNumber: (params: RemoveMfaPhoneNumberParams) => Promise<void>
+  removeTrustedDevice: (params: DeleteTrustedDeviceParams) => Promise<void>
   removeWebAuthnDevice: (accessToken: string, deviceId: string) => Promise<void>
   requestPasswordReset: (params: RequestPasswordResetParams) => Promise<void>
   sendEmailVerification: (params: EmailVerificationParams) => Promise<void>
@@ -257,6 +261,10 @@ export function createClient(creationConfig: Config): Client {
     return apiClients.then(clients => clients.oAuth.instantiateOneTap(opts))
   }
 
+  function listTrustedDevices(accessToken: string) {
+    return apiClients.then(clients => clients.mfa.listTrustedDevices(accessToken))
+  }
+
   function loginWithSocialProvider(provider: string, options: AuthOptions = {}) {
     return apiClients.then(clients => clients.oAuth.loginWithSocialProvider(provider, options))
   }
@@ -293,6 +301,10 @@ export function createClient(creationConfig: Config): Client {
 
   function removeMfaPhoneNumber(params: RemoveMfaPhoneNumberParams) {
     return apiClients.then(clients => clients.mfa.removeMfaPhoneNumber(params))
+  }
+
+  function removeTrustedDevice(params: DeleteTrustedDeviceParams) {
+    return apiClients.then(clients => clients.mfa.deleteTrustedDevices(params))
   }
 
   function removeWebAuthnDevice(accessToken: string, deviceId: string) {
@@ -381,6 +393,7 @@ export function createClient(creationConfig: Config): Client {
     getSignupData,
     getUser,
     listMfaCredentials,
+    listTrustedDevices,
     listWebAuthnDevices,
     loginFromSession,
     loginWithCredentials,
@@ -396,6 +409,7 @@ export function createClient(creationConfig: Config): Client {
     remoteSettings,
     removeMfaEmail,
     removeMfaPhoneNumber,
+    removeTrustedDevice,
     removeWebAuthnDevice,
     requestPasswordReset,
     sendEmailVerification,
