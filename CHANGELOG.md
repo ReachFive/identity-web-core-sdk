@@ -391,7 +391,7 @@ Automatise the deployment of a new release with `circleci`.
 
 [Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.26.0...HEAD
 
-[1.28.0]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.28.0...v1.29.0
+[1.29.0]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.28.0...v1.29.0
 
 [1.28.0]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.27.0...v1.28.0
 
