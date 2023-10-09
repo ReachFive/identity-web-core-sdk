@@ -7,6 +7,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.29.0] - 2023-10-06
+- Added method listTrustedDevices
+- Added method deleteTrustedDevices
+
 ## [1.28.0] - 2023-09-13
 ### Fixes
 - Fix error occuring when checkSession is called quickly after another checkSession
@@ -385,7 +389,9 @@ Automatise the deployment of a new release with `circleci`.
 - Implement `tslint`.
 - Remove `yarn`.
 
-[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.26.0...HEAD
+[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.29.0...HEAD
+
+[1.29.0]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.28.0...v1.29.0
 
 [1.28.0]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.27.0...v1.28.0
 
