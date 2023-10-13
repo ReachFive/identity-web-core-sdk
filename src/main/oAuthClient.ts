@@ -575,6 +575,11 @@ export default class OAuthClient {
       window.addEventListener('message', listener, false)
       document.body.appendChild(iframe)
     })
+      .finally(() => {
+        this.releaseAuthorizationLock()
+        this.releaseSessionLock()
+      }
+    )
   }
 
   private loginWithPopup(opts: AuthOptions & { provider: string }): Promise<void> {
