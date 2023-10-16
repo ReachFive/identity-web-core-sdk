@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.29.1] - 2023-10-16
+- Fix issue occurring when checkSession is called less than 20 seconds after another checkSession during no PKCE flow.
+
 ## [1.29.0] - 2023-10-06
 - Added method listTrustedDevices
 - Added method deleteTrustedDevices
@@ -389,7 +392,9 @@ Automatise the deployment of a new release with `circleci`.
 - Implement `tslint`.
 - Remove `yarn`.
 
-[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.29.0...HEAD
+[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.29.1...HEAD
+
+[1.29.1]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.29.0...v1.29.1
 
 [1.29.0]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.28.0...v1.29.0
 
