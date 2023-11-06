@@ -44,7 +44,6 @@ export type VerifyMfaEmailRegistrationParams = {
 export type VerifyMfaPasswordlessParams = {
   challengeId: string
   verificationCode: string
-  accessToken: string
   trustDevice?: boolean
 }
 
@@ -157,7 +156,7 @@ export default class MfaClient {
   }
 
   verifyMfaPasswordless(params: VerifyMfaPasswordlessParams): Promise<AuthResult> {
-    const { challengeId, verificationCode, accessToken , trustDevice} = params
+    const { challengeId, verificationCode, trustDevice} = params
 
     return this.http.post<AuthResult>(this.passwordlessVerifyUrl, {
       body: {
@@ -165,7 +164,6 @@ export default class MfaClient {
         verificationCode,
         trustDevice
       },
-      accessToken
     })
   }
 
