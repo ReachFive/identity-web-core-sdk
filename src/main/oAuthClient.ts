@@ -57,14 +57,14 @@ export type RevocationParams = {
 
 export type RefreshTokenParams = { refreshToken: string, scope?: Scope }
 
-type SingleFactorPasswordlessParams = {
+export type SingleFactorPasswordlessParams = {
   authType: 'magic_link' | 'sms'
   email?: string
   phoneNumber?: string
   captchaToken?: string
 }
 
-type StepUpPasswordlessParams = {
+export type StepUpPasswordlessParams = {
   authType: 'email' | 'sms'
   stepUp: string
 }
