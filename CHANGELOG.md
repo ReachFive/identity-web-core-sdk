@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.30.0] - 2023-11-07
+- Remove unnecessary access token parameter from verifyMfaPasswordless method
+
 ## [1.29.1] - 2023-10-16
 - Fix issue occurring when checkSession is called less than 20 seconds after another checkSession during no PKCE flow.
 
@@ -392,7 +395,9 @@ Automatise the deployment of a new release with `circleci`.
 - Implement `tslint`.
 - Remove `yarn`.
 
-[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.29.1...HEAD
+[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.30.0...HEAD
+
+[1.30.0]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.29.1...v1.30.0
 
 [1.29.1]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.29.0...v1.29.1
 
