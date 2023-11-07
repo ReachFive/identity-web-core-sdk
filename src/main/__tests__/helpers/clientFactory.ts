@@ -12,18 +12,25 @@ export type TestKit = {
 }
 
 export function createDefaultTestClient(remoteSettings: Partial<RemoteSettings> = {}): TestKit {
-  const actualRemoteSettings = {
+  const clientId = 'ijzdfpidjf'
+  const domain = 'local.reach5.net'
+  const configUrl = `https://${domain}/identity/v1/config`
+
+  const actualRemoteSettings: RemoteSettings = {
     sso: false,
+    sms: false,
     pkceEnforced: false,
     isPublic: false,
     language: 'en',
     rbaEnabled: false,
+    webAuthn: false,
+    socialProviders: [],
+    customFields: [],
+    resourceBaseUrl: `https://${domain}/hassets/sdk`,
+    mfaEmailEnabled: false,
+    mfaSmsEnabled: false,
     ...remoteSettings,
   }
-
-  const clientId = 'ijzdfpidjf'
-  const domain = 'local.reach5.net'
-  const configUrl = `https://${domain}/identity/v1/config`
 
   // Mocks the initial config fetching
   const remoteSettingsCall = fetchMock.mockResponseOnce(JSON.stringify(actualRemoteSettings), { status: 200 })

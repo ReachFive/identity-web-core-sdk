@@ -49,9 +49,10 @@ import WebAuthnClient from './webAuthnClient'
 import CredentialsResponse = MFA.CredentialsResponse
 import StepUpResponse = MFA.StepUpResponse
 
+export * from './oAuthClient'
 export { AuthResult } from './authResult'
 export { AuthOptions } from './authOptions'
-export { ErrorResponse, Profile, SessionInfo, MFA, PasswordlessResponse } from './models'
+export * from './models'
 export { DeviceCredential, LoginWithWebAuthnParams, SignupWithWebAuthnParams } from './webAuthnService'
 
 export interface Config {
@@ -75,7 +76,7 @@ export type ApiClientConfig = {
 export type Client = {
   addNewWebAuthnDevice: (accessToken: string, friendlyName?: string) => Promise<void>
   checkSession: (options?: AuthOptions) => Promise<AuthResult>
-  checkUrlFragment: (url: string) => boolean
+  checkUrlFragment: (url?: string) => boolean
   exchangeAuthorizationCodeWithPkce: (params: TokenRequestParameters) => Promise<AuthResult>
   getMfaStepUpToken: (params: StepUpParams) => Promise<StepUpResponse>
   getSessionInfo: () => Promise<SessionInfo>
