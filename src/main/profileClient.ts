@@ -67,7 +67,7 @@ export type UpdatePhoneNumberParams = {
 export type UpdateProfileParams = {
   accessToken: string
   redirectUrl?: string
-  data: Profile
+  data: Partial<Profile>
 }
 
 export type VerifyPhoneNumberParams = {
