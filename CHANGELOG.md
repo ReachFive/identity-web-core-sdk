@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.30.1] - 2023-11-09
+- Make profile properties optionals in updateProfile's data param type
+
 ## [1.30.0] - 2023-11-07
 - Remove unnecessary access token parameter from verifyMfaPasswordless method
 
@@ -395,7 +398,9 @@ Automatise the deployment of a new release with `circleci`.
 - Implement `tslint`.
 - Remove `yarn`.
 
-[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.30.0...HEAD
+[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.30.1...HEAD
+
+[1.30.1]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.30.0...v1.30.1
 
 [1.30.0]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.29.1...v1.30.0
 
