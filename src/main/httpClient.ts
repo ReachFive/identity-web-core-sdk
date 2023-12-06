@@ -5,6 +5,7 @@ import isEmpty from 'lodash/isEmpty'
 export type HttpConfig = {
   baseUrl: string
   language?: string
+  locale?: string
   acceptCookies?: boolean
 }
 
@@ -52,6 +53,7 @@ export function createHttpClient(config: HttpConfig): HttpClient {
       headers: {
         ...(accessToken && { Authorization: 'Bearer ' + accessToken }),
         ...(config.language && { 'Accept-Language': config.language }),
+        ...(config.locale && {'Custom-Locale': config.locale }),
         ...(body && { 'Content-Type': 'application/json;charset=UTF-8' })
       },
       ...(withCookies && config.acceptCookies && { credentials: 'include' }),
