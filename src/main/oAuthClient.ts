@@ -639,12 +639,22 @@ export default class OAuthClient {
     return Promise.resolve()
   }
 
-  private loginWithVerificationCode(params: VerifyPasswordlessParams, auth: AuthOptions = {}): void {
+  private loginWithVerificationCode(params: VerifyPasswordlessParams, auth: AuthOptions = {}): Promise<void> {
     const queryString = toQueryString({
       ...this.authParams(auth),
       ...params
     })
-    window.location.assign(`${this.passwordlessVerifyUrl}?${queryString}`)
+    if(auth.useWebMessage) {
+      return this.getWebMessage(
+        `${this.passwordlessVerifyUrl}?${queryString}`,
+        this.config.baseUrl,
+        auth.redirectUri
+      ).then()
+    } else {
+      window.location.assign(`${this.passwordlessVerifyUrl}?${queryString}`)
+      return Promise.resolve()
+    }
+
   }
 
   private ropcPasswordLogin(params: LoginWithPasswordParams): Promise<AuthResult> {
