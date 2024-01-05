@@ -59,6 +59,7 @@ export interface Config {
   clientId: string
   domain: string
   language?: string
+  locale?: string
 }
 
 export type ApiClientConfig = {
@@ -132,7 +133,7 @@ export function createClient(creationConfig: Config): Client {
   checkParam(creationConfig, 'domain')
   checkParam(creationConfig, 'clientId')
 
-  const { domain, clientId, language } = creationConfig
+  const { domain, clientId, language, locale } = creationConfig
 
   const eventManager = createEventManager()
 
@@ -166,7 +167,8 @@ export function createClient(creationConfig: Config): Client {
       const http = createHttpClient({
         baseUrl: baseIdentityUrl,
         language,
-        acceptCookies: sso
+        acceptCookies: sso,
+        locale
       })
 
       const oAuthClient = new OAuthClient({
