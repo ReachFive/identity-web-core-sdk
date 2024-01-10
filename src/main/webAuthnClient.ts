@@ -52,7 +52,7 @@ export default class WebAuthnClient {
   }
 
   isPublicKeyCredential(credentials: Credential): credentials is PublicKeyCredential {
-    return (credentials as PublicKeyCredential).type === publicKeyCredentialType;
+    return (credentials as PublicKeyCredential).type === publicKeyCredentialType
   }
 
   addNewWebAuthnDevice(accessToken: string, friendlyName?: string): Promise<void> {

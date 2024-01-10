@@ -229,7 +229,7 @@ export default class OAuthClient {
   }
 
   isPasswordCredential(credentials: Awaited<ReturnType<typeof navigator.credentials.get>>): credentials is PasswordCredential {
-    return (credentials as PasswordCredential).type === 'password';
+    return (credentials as PasswordCredential).type === 'password'
   }
 
   loginWithCredentials(params: LoginWithCredentialsParams): Promise<AuthResult> {
