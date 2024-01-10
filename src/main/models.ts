@@ -125,6 +125,7 @@ export type ProfileAddress = {
   recipient?: string
   company?: string
   phoneNumber?: string
+  customFields?: Record<string, any>
 }
 
 export type Like = {
