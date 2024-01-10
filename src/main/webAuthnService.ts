@@ -41,12 +41,12 @@ type PublicKeyCredentialCreationOptionsSerialized = {
     pubKeyCredParams: PublicKeyCredentialParameters[]
     timeout?: number
     excludeCredentials?: {
-        type: "public-key"
+        type: PublicKeyCredentialType
         id: string
-        transports?: Array<"usb" | "nfc" | "ble" | "internal">
+        transports?: AuthenticatorTransport[]
     }[]
     authenticatorSelection?: AuthenticatorSelectionCriteria
-    attestation?: 'none'|  'indirect' | 'direct'
+    attestation?: AttestationConveyancePreference
     extensions?: AuthenticationExtensionsClientInputs
 }
 
@@ -59,13 +59,13 @@ type PublicKeyCredentialRequestOptionsSerialized = {
         transports?: AuthenticatorTransport[]
         type: PublicKeyCredentialType
     }[]
-    userVerification: 'required' | 'preferred' | 'discouraged'
+    userVerification: UserVerificationRequirement
 }
 
 export type RegistrationPublicKeyCredentialSerialized = {
     id: string
     rawId: string
-    type: 'public-key'
+    type: PublicKeyCredentialType
     response: {
         attestationObject: string
         clientDataJSON: string
@@ -75,7 +75,7 @@ export type RegistrationPublicKeyCredentialSerialized = {
 export type AuthenticationPublicKeyCredentialSerialized = {
     id: string
     rawId: string
-    type: 'public-key'
+    type: PublicKeyCredentialType
     response: {
         authenticatorData: string
         clientDataJSON: string
@@ -116,7 +116,7 @@ export function serializeRegistrationPublicKeyCredential(encodedPublicKey: Publi
     return {
         id: encodedPublicKey.id,
         rawId: encodeToBase64(encodedPublicKey.rawId),
-        type: encodedPublicKey.type,
+        type: 'public-key',
         response: {
             clientDataJSON: encodeToBase64(response.clientDataJSON),
             attestationObject: encodeToBase64(response.attestationObject)
@@ -130,7 +130,7 @@ export function serializeAuthenticationPublicKeyCredential(encodedPublicKey: Pub
     return {
         id: encodedPublicKey.id,
         rawId: encodeToBase64(encodedPublicKey.rawId),
-        type: encodedPublicKey.type,
+        type: 'public-key',
         response: {
             authenticatorData: encodeToBase64(response.authenticatorData),
             clientDataJSON: encodeToBase64(response.clientDataJSON),

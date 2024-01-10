@@ -51,6 +51,10 @@ export default class WebAuthnClient {
     this.signupUrl = '/webauthn/signup'
   }
 
+  isPublicKeyCredential(credentials: Credential): credentials is PublicKeyCredential {
+    return (credentials as PublicKeyCredential).type === publicKeyCredentialType;
+  }
+
   addNewWebAuthnDevice(accessToken: string, friendlyName?: string): Promise<void> {
     if (window.PublicKeyCredential) {
       const body = {
@@ -66,7 +70,7 @@ export default class WebAuthnClient {
             return navigator.credentials.create({ publicKey })
           })
           .then(credentials => {
-            if (!credentials || credentials.type !== publicKeyCredentialType) {
+            if (!credentials || !this.isPublicKeyCredential(credentials)) {
               return Promise.reject(new Error('Unable to register invalid public key credentials.'))
             }
 
@@ -106,7 +110,7 @@ export default class WebAuthnClient {
             return navigator.credentials.get({ publicKey: options })
           })
           .then(credentials => {
-            if (!credentials || credentials.type !== publicKeyCredentialType) {
+            if (!credentials || !this.isPublicKeyCredential(credentials)) {
               return Promise.reject(new Error('Unable to authenticate with invalid public key credentials.'))
             }
 
@@ -152,7 +156,7 @@ export default class WebAuthnClient {
 
       return Promise.all([registrationOptionsPromise, credentialsPromise])
         .then(([registrationOptions, credentials]) => {
-          if (!credentials || credentials.type !== publicKeyCredentialType) {
+          if (!credentials || !this.isPublicKeyCredential(credentials)) {
             return Promise.reject(new Error('Unable to register invalid public key credentials.'))
           }
 

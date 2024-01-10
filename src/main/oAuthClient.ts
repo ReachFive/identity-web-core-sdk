@@ -228,6 +228,10 @@ export default class OAuthClient {
     })
   }
 
+  isPasswordCredential(credentials: Awaited<ReturnType<typeof navigator.credentials.get>>): credentials is PasswordCredential {
+    return (credentials as PasswordCredential).type === 'password';
+  }
+
   loginWithCredentials(params: LoginWithCredentialsParams): Promise<AuthResult> {
     if (navigator.credentials && navigator.credentials.get) {
       const request: CredentialRequestOptions = {
@@ -235,10 +239,10 @@ export default class OAuthClient {
         mediation: params.mediation || 'silent'
       }
       return navigator.credentials.get(request).then(credentials => {
-        if (!isUndefined(credentials) && credentials instanceof PasswordCredential && credentials.password) {
+        if (credentials && this.isPasswordCredential(credentials)) {
           const loginParams: EmailLoginWithPasswordParams = {
             email: credentials.id,
-            password: credentials.password,
+            password: credentials.password || '',
             auth: params.auth
           }
           return this.ropcPasswordLogin(loginParams)
@@ -731,7 +735,7 @@ export default class OAuthClient {
           password: params.password,
           id: this.getAuthenticationId(params)
         }
-      }
+      } satisfies Parameters<typeof navigator.credentials.create>[0]
 
       return navigator.credentials
         .create(credentialParams)
