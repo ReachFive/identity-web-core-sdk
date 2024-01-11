@@ -645,11 +645,16 @@ export default class OAuthClient {
       ...params
     })
     if(auth.useWebMessage) {
-      return this.getWebMessage(
-        `${this.passwordlessVerifyUrl}?${queryString}`,
-        this.config.baseUrl,
-        auth.redirectUri
+      const timeout = (delay: number): Promise<void> => new Promise((resolve) => setTimeout(() => resolve(), delay))
+      const promiseGetWebMessage: Promise<void> = this.getWebMessage(
+          `${this.passwordlessVerifyUrl}?${queryString}`,
+          this.config.baseUrl,
+          auth.redirectUri
       ).then()
+        return Promise.race([
+          promiseGetWebMessage,
+          timeout(1000)
+        ])
     } else {
       window.location.assign(`${this.passwordlessVerifyUrl}?${queryString}`)
       return Promise.resolve()
