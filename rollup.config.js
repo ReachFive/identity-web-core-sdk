@@ -4,7 +4,7 @@ import babel from 'rollup-plugin-babel'
 import commonjs from 'rollup-plugin-commonjs'
 import resolve from 'rollup-plugin-node-resolve'
 import typescriptPlugin from 'rollup-plugin-typescript2'
-import { uglify } from 'rollup-plugin-uglify'
+import terser from '@rollup/plugin-terser';
 
 import pkg from './package.json'
 
@@ -33,7 +33,7 @@ function createBundle({ file, format, name, external, withUglify = false }) {
   return {
 		input: 'src/main/index.ts',
 		output: { file, format, name },
-    plugins: withUglify ? [uglify(), ...plugins] : plugins,
+    plugins: withUglify ? [terser(), ...plugins] : plugins,
     external,
     onwarn: message => {
       // tsc generates local polyfills such as __extends with 'this' referenced

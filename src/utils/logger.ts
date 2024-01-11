@@ -6,7 +6,7 @@ export function logWarn(message: string) {
   if (window.console && window.console.warn) window.console.warn(message)
 }
 
-export function logError(messageOrException: string | Error, exception?: Error) {
+export function logError(messageOrException: unknown, exception?: unknown) {
   if (window.console) {
     if (window.console.error) {
       if (exception) {

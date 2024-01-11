@@ -7,8 +7,8 @@
       "es2017",
       "dom"
     ],
-    "target": "es5",
-    "module": "es6",
+    "target": "ES6",
+    "module": "ESNext",
     "moduleResolution": "node",
     "jsx": "react",
     "strict": true,
