@@ -14,10 +14,20 @@ jobs:
     <<: *defaults
     steps:
       - checkout
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run build
-      - run: npm run test
+      - name: Install dependancies
+        command: npm ci
+      - name: Lint
+        command: npm run lint
+      - name: Build
+        command: npm run build
+      - name: Install JUnit coverage reporter
+        command: npm install --save-dev jest-junit
+      - name: Run tests
+        command: npx jest --listTests | circleci tests run --command="JEST_JUNIT_ADD_FILE_ATTRIBUTE=true xargs npx jest --config jest.config.json --silent --runInBand --" --verbose --split-by=timings
+        environment:
+          JEST_JUNIT_OUTPUT_DIR: ./reports/
+      - store_test_results:
+          path: ./reports/
       - persist_to_workspace:
           root: ~/repo
           paths:
