@@ -17,8 +17,6 @@
     "test": "jest --silent",
     "watch:test": "jest --silent --watch",
     "lint": "eslint --ext .js,.ts src/",
-    "tslint": "tslint --format stylish --project tsconfig.json",
-    "tslint-fix": "npm run tslint -- --fix",
     "format": "prettier --write \"src/**/{*.ts,*.tsx}\""
   },
   "dependencies": {
@@ -53,7 +51,6 @@
     "ts-jest": "^28.0.8",
     "ts-node": "^10.9.2",
     "tslib": "2.0.1",
-    "tslint": "6.1.3",
     "typescript": "^5.2.2",
     "whatwg-fetch": "^3.4.1"
   },
