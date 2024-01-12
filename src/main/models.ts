@@ -125,7 +125,7 @@ export type ProfileAddress = {
   recipient?: string
   company?: string
   phoneNumber?: string
-  customFields?: Record<string, any>
+  customFields?: Record<string, unknown>
 }
 
 export type Like = {
@@ -143,7 +143,7 @@ export type Friend = {
   gender?: string
 }
 
-export type CustomFieldsValues = Record<string, any>
+export type CustomFieldsValues = Record<string, unknown>
 
 export type Interest = {
   id?: string
@@ -207,7 +207,7 @@ export type ProviderInfos = {
 
 export type ProviderMetadata = {
   provider: string
-  data: Record<string, any>
+  data: Record<string, unknown>
 }
 
 export type SignupProfileData = {
@@ -226,8 +226,8 @@ export type SignupProfileData = {
   addresses?: ProfileAddress[]
   locale?: string
   bio?: string
-  customFields?: Record<string, any>
-  consents?: Record<string, any>
+  customFields?: Record<string, unknown>
+  consents?: Record<string, unknown>
   company?: string
   liteOnly?: boolean
   customIdentifier?: string
@@ -256,7 +256,7 @@ export type OpenIdUser = {
   phoneNumberVerified?: boolean
   address?: ProfileAddress[]
   updatedAt?: number
-  customFields?: Record<string, any>
+  customFields?: Record<string, unknown>
 }
 
 export type SessionInfo = {
@@ -429,7 +429,7 @@ export type FieldError = {
 export type Scope = string | string[]
 
 export namespace ErrorResponse {
-  export function isErrorResponse(thing: any): thing is ErrorResponse {
-    return thing && thing.error
+  export function isErrorResponse(thing: unknown): thing is ErrorResponse {
+    return typeof thing === 'object' && thing !== null && 'error' in thing
   }
 }

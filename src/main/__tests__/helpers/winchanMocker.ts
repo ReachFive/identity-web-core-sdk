@@ -2,9 +2,9 @@ import WinChan from 'winchan'
 
 class WinChanMocker {
   initialized = false
-  receivedParams: any
+  receivedParams: unknown
 
-  mockOpenSuccess(result: any) {
+  mockOpenSuccess(result: unknown) {
     if (this.initialized) {
       throw new Error('Already mocked')
     }
@@ -14,7 +14,7 @@ class WinChanMocker {
     })
   }
 
-  mockOpenError(err: any) {
+  mockOpenError(err: unknown) {
     if (this.initialized) {
       throw new Error('Already mocked')
     }

@@ -295,7 +295,7 @@ export default class OAuthClient {
               return this.loginCallback(authenticationToken, auth)
             })
 
-    return loginPromise.catch((err: any) => {
+    return loginPromise.catch((err: ErrorResponse) => {
       if (err.error) {
         this.eventManager.fireEvent('login_failed', err)
       }
@@ -411,7 +411,7 @@ export default class OAuthClient {
     }
     if (this.config.isPublic && revocationParams) {
       return this.revokeToken(revocationParams)
-          .then(_ => window.location.assign(`${this.logoutUrl}?${toQueryString(opts)}`))
+          .then(() => window.location.assign(`${this.logoutUrl}?${toQueryString(opts)}`))
     } else {
       return Promise.resolve(window.location.assign(`${this.logoutUrl}?${toQueryString(opts)}`))
     }
@@ -544,7 +544,7 @@ export default class OAuthClient {
         if (event.origin !== origin) return
 
         // Verify the event's syntax
-        const data = camelCaseProperties(event.data)
+        const data = camelCaseProperties(event.data) as { type: string, response: AuthResult }
         if (data.type !== 'authorization_response') return
 
         // The iframe is no longer needed, clean it up ..
@@ -590,13 +590,13 @@ export default class OAuthClient {
     type WinChanResponse<D> = { success: true; data: D } | { success: false; data: ErrorResponse }
     const { responseType, redirectUri, provider } = opts
 
-    WinChan.open(
+    WinChan.open<WinChanResponse<object>>(
         {
           url: `${this.authorizeUrl}?${toQueryString(opts)}`,
           relay_url: this.popupRelayUrl,
           window_features: this.computeProviderPopupOptions(provider)
         },
-        (err: string, result: WinChanResponse<object>) => {
+        (err, result) => {
           if (err) {
             logError(err)
             this.eventManager.fireEvent('authentication_failed', {
@@ -605,17 +605,19 @@ export default class OAuthClient {
             })
             return
           }
+        
+          if (result) {
+            const r = camelCaseProperties(result) as WinChanResponse<AuthResult>
 
-          const r = camelCaseProperties(result) as WinChanResponse<AuthResult>
-
-          if (r.success) {
-            if (responseType === 'code') {
-              window.location.assign(`${redirectUri}?code=${r.data.code}`)
+            if (r.success) {
+              if (responseType === 'code') {
+                window.location.assign(`${redirectUri}?code=${r.data.code}`)
+              } else {
+                this.eventManager.fireEvent('authenticated', r.data)
+              }
             } else {
-              this.eventManager.fireEvent('authenticated', r.data)
+              this.eventManager.fireEvent('authentication_failed', r.data)
             }
-          } else {
-            this.eventManager.fireEvent('authentication_failed', r.data)
           }
         }
     )
@@ -752,7 +754,7 @@ export default class OAuthClient {
 
   // TODO: Make passwordless able to handle web_message
   // Asana https://app.asana.com/0/982150578058310/1200173806808689/f
-  private resolveSingleFactorPasswordlessParams(params: SingleFactorPasswordlessParams, auth: Omit<AuthOptions, 'useWebMessage'> = {}): Promise<{}> {
+  private resolveSingleFactorPasswordlessParams(params: SingleFactorPasswordlessParams, auth: Omit<AuthOptions, 'useWebMessage'> = {}): Promise<object> {
     const { authType, email, phoneNumber, captchaToken } = params
 
     if (this.config.orchestrationToken) {
@@ -807,7 +809,7 @@ export default class OAuthClient {
         ...pick(tkn, 'tkn')
       }
 
-      return Promise.resolve().then(_ => this.redirectThruAuthorization(authParams) as AuthResult)
+      return Promise.resolve().then(() => this.redirectThruAuthorization(authParams) as AuthResult)
     } else {
       const authParams = this.authParams(auth)
 
@@ -868,7 +870,7 @@ export default class OAuthClient {
     }
   }
 
-  getPkceParams(authParams: AuthParameters): Promise<PkceParams | {}> {
+  getPkceParams(authParams: AuthParameters): Promise<PkceParams | object> {
     if (this.config.isPublic && authParams.responseType === 'code')
       return computePkceParams()
     else if (authParams.responseType === 'token' && this.config.pkceEnforced)

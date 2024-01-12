@@ -18,7 +18,7 @@ beforeEach(() => {
 export async function loginWithPasswordTest(
   testkit: TestKit,
   params: LoginWithPasswordParams,
-  credentials: {},
+  credentials: object,
 ) {
   const { domain, clientId, client } = testkit
 

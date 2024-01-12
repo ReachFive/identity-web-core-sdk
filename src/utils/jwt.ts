@@ -22,7 +22,7 @@ export interface IdTokenPayload {
   authType?: string
   azp?: string
   birthdate?: string
-  customFields?: Record<string, any>
+  customFields?: Record<string, unknown>
   customIdentifier?: string
   email?: string
   emailVerified?: boolean

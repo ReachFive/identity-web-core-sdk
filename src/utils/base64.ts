@@ -35,8 +35,8 @@ export function decodeBase64UrlSafe(base64: string) {
 
   // tslint:disable-next-line: no-parameter-reassignment
   base64 = base64
-    .replace(/\-/g, '+') // Convert '-' to '+'
-    .replace(/\_/g, '/') // Convert '_' to '/'
+    .replace(/-/g, '+') // Convert '-' to '+'
+    .replace(/_/g, '/') // Convert '_' to '/'
   return decodeBase64(base64) // Cf: https://developer.mozilla.org/fr/docs/D%C3%A9coder_encoder_en_base64
 }
 
