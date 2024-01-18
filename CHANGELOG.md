@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.32.1] - 2023-01-18
+- Fix never resolved promise in verifyPasswordless with useWebMessage
+- Address custom field support
 ## [1.32.0] - 2023-01-05
 - Add locale variable
 ## [1.31.0] - 2023-12-21
@@ -403,7 +406,9 @@ Automatise the deployment of a new release with `circleci`.
 - Implement `tslint`.
 - Remove `yarn`.
 
-[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.32.0...HEAD
+[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.32.1...HEAD
+
+[1.32.1]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.32.0...v1.32.1
 
 [1.32.0]:https://github.com/ReachFive/identity-web-core-sdk/compare/v1.31.0...v1.32.0
 
