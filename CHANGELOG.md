@@ -9,6 +9,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [1.32.1] - 2023-01-18
 - Fix never resolved promise in verifyPasswordless with useWebMessage
+- Address custom field support
 ## [1.32.0] - 2023-01-05
 - Add locale variable
 ## [1.31.0] - 2023-12-21
