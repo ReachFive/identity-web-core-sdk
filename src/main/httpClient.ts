@@ -12,7 +12,7 @@ export type HttpConfig = {
 export type RequestParams = {
   method?: 'GET' | 'POST' | 'DELETE'
   query?: QueryString
-  body?: {}
+  body?: object
   accessToken?: string
   withCookies?: boolean
 }
@@ -69,12 +69,12 @@ export function createHttpClient(config: HttpConfig): HttpClient {
 /**
  * Low level HTTP client
  */
-export function rawRequest<Data>(url: string, fetchOptions?: RequestInit) {
+export function rawRequest<Data>(url: string, fetchOptions?: RequestInit): Promise<Data> {
   return fetch(url, fetchOptions).then(response => {
     if (response.status !== 204) {
-      const dataP = (response.json().then(camelCaseProperties) as any) as Promise<Data>
+      const dataP = (response.json().then(res => camelCaseProperties(res) as Data))
       return response.ok ? dataP : dataP.then(data => Promise.reject(data))
     }
-    return (undefined as any) as Data
+    return undefined as Data
   })
 }

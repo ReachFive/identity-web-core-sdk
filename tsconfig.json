@@ -1,12 +1,6 @@
 {
   "compilerOptions": {
-    "lib": [
-      "es5",
-      "es6",
-      "es2015.core",
-      "es2017",
-      "dom"
-    ],
+    "lib": ["ES6", "ES2020", "DOM"],
     "target": "ES6",
     "module": "ESNext",
     "moduleResolution": "node",

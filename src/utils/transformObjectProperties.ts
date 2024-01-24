@@ -1,6 +1,3 @@
-import isObject from 'lodash/isObject'
-import isArray from 'lodash/isArray'
-import reduce from 'lodash/reduce'
 import camelCase from 'lodash/camelCase'
 import lodashSnakeCase from 'lodash/snakeCase'
 
@@ -24,27 +21,33 @@ export const snakeCaseProperties = (object: object) => transformObjectProperties
  */
 const fieldsNotToConvert = ['custom_fields', 'consents']
 
-function transformObjectProperties(object: any, transform: (path: string) => string): any {
-  if (isArray(object)) {
-    return object.map(o => transformObjectProperties(o, transform))
-  } else if (isObject(object)) {
-    return reduce(
-      object,
-      (acc, value, key) => {
-        acc[transform(key)] = fieldsNotToConvert.find(s => s === snakeCase(key))
-          ? value
-          : transformObjectProperties(value, transform)
-        return acc
-      },
-      {} as Record<string, unknown>
-    )
-  } else {
-    return object
+type TransformObjectProperties<T> = T extends (infer U)[]
+  ? TransformObjectProperties<U>[]
+  : T extends Record<string, unknown>
+  ? { [K in keyof T]: TransformObjectProperties<T[K]> }
+  : T;
+
+function transformObjectProperties<T>(input: T, transform: (path: string) => string): TransformObjectProperties<T> {
+  if (Array.isArray(input)) {
+    return input.map(value => transformObjectProperties(value, transform)) as TransformObjectProperties<T>
   }
+  if (typeof input === "object" && input !== null) {
+    return Object.fromEntries(
+      Object.entries(input).map(([key, value]) => (
+        [
+          transform(key) as keyof T,
+          fieldsNotToConvert.find(s => s === snakeCase(key))
+            ? value
+            : transformObjectProperties(value, transform)
+        ]
+      ))
+    ) as TransformObjectProperties<T>
+  }
+  return input as TransformObjectProperties<T>
 }
 
 /* reuse lodash as it covers most cases, but we want the same behavior as the
    snakecasing strategy on the server where numbers are not separated from non numbers.  */
 function snakeCase(input: string) {
-  return lodashSnakeCase(input).replace(/\_\d/g, dashNumber => dashNumber.slice(1))
+  return lodashSnakeCase(input).replace(/_\d/g, dashNumber => dashNumber.slice(1))
 }

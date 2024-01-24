@@ -37,7 +37,14 @@ export const webMessage = { responseMode: 'web_message', prompt: 'none' }
 export const pageDisplay = { display: 'page' }
 export const popupDisplay = { display: 'popup' }
 
-function expectedPkce(isPublic: boolean, responseType: ResponseType): {} {
+type ExpectedPkceResult<IsPublic, ResponseType> =
+  IsPublic extends true ?
+    ResponseType extends 'code' ?
+        typeof mockPkceValues :
+        Record<string, never> :
+    Record<string, never>
+
+function expectedPkce(isPublic: boolean, responseType: ResponseType): ExpectedPkceResult<typeof isPublic, typeof responseType> {
   return (isPublic && responseType === 'code')
     ? mockPkceValues
     : {}

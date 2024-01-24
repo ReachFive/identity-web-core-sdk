@@ -1,6 +1,22 @@
 declare module 'winchan' {
+  type WinChanOptions = {
+    url?: string,
+    params?: unknown
+    relay_url?: string,
+    window_name?: Parameters<typeof window.open>[1],
+    window_features?: Parameters<typeof window.open>[2],
+    origin?: string,
+    popup?: boolean
+  }
+
+  interface WinChanCallback<T> {
+    (err: string | Error, result: undefined): void;
+    (err: null, result: T): void;
+  }
+    
+  
   type Winchan = {
-    open: any
+    open: <R>(opts: WinChanOptions, cb: WinChanCallback<R>) => void
   }
 
   const Winchan: Winchan

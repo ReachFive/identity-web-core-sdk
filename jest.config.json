@@ -1,0 +1,25 @@
+{
+  "testEnvironment": "jsdom",
+  "testEnvironmentOptions": {
+    "url": "http://localhost"
+  },
+  "transformIgnorePatterns": [
+    "<rootDir>/node_modules/"
+  ],
+  "moduleFileExtensions": [
+    "js",
+    "json",
+    "ts",
+    "tsx"
+  ],
+  "testMatch": [
+    "**/src/**/__tests__/*.spec.ts"
+  ],
+  "globals": {
+    "ts-jest": {
+      "tsconfig": "<rootDir>/tsconfig.test.json",
+      "babelConfig": false
+    }
+  },
+  "preset": "ts-jest/presets/default"
+}

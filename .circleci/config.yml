@@ -7,17 +7,32 @@ version: 2
 defaults: &defaults
   working_directory: ~/repo
   docker:
-    - image: circleci/node:15
+    - image: circleci/node
 
 jobs:
   test:
     <<: *defaults
     steps:
       - checkout
-      - run: npm ci
-      - run: npm run tslint
-      - run: npm run build
-      - run: npm run test
+      - run:
+          name: Install dependancies
+          command: npm ci
+      - run:
+          name: Lint
+          command: npm run lint
+      - run:
+          name: Build
+          command: npm run build
+      - run:
+          name: Install JUnit coverage reporter
+          command: npm install --save-dev jest-junit
+      - run:
+          name: Run tests
+          command: npx jest --listTests | circleci tests run --command="JEST_JUNIT_ADD_FILE_ATTRIBUTE=true xargs npx jest --config jest.config.json --silent --runInBand --" --verbose --split-by=timings
+          environment:
+            JEST_JUNIT_OUTPUT_DIR: ./reports/
+      - store_test_results:
+          path: ./reports/
       - persist_to_workspace:
           root: ~/repo
           paths:

@@ -14,10 +14,9 @@
   "scripts": {
     "build": "rollup -c --environment BUILD:production",
     "watch": "rollup -c -w",
-    "test": "jest",
-    "watch:test": "jest --watch",
-    "tslint": "tslint --format stylish --project tsconfig.json",
-    "tslint-fix": "npm run tslint -- --fix",
+    "test": "jest --silent",
+    "watch:test": "jest --silent --watch",
+    "lint": "eslint --ext .js,.ts src/",
     "format": "prettier --write \"src/**/{*.ts,*.tsx}\""
   },
   "dependencies": {
@@ -34,7 +33,11 @@
     "@types/jest": "28.1.3",
     "@types/lodash": "4.14.161",
     "@types/webappsec-credential-management": "^0.6.8",
+    "@typescript-eslint/eslint-plugin": "^6.18.1",
+    "@typescript-eslint/parser": "^6.18.1",
     "core-js": "^3.35.0",
+    "eslint": "^8.56.0",
+    "eslint-plugin-compat": "^4.2.0",
     "jest": "28.1.3",
     "jest-environment-jsdom": "^28.1.3",
     "jest-fetch-mock": "3.0.3",
@@ -45,9 +48,9 @@
     "rollup-plugin-commonjs": "10.1.0",
     "rollup-plugin-node-resolve": "5.2.0",
     "rollup-plugin-typescript2": "0.36.0",
-    "ts-jest": "28.0.8",
+    "ts-jest": "^28.0.8",
+    "ts-node": "^10.9.2",
     "tslib": "2.0.1",
-    "tslint": "6.1.3",
     "typescript": "^5.2.2",
     "whatwg-fetch": "^3.4.1"
   },
@@ -55,32 +58,5 @@
     "cjs",
     "es",
     "umd"
-  ],
-  "jest": {
-    "testEnvironment": "jsdom",
-    "testEnvironmentOptions": {
-      "url": "http://localhost"
-    },
-    "transform": {
-      ".+\\.(j|t)sx?$": "ts-jest"
-    },
-    "transformIgnorePatterns": [
-      "<rootDir>/node_modules/"
-    ],
-    "moduleFileExtensions": [
-      "js",
-      "ts",
-      "tsx",
-      "json"
-    ],
-    "testMatch": [
-      "**/src/**/__tests__/*.spec.ts"
-    ],
-    "globals": {
-      "ts-jest": {
-        "tsConfig": "<rootDir>/tsconfig.test.json",
-        "babelConfig": false
-      }
-    }
-  }
+  ]
 }
