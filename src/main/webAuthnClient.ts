@@ -103,16 +103,12 @@ export default class WebAuthnClient {
   }
 
   loginWithWebAuthn(params: LoginWithWebAuthnParams): Promise<AuthResult> {
-    console.log(`loginWithWebAuthn:${JSON.stringify(params)}`)
     if (window.PublicKeyCredential) {
       let authData
       if (this.isDiscoverable(params)) {
-        console.log(`Discoverable`)
-
         const conditionalMediationAvailable =
           PublicKeyCredential.isConditionalMediationAvailable?.() ?? Promise.resolve(false)
         authData = conditionalMediationAvailable.then((conditionalMediationAvailable) => {
-          console.log(`conditionalMediationAvailable:${conditionalMediationAvailable}`)
           if (params.conditionalMediation && !conditionalMediationAvailable) {
             return Promise.reject(new Error('Conditional mediation unavailable'))
           }
@@ -126,8 +122,6 @@ export default class WebAuthnClient {
           }
         })
       } else {
-        console.log(`NonDiscoverable`)
-
         authData = Promise.resolve({
           body: {
             clientId: this.config.clientId,
@@ -147,11 +141,9 @@ export default class WebAuthnClient {
             const options = encodePublicKeyCredentialRequestOptions(response.publicKey)
 
             if (this.isDiscoverable(params) && params.conditionalMediation && authData.conditionalMediationAvailable) {
-              console.log('autofill')
               // do autofill query
               return navigator.credentials.get({ publicKey: options, mediation: 'conditional' })
             } else {
-              console.log('modal')
               // do modal query
               return navigator.credentials.get({ publicKey: options })
             }
