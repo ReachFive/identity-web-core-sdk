@@ -5,6 +5,7 @@ import { HttpClient } from './httpClient'
 import {
   CredentialRequestOptionsSerialized,
   DeviceCredential,
+  DiscoverableLoginWithWebAuthnParams,
   EmailLoginWithWebAuthnParams,
   encodePublicKeyCredentialCreationOptions,
   encodePublicKeyCredentialRequestOptions,
@@ -37,7 +38,12 @@ export default class WebAuthnClient {
   private signupOptionsUrl = '/webauthn/signup-options'
   private signupUrl = '/webauthn/signup'
 
-  constructor(props: { config: ApiClientConfig; http: HttpClient; eventManager: IdentityEventManager; oAuthClient: OAuthClient }) {
+  constructor(props: {
+    config: ApiClientConfig
+    http: HttpClient
+    eventManager: IdentityEventManager
+    oAuthClient: OAuthClient
+  }) {
     this.config = props.config
     this.http = props.http
     this.eventManager = props.eventManager
@@ -63,26 +69,26 @@ export default class WebAuthnClient {
       }
 
       return this.http
-          .post<RegistrationOptions>(this.registrationOptionsUrl, { body, accessToken })
-          .then(response => {
-            const publicKey = encodePublicKeyCredentialCreationOptions(response.options.publicKey)
+        .post<RegistrationOptions>(this.registrationOptionsUrl, { body, accessToken })
+        .then((response) => {
+          const publicKey = encodePublicKeyCredentialCreationOptions(response.options.publicKey)
 
-            return navigator.credentials.create({ publicKey })
-          })
-          .then(credentials => {
-            if (!credentials || !this.isPublicKeyCredential(credentials)) {
-              return Promise.reject(new Error('Unable to register invalid public key credentials.'))
-            }
+          return navigator.credentials.create({ publicKey })
+        })
+        .then((credentials) => {
+          if (!credentials || !this.isPublicKeyCredential(credentials)) {
+            return Promise.reject(new Error('Unable to register invalid public key credentials.'))
+          }
 
-            const serializedCredentials = serializeRegistrationPublicKeyCredential(credentials)
+          const serializedCredentials = serializeRegistrationPublicKeyCredential(credentials)
 
-            return this.http.post<void>(this.registrationUrl, { body: { ...serializedCredentials }, accessToken })
-          })
-          .catch(err => {
-            if (err.error) this.eventManager.fireEvent('login_failed', err)
+          return this.http.post<void>(this.registrationUrl, { body: { ...serializedCredentials }, accessToken })
+        })
+        .catch((err) => {
+          if (err.error) this.eventManager.fireEvent('login_failed', err)
 
-            return Promise.reject(err)
-          })
+          return Promise.reject(err)
+        })
     } else {
       return Promise.reject(new Error('Unsupported WebAuthn API'))
     }
@@ -92,24 +98,65 @@ export default class WebAuthnClient {
     return this.http.get<DeviceCredential[]>(this.registrationUrl, { accessToken })
   }
 
+  private isDiscoverable(params: LoginWithWebAuthnParams): params is DiscoverableLoginWithWebAuthnParams {
+    return (params as DiscoverableLoginWithWebAuthnParams).conditionalMediation !== undefined
+  }
+
   loginWithWebAuthn(params: LoginWithWebAuthnParams): Promise<AuthResult> {
+    console.log(`loginWithWebAuthn:${JSON.stringify(params)}`)
     if (window.PublicKeyCredential) {
-      const body = {
-        clientId: this.config.clientId,
-        origin: window.location.origin,
-        scope: resolveScope(params.auth, this.config.scope),
-        email: (params as EmailLoginWithWebAuthnParams).email,
-        phoneNumber: (params as PhoneNumberLoginWithWebAuthnParams).phoneNumber
+      let authData
+      if (this.isDiscoverable(params)) {
+        console.log(`Discoverable`)
+
+        const conditionalMediationAvailable =
+          PublicKeyCredential.isConditionalMediationAvailable?.() ?? Promise.resolve(false)
+        authData = conditionalMediationAvailable.then((conditionalMediationAvailable) => {
+          console.log(`conditionalMediationAvailable:${conditionalMediationAvailable}`)
+          if (params.conditionalMediation && !conditionalMediationAvailable) {
+            return Promise.reject(new Error('Conditional mediation unavailable'))
+          }
+          return {
+            body: {
+              clientId: this.config.clientId,
+              origin: window.location.origin,
+              scope: resolveScope(params.auth, this.config.scope)
+            },
+            conditionalMediationAvailable: conditionalMediationAvailable
+          }
+        })
+      } else {
+        console.log(`NonDiscoverable`)
+
+        authData = Promise.resolve({
+          body: {
+            clientId: this.config.clientId,
+            origin: window.location.origin,
+            scope: resolveScope(params.auth, this.config.scope),
+            email: (params as EmailLoginWithWebAuthnParams).email,
+            phoneNumber: (params as PhoneNumberLoginWithWebAuthnParams).phoneNumber
+          },
+          conditionalMediationAvailable: false
+        })
       }
 
-      return this.http
-          .post<CredentialRequestOptionsSerialized>(this.authenticationOptionsUrl, { body })
-          .then(response => {
+      return authData.then((authData) => {
+        return this.http
+          .post<CredentialRequestOptionsSerialized>(this.authenticationOptionsUrl, { body: authData.body })
+          .then((response) => {
             const options = encodePublicKeyCredentialRequestOptions(response.publicKey)
 
-            return navigator.credentials.get({ publicKey: options })
+            if (this.isDiscoverable(params) && params.conditionalMediation && authData.conditionalMediationAvailable) {
+              console.log('autofill')
+              // do autofill query
+              return navigator.credentials.get({ publicKey: options, mediation: 'conditional' })
+            } else {
+              console.log('modal')
+              // do modal query
+              return navigator.credentials.get({ publicKey: options })
+            }
           })
-          .then(credentials => {
+          .then((credentials) => {
             if (!credentials || !this.isPublicKeyCredential(credentials)) {
               return Promise.reject(new Error('Unable to authenticate with invalid public key credentials.'))
             }
@@ -117,14 +164,15 @@ export default class WebAuthnClient {
             const serializedCredentials = serializeAuthenticationPublicKeyCredential(credentials)
 
             return this.http
-                .post<AuthenticationToken>(this.authenticationUrl, { body: { ...serializedCredentials } })
-                .then(tkn => this.oAuthClient.loginCallback(tkn, params.auth))
+              .post<AuthenticationToken>(this.authenticationUrl, { body: { ...serializedCredentials } })
+              .then((tkn) => this.oAuthClient.loginCallback(tkn, params.auth))
           })
-          .catch(err => {
+          .catch((err) => {
             if (err.error) this.eventManager.fireEvent('login_failed', err)
 
             return Promise.reject(err)
           })
+      })
     } else {
       return Promise.reject(new Error('Unsupported WebAuthn API'))
     }
@@ -148,7 +196,7 @@ export default class WebAuthnClient {
 
       const registrationOptionsPromise = this.http.post<RegistrationOptions>(this.signupOptionsUrl, { body })
 
-      const credentialsPromise = registrationOptionsPromise.then(response => {
+      const credentialsPromise = registrationOptionsPromise.then((response) => {
         const publicKey = encodePublicKeyCredentialCreationOptions(response.options.publicKey)
 
         return navigator.credentials.create({ publicKey })
@@ -169,9 +217,9 @@ export default class WebAuthnClient {
                 webauthnId: registrationOptions.options.publicKey.user.id
               }
             })
-            .then(tkn => this.oAuthClient.loginCallback(tkn, auth))
+            .then((tkn) => this.oAuthClient.loginCallback(tkn, auth))
         })
-        .catch(err => {
+        .catch((err) => {
           if (err.error) this.eventManager.fireEvent('login_failed', err)
 
           return Promise.reject(err)
