@@ -103,71 +103,70 @@ export default class WebAuthnClient {
   }
 
   loginWithWebAuthn(params: LoginWithWebAuthnParams): Promise<AuthResult> {
-    if (window.PublicKeyCredential) {
-      let authData
-      if (this.isDiscoverable(params)) {
-        const conditionalMediationAvailable =
-          PublicKeyCredential.isConditionalMediationAvailable?.() ?? Promise.resolve(false)
-        authData = conditionalMediationAvailable.then((conditionalMediationAvailable) => {
-          if (params.conditionalMediation && !conditionalMediationAvailable) {
-            return Promise.reject(new Error('Conditional mediation unavailable'))
-          }
-          return {
-            body: {
-              clientId: this.config.clientId,
-              origin: window.location.origin,
-              scope: resolveScope(params.auth, this.config.scope)
-            },
-            conditionalMediationAvailable: conditionalMediationAvailable
-          }
-        })
-      } else {
-        authData = Promise.resolve({
+    if (!window.PublicKeyCredential) {
+      return Promise.reject(new Error('Unsupported WebAuthn API'))
+    }
+    let queryParams
+    if (this.isDiscoverable(params)) {
+      const conditionalMediationAvailable =
+        PublicKeyCredential.isConditionalMediationAvailable?.() ?? Promise.resolve(false)
+      queryParams = conditionalMediationAvailable.then((conditionalMediationAvailable) => {
+        if (params.conditionalMediation && !conditionalMediationAvailable) {
+          return Promise.reject(new Error('Conditional mediation unavailable'))
+        }
+        return {
           body: {
             clientId: this.config.clientId,
             origin: window.location.origin,
-            scope: resolveScope(params.auth, this.config.scope),
-            email: (params as EmailLoginWithWebAuthnParams).email,
-            phoneNumber: (params as PhoneNumberLoginWithWebAuthnParams).phoneNumber
+            scope: resolveScope(params.auth, this.config.scope)
           },
-          conditionalMediationAvailable: false
-        })
-      }
-
-      return authData.then((authData) => {
-        return this.http
-          .post<CredentialRequestOptionsSerialized>(this.authenticationOptionsUrl, { body: authData.body })
-          .then((response) => {
-            const options = encodePublicKeyCredentialRequestOptions(response.publicKey)
-
-            if (this.isDiscoverable(params) && params.conditionalMediation && authData.conditionalMediationAvailable) {
-              // do autofill query
-              return navigator.credentials.get({ publicKey: options, mediation: 'conditional' })
-            } else {
-              // do modal query
-              return navigator.credentials.get({ publicKey: options })
-            }
-          })
-          .then((credentials) => {
-            if (!credentials || !this.isPublicKeyCredential(credentials)) {
-              return Promise.reject(new Error('Unable to authenticate with invalid public key credentials.'))
-            }
-
-            const serializedCredentials = serializeAuthenticationPublicKeyCredential(credentials)
-
-            return this.http
-              .post<AuthenticationToken>(this.authenticationUrl, { body: { ...serializedCredentials } })
-              .then((tkn) => this.oAuthClient.loginCallback(tkn, params.auth))
-          })
-          .catch((err) => {
-            if (err.error) this.eventManager.fireEvent('login_failed', err)
-
-            return Promise.reject(err)
-          })
+          conditionalMediationAvailable: conditionalMediationAvailable
+        }
       })
     } else {
-      return Promise.reject(new Error('Unsupported WebAuthn API'))
+      queryParams = Promise.resolve({
+        body: {
+          clientId: this.config.clientId,
+          origin: window.location.origin,
+          scope: resolveScope(params.auth, this.config.scope),
+          email: (params as EmailLoginWithWebAuthnParams).email,
+          phoneNumber: (params as PhoneNumberLoginWithWebAuthnParams).phoneNumber
+        },
+        conditionalMediationAvailable: false
+      })
     }
+
+    return queryParams.then((queryParams) => {
+      return this.http
+        .post<CredentialRequestOptionsSerialized>(this.authenticationOptionsUrl, { body: queryParams.body })
+        .then((response) => {
+          const options = encodePublicKeyCredentialRequestOptions(response.publicKey)
+
+          if (this.isDiscoverable(params) && params.conditionalMediation && queryParams.conditionalMediationAvailable) {
+            // do autofill query
+            return navigator.credentials.get({ publicKey: options, mediation: 'conditional' })
+          } else {
+            // do modal query
+            return navigator.credentials.get({ publicKey: options })
+          }
+        })
+        .then((credentials) => {
+          if (!credentials || !this.isPublicKeyCredential(credentials)) {
+            return Promise.reject(new Error('Unable to authenticate with invalid public key credentials.'))
+          }
+
+          const serializedCredentials = serializeAuthenticationPublicKeyCredential(credentials)
+
+          return this.http
+            .post<AuthenticationToken>(this.authenticationUrl, { body: { ...serializedCredentials } })
+            .then((tkn) => this.oAuthClient.loginCallback(tkn, params.auth))
+        })
+        .catch((err) => {
+          if (err.error) this.eventManager.fireEvent('login_failed', err)
+
+          return Promise.reject(err)
+        })
+    })
   }
 
   removeWebAuthnDevice(accessToken: string, deviceId: string): Promise<void> {
