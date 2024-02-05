@@ -102,23 +102,48 @@ export default class WebAuthnClient {
     return typeof (params as DiscoverableLoginWithWebAuthnParams).conditionalMediation !== "undefined"
   }
 
+  private buildWebAuthnParams(params: LoginWithWebAuthnParams): Promise<LoginWithWebAuthnQueryParams> {
+    const body = this.isDiscoverable(params) ? {
+      clientId: this.config.clientId,
+      origin: window.location.origin,
+      scope: resolveScope(params.auth, this.config.scope)
+    } : {
+      clientId: this.config.clientId,
+      origin: window.location.origin,
+      scope: resolveScope(params.auth, this.config.scope),
+      email: (params as EmailLoginWithWebAuthnParams).email,
+      phoneNumber: (params as PhoneNumberLoginWithWebAuthnParams).phoneNumber
+    }
+
+    const conditionalMediationAvailable =
+    PublicKeyCredential.isConditionalMediationAvailable?.() ?? Promise.resolve(false)
+    return conditionalMediationAvailable.then((conditionalMediationAvailable) => {
+      return {
+        body,
+        conditionalMediationAvailable: conditionalMediationAvailable
+      }
+    })
+  }
+
   loginWithWebAuthn(params: LoginWithWebAuthnParams): Promise<AuthResult> {
     if (!window.PublicKeyCredential) {
       return Promise.reject(new Error('Unsupported WebAuthn API'))
     }
     return this.buildWebAuthnParams(params).then((queryParams) => {
-      return this.http
+        return this.http
         .post<CredentialRequestOptionsSerialized>(this.authenticationOptionsUrl, { body: queryParams.body })
         .then((response) => {
           const options = encodePublicKeyCredentialRequestOptions(response.publicKey)
 
-          if (this.isDiscoverable(params) && params.conditionalMediation && queryParams.conditionalMediationAvailable) {
-            // do autofill query
-            return navigator.credentials.get({ publicKey: options, mediation: 'conditional' })
-          } else {
+            if (this.isDiscoverable(params) && params.conditionalMediation) {
+                if (!queryParams.conditionalMediationAvailable) {
+                    return Promise.reject(new Error('Conditional mediation unavailable'))
+                }
+                // do autofill query
+                return navigator.credentials.get({publicKey: options, mediation: 'conditional'})
+            }
             // do modal query
-            return navigator.credentials.get({ publicKey: options })
-          }
+            return navigator.credentials.get({publicKey: options})
         })
         .then((credentials) => {
           if (!credentials || !this.isPublicKeyCredential(credentials)) {
@@ -190,3 +215,16 @@ export default class WebAuthnClient {
     }
   }
 }
+
+type LoginWithWebAuthnQueryParams = {
+  body: {
+    clientId: string
+    origin: string
+    scope: string
+    email?: string
+    phoneNumber?: string
+  },
+  conditionalMediationAvailable: boolean
+}
+
+
