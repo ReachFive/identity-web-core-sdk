@@ -99,7 +99,7 @@ export default class WebAuthnClient {
   }
 
   private isDiscoverable(params: LoginWithWebAuthnParams): params is DiscoverableLoginWithWebAuthnParams {
-    return (params as DiscoverableLoginWithWebAuthnParams).conditionalMediation !== undefined
+    return typeof (params as DiscoverableLoginWithWebAuthnParams).conditionalMediation !== "undefined"
   }
 
   loginWithWebAuthn(params: LoginWithWebAuthnParams): Promise<AuthResult> {
