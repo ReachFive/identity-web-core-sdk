@@ -10,9 +10,11 @@ export type EmailLoginWithWebAuthnParams = { email: string; auth?: AuthOptions }
 export type PhoneNumberLoginWithWebAuthnParams = { phoneNumber: string; auth?: AuthOptions }
 /**
  * Launch discoverable login (= where the identifier and the passkey will be provided by the keychain)
- * @param conditionalMediation whether to use conditional mediation (= autofill request) or a modal request.
+ * @param conditionalMediation whether to use conditional mediation (= autofill request) or a modal request. <br />
+ * If 'preferred' is selected, do conditional mediation only if the browser supports it and fallback to a modal request. <br />
+ * If true is selected and conditional mediation is unavailable, an error will be returned
  */
-export type DiscoverableLoginWithWebAuthnParams = { conditionalMediation: boolean; auth?: AuthOptions }
+export type DiscoverableLoginWithWebAuthnParams = { conditionalMediation: boolean | 'preferred'; auth?: AuthOptions }
 export type LoginWithWebAuthnParams =
   | EmailLoginWithWebAuthnParams
   | PhoneNumberLoginWithWebAuthnParams

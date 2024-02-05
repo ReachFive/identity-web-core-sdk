@@ -130,20 +130,19 @@ export default class WebAuthnClient {
       return Promise.reject(new Error('Unsupported WebAuthn API'))
     }
     return this.buildWebAuthnParams(params).then((queryParams) => {
+        if (this.isDiscoverable(params) && params.conditionalMediation === true && !queryParams.conditionalMediationAvailable) {
+          return Promise.reject(new Error('Conditional mediation unavailable'))
+        }
         return this.http
         .post<CredentialRequestOptionsSerialized>(this.authenticationOptionsUrl, { body: queryParams.body })
         .then((response) => {
           const options = encodePublicKeyCredentialRequestOptions(response.publicKey)
-
-            if (this.isDiscoverable(params) && params.conditionalMediation) {
-                if (!queryParams.conditionalMediationAvailable) {
-                    return Promise.reject(new Error('Conditional mediation unavailable'))
-                }
-                // do autofill query
-                return navigator.credentials.get({publicKey: options, mediation: 'conditional'})
-            }
-            // do modal query
-            return navigator.credentials.get({publicKey: options})
+          if (this.isDiscoverable(params) && params.conditionalMediation !== false && queryParams.conditionalMediationAvailable) {
+            // do autofill query
+            return navigator.credentials.get({publicKey: options, mediation: 'conditional'})
+          }
+          // do modal query
+          return navigator.credentials.get({publicKey: options})
         })
         .then((credentials) => {
           if (!credentials || !this.isPublicKeyCredential(credentials)) {
