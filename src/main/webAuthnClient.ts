@@ -106,37 +106,7 @@ export default class WebAuthnClient {
     if (!window.PublicKeyCredential) {
       return Promise.reject(new Error('Unsupported WebAuthn API'))
     }
-    let queryParams
-    if (this.isDiscoverable(params)) {
-      const conditionalMediationAvailable =
-        PublicKeyCredential.isConditionalMediationAvailable?.() ?? Promise.resolve(false)
-      queryParams = conditionalMediationAvailable.then((conditionalMediationAvailable) => {
-        if (params.conditionalMediation && !conditionalMediationAvailable) {
-          return Promise.reject(new Error('Conditional mediation unavailable'))
-        }
-        return {
-          body: {
-            clientId: this.config.clientId,
-            origin: window.location.origin,
-            scope: resolveScope(params.auth, this.config.scope)
-          },
-          conditionalMediationAvailable: conditionalMediationAvailable
-        }
-      })
-    } else {
-      queryParams = Promise.resolve({
-        body: {
-          clientId: this.config.clientId,
-          origin: window.location.origin,
-          scope: resolveScope(params.auth, this.config.scope),
-          email: (params as EmailLoginWithWebAuthnParams).email,
-          phoneNumber: (params as PhoneNumberLoginWithWebAuthnParams).phoneNumber
-        },
-        conditionalMediationAvailable: false
-      })
-    }
-
-    return queryParams.then((queryParams) => {
+    return this.buildWebAuthnParams(params).then((queryParams) => {
       return this.http
         .post<CredentialRequestOptionsSerialized>(this.authenticationOptionsUrl, { body: queryParams.body })
         .then((response) => {
