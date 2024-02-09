@@ -99,24 +99,26 @@ export default class WebAuthnClient {
   }
 
   private isDiscoverable(params: LoginWithWebAuthnParams): params is DiscoverableLoginWithWebAuthnParams {
-    return typeof (params as DiscoverableLoginWithWebAuthnParams).conditionalMediation !== "undefined"
+    return typeof (params as DiscoverableLoginWithWebAuthnParams).conditionalMediation !== 'undefined'
   }
 
   private buildWebAuthnParams(params: LoginWithWebAuthnParams): Promise<LoginWithWebAuthnQueryParams> {
-    const body = this.isDiscoverable(params) ? {
-      clientId: this.config.clientId,
-      origin: window.location.origin,
-      scope: resolveScope(params.auth, this.config.scope)
-    } : {
-      clientId: this.config.clientId,
-      origin: window.location.origin,
-      scope: resolveScope(params.auth, this.config.scope),
-      email: (params as EmailLoginWithWebAuthnParams).email,
-      phoneNumber: (params as PhoneNumberLoginWithWebAuthnParams).phoneNumber
-    }
+    const body = this.isDiscoverable(params)
+      ? {
+          clientId: this.config.clientId,
+          origin: window.location.origin,
+          scope: resolveScope(params.auth, this.config.scope)
+        }
+      : {
+          clientId: this.config.clientId,
+          origin: window.location.origin,
+          scope: resolveScope(params.auth, this.config.scope),
+          email: (params as EmailLoginWithWebAuthnParams).email,
+          phoneNumber: (params as PhoneNumberLoginWithWebAuthnParams).phoneNumber
+        }
 
     const conditionalMediationAvailable =
-    PublicKeyCredential.isConditionalMediationAvailable?.() ?? Promise.resolve(false)
+      PublicKeyCredential.isConditionalMediationAvailable?.() ?? Promise.resolve(false)
     return conditionalMediationAvailable.then((conditionalMediationAvailable) => {
       return {
         body,
@@ -130,19 +132,27 @@ export default class WebAuthnClient {
       return Promise.reject(new Error('Unsupported WebAuthn API'))
     }
     return this.buildWebAuthnParams(params).then((queryParams) => {
-        if (this.isDiscoverable(params) && params.conditionalMediation === true && !queryParams.conditionalMediationAvailable) {
-          return Promise.reject(new Error('Conditional mediation unavailable'))
-        }
-        return this.http
+      if (
+        this.isDiscoverable(params) &&
+        params.conditionalMediation === true &&
+        !queryParams.conditionalMediationAvailable
+      ) {
+        return Promise.reject(new Error('Conditional mediation unavailable'))
+      }
+      return this.http
         .post<CredentialRequestOptionsSerialized>(this.authenticationOptionsUrl, { body: queryParams.body })
         .then((response) => {
           const options = encodePublicKeyCredentialRequestOptions(response.publicKey)
-          if (this.isDiscoverable(params) && params.conditionalMediation !== false && queryParams.conditionalMediationAvailable) {
+          if (
+            this.isDiscoverable(params) &&
+            params.conditionalMediation !== false &&
+            queryParams.conditionalMediationAvailable
+          ) {
             // do autofill query
-            return navigator.credentials.get({publicKey: options, mediation: 'conditional', signal: params.signal})
+            return navigator.credentials.get({ publicKey: options, mediation: 'conditional', signal: params.signal })
           }
           // do modal query
-          return navigator.credentials.get({publicKey: options, signal: params.signal})
+          return navigator.credentials.get({ publicKey: options, signal: params.signal })
         })
         .then((credentials) => {
           if (!credentials || !this.isPublicKeyCredential(credentials)) {
@@ -222,8 +232,6 @@ type LoginWithWebAuthnQueryParams = {
     scope: string
     email?: string
     phoneNumber?: string
-  },
+  }
   conditionalMediationAvailable: boolean
 }
-
-
