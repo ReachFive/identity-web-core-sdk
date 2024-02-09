@@ -139,10 +139,10 @@ export default class WebAuthnClient {
           const options = encodePublicKeyCredentialRequestOptions(response.publicKey)
           if (this.isDiscoverable(params) && params.conditionalMediation !== false && queryParams.conditionalMediationAvailable) {
             // do autofill query
-            return navigator.credentials.get({publicKey: options, mediation: 'conditional'})
+            return navigator.credentials.get({publicKey: options, mediation: 'conditional', signal: params.signal})
           }
           // do modal query
-          return navigator.credentials.get({publicKey: options})
+          return navigator.credentials.get({publicKey: options, signal: params.signal})
         })
         .then((credentials) => {
           if (!credentials || !this.isPublicKeyCredential(credentials)) {
