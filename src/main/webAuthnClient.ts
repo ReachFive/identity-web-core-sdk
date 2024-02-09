@@ -117,8 +117,9 @@ export default class WebAuthnClient {
           phoneNumber: (params as PhoneNumberLoginWithWebAuthnParams).phoneNumber
         }
 
-    const conditionalMediationAvailable =
-      PublicKeyCredential.isConditionalMediationAvailable?.() ?? Promise.resolve(false)
+    // to appease ESLint we have to put PublicKeyCredential in a const
+    const pubKeyCred = PublicKeyCredential
+    const conditionalMediationAvailable = pubKeyCred.isConditionalMediationAvailable?.() ?? Promise.resolve(false)
     return conditionalMediationAvailable.then((conditionalMediationAvailable) => {
       return {
         body,
