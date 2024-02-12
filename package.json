@@ -1,6 +1,6 @@
 {
   "name": "@reachfive/identity-core",
-  "version": "1.32.1",
+  "version": "1.33.0-alpha.0",
   "description": "ReachFive Identity Web Core SDK",
   "license": "MIT",
   "repository": {
