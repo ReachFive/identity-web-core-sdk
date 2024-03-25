@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.32.2] - 2023-03-21
+- Add support for discoverable passkey login
+
 ## [1.32.1] - 2023-01-18
 - Fix never resolved promise in verifyPasswordless with useWebMessage
 - Address custom field support
