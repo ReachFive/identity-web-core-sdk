@@ -1,14 +1,15 @@
-import {
-  Profile,
-  OpenIdUser,
-} from './models'
+import { Profile, OpenIdUser } from './models'
 import { IdentityEventManager } from './identityEventManager'
 import { HttpClient } from './httpClient'
 import { ApiClientConfig } from './main'
 
 export type UpdateEmailParams = { accessToken: string; email: string; redirectUrl?: string; captchaToken?: string }
 
-export type EmailVerificationParams = { accessToken: string; redirectUrl?: string; returnToAfterEmailConfirmation?: string }
+export type EmailVerificationParams = {
+  accessToken: string
+  redirectUrl?: string
+  returnToAfterEmailConfirmation?: string
+}
 
 export type PhoneNumberVerificationParams = { accessToken: string }
 
@@ -24,6 +25,19 @@ type SmsRequestPasswordResetParams = {
   captchaToken?: string
 }
 export type RequestPasswordResetParams = EmailRequestPasswordResetParams | SmsRequestPasswordResetParams
+
+type EmailRequestCredentialsResetParams = {
+  email: string
+  redirectUrl?: string
+  loginLink?: string
+  returnToAfterCredentialsReset?: string
+  captchaToken?: string
+}
+type SmsRequestCredentialsResetParams = {
+  phoneNumber: string
+  captchaToken?: string
+}
+export type RequestCredentialsResetParams = EmailRequestCredentialsResetParams | SmsRequestCredentialsResetParams
 
 type AccessTokenUpdatePasswordParams = {
   accessToken?: string
@@ -135,6 +149,15 @@ export default class ProfileClient {
     })
   }
 
+  requestCredentialsReset(params: RequestCredentialsResetParams): Promise<void> {
+    return this.http.post('/lost-credentials', {
+      body: {
+        clientId: this.config.clientId,
+        ...params
+      }
+    })
+  }
+
   sendEmailVerification(params: EmailVerificationParams): Promise<void> {
     const { accessToken, ...data } = params
     return this.http.post(this.sendEmailVerificationUrl, { body: { ...data }, accessToken })
@@ -163,8 +186,8 @@ export default class ProfileClient {
   updateProfile(params: UpdateProfileParams): Promise<void> {
     const { accessToken, redirectUrl, data } = params
     return this.http
-        .post(this.updateProfileUrl, { body: { ...data, redirectUrl }, accessToken })
-        .then(() => this.eventManager.fireEvent('profile_updated', data))
+      .post(this.updateProfileUrl, { body: { ...data, redirectUrl }, accessToken })
+      .then(() => this.eventManager.fireEvent('profile_updated', data))
   }
 
   updatePassword(params: UpdatePasswordParams): Promise<void> {
@@ -179,7 +202,7 @@ export default class ProfileClient {
     const { accessToken, ...data } = params
     const { phoneNumber } = data
     return this.http
-        .post(this.verifyPhoneNumberUrl, { body: data, accessToken })
-        .then(() => this.eventManager.fireEvent('profile_updated', { phoneNumber, phoneNumberVerified: true }))
+      .post(this.verifyPhoneNumberUrl, { body: data, accessToken })
+      .then(() => this.eventManager.fireEvent('profile_updated', { phoneNumber, phoneNumberVerified: true }))
   }
 }
