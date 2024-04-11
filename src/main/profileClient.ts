@@ -140,8 +140,8 @@ export default class ProfileClient {
     return this.http.get<Profile>(this.userInfoUrl, { query: { fields }, accessToken })
   }
 
-  requestPasswordReset(params: RequestPasswordResetParams): Promise<void> {
-    return this.http.post('/forgot-password', {
+  requestCredentialsReset(params: RequestCredentialsResetParams): Promise<void> {
+    return this.http.post('/lost-credentials', {
       body: {
         clientId: this.config.clientId,
         ...params
@@ -149,8 +149,8 @@ export default class ProfileClient {
     })
   }
 
-  requestCredentialsReset(params: RequestCredentialsResetParams): Promise<void> {
-    return this.http.post('/lost-credentials', {
+  requestPasswordReset(params: RequestPasswordResetParams): Promise<void> {
+    return this.http.post('/forgot-password', {
       body: {
         clientId: this.config.clientId,
         ...params
