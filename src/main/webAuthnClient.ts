@@ -73,7 +73,20 @@ export default class WebAuthnClient {
         .then((response) => {
           const publicKey = encodePublicKeyCredentialCreationOptions(response.options.publicKey)
 
-          return navigator.credentials.create({ publicKey })
+          const corrected_creation_options: PublicKeyCredentialCreationOptions = {
+            ...publicKey,
+            authenticatorSelection: {
+              ...publicKey.authenticatorSelection,
+              authenticatorAttachment: "cross-platform"
+            }
+          }
+
+          console.log("original creation options")
+          console.log(publicKey)
+          console.log("corrected creation options")
+          console.log(corrected_creation_options)
+
+          return navigator.credentials.create({ publicKey: corrected_creation_options })
         })
         .then((credentials) => {
           if (!credentials || !this.isPublicKeyCredential(credentials)) {
@@ -144,16 +157,26 @@ export default class WebAuthnClient {
         .post<CredentialRequestOptionsSerialized>(this.authenticationOptionsUrl, { body: queryParams.body })
         .then((response) => {
           const options = encodePublicKeyCredentialRequestOptions(response.publicKey)
+
+          const corrected_authentication_options: PublicKeyCredentialRequestOptions = {
+            ...options,
+          }
+
+          //console.log('original authentication options')
+          //console.log(options)
+          //console.log('corrected authentication options')
+          //console.log(corrected_authentication_options)
+
           if (
             this.isDiscoverable(params) &&
             params.conditionalMediation !== false &&
             queryParams.conditionalMediationAvailable
           ) {
             // do autofill query
-            return navigator.credentials.get({ publicKey: options, mediation: 'conditional', signal: params.signal })
+            return navigator.credentials.get({ publicKey: corrected_authentication_options, mediation: 'conditional', signal: params.signal })
           }
           // do modal query
-          return navigator.credentials.get({ publicKey: options, signal: params.signal })
+          return navigator.credentials.get({ publicKey: corrected_authentication_options, signal: params.signal })
         })
         .then((credentials) => {
           if (!credentials || !this.isPublicKeyCredential(credentials)) {
@@ -195,7 +218,20 @@ export default class WebAuthnClient {
       const credentialsPromise = registrationOptionsPromise.then((response) => {
         const publicKey = encodePublicKeyCredentialCreationOptions(response.options.publicKey)
 
-        return navigator.credentials.create({ publicKey })
+        const corrected_creation_options: PublicKeyCredentialCreationOptions = {
+          ...publicKey,
+          authenticatorSelection: {
+            ...publicKey.authenticatorSelection,
+            authenticatorAttachment: "cross-platform"
+          }
+        }
+
+        console.log("original creation options")
+        console.log(publicKey)
+        console.log("corrected creation options")
+        console.log(corrected_creation_options)
+
+        return navigator.credentials.create({ publicKey: corrected_creation_options })
       })
 
       return Promise.all([registrationOptionsPromise, credentialsPromise])
