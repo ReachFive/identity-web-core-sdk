@@ -22,18 +22,20 @@ import OAuthClient from './oAuthClient'
 import { resolveScope } from './scopeHelper'
 import { AuthenticationToken } from './models'
 
-type EmailVerificationCodeResetPasskeysParams = {
+type EmailResetPasskeysParams = {
   email: string
   verificationCode: string
-  friendlyName: string
+  clientId: string
+  friendlyName?: string
 }
-type SmsVerificationCodeResetPasskeysParams = {
+type SmsResetPasskeysParams = {
   phoneNumber: string
   verificationCode: string
-  friendlyName: string
+  clientId: string
+  friendlyName?: string
 }
 
-export type ResetPasskeysParams = EmailVerificationCodeResetPasskeysParams | SmsVerificationCodeResetPasskeysParams
+export type ResetPasskeysParams = EmailResetPasskeysParams | SmsResetPasskeysParams
 
 /**
  * Identity Rest API Client
@@ -48,8 +50,8 @@ export default class WebAuthnClient {
   private authenticationUrl = '/webauthn/authentication'
   private registrationOptionsUrl = '/webauthn/registration-options'
   private registrationUrl = '/webauthn/registration'
-  private resetPasskeysOptionsUrl = '/webauthn/reset-key-options'
-  private resetPasskeysUrl = '/webauthn/reset-key'
+  private resetPasskeysOptionsUrl = '/webauthn/key-reset-options'
+  private resetPasskeysUrl = '/webauthn/key-reset'
   private signupOptionsUrl = '/webauthn/signup-options'
   private signupUrl = '/webauthn/signup'
 
@@ -126,7 +128,7 @@ export default class WebAuthnClient {
         })
         .then((credentials) => {
           if (!credentials || !this.isPublicKeyCredential(credentials)) {
-            return Promise.reject(new Error('Unable to register invalid public key credentials.'))
+            return Promise.reject(new Error('Unable to register public key credentials.'))
           }
 
           const serializedCredentials = serializeRegistrationPublicKeyCredential(credentials)

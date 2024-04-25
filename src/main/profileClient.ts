@@ -1,15 +1,14 @@
-import { Profile, OpenIdUser } from './models'
+import {
+  Profile,
+  OpenIdUser,
+} from './models'
 import { IdentityEventManager } from './identityEventManager'
 import { HttpClient } from './httpClient'
 import { ApiClientConfig } from './main'
 
 export type UpdateEmailParams = { accessToken: string; email: string; redirectUrl?: string; captchaToken?: string }
 
-export type EmailVerificationParams = {
-  accessToken: string
-  redirectUrl?: string
-  returnToAfterEmailConfirmation?: string
-}
+export type EmailVerificationParams = { accessToken: string; redirectUrl?: string; returnToAfterEmailConfirmation?: string }
 
 export type PhoneNumberVerificationParams = { accessToken: string }
 
@@ -26,18 +25,18 @@ type SmsRequestPasswordResetParams = {
 }
 export type RequestPasswordResetParams = EmailRequestPasswordResetParams | SmsRequestPasswordResetParams
 
-type EmailRequestCredentialsResetParams = {
+type EmailRequestAccountRecoveryParams = {
   email: string
   redirectUrl?: string
   loginLink?: string
-  returnToAfterCredentialsReset?: string
+  returnToAfterAccountRecovery?: string
   captchaToken?: string
 }
-type SmsRequestCredentialsResetParams = {
+type SmsRequestAccountRecoveryParams = {
   phoneNumber: string
   captchaToken?: string
 }
-export type RequestCredentialsResetParams = EmailRequestCredentialsResetParams | SmsRequestCredentialsResetParams
+export type RequestAccountRecoveryParams = EmailRequestAccountRecoveryParams | SmsRequestAccountRecoveryParams
 
 type AccessTokenUpdatePasswordParams = {
   accessToken?: string
@@ -140,8 +139,8 @@ export default class ProfileClient {
     return this.http.get<Profile>(this.userInfoUrl, { query: { fields }, accessToken })
   }
 
-  requestCredentialsReset(params: RequestCredentialsResetParams): Promise<void> {
-    return this.http.post('/lost-credentials', {
+  requestAccountRecovery(params: RequestAccountRecoveryParams): Promise<void> {
+    return this.http.post('/account-recovery', {
       body: {
         clientId: this.config.clientId,
         ...params
@@ -186,8 +185,8 @@ export default class ProfileClient {
   updateProfile(params: UpdateProfileParams): Promise<void> {
     const { accessToken, redirectUrl, data } = params
     return this.http
-      .post(this.updateProfileUrl, { body: { ...data, redirectUrl }, accessToken })
-      .then(() => this.eventManager.fireEvent('profile_updated', data))
+        .post(this.updateProfileUrl, { body: { ...data, redirectUrl }, accessToken })
+        .then(() => this.eventManager.fireEvent('profile_updated', data))
   }
 
   updatePassword(params: UpdatePasswordParams): Promise<void> {
@@ -202,7 +201,7 @@ export default class ProfileClient {
     const { accessToken, ...data } = params
     const { phoneNumber } = data
     return this.http
-      .post(this.verifyPhoneNumberUrl, { body: data, accessToken })
-      .then(() => this.eventManager.fireEvent('profile_updated', { phoneNumber, phoneNumberVerified: true }))
+        .post(this.verifyPhoneNumberUrl, { body: data, accessToken })
+        .then(() => this.eventManager.fireEvent('profile_updated', { phoneNumber, phoneNumberVerified: true }))
   }
 }

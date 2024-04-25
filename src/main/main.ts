@@ -37,7 +37,7 @@ import MfaClient, {
 import ProfileClient, {
   EmailVerificationParams,
   GetUserParams,
-  PhoneNumberVerificationParams, RequestCredentialsResetParams,
+  PhoneNumberVerificationParams, RequestAccountRecoveryParams,
   RequestPasswordResetParams,
   UnlinkParams,
   UpdateEmailParams,
@@ -102,7 +102,7 @@ export type Client = {
   removeMfaPhoneNumber: (params: RemoveMfaPhoneNumberParams) => Promise<void>
   removeTrustedDevice: (params: DeleteTrustedDeviceParams) => Promise<void>
   removeWebAuthnDevice: (accessToken: string, deviceId: string) => Promise<void>
-  requestCredentialsReset: (params: RequestCredentialsResetParams) => Promise<void>
+  requestAccountRecovery: (params: RequestAccountRecoveryParams) => Promise<void>
   requestPasswordReset: (params: RequestPasswordResetParams) => Promise<void>
   resetPasskeys: (params: ResetPasskeysParams) => Promise<void>
   sendEmailVerification: (params: EmailVerificationParams) => Promise<void>
@@ -316,8 +316,8 @@ export function createClient(creationConfig: Config): Client {
     return apiClients.then(clients => clients.webAuthn.removeWebAuthnDevice(accessToken, deviceId))
   }
 
-  function requestCredentialsReset(params: RequestCredentialsResetParams) {
-    return apiClients.then(clients => clients.profile.requestCredentialsReset(params))
+  function requestAccountRecovery(params: RequestAccountRecoveryParams) {
+    return apiClients.then(clients => clients.profile.requestAccountRecovery(params))
   }
   function requestPasswordReset(params: RequestPasswordResetParams) {
     return apiClients.then(clients => clients.profile.requestPasswordReset(params))
@@ -423,7 +423,7 @@ export function createClient(creationConfig: Config): Client {
     removeMfaPhoneNumber,
     removeTrustedDevice,
     removeWebAuthnDevice,
-    requestCredentialsReset,
+    requestAccountRecovery,
     resetPasskeys,
     requestPasswordReset,
     sendEmailVerification,
