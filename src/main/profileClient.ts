@@ -56,7 +56,6 @@ export type GetUserParams = {
 export type UnlinkParams = {
   accessToken: string
   identityId: string
-  fields?: string
 }
 
 export type UpdatePhoneNumberParams = {
