@@ -50,8 +50,8 @@ export default class WebAuthnClient {
   private authenticationUrl = '/webauthn/authentication'
   private registrationOptionsUrl = '/webauthn/registration-options'
   private registrationUrl = '/webauthn/registration'
-  private resetPasskeysOptionsUrl = '/webauthn/key-reset-options'
-  private resetPasskeysUrl = '/webauthn/key-reset'
+  private resetPasskeysOptionsUrl = '/webauthn/reset-options'
+  private resetPasskeysUrl = '/webauthn/reset'
   private signupOptionsUrl = '/webauthn/signup-options'
   private signupUrl = '/webauthn/signup'
 
