@@ -22,6 +22,21 @@ import OAuthClient from './oAuthClient'
 import { resolveScope } from './scopeHelper'
 import { AuthenticationToken } from './models'
 
+type EmailResetPasskeysParams = {
+  email: string
+  verificationCode: string
+  clientId: string
+  friendlyName?: string
+}
+type SmsResetPasskeysParams = {
+  phoneNumber: string
+  verificationCode: string
+  clientId: string
+  friendlyName?: string
+}
+
+export type ResetPasskeysParams = EmailResetPasskeysParams | SmsResetPasskeysParams
+
 /**
  * Identity Rest API Client
  */
@@ -35,6 +50,8 @@ export default class WebAuthnClient {
   private authenticationUrl = '/webauthn/authentication'
   private registrationOptionsUrl = '/webauthn/registration-options'
   private registrationUrl = '/webauthn/registration'
+  private resetPasskeysOptionsUrl = '/webauthn/reset-options'
+  private resetPasskeysUrl = '/webauthn/reset'
   private signupOptionsUrl = '/webauthn/signup-options'
   private signupUrl = '/webauthn/signup'
 
@@ -83,6 +100,42 @@ export default class WebAuthnClient {
           const serializedCredentials = serializeRegistrationPublicKeyCredential(credentials)
 
           return this.http.post<void>(this.registrationUrl, { body: { ...serializedCredentials }, accessToken })
+        })
+        .catch((err) => {
+          if (err.error) this.eventManager.fireEvent('login_failed', err)
+
+          return Promise.reject(err)
+        })
+    } else {
+      return Promise.reject(new Error('Unsupported WebAuthn API'))
+    }
+  }
+
+  resetPasskeys(params: ResetPasskeysParams): Promise<void> {
+    if (window.PublicKeyCredential) {
+      const body = {
+        ...params,
+        origin: window.location.origin,
+        friendlyName: params.friendlyName || window.navigator.platform
+      }
+
+      return this.http
+        .post<RegistrationOptions>(this.resetPasskeysOptionsUrl, { body })
+        .then((response) => {
+          const publicKey = encodePublicKeyCredentialCreationOptions(response.options.publicKey)
+
+          return navigator.credentials.create({ publicKey })
+        })
+        .then((credentials) => {
+          if (!credentials || !this.isPublicKeyCredential(credentials)) {
+            return Promise.reject(new Error('Unable to register public key credentials.'))
+          }
+
+          const serializedCredentials = serializeRegistrationPublicKeyCredential(credentials)
+
+          return this.http.post<void>(this.resetPasskeysUrl, {
+            body: { ...params, publicKeyCredential: serializedCredentials }
+          })
         })
         .catch((err) => {
           if (err.error) this.eventManager.fireEvent('login_failed', err)

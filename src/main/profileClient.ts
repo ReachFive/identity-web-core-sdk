@@ -25,6 +25,19 @@ type SmsRequestPasswordResetParams = {
 }
 export type RequestPasswordResetParams = EmailRequestPasswordResetParams | SmsRequestPasswordResetParams
 
+type EmailRequestAccountRecoveryParams = {
+  email: string
+  redirectUrl?: string
+  loginLink?: string
+  returnToAfterAccountRecovery?: string
+  captchaToken?: string
+}
+type SmsRequestAccountRecoveryParams = {
+  phoneNumber: string
+  captchaToken?: string
+}
+export type RequestAccountRecoveryParams = EmailRequestAccountRecoveryParams | SmsRequestAccountRecoveryParams
+
 type AccessTokenUpdatePasswordParams = {
   accessToken?: string
   password: string
@@ -123,6 +136,15 @@ export default class ProfileClient {
   getUser(params: GetUserParams): Promise<Profile> {
     const { accessToken, fields } = params
     return this.http.get<Profile>(this.userInfoUrl, { query: { fields }, accessToken })
+  }
+
+  requestAccountRecovery(params: RequestAccountRecoveryParams): Promise<void> {
+    return this.http.post('/account-recovery', {
+      body: {
+        clientId: this.config.clientId,
+        ...params
+      }
+    })
   }
 
   requestPasswordReset(params: RequestPasswordResetParams): Promise<void> {
