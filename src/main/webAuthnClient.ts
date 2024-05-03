@@ -61,10 +61,10 @@ export default class WebAuthnClient {
     return (credentials as PublicKeyCredential).type === publicKeyCredentialType
   }
 
-  addNewWebAuthnDevice(accessToken: string, friendlyName?: string): Promise<void> {
+  addNewWebAuthnDevice(accessToken: string, friendlyName?: string, origin?: string): Promise<void> {
     if (window.PublicKeyCredential) {
       const body = {
-        origin: window.location.origin,
+        origin: origin || window.location.origin,
         friendlyName: friendlyName || window.navigator.platform
       }
 
@@ -106,12 +106,12 @@ export default class WebAuthnClient {
     const body = this.isDiscoverable(params)
       ? {
           clientId: this.config.clientId,
-          origin: window.location.origin,
+          origin: params.origin || window.location.origin,
           scope: resolveScope(params.auth, this.config.scope)
         }
       : {
           clientId: this.config.clientId,
-          origin: window.location.origin,
+          origin: params.origin || window.location.origin,
           scope: resolveScope(params.auth, this.config.scope),
           email: (params as EmailLoginWithWebAuthnParams).email,
           phoneNumber: (params as PhoneNumberLoginWithWebAuthnParams).phoneNumber
@@ -181,7 +181,7 @@ export default class WebAuthnClient {
   signupWithWebAuthn(params: SignupWithWebAuthnParams, auth?: AuthOptions): Promise<AuthResult> {
     if (window.PublicKeyCredential) {
       const body = {
-        origin: window.location.origin,
+        origin: params.origin || window.location.origin,
         clientId: this.config.clientId,
         friendlyName: params.friendlyName || window.navigator.platform,
         profile: params.profile,

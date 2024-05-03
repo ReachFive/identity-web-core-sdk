@@ -15,7 +15,7 @@ export type PhoneNumberLoginWithWebAuthnParams = { phoneNumber: string }
  * If true is selected and conditional mediation is unavailable, an error will be returned
  */
 export type DiscoverableLoginWithWebAuthnParams = { conditionalMediation: boolean | 'preferred' }
-export type LoginWithWebAuthnParams = { auth?: AuthOptions; signal?: AbortSignal } & (
+export type LoginWithWebAuthnParams = { auth?: AuthOptions; signal?: AbortSignal, origin?: string } & (
   | EmailLoginWithWebAuthnParams
   | PhoneNumberLoginWithWebAuthnParams
   | DiscoverableLoginWithWebAuthnParams
@@ -26,6 +26,7 @@ export type SignupWithWebAuthnParams = {
   friendlyName?: string
   redirectUrl?: string
   returnToAfterEmailConfirmation?: string
+  origin?: string
 }
 
 export type RegistrationOptions = {
