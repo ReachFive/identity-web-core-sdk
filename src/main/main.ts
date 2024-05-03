@@ -60,6 +60,7 @@ export interface Config {
   domain: string
   language?: string
   locale?: string
+  webAuthnOrigin?: string
 }
 
 export type ApiClientConfig = {
@@ -133,7 +134,7 @@ export function createClient(creationConfig: Config): Client {
   checkParam(creationConfig, 'domain')
   checkParam(creationConfig, 'clientId')
 
-  const { domain, clientId, language, locale } = creationConfig
+  const { domain, clientId, language, locale, webAuthnOrigin } = creationConfig
 
   const eventManager = createEventManager()
 
@@ -201,7 +202,7 @@ export function createClient(creationConfig: Config): Client {
   )
 
   function addNewWebAuthnDevice(accessToken: string, friendlyName?: string) {
-    return apiClients.then(clients => clients.webAuthn.addNewWebAuthnDevice(accessToken, friendlyName))
+    return apiClients.then(clients => clients.webAuthn.addNewWebAuthnDevice(accessToken, friendlyName, webAuthnOrigin))
   }
 
   function checkSession(options: AuthOptions = {}) {
@@ -273,7 +274,10 @@ export function createClient(creationConfig: Config): Client {
   }
 
   function loginWithWebAuthn(params: LoginWithWebAuthnParams) {
-    return apiClients.then(clients => clients.webAuthn.loginWithWebAuthn(params))
+    return apiClients.then(clients => clients.webAuthn.loginWithWebAuthn({
+      ...params,
+      webAuthnOrigin
+    }))
   }
 
   function logout(params: LogoutParams = {}, revocationParams?: RevocationParams) {
@@ -331,7 +335,10 @@ export function createClient(creationConfig: Config): Client {
   }
 
   function signupWithWebAuthn(params: SignupWithWebAuthnParams, auth?: AuthOptions) {
-    return apiClients.then(clients => clients.webAuthn.signupWithWebAuthn(params, auth))
+    return apiClients.then(clients => clients.webAuthn.signupWithWebAuthn({
+      ...params,
+      webAuthnOrigin
+    }, auth))
   }
 
   function startMfaEmailRegistration(params: StartMfaEmailRegistrationParams) {

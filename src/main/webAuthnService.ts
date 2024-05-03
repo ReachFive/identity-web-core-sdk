@@ -15,19 +15,22 @@ export type PhoneNumberLoginWithWebAuthnParams = { phoneNumber: string }
  * If true is selected and conditional mediation is unavailable, an error will be returned
  */
 export type DiscoverableLoginWithWebAuthnParams = { conditionalMediation: boolean | 'preferred' }
-export type LoginWithWebAuthnParams = { auth?: AuthOptions; signal?: AbortSignal, webAuthnOrigin?: string } & (
+export type LoginWithWebAuthnParams = { auth?: AuthOptions; signal?: AbortSignal } & (
   | EmailLoginWithWebAuthnParams
   | PhoneNumberLoginWithWebAuthnParams
   | DiscoverableLoginWithWebAuthnParams
 )
+
+export type InternalLoginWithWebAuthnParams = LoginWithWebAuthnParams & {webAuthnOrigin?: string}
 
 export type SignupWithWebAuthnParams = {
   profile: SignupProfileData
   friendlyName?: string
   redirectUrl?: string
   returnToAfterEmailConfirmation?: string
-  webAuthnOrigin?: string
 }
+
+export type InternalSignupWithWebAuthnParams = SignupWithWebAuthnParams & {webAuthnOrigin?: string}
 
 export type RegistrationOptions = {
   friendlyName: string

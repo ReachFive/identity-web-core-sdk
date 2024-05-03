@@ -9,13 +9,14 @@ import {
   EmailLoginWithWebAuthnParams,
   encodePublicKeyCredentialCreationOptions,
   encodePublicKeyCredentialRequestOptions,
+  InternalLoginWithWebAuthnParams,
+  InternalSignupWithWebAuthnParams,
   LoginWithWebAuthnParams,
   PhoneNumberLoginWithWebAuthnParams,
   publicKeyCredentialType,
   RegistrationOptions,
   serializeAuthenticationPublicKeyCredential,
   serializeRegistrationPublicKeyCredential,
-  SignupWithWebAuthnParams
 } from './webAuthnService'
 import { ApiClientConfig } from './main'
 import OAuthClient from './oAuthClient'
@@ -102,7 +103,7 @@ export default class WebAuthnClient {
     return typeof (params as DiscoverableLoginWithWebAuthnParams).conditionalMediation !== 'undefined'
   }
 
-  private buildWebAuthnParams(params: LoginWithWebAuthnParams): Promise<LoginWithWebAuthnQueryParams> {
+  private buildWebAuthnParams(params: InternalLoginWithWebAuthnParams): Promise<LoginWithWebAuthnQueryParams> {
     const body = this.isDiscoverable(params)
       ? {
           clientId: this.config.clientId,
@@ -128,7 +129,7 @@ export default class WebAuthnClient {
     })
   }
 
-  loginWithWebAuthn(params: LoginWithWebAuthnParams): Promise<AuthResult> {
+  loginWithWebAuthn(params: InternalLoginWithWebAuthnParams): Promise<AuthResult> {
     if (!window.PublicKeyCredential) {
       return Promise.reject(new Error('Unsupported WebAuthn API'))
     }
@@ -178,7 +179,7 @@ export default class WebAuthnClient {
     return this.http.remove<void>(`${this.registrationUrl}/${deviceId}`, { accessToken })
   }
 
-  signupWithWebAuthn(params: SignupWithWebAuthnParams, auth?: AuthOptions): Promise<AuthResult> {
+  signupWithWebAuthn(params: InternalSignupWithWebAuthnParams, auth?: AuthOptions): Promise<AuthResult> {
     if (window.PublicKeyCredential) {
       const body = {
         origin: params.webAuthnOrigin || window.location.origin,
