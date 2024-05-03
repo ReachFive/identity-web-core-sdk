@@ -328,7 +328,10 @@ export function createClient(creationConfig: Config): Client {
   }
 
   function resetPasskeys(params: ResetPasskeysParams) {
-    return apiClients.then(clients => clients.webAuthn.resetPasskeys(params))
+    return apiClients.then(clients => clients.webAuthn.resetPasskeys({
+      ...params,
+      webAuthnOrigin
+    }))
   }
 
   function sendEmailVerification(params: EmailVerificationParams) {

@@ -38,6 +38,8 @@ type SmsResetPasskeysParams = {
 
 export type ResetPasskeysParams = EmailResetPasskeysParams | SmsResetPasskeysParams
 
+export type InternalResetPasskeysParams = { webAuthnOrigin?: string } & ResetPasskeysParams
+
 /**
  * Identity Rest API Client
  */
@@ -112,11 +114,11 @@ export default class WebAuthnClient {
     }
   }
 
-  resetPasskeys(params: ResetPasskeysParams): Promise<void> {
+  resetPasskeys(params: InternalResetPasskeysParams): Promise<void> {
     if (window.PublicKeyCredential) {
       const body = {
         ...params,
-        origin: window.location.origin,
+        origin: params.webAuthnOrigin || window.location.origin,
         friendlyName: params.friendlyName || window.navigator.platform
       }
 
