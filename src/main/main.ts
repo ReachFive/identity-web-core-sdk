@@ -37,7 +37,7 @@ import MfaClient, {
 import ProfileClient, {
   EmailVerificationParams,
   GetUserParams,
-  PhoneNumberVerificationParams,
+  PhoneNumberVerificationParams, RequestAccountRecoveryParams,
   RequestPasswordResetParams,
   UnlinkParams,
   UpdateEmailParams,
@@ -45,7 +45,7 @@ import ProfileClient, {
   UpdatePhoneNumberParams,
   UpdateProfileParams, VerifyPhoneNumberParams
 } from './profileClient'
-import WebAuthnClient from './webAuthnClient'
+import WebAuthnClient, { ResetPasskeysParams } from './webAuthnClient'
 import CredentialsResponse = MFA.CredentialsResponse
 import StepUpResponse = MFA.StepUpResponse
 
@@ -103,7 +103,9 @@ export type Client = {
   removeMfaPhoneNumber: (params: RemoveMfaPhoneNumberParams) => Promise<void>
   removeTrustedDevice: (params: DeleteTrustedDeviceParams) => Promise<void>
   removeWebAuthnDevice: (accessToken: string, deviceId: string) => Promise<void>
+  requestAccountRecovery: (params: RequestAccountRecoveryParams) => Promise<void>
   requestPasswordReset: (params: RequestPasswordResetParams) => Promise<void>
+  resetPasskeys: (params: ResetPasskeysParams) => Promise<void>
   sendEmailVerification: (params: EmailVerificationParams) => Promise<void>
   sendPhoneNumberVerification: (params: PhoneNumberVerificationParams) => Promise<void>
   signup: (params: SignupParams) => Promise<AuthResult>
@@ -318,8 +320,15 @@ export function createClient(creationConfig: Config): Client {
     return apiClients.then(clients => clients.webAuthn.removeWebAuthnDevice(accessToken, deviceId))
   }
 
+  function requestAccountRecovery(params: RequestAccountRecoveryParams) {
+    return apiClients.then(clients => clients.profile.requestAccountRecovery(params))
+  }
   function requestPasswordReset(params: RequestPasswordResetParams) {
     return apiClients.then(clients => clients.profile.requestPasswordReset(params))
+  }
+
+  function resetPasskeys(params: ResetPasskeysParams) {
+    return apiClients.then(clients => clients.webAuthn.resetPasskeys(params))
   }
 
   function sendEmailVerification(params: EmailVerificationParams) {
@@ -421,6 +430,8 @@ export function createClient(creationConfig: Config): Client {
     removeMfaPhoneNumber,
     removeTrustedDevice,
     removeWebAuthnDevice,
+    requestAccountRecovery,
+    resetPasskeys,
     requestPasswordReset,
     sendEmailVerification,
     sendPhoneNumberVerification,
