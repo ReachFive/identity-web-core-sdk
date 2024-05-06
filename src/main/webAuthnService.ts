@@ -21,12 +21,16 @@ export type LoginWithWebAuthnParams = { auth?: AuthOptions; signal?: AbortSignal
   | DiscoverableLoginWithWebAuthnParams
 )
 
+export type InternalLoginWithWebAuthnParams = LoginWithWebAuthnParams & { webAuthnOrigin?: string }
+
 export type SignupWithWebAuthnParams = {
   profile: SignupProfileData
   friendlyName?: string
   redirectUrl?: string
   returnToAfterEmailConfirmation?: string
 }
+
+export type InternalSignupWithWebAuthnParams = SignupWithWebAuthnParams & { webAuthnOrigin?: string }
 
 export type RegistrationOptions = {
   friendlyName: string
