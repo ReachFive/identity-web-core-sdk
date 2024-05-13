@@ -7,7 +7,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-## [1.33.0] - 2024-16-05
+## [1.33.0] - 2024-05-16
 - Add support for account recovery and passkey reset
 - Make WebAuthn origin configurable
 
