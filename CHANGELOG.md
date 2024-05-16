@@ -6,16 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0), 
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [1.33.0] - 2024-05-16
 - Add support for account recovery and passkey reset
 - Make WebAuthn origin configurable
 
-## [1.32.2] - 2023-03-21
+## [1.32.2] - 2024-03-21
 - Add support for discoverable passkey login
 
-## [1.32.1] - 2023-01-18
+## [1.32.1] - 2024-01-18
 - Fix never resolved promise in verifyPasswordless with useWebMessage
 - Address custom field support
-## [1.32.0] - 2023-01-05
+## [1.32.0] - 2024-01-05
 - Add locale variable
 ## [1.31.0] - 2023-12-21
 - Modify verifyPasswordless signature (adding AuthOptions)
