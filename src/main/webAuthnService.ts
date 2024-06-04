@@ -84,6 +84,7 @@ export type RegistrationPublicKeyCredentialSerialized = {
   response: {
     attestationObject: string
     clientDataJSON: string
+    transports: string[]
   }
 }
 
@@ -142,7 +143,8 @@ export function serializeRegistrationPublicKeyCredential(
     type: 'public-key',
     response: {
       clientDataJSON: encodeToBase64(response.clientDataJSON),
-      attestationObject: encodeToBase64(response.attestationObject)
+      attestationObject: encodeToBase64(response.attestationObject),
+      transports: response.getTransports()
     }
   }
 }
