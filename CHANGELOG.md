@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0), 
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- Add support for passkey additional information.
 
 ## [1.33.0] - 2024-05-16
 - Add support for account recovery and passkey reset
