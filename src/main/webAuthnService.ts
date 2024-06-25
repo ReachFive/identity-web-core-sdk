@@ -84,7 +84,7 @@ export type RegistrationPublicKeyCredentialSerialized = {
   response: {
     attestationObject: string
     clientDataJSON: string
-    transports: string[]
+    transports: ReturnType<typeof AuthenticatorAttestationResponse.prototype['getTransports']>
   }
 }
 
