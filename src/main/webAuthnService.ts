@@ -43,6 +43,9 @@ export type CredentialRequestOptionsSerialized = { publicKey: PublicKeyCredentia
 export type DeviceCredential = {
   friendlyName: string
   id: string
+  createdAt?: string
+  lastUsedAt?: string
+  aaguid?: string
 }
 
 type PublicKeyCredentialCreationOptionsSerialized = {
