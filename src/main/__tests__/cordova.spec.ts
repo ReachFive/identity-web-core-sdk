@@ -23,11 +23,19 @@ function apiClientAndEventManager() {
   const client = new OauthClient({
     config: {
       clientId,
+      customFields: [],
       baseUrl,
       language: 'en',
+      mfaEmailEnabled: false,
+      mfaSmsEnabled: false,
+      rbaEnabled: false,
+      sms: false,
+      socialProviders: [],
       sso: false,
       pkceEnforced: false,
-      isPublic: true
+      resourceBaseUrl: '',
+      isPublic: true,
+      webAuthn: false,
     },
     http,
     eventManager,
