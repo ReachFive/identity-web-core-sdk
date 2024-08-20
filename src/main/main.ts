@@ -58,21 +58,20 @@ export { DeviceCredential, LoginWithWebAuthnParams, SignupWithWebAuthnParams } f
 export interface Config {
   clientId: string
   domain: string
+  /**
+   * Used to define which Google provider variant to use with Google One Tap
+   * @default "default"
+   * */
+  googleVariant?: string
   language?: string
   locale?: string
   webAuthnOrigin?: string
 }
 
-export type ApiClientConfig = {
+export type ApiClientConfig = RemoteSettings & {
   clientId: string
-  language?: string
-  scope?: string
-  orchestrationToken?: OrchestrationToken
-  sso: boolean
-  pkceEnforced: boolean
-  isPublic: boolean
   baseUrl: string
-  googleClientId?: string
+  orchestrationToken?: OrchestrationToken
 }
 
 export type Client = {
@@ -136,7 +135,7 @@ export function createClient(creationConfig: Config): Client {
   checkParam(creationConfig, 'domain')
   checkParam(creationConfig, 'clientId')
 
-  const { domain, clientId, language, locale, webAuthnOrigin } = creationConfig
+  const { domain, clientId, googleVariant, language, locale, webAuthnOrigin } = creationConfig
 
   const eventManager = createEventManager()
 
@@ -149,7 +148,7 @@ export function createClient(creationConfig: Config): Client {
   const baseIdentityUrl = `${baseUrl}/identity/v1`
 
   const remoteSettings = rawRequest<RemoteSettings>(
-    `https://${domain}/identity/v1/config?${toQueryString({ clientId, lang: language })}`
+    `https://${domain}/identity/v1/config?${toQueryString({ clientId, lang: language, googleVariant })}`
   )
 
   const apiClients = remoteSettings.then(
@@ -160,7 +159,7 @@ export function createClient(creationConfig: Config): Client {
       const params = new URLSearchParams(window.location.search)
       const orchestrationToken = params.get('r5_request_token') || undefined
 
-      const config = {
+      const config: ApiClientConfig = {
         clientId,
         baseUrl,
         orchestrationToken,
