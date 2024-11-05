@@ -7,7 +7,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-## [1.34.0] - 2024-11-05
+## [1.34.0] - 2024-11-06
 - Add support for passkey additional information.
 - Allow specifying Google variant to use with One Tap.
 
