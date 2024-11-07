@@ -7,9 +7,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-## [1.34.0] - 2024-11-06
+## [1.34.0] - 2024-11-07
 - Add support for passkey additional information.
 - Allow specifying Google variant to use with One Tap.
+- Use local storage instead of session storage for code verifier.
 
 ## [1.33.0] - 2024-05-16
 - Add support for account recovery and passkey reset
