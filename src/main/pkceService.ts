@@ -8,7 +8,7 @@ export type PkceParams = { codeChallenge: string; codeChallengeMethod: string }
 export function computePkceParams(): Promise<PkceParams> {
   const codeVerifier = randomBase64String()
 
-  sessionStorage.setItem('verifier_key', codeVerifier)
+  localStorage.setItem('verifier_key', codeVerifier)
   return computeCodeChallenge(codeVerifier).then(challenge => {
     return {
       codeChallenge: challenge,
