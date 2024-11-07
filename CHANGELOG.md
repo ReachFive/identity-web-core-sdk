@@ -6,7 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0), 
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [1.34.0] - 2024-11-07
 - Add support for passkey additional information.
+- Allow specifying Google variant to use with One Tap.
+- Use local storage instead of session storage for code verifier.
 
 ## [1.33.0] - 2024-05-16
 - Add support for account recovery and passkey reset
@@ -414,7 +418,13 @@ Automatise the deployment of a new release with `circleci`.
 - Implement `tslint`.
 - Remove `yarn`.
 
-[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.32.1...HEAD
+[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.34.0...HEAD
+
+[1.34.0]:https://github.com/ReachFive/identity-web-core-sdk/compare/v1.33.0...v1.34.0
+
+[1.32.2]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.32.2...v1.33.0
+
+[1.32.2]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.32.1...v1.32.2
 
 [1.32.1]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.32.0...v1.32.1
 
