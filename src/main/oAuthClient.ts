@@ -182,7 +182,7 @@ export default class OAuthClient {
           body: {
             clientId: this.config.clientId,
             grantType: 'authorization_code',
-            codeVerifier: sessionStorage.getItem('verifier_key'),
+            codeVerifier: localStorage.getItem('verifier_key'),
             ...params
           }
         })
@@ -605,7 +605,7 @@ export default class OAuthClient {
             })
             return
           }
-        
+
           if (result) {
             const r = camelCaseProperties(result) as WinChanResponse<AuthResult>
 
