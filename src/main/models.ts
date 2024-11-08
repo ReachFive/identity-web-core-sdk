@@ -404,7 +404,7 @@ export type RemoteSettings = {
   scope?: string
   socialProviders: string[]
   googleClientId?: string,
-  passwordPolicy?: PasswordPolicy,
+  passwordPolicy: PasswordPolicy,
   consents?: Consent[],
   customFields: CustomField[],
   resourceBaseUrl: string,
