@@ -26,6 +26,11 @@ export function createDefaultTestClient(remoteSettings: Partial<RemoteSettings> 
     webAuthn: false,
     socialProviders: [],
     customFields: [],
+    passwordPolicy: {
+      minLength: 8,
+      minStrength: 2,
+      allowUpdateWithAccessTokenOnly: true,
+    },
     resourceBaseUrl: `https://${domain}/hassets/sdk`,
     mfaEmailEnabled: false,
     mfaSmsEnabled: false,

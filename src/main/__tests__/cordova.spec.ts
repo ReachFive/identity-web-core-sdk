@@ -28,6 +28,11 @@ function apiClientAndEventManager() {
       language: 'en',
       mfaEmailEnabled: false,
       mfaSmsEnabled: false,
+      passwordPolicy: {
+        minLength: 8,
+        minStrength: 2,
+        allowUpdateWithAccessTokenOnly: true,
+      },
       rbaEnabled: false,
       sms: false,
       socialProviders: [],
