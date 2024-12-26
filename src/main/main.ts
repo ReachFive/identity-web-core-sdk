@@ -120,7 +120,7 @@ export type Client = {
   verifyMfaEmailRegistration: (params: VerifyMfaEmailRegistrationParams) => Promise<void>
   verifyMfaPasswordless: (params: VerifyMfaPasswordlessParams) => Promise<AuthResult>
   verifyMfaPhoneNumberRegistration: (params: VerifyMfaPhoneNumberRegistrationParams) => Promise<void>
-  verifyPasswordless: (params: VerifyPasswordlessParams, options?: AuthOptions) => Promise<void>
+  verifyPasswordless: (params: VerifyPasswordlessParams, options?: AuthOptions) => Promise<AuthResult | void>
   verifyPhoneNumber: (params: VerifyPhoneNumberParams) => Promise<void>
 }
 
