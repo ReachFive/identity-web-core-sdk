@@ -508,9 +508,9 @@ export default class OAuthClient {
     )
   }
 
-  verifyPasswordless(params: VerifyPasswordlessParams, auth: AuthOptions = {}): Promise<void> {
+  verifyPasswordless(params: VerifyPasswordlessParams, auth: AuthOptions = {}): Promise<AuthResult | void> {
     return ('challengeId' in params)
-        ? Promise.resolve(this.loginWithVerificationCode(params))
+        ? Promise.resolve(this.loginWithVerificationCode(params, auth))
         : this.http
             .post(this.passwordlessVerifyAuthCodeUrl, { body: params })
             .catch(err => {
@@ -645,22 +645,39 @@ export default class OAuthClient {
     return Promise.resolve()
   }
 
-  private loginWithVerificationCode(params: VerifyPasswordlessParams, auth: AuthOptions = {}): Promise<void> {
+  private loginWithVerificationCode(params: VerifyPasswordlessParams, auth: AuthOptions = {}): Promise<AuthResult | void> {
     const queryString = toQueryString({
       ...this.authParams(auth),
       ...params
     })
     if(auth.useWebMessage) {
-      const timeout = (delay: number): Promise<void> => new Promise((resolve) => setTimeout(() => resolve(), delay))
-      const promiseGetWebMessage: Promise<void> = this.getWebMessage(
-          `${this.passwordlessVerifyUrl}?${queryString}`,
-          this.config.baseUrl,
-          auth.redirectUri
-      ).then()
-        return Promise.race([
-          promiseGetWebMessage,
-          timeout(1000)
-        ])
+      return this.http
+        .post<AuthResult>(this.passwordlessVerifyUrl, { body: params })
+        .catch(err => {
+          if (err.error) this.eventManager.fireEvent('login_failed', err)
+          return Promise.reject(err)
+        })
+        .then((result: AuthResult) => {
+          if (AuthResult.isAuthResult(result)) {
+            if (result.code) {
+              return this.exchangeAuthorizationCodeWithPkce({
+                code: result.code,
+                redirectUri: auth.redirectUri || window.location.origin,
+              })
+            } else {
+              this.eventManager.fireEvent('authenticated', result)
+              return Promise.resolve(enrichAuthResult(result))
+            }
+          } else if (ErrorResponse.isErrorResponse(result)) {
+            // The 'authentication_failed' event must not be triggered because it is not a real authentication failure.
+            return Promise.reject(result)
+          } else {
+            return Promise.reject({
+              error: 'unexpected_error',
+              errorDescription: 'Unexpected error occurred'
+            })
+          }
+        })
     } else {
       window.location.assign(`${this.passwordlessVerifyUrl}?${queryString}`)
       return Promise.resolve()
