@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.34.1] - 2025-01-07
+- verifyPasswordless should not make redirection with useWebMessage by using POST method endpoint.
+
 ## [1.34.0] - 2024-11-07
 - Add support for passkey additional information.
 - Allow specifying Google variant to use with One Tap.
@@ -418,7 +421,9 @@ Automatise the deployment of a new release with `circleci`.
 - Implement `tslint`.
 - Remove `yarn`.
 
-[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.34.0...HEAD
+[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.34.1...HEAD
+
+[1.34.1]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.34.0...HEAD
 
 [1.34.0]:https://github.com/ReachFive/identity-web-core-sdk/compare/v1.33.0...v1.34.0
 
