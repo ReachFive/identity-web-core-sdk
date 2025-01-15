@@ -287,22 +287,22 @@ export namespace MFA {
     return credential.type === 'email'
   }
 
-  type CredentialType = 'sms' | 'email'
+  export type CredentialType = Credential['type']
 
-  type Credential = {
-    type: CredentialType
+  export type Credential = PhoneCredential | EmailCredential
+
+  export type PhoneCredential = {
+    type: 'sms'
+    phoneNumber: string
     createdAt: string
     friendlyName: string
   }
 
-  export type PhoneCredential = Credential & {
-    type: 'sms'
-    phoneNumber: string
-  }
-
-  export type EmailCredential = Credential & {
+  export type EmailCredential = {
     type: 'email'
     email: string
+    createdAt: string
+    friendlyName: string
   }
 
   export type CredentialsResponse = {
