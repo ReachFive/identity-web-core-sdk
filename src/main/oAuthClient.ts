@@ -590,7 +590,8 @@ export default class OAuthClient {
     type WinChanResponse<D> = { success: true; data: D } | { success: false; data: ErrorResponse }
     const { responseType, redirectUri, provider } = opts
 
-    WinChan.open<WinChanResponse<object>>(
+    return new Promise((resolve, reject) => {
+      WinChan.open<WinChanResponse<object>>(
         {
           url: `${this.authorizeUrl}?${toQueryString(opts)}`,
           relay_url: this.popupRelayUrl,
@@ -603,13 +604,14 @@ export default class OAuthClient {
               errorDescription: 'Unexpected error occurred',
               error: 'server_error'
             })
-            return
+            return reject(err)
           }
 
           if (result) {
             const r = camelCaseProperties(result) as WinChanResponse<AuthResult>
 
             if (r.success) {
+              resolve()
               if (responseType === 'code') {
                 window.location.assign(`${redirectUri}?code=${r.data.code}`)
               } else {
@@ -617,11 +619,12 @@ export default class OAuthClient {
               }
             } else {
               this.eventManager.fireEvent('authentication_failed', r.data)
+              return reject(r.data)
             }
           }
         }
-    )
-    return Promise.resolve()
+      )
+    })
   }
 
   private computeProviderPopupOptions(provider: string): string {
