@@ -8,6 +8,7 @@ class WinChanMocker {
     if (this.initialized) {
       throw new Error('Already mocked')
     }
+    this.initialized = true
     WinChan.open = jest.fn().mockImplementationOnce((params, callback) => {
       this.receivedParams = params
       callback(null, result)
@@ -18,10 +19,24 @@ class WinChanMocker {
     if (this.initialized) {
       throw new Error('Already mocked')
     }
+    this.initialized = true
     WinChan.open = jest.fn().mockImplementationOnce((params, callback) => {
       this.receivedParams = params
       callback(err)
     })
+  }
+
+  mockClear() {
+    if (jest.isMockFunction(WinChan.open)) {
+      WinChan.open.mockClear()
+    } 
+  }
+
+  mockReset() {
+    if (jest.isMockFunction(WinChan.open)) {
+      WinChan.open.mockReset()
+    } 
+    this.initialized = false
   }
 
   reset() {

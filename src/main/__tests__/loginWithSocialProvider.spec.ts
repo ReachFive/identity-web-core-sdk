@@ -17,6 +17,7 @@ beforeEach(() => {
   jest.resetAllMocks()
   fetchMock.resetMocks()
   popNextRandomString()
+  winchanMocker.mockReset()
 })
 
 test('with default auth', async () => {
@@ -109,7 +110,13 @@ test('with popup mode with expected failure', async () => {
   client.on('authentication_failed', authenticationFailedHandler)
 
   // When
-  await client.loginWithSocialProvider('facebook', { popupMode: true })
+  await expect(
+    client.loginWithSocialProvider('facebook', { popupMode: true })
+  ).rejects.toMatchObject({
+    error: 'access_denied',
+    errorDescription: 'The user cancelled the login process',
+    errorUsrMsg: 'Login cancelled'
+  })
 
   // Then
   await expect(authenticatedHandler).not.toHaveBeenCalled()
@@ -134,7 +141,9 @@ test('with popup mode with unexpected failure', async () => {
   client.on('authentication_failed', authenticationFailedHandler)
 
   // When
-  await client.loginWithSocialProvider('facebook', { popupMode: true })
+  await expect(
+    client.loginWithSocialProvider('facebook', { popupMode: true })
+  ).rejects.toThrow('[fake error: ignore me]')
 
   // Then
   expect(authenticatedHandler).not.toHaveBeenCalled()
