@@ -88,6 +88,12 @@ export type VerifyPhoneNumberParams = {
   verificationCode: string
 }
 
+export type VerifyEmailParams = {
+  email: string
+  verificationCode: string
+  accessToken: string
+}
+
 /**
  * Identity Rest API Client
  */
@@ -106,6 +112,7 @@ export default class ProfileClient {
   private updateProfileUrl: string
   private userInfoUrl: string
   private verifyPhoneNumberUrl: string
+  private verifyEmailUrl: string
 
   constructor(props: { config: ApiClientConfig; http: HttpClient; eventManager: IdentityEventManager }) {
     this.config = props.config
@@ -122,6 +129,7 @@ export default class ProfileClient {
     this.updateProfileUrl = '/update-profile'
     this.userInfoUrl = '/userinfo'
     this.verifyPhoneNumberUrl = '/verify-phone-number'
+    this.verifyEmailUrl = '/verify-email'
   }
 
   getSignupData(signupToken: string): Promise<OpenIdUser> {
@@ -202,5 +210,11 @@ export default class ProfileClient {
     return this.http
         .post(this.verifyPhoneNumberUrl, { body: data, accessToken })
         .then(() => this.eventManager.fireEvent('profile_updated', { phoneNumber, phoneNumberVerified: true }))
+  }
+
+  verifyEmail(params: VerifyEmailParams): Promise<void> {
+    const { email } = params
+    return this.http.post<void>(this.verifyEmailUrl, { body: params })
+      .then(() => this.eventManager.fireEvent("profile_updated", {email, emailVerified: true}))
   }
 }
