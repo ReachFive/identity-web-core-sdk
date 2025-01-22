@@ -5,6 +5,7 @@ import {
   OpenIdUser,
   PasswordlessResponse,
   MFA, OrchestrationToken,
+  PasswordStrength,
 } from './models'
 import OAuthClient, {
   LoginWithPasswordParams,
@@ -80,6 +81,7 @@ export type Client = {
   checkUrlFragment: (url?: string) => boolean
   exchangeAuthorizationCodeWithPkce: (params: TokenRequestParameters) => Promise<AuthResult>
   getMfaStepUpToken: (params: StepUpParams) => Promise<StepUpResponse>
+  getPasswordStrength: (password: string) => Promise<PasswordStrength>
   getSessionInfo: () => Promise<SessionInfo>
   getSignupData: (signupToken: string) => Promise<OpenIdUser>
   getUser: (params: GetUserParams) => Promise<Profile>
@@ -220,6 +222,10 @@ export function createClient(creationConfig: Config): Client {
 
   function exchangeAuthorizationCodeWithPkce(params: TokenRequestParameters) {
     return apiClients.then(clients => clients.oAuth.exchangeAuthorizationCodeWithPkce(params))
+  }
+
+  function getPasswordStrength(password: string) {
+    return apiClients.then(clients => clients.oAuth.getPasswordStrength(password))
   }
 
   function getMfaStepUpToken(params: StepUpParams) {
@@ -410,6 +416,7 @@ export function createClient(creationConfig: Config): Client {
     checkUrlFragment,
     exchangeAuthorizationCodeWithPkce,
     getMfaStepUpToken,
+    getPasswordStrength,
     getSessionInfo,
     getSignupData,
     getUser,
