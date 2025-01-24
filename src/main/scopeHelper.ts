@@ -1,20 +1,16 @@
-import uniq from 'lodash/uniq'
-import isString from 'lodash/isString'
-import isArray from 'lodash/isArray'
-import isUndefined from 'lodash/isUndefined'
 import { AuthOptions } from './authOptions'
 
 /**
  * Resolve the actual oauth2 scope according to the authentication options.
  */
 export function resolveScope(opts: AuthOptions = {}, defaultScopes?: string): string {
-  const fetchBasicProfile = isUndefined(opts.fetchBasicProfile) || opts.fetchBasicProfile
-  const scopes = isUndefined(opts.scope) ? defaultScopes : opts.scope
-  return uniq([
+  const fetchBasicProfile = typeof opts.fetchBasicProfile === 'undefined' || opts.fetchBasicProfile
+  const scopes = typeof opts.scope === 'undefined' ? defaultScopes : opts.scope
+  return [...new Set([
     ...(fetchBasicProfile ? ['openid', 'profile', 'email', 'phone'] : []),
     ...(opts.requireRefreshToken ? ['offline_access'] : []),
     ...parseScope(scopes)
-  ]).join(' ')
+  ])].join(' ')
 }
 
 /**
@@ -22,9 +18,9 @@ export function resolveScope(opts: AuthOptions = {}, defaultScopes?: string): st
  * @param scope Scope entered by the user
  */
 function parseScope(scope: string[] | string | undefined): string[] {
-  if (isUndefined(scope)) return []
-  if (isArray(scope)) return scope
-  if (isString(scope)) return scope.split(' ')
+  if (typeof scope === 'undefined') return []
+  if (Array.isArray(scope)) return scope
+  if (typeof scope === 'string') return scope.split(' ')
   throw new Error('Invalid scope format: string or array expected.')
 }
 

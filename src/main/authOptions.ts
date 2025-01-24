@@ -1,7 +1,7 @@
-import pick from 'lodash/pick'
 import { Scope } from './models'
 import { AuthParameters } from './authParameters'
 import { resolveScope } from './scopeHelper'
+import { pick } from '../utils/utils'
 
 export type ResponseType = 'code' | 'token'
 export type Prompt = 'none' | 'login' | 'consent' | 'select_account'
@@ -51,7 +51,7 @@ export function computeAuthOptions(
 
   return {
     responseType,
-    ...pick(opts, [
+    ...pick(opts,
       'responseType',
       'redirectUri',
       'origin',
@@ -62,7 +62,7 @@ export function computeAuthOptions(
       'loginHint',
       'accessToken',
       'persistent'
-    ]),
+    ),
     scope,
     display,
     responseMode,

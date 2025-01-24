@@ -1,6 +1,6 @@
 import { ResponseType } from '../../authOptions'
 import { toQueryString } from '../../../utils/queryString'
-import pick from 'lodash/pick'
+import { pick } from '../../../utils/utils'
 import { AuthParameters } from '../../authParameters'
 
 export const mockPkceValues = {
@@ -14,7 +14,10 @@ export const scope = { scope: defaultScope }
 export const token = { responseType: 'token' }
 export const code = { responseType: 'code', redirectUri: 'http://mysite.com/login/callback' }
 
-export const tkn = { tkn: 'authntkn' }
+type TknType = {
+  tkn: string
+}
+export const tkn: TknType = { tkn: 'authntkn' }
 
 export const email = {
   email: 'john.doe@example.com',
@@ -50,7 +53,7 @@ function expectedPkce(isPublic: boolean, responseType: ResponseType): ExpectedPk
     : {}
 }
 
-export function getExpectedQueryString(params: ClientType & AuthParameters): string {
+export function getExpectedQueryString(params: ClientType & AuthParameters & Partial<TknType>): string {
   const responseType = params['responseType']
   const isPublic = params['isPublic']
   const pkceValues = expectedPkce(isPublic, responseType)
