@@ -164,6 +164,7 @@ export default class MfaClient {
         verificationCode,
         trustDevice
       },
+      withCookies: true,
     })
   }
 
