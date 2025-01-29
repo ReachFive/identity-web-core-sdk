@@ -7,6 +7,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.34.2] - 2025-01-29
+- Add `credentials: 'include'` to passwordless verification call if SSO is enabled
+- `loginWithPopup` should return resolved/rejected promise
+
 ## [1.34.1] - 2025-01-07
 - verifyPasswordless should not make redirection with useWebMessage by using POST method endpoint.
 
