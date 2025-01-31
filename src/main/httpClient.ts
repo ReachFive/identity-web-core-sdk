@@ -69,12 +69,12 @@ export function createHttpClient(config: HttpConfig): HttpClient {
 /**
  * Low level HTTP client
  */
-export function rawRequest<Data>(url: string, fetchOptions?: RequestInit): Promise<Data> {
-  return fetch(url, fetchOptions).then(response => {
-    if (response.status !== 204) {
-      const dataP = (response.json().then(res => camelCaseProperties(res) as Data))
-      return response.ok ? dataP : dataP.then(data => Promise.reject(data))
-    }
-    return undefined as Data
-  })
+export async function rawRequest<Data>(url: string, fetchOptions?: RequestInit): Promise<Data> {
+  const response = await fetch(url, fetchOptions)
+  if (response.status == 204) return undefined as Data
+    
+  const json = await response.json()
+  const data = camelCaseProperties(json)
+
+  return response.ok ? data as Data : Promise.reject(data)
 }
