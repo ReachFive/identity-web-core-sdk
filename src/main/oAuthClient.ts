@@ -1,11 +1,8 @@
 import WinChan from 'winchan'
-import pick from 'lodash/pick'
-import keys from 'lodash/keys'
-import difference from 'lodash/difference'
-import isUndefined from 'lodash/isUndefined'
 import { logError } from '../utils/logger'
 import { QueryString, toQueryString } from '../utils/queryString'
 import { camelCaseProperties } from '../utils/transformObjectProperties'
+import { difference, pick } from '../utils/utils'
 import {
   ErrorResponse,
   SessionInfo,
@@ -778,7 +775,7 @@ export default class OAuthClient {
       return navigator.credentials
         .create(credentialParams)
         .then(credentials =>
-          !isUndefined(credentials) && credentials
+          typeof credentials !== 'undefined' && credentials
             ? navigator.credentials.store(credentials).then(() => {})
             : Promise.resolve()
         )
@@ -876,10 +873,10 @@ export default class OAuthClient {
     const correctedAuthParams = {
       clientId: this.config.clientId,
       r5_request_token: orchestrationToken,
-      ...pick(authParams, 'responseType', 'redirectUri', 'clientId', 'persistent'),
+      ...pick(authParams, 'responseType', 'redirectUri', 'persistent', 'display'),
     }
 
-    const uselessParams: string[] = difference(keys(authParams), keys(correctedAuthParams))
+    const uselessParams: string[] = difference(Object.keys(authParams), Object.keys(correctedAuthParams))
     if (uselessParams.length !== 0)
       console.debug("Orchestrated flow: pruned parameters: " + uselessParams)
 

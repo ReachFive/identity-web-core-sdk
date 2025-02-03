@@ -1,4 +1,3 @@
-import pull from 'lodash/pull'
 import { logError } from './logger'
 
 type Listeners<K extends keyof EVENTS, EVENTS> = Array<(data: EVENTS[K]) => void>
@@ -21,7 +20,7 @@ export default class EventManager<EVENTS extends object> {
   }
 
   off<K extends keyof EVENTS>(name: K, listener: (data: EVENTS[K]) => void) {
-    pull(this.getListeners(name), listener)
+    this.listeners[name] = this.getListeners(name).filter(l => l !== listener)
   }
 
   private getListeners<K extends keyof EVENTS>(name: K): Array<(data: EVENTS[K]) => void> {

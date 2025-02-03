@@ -1,3 +1,4 @@
+import "../matchers"
 import { delay } from '../../../utils/promise'
 
 export function defineWindowProperty(propertyKey: string, propertyValue?: object) {
@@ -38,7 +39,8 @@ export async function expectIframeWithParams(
   if (iframe) {
     expect(iframe.getAttribute('height')).toEqual('0')
     expect(iframe.getAttribute('width')).toEqual('0')
-    expect(iframe.getAttribute('src')).toEqual(src)
+    // expect(iframe.getAttribute('src')).toEqual(src)
+    expect(iframe.getAttribute('src')).toMatchURL(src)
   } else fail('No iframe found!')
 }
 

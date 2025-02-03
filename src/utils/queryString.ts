@@ -1,6 +1,3 @@
-import pickBy from 'lodash/pickBy'
-import map from 'lodash/map'
-
 import { camelCaseProperties, snakeCaseProperties } from './transformObjectProperties'
 
 export type QueryString = Record<string, string | string[] | number | boolean | undefined>
@@ -26,7 +23,10 @@ export function parseQueryString(queryString: string): Record<string, string | u
 
 export function toQueryString(obj: QueryString, snakeCase = true): string {
   const params = snakeCase ? snakeCaseProperties(obj) : obj
-  return map(pickBy(params, v => v !== null && v !== undefined), (value, key) =>
-    value !== '' ? `${key}=${encodeURIComponent(value)}` : key
-  ).join('&')
+  return Object.entries(params)
+    .filter(([_, value]) => value !== null && value !== undefined)
+    .map(([key, value]) => (
+      value !== '' ? `${key}=${encodeURIComponent(value)}` : key
+    ))
+    .join('&')
 }
