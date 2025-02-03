@@ -424,6 +424,7 @@ export type ErrorResponse = {
   errorDescription?: string
   errorUserMsg?: string
   errorDetails?: FieldError[]
+  errorMessageKey?: string
 }
 
 export type FieldError = {
