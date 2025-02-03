@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0), 
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- add method verifyEmail
 
 ## [1.34.2] - 2025-01-29
 - Add `credentials: 'include'` to passwordless verification call if SSO is enabled

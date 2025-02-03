@@ -43,7 +43,7 @@ import ProfileClient, {
   UpdateEmailParams,
   UpdatePasswordParams,
   UpdatePhoneNumberParams,
-  UpdateProfileParams, VerifyPhoneNumberParams
+  UpdateProfileParams, VerifyEmailParams, VerifyPhoneNumberParams
 } from './profileClient'
 import WebAuthnClient, { ResetPasskeysParams } from './webAuthnClient'
 import CredentialsResponse = MFA.CredentialsResponse
@@ -117,6 +117,7 @@ export type Client = {
   updatePassword: (params: UpdatePasswordParams) => Promise<void>
   updatePhoneNumber: (params: UpdatePhoneNumberParams) => Promise<void>
   updateProfile: (params: UpdateProfileParams) => Promise<void>
+  verifyEmail: (params: VerifyEmailParams) => Promise<void>
   verifyMfaEmailRegistration: (params: VerifyMfaEmailRegistrationParams) => Promise<void>
   verifyMfaPasswordless: (params: VerifyMfaPasswordlessParams) => Promise<AuthResult>
   verifyMfaPhoneNumberRegistration: (params: VerifyMfaPhoneNumberRegistrationParams) => Promise<void>
@@ -384,6 +385,10 @@ export function createClient(creationConfig: Config): Client {
     return apiClients.then(clients => clients.profile.updateProfile(params))
   }
 
+  function verifyEmail(params: VerifyEmailParams) {
+    return apiClients.then(clients => clients.profile.verifyEmail(params))
+  }
+
   function verifyMfaEmailRegistration(params: VerifyMfaEmailRegistrationParams) {
     return apiClients.then(clients => clients.mfa.verifyMfaEmailRegistration(params))
   }
@@ -447,6 +452,7 @@ export function createClient(creationConfig: Config): Client {
     updatePassword,
     updatePhoneNumber,
     updateProfile,
+    verifyEmail,
     verifyMfaEmailRegistration,
     verifyMfaPasswordless,
     verifyMfaPhoneNumberRegistration,
