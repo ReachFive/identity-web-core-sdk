@@ -330,9 +330,15 @@ export type TrustedDeviceMetadata = {
   deviceName?: string
 }
 
+export type PasswordStrengthScore = 0 | 1 | 2 | 3 | 4
+
+export interface PasswordStrength {
+    score: PasswordStrengthScore
+}
+
 export type PasswordPolicy = {
   minLength: number
-  minStrength: 0 | 1 | 2 | 3 | 4
+  minStrength: PasswordStrengthScore
   uppercaseCharacters?: number
   specialCharacters?: number
   lowercaseCharacters?: number

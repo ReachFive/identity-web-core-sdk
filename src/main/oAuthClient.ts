@@ -12,7 +12,8 @@ import {
   SignupProfile,
   PasswordlessResponse,
   Scope,
-  AuthenticationToken, OrchestrationToken
+  AuthenticationToken, OrchestrationToken,
+  PasswordStrength,
 } from './models'
 import { AuthOptions, computeAuthOptions } from './authOptions'
 import { AuthResult, enrichAuthResult } from './authResult'
@@ -108,6 +109,7 @@ export default class OAuthClient {
   private logoutUrl: string
   private revokeUrl: string
   private passwordlessVerifyUrl: string
+  private passwordStrengthUrl: string
   private popupRelayUrl: string
   private tokenUrl: string
 
@@ -128,6 +130,7 @@ export default class OAuthClient {
     this.logoutUrl = `${this.config.baseUrl}/identity/v1/logout`
     this.revokeUrl = `${this.config.baseUrl}/oauth/revoke`
     this.passwordlessVerifyUrl = `${this.config.baseUrl}/identity/v1/passwordless/verify`
+    this.passwordStrengthUrl = `${this.config.baseUrl}/identity/v1/password/strength`
     this.popupRelayUrl = `${this.config.baseUrl}/popup/relay`
     this.tokenUrl = `${this.config.baseUrl}/oauth/token`
 
@@ -194,6 +197,14 @@ export default class OAuthClient {
         this.releaseAuthorizationLock()
         this.releaseSessionLock()
       })
+  }
+
+  getPasswordStrength(password: string): Promise<PasswordStrength> {
+    return this.http.post<PasswordStrength>(this.passwordStrengthUrl, {
+      body: {
+        password,
+      }
+    })
   }
 
   getSessionInfo(): Promise<SessionInfo> {
