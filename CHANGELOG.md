@@ -6,50 +6,110 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0), 
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [1.35.0] - 2025-02-04
+
+### Added
+
 - add method verifyEmail
+- add method getPasswordStrength
+
+### Changed
+
+- Replace Lodash methods with custom integration
+- Add missing errorMessageKey in ErrorResponse type
 
 ## [1.34.2] - 2025-01-29
+
+### Added
+
 - Add `credentials: 'include'` to passwordless verification call if SSO is enabled
+
+### Fixed
+
 - `loginWithPopup` should return resolved/rejected promise
 
 ## [1.34.1] - 2025-01-07
+
+### Changed
+
 - verifyPasswordless should not make redirection with useWebMessage by using POST method endpoint.
 
 ## [1.34.0] - 2024-11-07
+
+### Added
+
 - Add support for passkey additional information.
 - Allow specifying Google variant to use with One Tap.
+
+### Fixed
+
 - Use local storage instead of session storage for code verifier.
 
 ## [1.33.0] - 2024-05-16
+
+### Added
+
 - Add support for account recovery and passkey reset
 - Make WebAuthn origin configurable
 
 ## [1.32.2] - 2024-03-21
+
+### Added
+
 - Add support for discoverable passkey login
 
 ## [1.32.1] - 2024-01-18
+
+### Fixed
+
 - Fix never resolved promise in verifyPasswordless with useWebMessage
+
+### Added
+
 - Address custom field support
+
 ## [1.32.0] - 2024-01-05
+
+### Added
+
 - Add locale variable
+
 ## [1.31.0] - 2023-12-21
+
+### Changed
+
 - Modify verifyPasswordless signature (adding AuthOptions)
 
 ## [1.30.1] - 2023-11-09
+
+### Changed
+
 - Make profile properties optionals in updateProfile's data param type
 
 ## [1.30.0] - 2023-11-07
+
+### Changed
+
 - Remove unnecessary access token parameter from verifyMfaPasswordless method
 
 ## [1.29.1] - 2023-10-16
+
+### Fixed
+
 - Fix issue occurring when checkSession is called less than 20 seconds after another checkSession during no PKCE flow.
 
 ## [1.29.0] - 2023-10-06
+
+### Added
+
 - Added method listTrustedDevices
 - Added method deleteTrustedDevices
 
 ## [1.28.0] - 2023-09-13
-### Fixes
+
+### Fixed
+
 - Fix error occuring when checkSession is called quickly after another checkSession
 - Fix error occuring when loginFromSession is called quickly after another loginFromSession
 
@@ -63,7 +123,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Added and optional parameter `returnProviderToken` in `TokenRequestParameters` and returns `providerAccessToken` and `providerName` fields in `AuthResult` if `returnProviderToken` is set to `true`.
 - Added an optional parameter `captchaToken` for captcha support in [updateEmail](https://developer.reachfive.com/sdk-core/updateEmail.html).
 
-### Fixes
+### Fixed
 
 - Fix error occurring when checkSession is called quickly after a loginWithPassword
 
@@ -83,7 +143,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [1.24.1] - 2022-08-03
 
-### Fixes
+### Fixed
 
 Fix parameter in web messages.
 
@@ -154,7 +214,7 @@ Added PKCE extra security in passwordless start flow.
 
 Remove Instagram related code as it is no longer a supported social provider.
 
-### Fixes
+### Fixed
 
 Moved `cordova-plugin-inappbrowser` typings from devDependencies to dependencies.
 
@@ -171,7 +231,7 @@ Moved `cordova-plugin-inappbrowser` typings from devDependencies to dependencies
 - Only generate a `code_challenge` for **public** clients in authorization code flows.
 - Hardcode to `response_type=token` for **confidential** clients in web message requests.
 
-### Fixes
+### Fixed
 
 Refactor tests to cover a wider set of request permutations.
 
@@ -181,7 +241,7 @@ Revamp of this changelog to follow [Keep a Changelog](https://keepachangelog.com
 
 ## [1.18.1] - 2020-11-30
 
-### Fixes
+### Fixed
 
 - The [loginWithSocialProvider](https://developer.reachfive.com/sdk-core/loginWithSocialProvider.html) method returns
   now the object reference from `InAppBrowser` within Cordova context.
@@ -198,20 +258,20 @@ Revamp of this changelog to follow [Keep a Changelog](https://keepachangelog.com
 - Generate a PKCE `code_challenge` by default in all authorization code flows (`responseType === 'code'`).
 - Use the authorization code flow with PKCE in checkSession.
 
-### Fixes
+### Fixed
 
 Rename erroneously named config value `pkceEnabled` to `pkceEnforced`.
 
 ## [1.17.2] - 2020-10-02
 
-### Fixes
+### Fixed
 
 - Upgrade all dependencies.
 - Fix IE/Edge window closing warning.
 
 ## [1.17.1] - 2020-09-15
 
-### Fixes
+### Fixed
 
 Fix the CircleCi job to deploy a new version.
 
@@ -261,7 +321,7 @@ Add new methods to allow management of FIDO2
 devices: [listWebAuthnDevices](https://developer.reachfive.com/sdk-core/listWebAuthnDevices.html)
 & [removeWebAuthnDevice](https://developer.reachfive.com/sdk-core/removeWebAuthnDevice.html).
 
-### Fixes
+### Fixed
 
 Throw an error when the [Credentials Management API](https://caniuse.com/#feat=credential-management) is not available.
 
@@ -283,7 +343,7 @@ address: [sendPhoneNumberVerification](https://developer.reachfive.com/sdk-core/
 
 ## [1.12.1] - 2020-05-11
 
-### Fixes
+### Fixed
 
 Correct the signature of the [verifyPasswordless](https://developer.reachfive.com/sdk-core/verifyPasswordless.html)
 method.
@@ -313,19 +373,19 @@ signup.
 
 ## [1.9.3] - 2020-01-07
 
-### Fixes
+### Fixed
 
 The [logout](https://developer.reachfive.com/sdk-core/logout.html) method was fixed on Safari and IE11.
 
 ## [1.9.2] - 2019-12-02
 
-### Fixes
+### Fixed
 
 Add the missing implementation of `Buffer` to address an issue with the UMD bundle when PKCE is enabled.
 
 ## [1.9.1] - 2019-11-29
 
-### Fixes
+### Fixed
 
 - Open a webview for social login if the Cordova platform is iOS.
 - Support compatibility with IE11.
@@ -344,7 +404,7 @@ Export the remote settings and the `ErrorResponse` model.
 
 ## [1.7.1] - 2019-09-19
 
-### Fixes
+### Fixed
 
 Customs fields and consents snake_case conversion
 
@@ -355,7 +415,7 @@ Customs fields and consents snake_case conversion
 The [Credentials Management API](https://www.w3.org/TR/credential-management) is now supported for
 the [signup](https://developer.reachfive.com/sdk-core/signup.html).
 
-### Fixes
+### Fixed
 
 Fix `redirectUrl` argument for [updateEmail](https://developer.reachfive.com/sdk-core/updateEmail.html) function.
 
@@ -384,7 +444,7 @@ The new default is to use the scopes defined for your client via the ReachFive c
 
 Update the signature of the `loginWithSocialProvider` method to handle pkce support.
 
-### Fixes
+### Fixed
 
 Pass auth options `scope` used by `loginWithPassword` and `signup` to the Identity API calls.
 
@@ -426,13 +486,17 @@ Automatise the deployment of a new release with `circleci`.
 - Implement `tslint`.
 - Remove `yarn`.
 
-[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.34.1...HEAD
+[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.35.0...HEAD
 
-[1.34.1]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.34.0...HEAD
+[1.35.0]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.34.2...v1.35.0
+
+[1.34.2]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.34.1...v1.34.2
+
+[1.34.1]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.34.0...v1.34.1
 
 [1.34.0]:https://github.com/ReachFive/identity-web-core-sdk/compare/v1.33.0...v1.34.0
 
-[1.32.2]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.32.2...v1.33.0
+[1.33.0]:https://github.com/ReachFive/identity-web-core-sdk/compare/v1.32.2...v1.33.0
 
 [1.32.2]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.32.1...v1.32.2
 
