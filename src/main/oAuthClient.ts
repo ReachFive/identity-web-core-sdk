@@ -199,6 +199,7 @@ export default class OAuthClient {
   getPasswordStrength(password: string): Promise<PasswordStrength> {
     return this.http.post<PasswordStrength>(this.passwordStrengthUrl, {
       body: {
+        clientId: this.config.clientId,
         password,
       }
     })
