@@ -7,6 +7,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.35.1] - 2025-02-05
+
+### Changed
+
+- Add clientId to getPasswordStrength request body
+
 ## [1.35.0] - 2025-02-04
 
 ### Added
@@ -486,7 +492,9 @@ Automatise the deployment of a new release with `circleci`.
 - Implement `tslint`.
 - Remove `yarn`.
 
-[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.35.0...HEAD
+[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.35.1...HEAD
+
+[1.35.1]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.35.0...v1.35.1
 
 [1.35.0]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.34.2...v1.35.0
 
