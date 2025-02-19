@@ -7,6 +7,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.35.3] - 2025-02-19
+
+### Fixed
+
+- Revert previous changes
+
 ## [1.35.2] - 2025-02-19
 
 ### Fixed
@@ -498,7 +504,9 @@ Automatise the deployment of a new release with `circleci`.
 - Implement `tslint`.
 - Remove `yarn`.
 
-[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.35.2...HEAD
+[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.35.3...HEAD
+
+[1.35.3]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.35.2...v1.35.3
 
 [1.35.2]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.35.1...v1.35.2
 
