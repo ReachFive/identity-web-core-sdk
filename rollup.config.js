@@ -8,6 +8,18 @@ import terser from '@rollup/plugin-terser';
 
 import pkg from './package.json'
 
+const banner = [
+    `/**`,
+    ` * ${pkg.name} - v${pkg.version}`,
+    ` * Compiled ${(new Date()).toUTCString().replace(/GMT/g, 'UTC')}`,
+    ` *`,
+    ` * Copyright (c) ReachFive.`,
+    ` *`,
+    ` * This source code is licensed under the MIT license found in the`,
+    ` * LICENSE file in the root directory of this source tree.`,
+    ` **/`,
+].join('\n');
+
 const plugins = [
   resolve(),
   commonjs({
@@ -32,8 +44,8 @@ function isNpmDependency(name) {
 function createBundle({ file, format, name, external, withUglify = false }) {
   return {
 		input: 'src/main/index.ts',
-		output: { file, format, name },
-    plugins: withUglify ? [terser(), ...plugins] : plugins,
+		output: { banner, file, format, name },
+    plugins: withUglify ? [terser({ output: { preamble: banner } }), ...plugins] : plugins,
     external,
     onwarn: message => {
       // tsc generates local polyfills such as __extends with 'this' referenced
