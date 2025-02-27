@@ -291,7 +291,8 @@ export default class OAuthClient {
                     clientId: this.config.clientId,
                     scope: resolveScope(auth, this.config.scope),
                     ...rest
-                  }
+                  },
+                  withCookies: true,
                 })
                 .then(tkn => this.storeCredentialsInBrowser(params).then(() => tkn))
             .then(authenticationToken => {
