@@ -19,6 +19,7 @@ export type RemoveMfaPhoneNumberParams = {
 
 export type StartMfaEmailRegistrationParams = {
   accessToken: string
+  trustDevice?: boolean
 }
 
 export type StartMfaEmailRegistrationResponse = { status: 'email_sent' } | { status: 'enabled', credential: EmailCredential }
@@ -26,6 +27,7 @@ export type StartMfaEmailRegistrationResponse = { status: 'email_sent' } | { sta
 export type StartMfaPhoneNumberRegistrationParams = {
   accessToken: string
   phoneNumber: string
+  trustDevice?: boolean
 }
 
 export type StartMfaPhoneNumberRegistrationResponse = { status: 'sms_sent' } | { status: 'enabled', credential: PhoneCredential }
@@ -39,6 +41,7 @@ export type StepUpParams = {
 export type VerifyMfaEmailRegistrationParams = {
   accessToken: string
   verificationCode: string
+  trustDevice?: boolean
 }
 
 export type VerifyMfaPasswordlessParams = {
@@ -50,6 +53,7 @@ export type VerifyMfaPasswordlessParams = {
 export type VerifyMfaPhoneNumberRegistrationParams = {
   accessToken: string
   verificationCode: string
+  trustDevice?: boolean
 }
 
 export type DeleteTrustedDeviceParams = {
@@ -129,27 +133,32 @@ export default class MfaClient {
   }
 
   startMfaEmailRegistration(params: StartMfaEmailRegistrationParams): Promise<StartMfaEmailRegistrationResponse> {
-    const { accessToken } = params
+    const { accessToken, trustDevice = false } = params
     return this.http.post<StartMfaEmailRegistrationResponse>(this.emailCredentialUrl, {
-      accessToken
+      body: {
+      trustDevice
+    },
+      accessToken,
     })
   }
 
   startMfaPhoneNumberRegistration(params: StartMfaPhoneNumberRegistrationParams): Promise<StartMfaPhoneNumberRegistrationResponse> {
-    const { accessToken, phoneNumber } = params
+    const { accessToken, phoneNumber, trustDevice = false } = params
     return this.http.post<StartMfaPhoneNumberRegistrationResponse>(this.phoneNumberCredentialUrl, {
       body: {
-        phoneNumber
+        phoneNumber,
+        trustDevice
       },
       accessToken
     })
   }
 
   verifyMfaEmailRegistration(params: VerifyMfaEmailRegistrationParams): Promise<void> {
-    const { accessToken, verificationCode } = params
+    const { accessToken, verificationCode, trustDevice = false } = params
     return this.http.post<void>(this.emailCredentialVerifyUrl, {
       body: {
-        verificationCode
+        verificationCode,
+        trustDevice
       },
       accessToken
     })
@@ -169,10 +178,11 @@ export default class MfaClient {
   }
 
   verifyMfaPhoneNumberRegistration(params: VerifyMfaPhoneNumberRegistrationParams): Promise<void> {
-    const { accessToken, verificationCode } = params
+    const { accessToken, verificationCode, trustDevice } = params
     return this.http.post<void>(this.phoneNumberCredentialVerifyUrl, {
       body: {
-        verificationCode
+        verificationCode,
+        trustDevice
       },
       accessToken
     })
