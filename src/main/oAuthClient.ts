@@ -208,7 +208,6 @@ export default class OAuthClient {
   getSessionInfo(): Promise<SessionInfo> {
     return this.http.get<SessionInfo>(this.sessionInfoUrl, {
       query: { clientId: this.config.clientId },
-      withCookies: true
     })
   }
 

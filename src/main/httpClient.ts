@@ -14,7 +14,6 @@ export type RequestParams = {
   query?: QueryString
   body?: object
   accessToken?: string
-  withCookies?: boolean
 }
 
 export type GetRequestParams = Omit<RequestParams, 'body' | 'method'>
@@ -42,7 +41,7 @@ export function createHttpClient(config: HttpConfig): HttpClient {
   }
 
   function request<Data>(path: string, params: RequestParams): Promise<Data> {
-    const { method = 'GET', query = {}, body, accessToken = null, withCookies = false } = params
+    const { method = 'GET', query = {}, body, accessToken = null } = params
 
     const fullPath = query && !isEmpty(query) ? `${path}?${toQueryString(query)}` : path
 
@@ -56,7 +55,7 @@ export function createHttpClient(config: HttpConfig): HttpClient {
         ...(config.locale && {'Custom-Locale': config.locale }),
         ...(body && { 'Content-Type': 'application/json;charset=UTF-8' })
       },
-      ...(withCookies && config.acceptCookies && { credentials: 'include' }),
+      ...( config.acceptCookies && { credentials: 'include' }),
       ...(body && { body: JSON.stringify(snakeCaseProperties(body)) })
     }
 
@@ -72,7 +71,7 @@ export function createHttpClient(config: HttpConfig): HttpClient {
 export async function rawRequest<Data>(url: string, fetchOptions?: RequestInit): Promise<Data> {
   const response = await fetch(url, fetchOptions)
   if (response.status == 204) return undefined as Data
-    
+
   const json = await response.json()
   const data = camelCaseProperties(json)
 

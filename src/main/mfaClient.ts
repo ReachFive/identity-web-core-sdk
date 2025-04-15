@@ -103,7 +103,6 @@ export default class MfaClient {
           tkn: params.tkn,
           ...challenge
         },
-        withCookies: params.accessToken === undefined,
         accessToken: params.accessToken
       })
     })
@@ -173,7 +172,6 @@ export default class MfaClient {
         verificationCode,
         trustDevice
       },
-      withCookies: true,
     })
   }
 
