@@ -21,6 +21,16 @@ const snakeCaseObject = {
       family_name: 'Pacino'
     }
   ],
+  consents: {
+    optin_testing: {
+      granted: true,
+      consent_type: "opt-in",
+      consent_version: {
+        version_id: 1,
+        language: "fr"
+      }
+    }
+  },
   tags: ['actor', 'american'],
   is_alive: true,
   test3: true
@@ -47,6 +57,16 @@ const camelCaseObject = {
       familyName: 'Pacino'
     }
   ],
+  consents: {
+    optin_testing: { // consent key should remain in snakecase
+      granted: true,
+      consentType: "opt-in",
+      consentVersion: {
+        versionId: 1,
+        language: "fr"
+      }
+    }
+  },
   tags: ['actor', 'american'],
   isAlive: true,
   test3: true

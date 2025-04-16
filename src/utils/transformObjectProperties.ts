@@ -26,7 +26,7 @@ type TransformObjectProperties<T> = T extends (infer U)[]
   ? { [K in keyof T]: TransformObjectProperties<T[K]> }
   : T;
 
-function transformObjectProperties<T>(input: T, transform: (path: string) => string): TransformObjectProperties<T> {
+function transformObjectProperties<T>(input: T, transform: (path: string) => string, bypass: boolean = false): TransformObjectProperties<T> {
   if (Array.isArray(input)) {
     return input.map(value => transformObjectProperties(value, transform)) as TransformObjectProperties<T>
   }
@@ -34,10 +34,8 @@ function transformObjectProperties<T>(input: T, transform: (path: string) => str
     return Object.fromEntries(
       Object.entries(input).map(([key, value]) => (
         [
-          transform(key) as keyof T,
-          fieldsNotToConvert.find(s => s === snakeCase(key))
-            ? value
-            : transformObjectProperties(value, transform)
+          bypass ? key : transform(key) as keyof T,
+          transformObjectProperties(value, transform, fieldsNotToConvert.includes(snakeCase(key)))
         ]
       ))
     ) as TransformObjectProperties<T>
