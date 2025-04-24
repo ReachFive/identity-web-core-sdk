@@ -7,7 +7,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-## [1.36.0] - 2025-03-24
+## [1.36.0] - 2025-04-24
 
 ### Added
 - Allow to trust a device during a mfa credential registering
