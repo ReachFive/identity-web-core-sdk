@@ -6,7 +6,7 @@ import { IdentityEventManager } from './identityEventManager'
 import { HttpClient } from './httpClient'
 import { ApiClientConfig } from './main'
 
-export type UpdateEmailParams = { accessToken: string; email: string; redirectUrl?: string; captchaToken?: string }
+export type UpdateEmailParams = { accessToken: string; email: string; redirectUrl?: string; captchaToken?: string, captchaFoxToken?: string }
 
 export type EmailVerificationParams = { accessToken: string; redirectUrl?: string; returnToAfterEmailConfirmation?: string }
 
@@ -18,10 +18,12 @@ type EmailRequestPasswordResetParams = {
   loginLink?: string
   returnToAfterPasswordReset?: string
   captchaToken?: string
+  captchaFoxToken?: string
 }
 type SmsRequestPasswordResetParams = {
   phoneNumber: string
   captchaToken?: string
+  captchaFoxToken?: string
 }
 export type RequestPasswordResetParams = EmailRequestPasswordResetParams | SmsRequestPasswordResetParams
 
@@ -31,10 +33,12 @@ type EmailRequestAccountRecoveryParams = {
   loginLink?: string
   returnToAfterAccountRecovery?: string
   captchaToken?: string
+  captchaFoxToken?: string
 }
 type SmsRequestAccountRecoveryParams = {
   phoneNumber: string
   captchaToken?: string
+  captchaFoxToken?: string
 }
 export type RequestAccountRecoveryParams = EmailRequestAccountRecoveryParams | SmsRequestAccountRecoveryParams
 
