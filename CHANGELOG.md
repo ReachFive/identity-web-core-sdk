@@ -8,7 +8,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
-- Added an optional parameter `captchaFoxToken` for CaptchaFox support.
+- Added CaptchaFox support.
 
 ## [1.36.0] - 2025-04-24
 

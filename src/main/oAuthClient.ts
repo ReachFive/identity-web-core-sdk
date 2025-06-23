@@ -27,6 +27,7 @@ import { encodeToBase64 } from "../utils/base64"
 import { Buffer } from 'buffer/'
 import MfaClient from './mfaClient'
 import { getWithExpiry, setWithExpiry } from '../utils/sessionStorage'
+import { CaptchaProvider } from './captcha'
 
 export type LoginWithCredentialsParams = {
   mediation?: 'silent' | 'optional' | 'required'
@@ -60,7 +61,7 @@ export type SingleFactorPasswordlessParams = {
   email?: string
   phoneNumber?: string
   captchaToken?: string
-  captchaFoxToken?: string;
+  captchaProvider?: CaptchaProvider;
 }
 
 export type StepUpPasswordlessParams = {
@@ -77,7 +78,7 @@ export type SignupParams = {
   auth?: AuthOptions
   redirectUrl?: string
   captchaToken?: string
-  captchaFoxToken?: string
+  captchaProvider?: CaptchaProvider
 }
 
 export type TokenRequestParameters = {
@@ -453,7 +454,7 @@ export default class OAuthClient {
   }
 
   signup(params: SignupParams): Promise<AuthResult> {
-    const { data, auth, redirectUrl, returnToAfterEmailConfirmation, saveCredentials, captchaToken, captchaFoxToken } = params
+    const { data, auth, redirectUrl, returnToAfterEmailConfirmation, saveCredentials, captchaToken, captchaProvider } = params
     const { clientId } = this.config
     const scope = resolveScope(auth, this.config.scope)
 
@@ -477,7 +478,7 @@ export default class OAuthClient {
                 data,
                 returnToAfterEmailConfirmation,
                 captchaToken,
-                captchaFoxToken
+                captchaProvider
               }
             })
             .then(authResult => {
@@ -493,7 +494,7 @@ export default class OAuthClient {
                 data,
                 returnToAfterEmailConfirmation,
                 captchaToken,
-                captchaFoxToken
+                captchaProvider
               }
             })
             .then(tkn => this.storeCredentialsInBrowser(loginParams).then(() => tkn))
@@ -792,7 +793,7 @@ export default class OAuthClient {
   // TODO: Make passwordless able to handle web_message
   // Asana https://app.asana.com/0/982150578058310/1200173806808689/f
   private resolveSingleFactorPasswordlessParams(params: SingleFactorPasswordlessParams, auth: Omit<AuthOptions, 'useWebMessage'> = {}): Promise<object> {
-    const { authType, email, phoneNumber, captchaToken, captchaFoxToken } = params
+    const { authType, email, phoneNumber, captchaToken, captchaProvider } = params
 
     if (this.config.orchestrationToken) {
       const authParams = this.orchestratedFlowParams(this.config.orchestrationToken, auth)
@@ -803,7 +804,7 @@ export default class OAuthClient {
         email,
         phoneNumber,
         captchaToken,
-        captchaFoxToken
+        captchaProvider
       })
     } else {
       const authParams = this.authParams(auth)
@@ -815,7 +816,7 @@ export default class OAuthClient {
           email,
           phoneNumber,
           captchaToken,
-          captchaFoxToken,
+          captchaProvider,
           ...maybeChallenge,
         }
       })
