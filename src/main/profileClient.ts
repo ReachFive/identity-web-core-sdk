@@ -5,8 +5,9 @@ import {
 import { IdentityEventManager } from './identityEventManager'
 import { HttpClient } from './httpClient'
 import { ApiClientConfig } from './main'
+import { CaptchaProvider } from './captcha'
 
-export type UpdateEmailParams = { accessToken: string; email: string; redirectUrl?: string; captchaToken?: string }
+export type UpdateEmailParams = { accessToken: string; email: string; redirectUrl?: string; captchaToken?: string, captchaProvider?: string }
 
 export type EmailVerificationParams = { accessToken: string; redirectUrl?: string; returnToAfterEmailConfirmation?: string }
 
@@ -18,10 +19,12 @@ type EmailRequestPasswordResetParams = {
   loginLink?: string
   returnToAfterPasswordReset?: string
   captchaToken?: string
+  captchaProvider?: CaptchaProvider
 }
 type SmsRequestPasswordResetParams = {
   phoneNumber: string
   captchaToken?: string
+  captchaProvider?: CaptchaProvider
 }
 export type RequestPasswordResetParams = EmailRequestPasswordResetParams | SmsRequestPasswordResetParams
 
@@ -31,10 +34,12 @@ type EmailRequestAccountRecoveryParams = {
   loginLink?: string
   returnToAfterAccountRecovery?: string
   captchaToken?: string
+  captchaProvider?: CaptchaProvider
 }
 type SmsRequestAccountRecoveryParams = {
   phoneNumber: string
   captchaToken?: string
+  captchaProvider?: CaptchaProvider
 }
 export type RequestAccountRecoveryParams = EmailRequestAccountRecoveryParams | SmsRequestAccountRecoveryParams
 
