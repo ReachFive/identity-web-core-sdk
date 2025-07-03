@@ -20,6 +20,7 @@ export type RemoveMfaPhoneNumberParams = {
 export type StartMfaEmailRegistrationParams = {
   accessToken: string
   trustDevice?: boolean
+  action?: string
 }
 
 export type StartMfaEmailRegistrationResponse = { status: 'email_sent' } | { status: 'enabled', credential: EmailCredential }
@@ -28,6 +29,7 @@ export type StartMfaPhoneNumberRegistrationParams = {
   accessToken: string
   phoneNumber: string
   trustDevice?: boolean
+  action?: string
 }
 
 export type StartMfaPhoneNumberRegistrationResponse = { status: 'sms_sent' } | { status: 'enabled', credential: PhoneCredential }
@@ -36,6 +38,7 @@ export type StepUpParams = {
   options?: AuthOptions
   accessToken?: string
   tkn?: string
+  action?: string
 }
 
 export type VerifyMfaEmailRegistrationParams = {
