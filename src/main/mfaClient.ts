@@ -104,6 +104,7 @@ export default class MfaClient {
         body: {
           ...authParams,
           tkn: params.tkn,
+          action: params.action,
           ...challenge
         },
         accessToken: params.accessToken
@@ -135,21 +136,23 @@ export default class MfaClient {
   }
 
   startMfaEmailRegistration(params: StartMfaEmailRegistrationParams): Promise<StartMfaEmailRegistrationResponse> {
-    const { accessToken, trustDevice = false } = params
+    const { accessToken, trustDevice = false, action } = params
     return this.http.post<StartMfaEmailRegistrationResponse>(this.emailCredentialUrl, {
       body: {
-      trustDevice
+      trustDevice,
+      action
     },
       accessToken,
     })
   }
 
   startMfaPhoneNumberRegistration(params: StartMfaPhoneNumberRegistrationParams): Promise<StartMfaPhoneNumberRegistrationResponse> {
-    const { accessToken, phoneNumber, trustDevice = false } = params
+    const { accessToken, phoneNumber, trustDevice = false, action } = params
     return this.http.post<StartMfaPhoneNumberRegistrationResponse>(this.phoneNumberCredentialUrl, {
       body: {
         phoneNumber,
-        trustDevice
+        trustDevice,
+        action
       },
       accessToken
     })
