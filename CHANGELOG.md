@@ -9,7 +9,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 - Added CaptchaFox support.
-- Added parameter action to getMfaStepUpToken, startMfaPhoneNumberRegistration, startMfaEmailRegistration
+- Added parameter action to getMfaStepUpToken, startMfaPhoneNumberRegistration, startMfaEmailRegistration, loginWithPassword.
 
 ## [1.36.0] - 2025-04-24
 
