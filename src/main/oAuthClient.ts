@@ -299,7 +299,7 @@ export default class OAuthClient {
             .then(authenticationToken => {
               if (authenticationToken.mfaRequired) {
                 return this.mfaClient ?
-                  this.mfaClient?.getMfaStepUpToken({tkn: authenticationToken.tkn, options: auth})
+                  this.mfaClient?.getMfaStepUpToken({tkn: authenticationToken.tkn, options: auth, action: params.action})
                     .then(res => ({stepUpToken: res.token, amr: res.amr}))
                   : Promise.reject(new Error("Error during client instantiation"))
               }
