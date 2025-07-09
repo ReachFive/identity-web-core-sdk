@@ -39,7 +39,7 @@ export type LoginWithCustomTokenParams = {
   auth: AuthOptions
 }
 
-type LoginWithPasswordOptions = { password: string; saveCredentials?: boolean; auth?: AuthOptions, captchaToken?: string }
+type LoginWithPasswordOptions = { password: string; saveCredentials?: boolean; auth?: AuthOptions, captchaToken?: string, action?: string }
 type EmailLoginWithPasswordParams = LoginWithPasswordOptions & { email: string }
 type PhoneNumberLoginWithPasswordParams = LoginWithPasswordOptions & { phoneNumber: string }
 type CustomIdentifierLoginWithPasswordParams = LoginWithPasswordOptions & { customIdentifier: string }
@@ -299,7 +299,7 @@ export default class OAuthClient {
             .then(authenticationToken => {
               if (authenticationToken.mfaRequired) {
                 return this.mfaClient ?
-                  this.mfaClient?.getMfaStepUpToken({tkn: authenticationToken.tkn, options: auth})
+                  this.mfaClient?.getMfaStepUpToken({tkn: authenticationToken.tkn, options: auth, action: params.action})
                     .then(res => ({stepUpToken: res.token, amr: res.amr}))
                   : Promise.reject(new Error("Error during client instantiation"))
               }
