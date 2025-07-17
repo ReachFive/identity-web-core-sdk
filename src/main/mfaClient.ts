@@ -178,7 +178,11 @@ export default class MfaClient {
         verificationCode,
         trustDevice
       },
-    })
+    }).finally(() => {
+        this.oAuthClient.releaseSessionLock()
+        this.oAuthClient.releaseAuthorizationLock()
+      }
+    )
   }
 
   verifyMfaPhoneNumberRegistration(params: VerifyMfaPhoneNumberRegistrationParams): Promise<void> {
