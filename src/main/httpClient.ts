@@ -40,26 +40,29 @@ export function createHttpClient(config: HttpConfig): HttpClient {
     return request<Data>(path, { ...params, method: 'POST' })
   }
 
-  function request<Data>(path: string, params: RequestParams): Promise<Data> {
+  async function request<Data>(path: string, params: RequestParams): Promise<Data> {
     const { method = 'GET', query = {}, body, accessToken = null } = params
 
     const fullPath = query && !isEmpty(query) ? `${path}?${toQueryString(query)}` : path
 
     const url = fullPath.startsWith('http') ? fullPath : config.baseUrl + fullPath
 
+    const correlationId = await retrieveCorrelationId()
+
     const fetchOptions: RequestInit = {
       method,
       headers: {
         ...(accessToken && { Authorization: 'Bearer ' + accessToken }),
         ...(config.language && { 'Accept-Language': config.language }),
-        ...(config.locale && {'Custom-Locale': config.locale }),
-        ...(body && { 'Content-Type': 'application/json;charset=UTF-8' })
+        ...(config.locale && { 'Custom-Locale': config.locale }),
+        ...(body && { 'Content-Type': 'application/json;charset=UTF-8' }),
+        ...(correlationId && { 'X-R5-Correlation-Id': correlationId })
       },
-      ...( config.acceptCookies && { credentials: 'include' }),
+      ...(config.acceptCookies && { credentials: 'include' }),
       ...(body && { body: JSON.stringify(snakeCaseProperties(body)) })
     }
 
-    return rawRequest(url, fetchOptions)
+    return await rawRequest(url, fetchOptions)
   }
 
   return { get, remove, post, request }
@@ -75,5 +78,15 @@ export async function rawRequest<Data>(url: string, fetchOptions?: RequestInit):
   const json = await response.json()
   const data = camelCaseProperties(json)
 
-  return response.ok ? data as Data : Promise.reject(data)
+  return response.ok ? (data as Data) : Promise.reject(data)
+}
+
+export async function retrieveCorrelationId() {
+  const correlationId = window?.localStorage?.getItem('correlationId')
+  if (correlationId) {
+    return correlationId
+  }
+  const newCorrelationId = window.crypto.randomUUID()
+  window?.localStorage?.setItem('correlationId', newCorrelationId)
+  return newCorrelationId
 }
