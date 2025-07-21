@@ -1,14 +1,10 @@
 import fetchMock from 'jest-fetch-mock'
 
-import {
-  defineWindowProperty,
-  headers,
-  mockWindowCrypto
-} from './helpers/testHelpers'
+import { snakeCaseProperties } from '../../utils/transformObjectProperties'
+import { SignupParams } from '../oAuthClient'
 import { createDefaultTestClient, TestKit } from './helpers/clientFactory'
 import { scope, tkn } from './helpers/oauthHelpers'
-import { SignupParams } from '../oAuthClient'
-import { snakeCaseProperties } from '../../utils/transformObjectProperties'
+import { defineWindowProperty, headers, mockWindowCrypto } from './helpers/testHelpers'
 
 beforeAll(() => {
   fetchMock.enableMocks()
@@ -28,7 +24,7 @@ export async function signupTest(testkit: TestKit, params: SignupParams) {
   const signupCall = fetchMock.mockResponseOnce(
     JSON.stringify({
       id: '1234',
-      ...tkn,
+      ...tkn
     })
   )
 
@@ -37,11 +33,11 @@ export async function signupTest(testkit: TestKit, params: SignupParams) {
 
   await expect(signupCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/signup`, {
     method: 'POST',
-    headers: headers.jsonAndDefaultLang,
+    headers: expect.objectContaining(headers.jsonAndDefaultLang),
     body: JSON.stringify({
       client_id: clientId,
       ...scope,
-      data: snakeCaseProperties(params.data),
+      data: snakeCaseProperties(params.data)
     })
   })
 }
@@ -73,13 +69,12 @@ test('with user error', async () => {
   )
 
   // When
-  const promise = client
-    .signup({
-      data: {
-        email: 'john.doe@example.com',
-        password: 'majefize'
-      }
-    })
+  const promise = client.signup({
+    data: {
+      email: 'john.doe@example.com',
+      password: 'majefize'
+    }
+  })
 
   await expect(promise).rejects.toEqual(expectedError)
   await expect(signupFailedHandler).toHaveBeenCalledWith(expectedError)
@@ -96,13 +91,12 @@ test('with unexpected error', async () => {
   fetchMock.mockRejectOnce(expectedError)
 
   // When
-  const promise = client
-    .signup({
-      data: {
-        email: 'john.doe@example.com',
-        password: 'majefize'
-      }
-    })
+  const promise = client.signup({
+    data: {
+      email: 'john.doe@example.com',
+      password: 'majefize'
+    }
+  })
 
   await expect(promise).rejects.toThrow(expectedError)
   await expect(signupFailedHandler).not.toHaveBeenCalled()

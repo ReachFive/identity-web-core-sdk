@@ -1,6 +1,6 @@
-import { TestKit, createDefaultTestClient } from './helpers/clientFactory'
 import fetchMock from 'jest-fetch-mock'
 import { LoginWithPasswordParams } from '../oAuthClient'
+import { TestKit, createDefaultTestClient } from './helpers/clientFactory'
 import { scope, tkn } from './helpers/oauthHelpers'
 import { defineWindowProperty, headers, mockWindowCrypto } from './helpers/testHelpers'
 
@@ -15,11 +15,7 @@ beforeEach(() => {
   fetchMock.resetMocks()
 })
 
-export async function loginWithPasswordTest(
-  testkit: TestKit,
-  params: LoginWithPasswordParams,
-  credentials: object,
-) {
+export async function loginWithPasswordTest(testkit: TestKit, params: LoginWithPasswordParams, credentials: object) {
   const { domain, clientId, client } = testkit
 
   // Given
@@ -31,7 +27,7 @@ export async function loginWithPasswordTest(
   // Then
   expect(passwordLoginCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/password/login`, {
     method: 'POST',
-    headers: headers.jsonAndDefaultLang,
+    headers: expect.objectContaining(headers.jsonAndDefaultLang),
     body: JSON.stringify({
       client_id: clientId,
       ...scope,

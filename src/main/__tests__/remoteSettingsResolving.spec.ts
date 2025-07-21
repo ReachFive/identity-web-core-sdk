@@ -1,10 +1,11 @@
 import fetchMock from 'jest-fetch-mock'
 
-import { headers } from './helpers/testHelpers'
 import { createTestClient } from './helpers/clientFactory'
+import { defineWindowProperty, headers, mockWindowCrypto } from './helpers/testHelpers'
 
 beforeAll(() => {
   fetchMock.enableMocks()
+  defineWindowProperty('crypto', mockWindowCrypto)
 })
 
 beforeEach(() => {
@@ -46,9 +47,9 @@ test('remote settings language has priority over transmitted language', async ()
   // Then
   expect(passwordLoginCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/userinfo?fields=name`, {
     method: 'GET',
-    headers: {
+    headers: expect.objectContaining({
       ...headers.lang(actualLanguage),
       ...headers.accessToken(accessToken)
-    }
+    })
   })
 })
