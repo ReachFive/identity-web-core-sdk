@@ -1,7 +1,7 @@
+import { camelCaseProperties } from '../utils/transformObjectProperties'
 import { AuthResult } from './authResult'
-import { parseQueryString } from '../utils/queryString'
-import { ErrorResponse } from './models'
 import { IdentityEventManager } from './identityEventManager'
+import { ErrorResponse } from './models'
 
 export type UrlParser = {
   /**
@@ -36,17 +36,15 @@ export default function createUrlParser(eventManager: IdentityEventManager): Url
     },
 
     parseUrlFragment(url: string = ''): AuthResult | ErrorResponse | undefined {
-      const separatorIndex = url.indexOf('#')
+      const { hash } = new URL(url)
 
-      if (separatorIndex >= 0) {
-        const parsed = parseQueryString(url.substr(separatorIndex + 1))
-
-        const expiresIn = parsed.expiresIn ? parseInt(parsed.expiresIn, 10) : undefined
+      if (hash) {
+        const parsed = camelCaseProperties(Object.fromEntries(new URLSearchParams(hash).entries()))
 
         if (AuthResult.isAuthResult(parsed)) {
           return {
             ...parsed,
-            expiresIn
+            expiresIn: parsed.expiresIn ? parseInt(parsed.expiresIn, 10) : undefined
           }
         }
 
