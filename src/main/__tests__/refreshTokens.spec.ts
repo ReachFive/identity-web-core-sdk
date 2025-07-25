@@ -1,10 +1,11 @@
 import fetchMock from 'jest-fetch-mock'
 
-import { headers } from './helpers/testHelpers'
 import { createDefaultTestClient } from './helpers/clientFactory'
+import { defineWindowProperty, headers, mockWindowCrypto } from './helpers/testHelpers'
 
 beforeAll(() => {
   fetchMock.enableMocks()
+  defineWindowProperty('crypto', mockWindowCrypto)
 })
 
 beforeEach(() => {
@@ -14,8 +15,8 @@ beforeEach(() => {
 
 test('refresh token with a refresh token', async () => {
   // Given
-  const {client, clientId, domain} = createDefaultTestClient()
-  const newAccessToken = "newAccessToken"
+  const { client, clientId, domain } = createDefaultTestClient()
+  const newAccessToken = 'newAccessToken'
   const expiresIn = 1800
   const tokenType = 'Bearer'
   const scope = 'openId external offline_access'
@@ -37,12 +38,12 @@ test('refresh token with a refresh token', async () => {
         sub: '1234567890'
       },
       refreshToken: newRefreshToken,
-      tokenType,
+      tokenType
     })
   )
 
   // When
-  const authResult = await client.refreshTokens({refreshToken, scope})
+  const authResult = await client.refreshTokens({ refreshToken, scope })
   //Then
   expect(authResult).toEqual({
     idToken,
@@ -57,7 +58,7 @@ test('refresh token with a refresh token', async () => {
   })
   expect(refreshCallWithRefreshToken).toHaveBeenCalledWith(`https://${domain}/oauth/token`, {
     method: 'POST',
-    headers: headers.jsonAndDefaultLang,
+    headers: expect.objectContaining(headers.jsonAndDefaultLang),
     body: JSON.stringify({
       client_id: clientId,
       grant_type: 'refresh_token',

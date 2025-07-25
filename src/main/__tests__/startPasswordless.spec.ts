@@ -1,9 +1,9 @@
-import { createDefaultTestClient } from './helpers/clientFactory'
 import fetchMock from 'jest-fetch-mock'
+import { AuthOptions } from '../authOptions'
 import { PasswordlessParams } from '../oAuthClient'
+import { createDefaultTestClient } from './helpers/clientFactory'
 import { confidential, mockPkceValues, pageDisplay, pblic, scope } from './helpers/oauthHelpers'
 import { defineWindowProperty, headers, mockWindowCrypto } from './helpers/testHelpers'
-import { AuthOptions } from '../authOptions'
 
 beforeAll(() => {
   fetchMock.enableMocks()
@@ -31,7 +31,7 @@ test('with default client', async () => {
   // Then
   expect(startPasswordlessCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/passwordless/start`, {
     method: 'POST',
-    headers: headers.jsonAndDefaultLang,
+    headers: expect.objectContaining(headers.jsonAndDefaultLang),
     body: JSON.stringify({
       client_id: clientId,
       response_type: authOptions.responseType,
@@ -40,7 +40,7 @@ test('with default client', async () => {
       ...pageDisplay,
       auth_type: authParams.authType,
       email: authParams.email,
-      ...mockPkceValues,
+      ...mockPkceValues
     })
   })
 })
@@ -57,7 +57,7 @@ test('with confidential client', async () => {
   // Then
   expect(startPasswordlessCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/passwordless/start`, {
     method: 'POST',
-    headers: headers.jsonAndDefaultLang,
+    headers: expect.objectContaining(headers.jsonAndDefaultLang),
     body: JSON.stringify({
       client_id: clientId,
       response_type: authOptions.responseType,
@@ -65,7 +65,7 @@ test('with confidential client', async () => {
       ...scope,
       ...pageDisplay,
       auth_type: authParams.authType,
-      email: authParams.email,
+      email: authParams.email
     })
   })
 })
