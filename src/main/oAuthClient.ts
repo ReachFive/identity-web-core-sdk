@@ -1,34 +1,34 @@
+import { Buffer } from 'buffer/'
+import * as OneTap from "google-one-tap"
 import WinChan from 'winchan'
+import { encodeToBase64 } from "../utils/base64"
 import { logError } from '../utils/logger'
 import { QueryString, toQueryString } from '../utils/queryString'
+import { randomBase64String } from '../utils/random'
+import { getWithExpiry, setWithExpiry } from '../utils/sessionStorage'
 import { camelCaseProperties } from '../utils/transformObjectProperties'
 import { difference, pick } from '../utils/utils'
+import { AuthOptions, computeAuthOptions } from './authOptions'
+import { AuthParameters } from './authParameters'
+import { AuthResult, enrichAuthResult } from './authResult'
+import { CaptchaParams } from './captcha'
+import { HttpClient } from './httpClient'
+import { IdentityEventManager } from './identityEventManager'
+import { ApiClientConfig } from './main'
+import MfaClient from './mfaClient'
 import {
+  AuthenticationToken,
   ErrorResponse,
+  OrchestrationToken,
+  PasswordlessResponse,
+  PasswordStrength,
+  Scope,
   SessionInfo,
   SignupProfile,
-  PasswordlessResponse,
-  Scope,
-  AuthenticationToken, OrchestrationToken,
-  PasswordStrength,
 } from './models'
-import { AuthOptions, computeAuthOptions } from './authOptions'
-import { AuthResult, enrichAuthResult } from './authResult'
-import { IdentityEventManager } from './identityEventManager'
-import { popupSize } from './providerPopupSize'
-import { HttpClient } from './httpClient'
 import { computePkceParams, PkceParams } from './pkceService'
-import { randomBase64String } from '../utils/random'
-import { ApiClientConfig } from './main'
-import { AuthParameters } from './authParameters'
+import { popupSize } from './providerPopupSize'
 import { resolveScope } from './scopeHelper'
-import * as OneTap from "google-one-tap"
-import { encodeToBase64 } from "../utils/base64"
-import { Buffer } from 'buffer/'
-import MfaClient from './mfaClient'
-import { getWithExpiry, setWithExpiry } from '../utils/sessionStorage'
-import { CaptchaProvider } from './captcha'
-
 export type LoginWithCredentialsParams = {
   mediation?: 'silent' | 'optional' | 'required'
   auth?: AuthOptions
@@ -39,7 +39,7 @@ export type LoginWithCustomTokenParams = {
   auth: AuthOptions
 }
 
-type LoginWithPasswordOptions = { password: string; saveCredentials?: boolean; auth?: AuthOptions, captchaToken?: string, action?: string }
+type LoginWithPasswordOptions = { password: string; saveCredentials?: boolean; auth?: AuthOptions, action?: string } & CaptchaParams
 type EmailLoginWithPasswordParams = LoginWithPasswordOptions & { email: string }
 type PhoneNumberLoginWithPasswordParams = LoginWithPasswordOptions & { phoneNumber: string }
 type CustomIdentifierLoginWithPasswordParams = LoginWithPasswordOptions & { customIdentifier: string }
@@ -60,9 +60,7 @@ export type SingleFactorPasswordlessParams = {
   authType: 'magic_link' | 'sms'
   email?: string
   phoneNumber?: string
-  captchaToken?: string
-  captchaProvider?: CaptchaProvider;
-}
+} & CaptchaParams
 
 export type StepUpPasswordlessParams = {
   authType: 'email' | 'sms'
@@ -77,9 +75,7 @@ export type SignupParams = {
   saveCredentials?: boolean
   auth?: AuthOptions
   redirectUrl?: string
-  captchaToken?: string
-  captchaProvider?: CaptchaProvider
-}
+} & CaptchaParams
 
 export type TokenRequestParameters = {
   code: string
