@@ -1,31 +1,36 @@
-import {
-  Profile,
-  OpenIdUser,
-} from './models'
-import { IdentityEventManager } from './identityEventManager'
-import { HttpClient } from './httpClient'
-import { ApiClientConfig } from './main'
-import { CaptchaProvider } from './captcha'
+import type { CaptchaParams } from './captcha'
+import type { HttpClient } from './httpClient'
+import type { IdentityEventManager } from './identityEventManager'
+import type { ApiClientConfig } from './main'
+import type { OpenIdUser, Profile } from './models'
 
-export type UpdateEmailParams = { accessToken: string; email: string; redirectUrl?: string; captchaToken?: string, captchaProvider?: string }
+export type UpdateEmailParams = {
+  accessToken: string
+  email: string
+  redirectUrl?: string
+} & CaptchaParams
 
-export type EmailVerificationParams = { accessToken: string; redirectUrl?: string; returnToAfterEmailConfirmation?: string }
+export type EmailVerificationParams = {
+  accessToken: string
+  redirectUrl?: string
+  returnToAfterEmailConfirmation?: string
+}
 
 export type PhoneNumberVerificationParams = { accessToken: string }
 
 type EmailRequestPasswordResetParams = {
   email: string
-  redirectUrl?: string
   loginLink?: string
+  origin?: string
+  redirectUrl?: string
   returnToAfterPasswordReset?: string
-  captchaToken?: string
-  captchaProvider?: CaptchaProvider
-}
+} & CaptchaParams
+
 type SmsRequestPasswordResetParams = {
   phoneNumber: string
-  captchaToken?: string
-  captchaProvider?: CaptchaProvider
-}
+  origin?: string
+} & CaptchaParams
+
 export type RequestPasswordResetParams = EmailRequestPasswordResetParams | SmsRequestPasswordResetParams
 
 type EmailRequestAccountRecoveryParams = {
@@ -33,14 +38,12 @@ type EmailRequestAccountRecoveryParams = {
   redirectUrl?: string
   loginLink?: string
   returnToAfterAccountRecovery?: string
-  captchaToken?: string
-  captchaProvider?: CaptchaProvider
-}
+} & CaptchaParams
+
 type SmsRequestAccountRecoveryParams = {
   phoneNumber: string
-  captchaToken?: string
-  captchaProvider?: CaptchaProvider
-}
+} & CaptchaParams
+
 export type RequestAccountRecoveryParams = EmailRequestAccountRecoveryParams | SmsRequestAccountRecoveryParams
 
 type AccessTokenUpdatePasswordParams = {
@@ -197,8 +200,8 @@ export default class ProfileClient {
   updateProfile(params: UpdateProfileParams): Promise<void> {
     const { accessToken, redirectUrl, data } = params
     return this.http
-        .post(this.updateProfileUrl, { body: { ...data, redirectUrl }, accessToken })
-        .then(() => this.eventManager.fireEvent('profile_updated', data))
+      .post(this.updateProfileUrl, { body: { ...data, redirectUrl }, accessToken })
+      .then(() => this.eventManager.fireEvent('profile_updated', data))
   }
 
   updatePassword(params: UpdatePasswordParams): Promise<void> {
@@ -213,13 +216,14 @@ export default class ProfileClient {
     const { accessToken, ...data } = params
     const { phoneNumber } = data
     return this.http
-        .post(this.verifyPhoneNumberUrl, { body: data, accessToken })
-        .then(() => this.eventManager.fireEvent('profile_updated', { phoneNumber, phoneNumberVerified: true }))
+      .post(this.verifyPhoneNumberUrl, { body: data, accessToken })
+      .then(() => this.eventManager.fireEvent('profile_updated', { phoneNumber, phoneNumberVerified: true }))
   }
 
   verifyEmail(params: VerifyEmailParams): Promise<void> {
     const { email } = params
-    return this.http.post<void>(this.verifyEmailUrl, { body: params })
-      .then(() => this.eventManager.fireEvent("profile_updated", {email, emailVerified: true}))
+    return this.http
+      .post<void>(this.verifyEmailUrl, { body: params })
+      .then(() => this.eventManager.fireEvent('profile_updated', { email, emailVerified: true }))
   }
 }
