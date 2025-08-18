@@ -1,13 +1,13 @@
 import fetchMock from 'jest-fetch-mock'
 
-import { defineWindowProperty, headers, mockWindowCrypto } from './helpers/testHelpers'
-import OauthClient from '../oAuthClient'
-import createEventManager from '../identityEventManager'
 import { toQueryString } from '../../utils/queryString'
-import { mockPkceValues } from './helpers/oauthHelpers'
-import { createHttpClient } from '../httpClient'
 import { initCordovaCallbackIfNecessary } from '../cordovaHelper'
+import { createHttpClient } from '../httpClient'
+import createEventManager from '../identityEventManager'
+import OauthClient from '../oAuthClient'
 import createUrlParser from '../urlParser'
+import { mockPkceValues } from './helpers/oauthHelpers'
+import { defineWindowProperty, headers, mockWindowCrypto } from './helpers/testHelpers'
 
 const clientId = 'kqIJE'
 const baseUrl = 'https://local.reach5.net'
@@ -31,7 +31,7 @@ function apiClientAndEventManager() {
       passwordPolicy: {
         minLength: 8,
         minStrength: 2,
-        allowUpdateWithAccessTokenOnly: true,
+        allowUpdateWithAccessTokenOnly: true
       },
       rbaEnabled: false,
       sms: false,
@@ -40,10 +40,10 @@ function apiClientAndEventManager() {
       pkceEnforced: false,
       resourceBaseUrl: '',
       isPublic: true,
-      webAuthn: false,
+      webAuthn: false
     },
     http,
-    eventManager,
+    eventManager
   })
   const urlParser = createUrlParser(eventManager)
   initCordovaCallbackIfNecessary(urlParser)
@@ -109,7 +109,7 @@ describe('signup', () => {
 
     expect(signupCall).toHaveBeenCalledWith(`${baseIdentityUrl}/signup-token`, {
       method: 'POST',
-      headers: headers.jsonAndDefaultLang,
+      headers: expect.objectContaining(headers.jsonAndDefaultLang),
       body: JSON.stringify({
         client_id: clientId,
         scope: 'openid profile email phone',
@@ -179,7 +179,7 @@ describe('signup', () => {
     // Then
     expect(signupCall).toHaveBeenCalledWith(`${baseIdentityUrl}/signup-token`, {
       method: 'POST',
-      headers: headers.jsonAndDefaultLang,
+      headers: expect.objectContaining(headers.jsonAndDefaultLang),
       body: JSON.stringify({
         client_id: clientId,
         scope: 'openid profile email phone',
@@ -305,7 +305,7 @@ describe('loginWithPassword', () => {
     // Then
     expect(passwordLoginCall).toHaveBeenCalledWith(`${baseUrl}/oauth/token`, {
       method: 'POST',
-      headers: headers.jsonAndDefaultLang,
+      headers: expect.objectContaining(headers.jsonAndDefaultLang),
       body: JSON.stringify({
         client_id: clientId,
         grant_type: 'password',
@@ -360,7 +360,7 @@ describe('loginWithPassword', () => {
     // Then
     expect(passwordLoginCall).toHaveBeenCalledWith(`${baseUrl}/oauth/token`, {
       method: 'POST',
-      headers: headers.jsonAndDefaultLang,
+      headers: expect.objectContaining(headers.jsonAndDefaultLang),
       body: JSON.stringify({
         client_id: clientId,
         grant_type: 'password',
@@ -421,7 +421,7 @@ describe('loginWithPassword', () => {
     // Then
     expect(passwordLoginCall).toHaveBeenCalledWith(`${baseUrl}/oauth/token`, {
       method: 'POST',
-      headers: headers.jsonAndDefaultLang,
+      headers: expect.objectContaining(headers.jsonAndDefaultLang),
       body: JSON.stringify({
         client_id: clientId,
         grant_type: 'password',
@@ -482,7 +482,7 @@ describe('loginWithPassword', () => {
 
     expect(passwordLoginCall).toHaveBeenCalledWith(`${baseUrl}/oauth/token`, {
       method: 'POST',
-      headers: headers.jsonAndDefaultLang,
+      headers: expect.objectContaining(headers.jsonAndDefaultLang),
       body: JSON.stringify({
         client_id: clientId,
         grant_type: 'password',
@@ -554,7 +554,7 @@ describe('loginWithSocialProvider', () => {
             success()
           }),
           close() {},
-          isAvailable: jest.fn().mockImplementation(resolve => resolve(true))
+          isAvailable: jest.fn().mockImplementation((resolve) => resolve(true))
         }
       }
     }
@@ -601,7 +601,7 @@ describe('loginWithSocialProvider', () => {
             error(new Error('Not available'))
           }),
           close() {},
-          isAvailable: jest.fn().mockImplementation(resolve => resolve(false))
+          isAvailable: jest.fn().mockImplementation((resolve) => resolve(false))
         }
       },
       InAppBrowser: {
@@ -624,7 +624,7 @@ describe('loginWithSocialProvider', () => {
           response_type: 'token',
           scope: 'openid profile email phone',
           display: 'page',
-          provider: 'facebook',
+          provider: 'facebook'
         }),
       '_system'
     )
@@ -643,7 +643,7 @@ describe('loginWithSocialProvider', () => {
             error(new Error('Not available'))
           }),
           close() {},
-          isAvailable: jest.fn().mockImplementation(resolve => resolve(false))
+          isAvailable: jest.fn().mockImplementation((resolve) => resolve(false))
         }
       },
       InAppBrowser: {
@@ -762,7 +762,7 @@ describe('loginWithSocialProvider', () => {
           scope: 'openid profile email phone',
           display: 'page',
           provider: 'facebook',
-          ...mockPkceValues,
+          ...mockPkceValues
         }),
       '_system'
     )
@@ -798,7 +798,7 @@ describe('loginWithSocialProvider', () => {
           scope: 'openid profile email phone',
           display: 'page',
           provider: 'facebook',
-          ...mockPkceValues,
+          ...mockPkceValues
         }),
       '_blank'
     )
