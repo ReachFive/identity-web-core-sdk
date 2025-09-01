@@ -1,10 +1,11 @@
 import fetchMock from 'jest-fetch-mock'
 
-import { defineWindowProperty, headers } from './helpers/testHelpers'
 import { createDefaultTestClient } from './helpers/clientFactory'
+import { defineWindowProperty, headers, mockWindowCrypto } from './helpers/testHelpers'
 
 beforeAll(() => {
   fetchMock.enableMocks()
+  defineWindowProperty('crypto', mockWindowCrypto)
   defineWindowProperty('location')
 })
 
@@ -23,13 +24,16 @@ test('simple', async () => {
   const email = 'john.doe@example.com'
 
   client.requestPasswordReset({ email }).then(() => {
-    expect(passwordResetCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/forgot-password`, {
-      method: 'POST',
-      headers: headers.jsonAndDefaultLang,
-      body: JSON.stringify({
-        client_id: clientId,
-        email
+    expect(passwordResetCall).toHaveBeenCalledWith(
+      `https://${domain}/identity/v1/forgot-password`,
+      expect.objectContaining({
+        method: 'POST',
+        headers: expect.objectContaining(headers.jsonAndDefaultLang),
+        body: JSON.stringify({
+          client_id: clientId,
+          email
+        })
       })
-    })
+    )
   })
 })

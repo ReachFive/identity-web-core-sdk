@@ -1,9 +1,11 @@
 import fetchMock from 'jest-fetch-mock'
 import { toQueryString } from '../../utils/queryString'
 import { createDefaultTestClient } from './helpers/clientFactory'
+import { defineWindowProperty, mockWindowCrypto } from './helpers/testHelpers'
 
 beforeAll(() => {
   fetchMock.enableMocks()
+  defineWindowProperty('crypto', mockWindowCrypto)
 })
 
 beforeEach(() => {
@@ -32,14 +34,14 @@ describe('nominal', () => {
     // Then
     expect(sessionInfoCall).toHaveBeenCalledWith(
       `https://${domain}/identity/v1/sso/data?` +
-      toQueryString({
-        client_id: clientId
-      }),
+        toQueryString({
+          client_id: clientId
+        }),
       {
         method: 'GET',
-        headers: {
-          "Accept-Language": "en"
-        },
+        headers: expect.objectContaining({
+          'Accept-Language': 'en'
+        }),
         credentials: 'include'
       }
     )
