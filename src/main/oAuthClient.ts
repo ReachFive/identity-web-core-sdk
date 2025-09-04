@@ -507,7 +507,7 @@ export default class OAuthClient {
   startPasswordless(params: PasswordlessParams, auth: Omit<AuthOptions, 'useWebMessage'> = {}): Promise<PasswordlessResponse> {
     const passwordlessPayload =
         ('stepUp' in params)
-            ? Promise.resolve(params)
+            ? this.resolveSecondFactorPasswordlessParams(params)
             : this.resolveSingleFactorPasswordlessParams(params, auth)
 
     return passwordlessPayload.then(payload =>
@@ -815,6 +815,24 @@ export default class OAuthClient {
           captchaProvider,
           ...maybeChallenge,
         }
+      })
+    }
+  }
+
+  private resolveSecondFactorPasswordlessParams(params: StepUpPasswordlessParams): Promise<object> {
+    const { authType, stepUp } = params
+    if (this.config.orchestrationToken) {
+      const authParams = this.orchestratedFlowParams(this.config.orchestrationToken)
+
+      return Promise.resolve({
+        ...authParams,
+        authType,
+        stepUp
+      })
+    } else {
+      return Promise.resolve({
+        authType,
+        stepUp,
       })
     }
   }
