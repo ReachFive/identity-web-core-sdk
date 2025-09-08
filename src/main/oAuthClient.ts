@@ -498,7 +498,10 @@ export default class OAuthClient {
               }
             })
             .then(tkn => this.storeCredentialsInBrowser(loginParams).then(() => tkn))
-            .then(tkn => this.loginCallback(tkn, auth))
+            .then(tkn => {
+              if(tkn.tkn == undefined) return Promise.resolve({})
+              else return this.loginCallback(tkn, auth)
+            })
 
     return resultPromise.catch(err => {
       if (err.error) {
