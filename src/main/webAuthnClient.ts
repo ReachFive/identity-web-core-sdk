@@ -269,7 +269,10 @@ export default class WebAuthnClient {
                 webauthnId: registrationOptions.options.publicKey.user.id
               }
             })
-            .then((tkn) => this.oAuthClient.loginCallback(tkn, auth))
+            .then((tkn) => {
+              if(tkn.tkn == undefined) return Promise.resolve({})
+              else return this.oAuthClient.loginCallback(tkn, auth)
+            })
         })
         .catch((err) => {
           if (err.error) this.eventManager.fireEvent('login_failed', err)
