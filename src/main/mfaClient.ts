@@ -1,5 +1,5 @@
 import { MFA, TrustedDevice } from './models'
-import { AuthOptions } from './authOptions'
+import { AuthOptions, computeAuthOptions } from './authOptions'
 import { HttpClient } from './httpClient'
 import { AuthResult } from './authResult'
 import OAuthClient from './oAuthClient'
@@ -8,7 +8,7 @@ import EmailCredential = MFA.EmailCredential
 import StepUpResponse = MFA.StepUpResponse
 import PhoneCredential = MFA.PhoneCredential
 import { ApiClientConfig } from './main'
-import { omit } from 'lodash'
+import { pick } from "../utils/utils"
 
 export type RemoveMfaEmailParams = {
   accessToken: string
@@ -107,14 +107,17 @@ export default class MfaClient {
 
   getMfaStepUpToken(params: StepUpParams): Promise<StepUpResponse> {
     if (this.config.orchestrationToken) {
+      const authParams = computeAuthOptions(params.options)
+
+      const correctedAuthParams = {
+        clientId: this.config.clientId,
+        ...pick(authParams, 'responseType', 'redirectUri', 'persistent', 'display'),
+      }
       return this.http.post<StepUpResponse>(this.stepUpUrl, {
         body: {
           tkn: params.tkn,
           action: params.action,
-          ...omit(
-            this.oAuthClient.orchestratedFlowParams(this.config.orchestrationToken, params.options),
-            'r5_request_token'
-          )
+          ...correctedAuthParams
         },
         accessToken: params.accessToken
       })
