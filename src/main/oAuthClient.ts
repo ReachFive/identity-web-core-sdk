@@ -891,7 +891,7 @@ export default class OAuthClient {
 
   // In an orchestrated flow, only parameters from the original request are to be considered,
   // as well as parameters that depend on user action
-  private orchestratedFlowParams(orchestrationToken: OrchestrationToken, authOptions: AuthOptions = {}) {
+  orchestratedFlowParams(orchestrationToken: OrchestrationToken, authOptions: AuthOptions = {}) {
     const authParams = computeAuthOptions(authOptions)
 
     const correctedAuthParams = {
