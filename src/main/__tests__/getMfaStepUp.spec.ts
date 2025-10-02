@@ -17,7 +17,6 @@ beforeEach(() => {
 describe('step up', () => {
   test('no pkce generated when flow is orchestrated', async () => {
     const { client, clientId, domain } = createDefaultTestClient({ pkceEnforced: true })
-    fetchMock.resetMocks()
     defineWindowProperty('location', { search: 'r5_request_token=orchestratedtoken' })
 
     // Given
@@ -38,7 +37,6 @@ describe('step up', () => {
   })
   test('pkce error when flow is not orchestrated, response_type is token and pkce is enforced', async () => {
     const { client } = createDefaultTestClient({ pkceEnforced: true })
-    fetchMock.resetMocks()
     defineWindowProperty('location', { search: '' })
 
     // When
@@ -49,7 +47,6 @@ describe('step up', () => {
 
   test('pkce generated when flow is not orchestrated, a redirect uri is specified and pkce is enforced', async () => {
     const { client, clientId, domain } = createDefaultTestClient({ pkceEnforced: true })
-    fetchMock.resetMocks()
     defineWindowProperty('location', { search: '' })
 
     // Given
