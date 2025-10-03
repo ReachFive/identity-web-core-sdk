@@ -567,7 +567,7 @@ export default class OAuthClient {
         const result = data.response
 
         if (AuthResult.isAuthResult(result)) {
-          if (result.code) {
+          if (result.code && this.config.isPublic) {
             resolve(this.exchangeAuthorizationCodeWithPkce({
               code: result.code,
               redirectUri: redirectUri || window.location.origin,
