@@ -1,5 +1,5 @@
-import {MFA, TrustedDevice} from './models'
-import { AuthOptions } from './authOptions'
+import { MFA, TrustedDevice } from './models'
+import { AuthOptions, computeAuthOptions } from './authOptions'
 import { HttpClient } from './httpClient'
 import { AuthResult } from './authResult'
 import OAuthClient from './oAuthClient'
@@ -7,6 +7,8 @@ import CredentialsResponse = MFA.CredentialsResponse
 import EmailCredential = MFA.EmailCredential
 import StepUpResponse = MFA.StepUpResponse
 import PhoneCredential = MFA.PhoneCredential
+import { ApiClientConfig } from './main'
+import { pick } from "../utils/utils"
 
 export type RemoveMfaEmailParams = {
   accessToken: string
@@ -23,7 +25,9 @@ export type StartMfaEmailRegistrationParams = {
   action?: string
 }
 
-export type StartMfaEmailRegistrationResponse = { status: 'email_sent' } | { status: 'enabled', credential: EmailCredential }
+export type StartMfaEmailRegistrationResponse =
+  | { status: 'email_sent' }
+  | { status: 'enabled'; credential: EmailCredential }
 
 export type StartMfaPhoneNumberRegistrationParams = {
   accessToken: string
@@ -32,7 +36,9 @@ export type StartMfaPhoneNumberRegistrationParams = {
   action?: string
 }
 
-export type StartMfaPhoneNumberRegistrationResponse = { status: 'sms_sent' } | { status: 'enabled', credential: PhoneCredential }
+export type StartMfaPhoneNumberRegistrationResponse =
+  | { status: 'sms_sent' }
+  | { status: 'enabled'; credential: PhoneCredential }
 
 export type StepUpParams = {
   options?: AuthOptions
@@ -71,6 +77,7 @@ export type ListTrustedDevicesResponse = {
  * Identity Rest API Client
  */
 export default class MfaClient {
+  private config: ApiClientConfig
   private http: HttpClient
   private oAuthClient: OAuthClient
 
@@ -83,9 +90,10 @@ export default class MfaClient {
   private stepUpUrl: string
   private trustedDeviceUrl: string
 
-  constructor(props: { http: HttpClient; oAuthClient: OAuthClient }) {
+  constructor(props: { config: ApiClientConfig; http: HttpClient; oAuthClient: OAuthClient }) {
     this.http = props.http
     this.oAuthClient = props.oAuthClient
+    this.config = props.config
 
     this.credentialsUrl = '/mfa/credentials'
     this.emailCredentialUrl = `${this.credentialsUrl}/emails`
@@ -98,18 +106,35 @@ export default class MfaClient {
   }
 
   getMfaStepUpToken(params: StepUpParams): Promise<StepUpResponse> {
-    const authParams = this.oAuthClient.authParams(params.options ?? {})
-    return this.oAuthClient.getPkceParams(authParams).then(challenge => {
+    if (this.config.orchestrationToken) {
+      const authParams = computeAuthOptions(params.options)
+
+      const correctedAuthParams = {
+        clientId: this.config.clientId,
+        ...pick(authParams, 'responseType', 'redirectUri', 'persistent', 'display'),
+      }
       return this.http.post<StepUpResponse>(this.stepUpUrl, {
         body: {
-          ...authParams,
           tkn: params.tkn,
           action: params.action,
-          ...challenge
+          ...correctedAuthParams
         },
         accessToken: params.accessToken
       })
-    })
+    } else {
+      const authParams = this.oAuthClient.authParams(params.options ?? {})
+      return this.oAuthClient.getPkceParams(authParams).then((challenge) => {
+        return this.http.post<StepUpResponse>(this.stepUpUrl, {
+          body: {
+            ...authParams,
+            tkn: params.tkn,
+            action: params.action,
+            ...challenge
+          },
+          accessToken: params.accessToken
+        })
+      })
+    }
   }
 
   listMfaCredentials(accessToken: string): Promise<CredentialsResponse> {
@@ -121,7 +146,7 @@ export default class MfaClient {
   removeMfaEmail(params: RemoveMfaEmailParams): Promise<void> {
     const { accessToken } = params
     return this.http.remove<void>(this.emailCredentialUrl, {
-      accessToken,
+      accessToken
     })
   }
 
@@ -131,7 +156,7 @@ export default class MfaClient {
       body: {
         phoneNumber
       },
-      accessToken,
+      accessToken
     })
   }
 
@@ -139,14 +164,16 @@ export default class MfaClient {
     const { accessToken, trustDevice = false, action } = params
     return this.http.post<StartMfaEmailRegistrationResponse>(this.emailCredentialUrl, {
       body: {
-      trustDevice,
-      action
-    },
-      accessToken,
+        trustDevice,
+        action
+      },
+      accessToken
     })
   }
 
-  startMfaPhoneNumberRegistration(params: StartMfaPhoneNumberRegistrationParams): Promise<StartMfaPhoneNumberRegistrationResponse> {
+  startMfaPhoneNumberRegistration(
+    params: StartMfaPhoneNumberRegistrationParams
+  ): Promise<StartMfaPhoneNumberRegistrationResponse> {
     const { accessToken, phoneNumber, trustDevice = false, action } = params
     return this.http.post<StartMfaPhoneNumberRegistrationResponse>(this.phoneNumberCredentialUrl, {
       body: {
@@ -170,19 +197,20 @@ export default class MfaClient {
   }
 
   verifyMfaPasswordless(params: VerifyMfaPasswordlessParams): Promise<AuthResult> {
-    const { challengeId, verificationCode, trustDevice} = params
+    const { challengeId, verificationCode, trustDevice } = params
 
-    return this.http.post<AuthResult>(this.passwordlessVerifyUrl, {
-      body: {
-        challengeId,
-        verificationCode,
-        trustDevice
-      },
-    }).finally(() => {
+    return this.http
+      .post<AuthResult>(this.passwordlessVerifyUrl, {
+        body: {
+          challengeId,
+          verificationCode,
+          trustDevice
+        }
+      })
+      .finally(() => {
         this.oAuthClient.releaseSessionLock()
         this.oAuthClient.releaseAuthorizationLock()
-      }
-    )
+      })
   }
 
   verifyMfaPhoneNumberRegistration(params: VerifyMfaPhoneNumberRegistrationParams): Promise<void> {
@@ -204,6 +232,6 @@ export default class MfaClient {
 
   deleteTrustedDevices(params: DeleteTrustedDeviceParams): Promise<void> {
     const { accessToken, trustedDeviceId } = params
-    return this.http.remove<void>(this.trustedDeviceUrl + '/' + trustedDeviceId, {accessToken})
+    return this.http.remove<void>(this.trustedDeviceUrl + '/' + trustedDeviceId, { accessToken })
   }
 }

@@ -4,8 +4,9 @@ import {
   SessionInfo,
   OpenIdUser,
   PasswordlessResponse,
-  MFA, OrchestrationToken,
-  PasswordStrength,
+  MFA,
+  OrchestrationToken,
+  PasswordStrength
 } from './models'
 import OAuthClient, {
   LoginWithPasswordParams,
@@ -13,7 +14,11 @@ import OAuthClient, {
   VerifyPasswordlessParams,
   SignupParams,
   TokenRequestParameters,
-  RefreshTokenParams, PasswordlessParams, LogoutParams, LoginWithCustomTokenParams, RevocationParams,
+  RefreshTokenParams,
+  PasswordlessParams,
+  LogoutParams,
+  LoginWithCustomTokenParams,
+  RevocationParams
 } from './oAuthClient'
 import { AuthOptions } from './authOptions'
 import { AuthResult } from './authResult'
@@ -30,21 +35,26 @@ import MfaClient, {
   RemoveMfaPhoneNumberParams,
   StartMfaEmailRegistrationParams,
   StartMfaEmailRegistrationResponse,
-  StartMfaPhoneNumberRegistrationParams, StartMfaPhoneNumberRegistrationResponse,
-  StepUpParams, VerifyMfaEmailRegistrationParams,
+  StartMfaPhoneNumberRegistrationParams,
+  StartMfaPhoneNumberRegistrationResponse,
+  StepUpParams,
+  VerifyMfaEmailRegistrationParams,
   VerifyMfaPasswordlessParams,
-  VerifyMfaPhoneNumberRegistrationParams,
+  VerifyMfaPhoneNumberRegistrationParams
 } from './mfaClient'
 import ProfileClient, {
   EmailVerificationParams,
   GetUserParams,
-  PhoneNumberVerificationParams, RequestAccountRecoveryParams,
+  PhoneNumberVerificationParams,
+  RequestAccountRecoveryParams,
   RequestPasswordResetParams,
   UnlinkParams,
   UpdateEmailParams,
   UpdatePasswordParams,
   UpdatePhoneNumberParams,
-  UpdateProfileParams, VerifyEmailParams, VerifyPhoneNumberParams
+  UpdateProfileParams,
+  VerifyEmailParams,
+  VerifyPhoneNumberParams
 } from './profileClient'
 import WebAuthnClient, { ResetPasskeysParams } from './webAuthnClient'
 import CredentialsResponse = MFA.CredentialsResponse
@@ -112,8 +122,13 @@ export type Client = {
   signup: (params: SignupParams) => Promise<AuthResult>
   signupWithWebAuthn: (params: SignupWithWebAuthnParams, auth?: AuthOptions) => Promise<AuthResult>
   startMfaEmailRegistration: (params: StartMfaEmailRegistrationParams) => Promise<StartMfaEmailRegistrationResponse>
-  startMfaPhoneNumberRegistration: (params: StartMfaPhoneNumberRegistrationParams) => Promise<StartMfaPhoneNumberRegistrationResponse>
-  startPasswordless: (params: PasswordlessParams, options?: Omit<AuthOptions, 'useWebMessage'>) => Promise<PasswordlessResponse>
+  startMfaPhoneNumberRegistration: (
+    params: StartMfaPhoneNumberRegistrationParams
+  ) => Promise<StartMfaPhoneNumberRegistrationResponse>
+  startPasswordless: (
+    params: PasswordlessParams,
+    options?: Omit<AuthOptions, 'useWebMessage'>
+  ) => Promise<PasswordlessResponse>
   unlink: (params: UnlinkParams) => Promise<void>
   updateEmail: (params: UpdateEmailParams) => Promise<void>
   updatePassword: (params: UpdatePasswordParams) => Promise<void>
@@ -154,63 +169,63 @@ export function createClient(creationConfig: Config): Client {
     `https://${domain}/identity/v1/config?${toQueryString({ clientId, lang: language, googleVariant })}`
   )
 
-  const apiClients = remoteSettings.then(
-    remoteConfig => {
+  const apiClients = remoteSettings.then((remoteConfig) => {
+    const { language, sso } = remoteConfig
 
-      const { language, sso } = remoteConfig
+    const params = new URLSearchParams(window.location.search)
+    const orchestrationToken = params.get('r5_request_token') || undefined
 
-      const params = new URLSearchParams(window.location.search)
-      const orchestrationToken = params.get('r5_request_token') || undefined
+    const config: ApiClientConfig = {
+      clientId,
+      baseUrl,
+      orchestrationToken,
+      ...remoteConfig
+    }
 
-      const config: ApiClientConfig = {
-        clientId,
-        baseUrl,
-        orchestrationToken,
-        ...remoteConfig,
-      }
+    const http = createHttpClient({
+      baseUrl: baseIdentityUrl,
+      language,
+      acceptCookies: sso,
+      locale
+    })
 
-      const http = createHttpClient({
-        baseUrl: baseIdentityUrl,
-        language,
-        acceptCookies: sso,
-        locale
-      })
+    const oAuthClient = new OAuthClient({
+      config,
+      http,
+      eventManager
+    })
+    const mfaClient = new MfaClient({
+      config,
+      http,
+      oAuthClient
+    })
+    oAuthClient.setMfaClient(mfaClient)
 
-      const oAuthClient = new OAuthClient({
+    return {
+      oAuth: oAuthClient,
+      mfa: mfaClient,
+      webAuthn: new WebAuthnClient({
+        config,
+        http,
+        eventManager,
+        oAuthClient
+      }),
+      profile: new ProfileClient({
         config,
         http,
         eventManager
       })
-      const mfaClient = new MfaClient({
-        http,
-        oAuthClient
-      })
-      oAuthClient.setMfaClient(mfaClient)
-
-      return {
-        oAuth: oAuthClient,
-        mfa: mfaClient,
-        webAuthn: new WebAuthnClient({
-          config,
-          http,
-          eventManager,
-          oAuthClient
-        }),
-        profile: new ProfileClient({
-          config,
-          http,
-          eventManager
-        })
-      }
     }
-  )
+  })
 
   function addNewWebAuthnDevice(accessToken: string, friendlyName?: string) {
-    return apiClients.then(clients => clients.webAuthn.addNewWebAuthnDevice(accessToken, friendlyName, webAuthnOrigin))
+    return apiClients.then((clients) =>
+      clients.webAuthn.addNewWebAuthnDevice(accessToken, friendlyName, webAuthnOrigin)
+    )
   }
 
   function checkSession(options: AuthOptions = {}) {
-    return apiClients.then(clients => clients.oAuth.checkSession(options))
+    return apiClients.then((clients) => clients.oAuth.checkSession(options))
   }
 
   function checkUrlFragment(url: string = window.location.href): boolean {
@@ -222,74 +237,76 @@ export function createClient(creationConfig: Config): Client {
   }
 
   function exchangeAuthorizationCodeWithPkce(params: TokenRequestParameters) {
-    return apiClients.then(clients => clients.oAuth.exchangeAuthorizationCodeWithPkce(params))
+    return apiClients.then((clients) => clients.oAuth.exchangeAuthorizationCodeWithPkce(params))
   }
 
   function getPasswordStrength(password: string) {
-    return apiClients.then(clients => clients.oAuth.getPasswordStrength(password))
+    return apiClients.then((clients) => clients.oAuth.getPasswordStrength(password))
   }
 
   function getMfaStepUpToken(params: StepUpParams) {
-    return apiClients.then(clients => clients.mfa.getMfaStepUpToken(params))
+    return apiClients.then((clients) => clients.mfa.getMfaStepUpToken(params))
   }
 
   function getSessionInfo() {
-    return apiClients.then(clients => clients.oAuth.getSessionInfo())
+    return apiClients.then((clients) => clients.oAuth.getSessionInfo())
   }
 
   function getSignupData(signupToken: string) {
-    return apiClients.then(clients => clients.profile.getSignupData(signupToken))
+    return apiClients.then((clients) => clients.profile.getSignupData(signupToken))
   }
 
   function getUser(params: GetUserParams) {
-    return apiClients.then(clients => clients.profile.getUser(params))
+    return apiClients.then((clients) => clients.profile.getUser(params))
   }
 
   function listMfaCredentials(accessToken: string) {
-    return apiClients.then(clients => clients.mfa.listMfaCredentials(accessToken))
+    return apiClients.then((clients) => clients.mfa.listMfaCredentials(accessToken))
   }
 
   function listWebAuthnDevices(accessToken: string) {
-    return apiClients.then(clients => clients.webAuthn.listWebAuthnDevices(accessToken))
+    return apiClients.then((clients) => clients.webAuthn.listWebAuthnDevices(accessToken))
   }
 
   function loginFromSession(options: AuthOptions = {}) {
-    return apiClients.then(clients => clients.oAuth.loginFromSession(options))
+    return apiClients.then((clients) => clients.oAuth.loginFromSession(options))
   }
 
   function loginWithCredentials(params: LoginWithCredentialsParams) {
-    return apiClients.then(clients => clients.oAuth.loginWithCredentials(params))
+    return apiClients.then((clients) => clients.oAuth.loginWithCredentials(params))
   }
 
   function loginWithCustomToken(params: LoginWithCustomTokenParams) {
-    return apiClients.then(clients => clients.oAuth.loginWithCustomToken(params))
+    return apiClients.then((clients) => clients.oAuth.loginWithCustomToken(params))
   }
 
   function loginWithPassword(params: LoginWithPasswordParams) {
-    return apiClients.then(clients => clients.oAuth.loginWithPassword(params))
+    return apiClients.then((clients) => clients.oAuth.loginWithPassword(params))
   }
 
   function instantiateOneTap(opts: AuthOptions = {}) {
-    return apiClients.then(clients => clients.oAuth.instantiateOneTap(opts))
+    return apiClients.then((clients) => clients.oAuth.instantiateOneTap(opts))
   }
 
   function listTrustedDevices(accessToken: string) {
-    return apiClients.then(clients => clients.mfa.listTrustedDevices(accessToken))
+    return apiClients.then((clients) => clients.mfa.listTrustedDevices(accessToken))
   }
 
   function loginWithSocialProvider(provider: string, options: AuthOptions = {}) {
-    return apiClients.then(clients => clients.oAuth.loginWithSocialProvider(provider, options))
+    return apiClients.then((clients) => clients.oAuth.loginWithSocialProvider(provider, options))
   }
 
   function loginWithWebAuthn(params: LoginWithWebAuthnParams) {
-    return apiClients.then(clients => clients.webAuthn.loginWithWebAuthn({
-      ...params,
-      webAuthnOrigin
-    }))
+    return apiClients.then((clients) =>
+      clients.webAuthn.loginWithWebAuthn({
+        ...params,
+        webAuthnOrigin
+      })
+    )
   }
 
   function logout(params: LogoutParams = {}, revocationParams?: RevocationParams) {
-    return apiClients.then(clients => clients.oAuth.logout(params, revocationParams))
+    return apiClients.then((clients) => clients.oAuth.logout(params, revocationParams))
   }
 
   function off<K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void): void {
@@ -307,112 +324,119 @@ export function createClient(creationConfig: Config): Client {
   }
 
   function refreshTokens(params: RefreshTokenParams) {
-    return apiClients.then(clients => clients.oAuth.refreshTokens(params))
+    return apiClients.then((clients) => clients.oAuth.refreshTokens(params))
   }
 
   function removeMfaEmail(params: RemoveMfaEmailParams) {
-    return apiClients.then(clients => clients.mfa.removeMfaEmail(params))
+    return apiClients.then((clients) => clients.mfa.removeMfaEmail(params))
   }
 
   function removeMfaPhoneNumber(params: RemoveMfaPhoneNumberParams) {
-    return apiClients.then(clients => clients.mfa.removeMfaPhoneNumber(params))
+    return apiClients.then((clients) => clients.mfa.removeMfaPhoneNumber(params))
   }
 
   function removeTrustedDevice(params: DeleteTrustedDeviceParams) {
-    return apiClients.then(clients => clients.mfa.deleteTrustedDevices(params))
+    return apiClients.then((clients) => clients.mfa.deleteTrustedDevices(params))
   }
 
   function removeWebAuthnDevice(accessToken: string, deviceId: string) {
-    return apiClients.then(clients => clients.webAuthn.removeWebAuthnDevice(accessToken, deviceId))
+    return apiClients.then((clients) => clients.webAuthn.removeWebAuthnDevice(accessToken, deviceId))
   }
 
   function requestAccountRecovery(params: RequestAccountRecoveryParams) {
-    return apiClients.then(clients => clients.profile.requestAccountRecovery(params))
+    return apiClients.then((clients) => clients.profile.requestAccountRecovery(params))
   }
   function requestPasswordReset(params: RequestPasswordResetParams) {
-    return apiClients.then(clients => clients.profile.requestPasswordReset(params))
+    return apiClients.then((clients) => clients.profile.requestPasswordReset(params))
   }
 
   function resetPasskeys(params: ResetPasskeysParams) {
-    return apiClients.then(clients => clients.webAuthn.resetPasskeys({
-      ...params,
-      webAuthnOrigin
-    }))
+    return apiClients.then((clients) =>
+      clients.webAuthn.resetPasskeys({
+        ...params,
+        webAuthnOrigin
+      })
+    )
   }
 
   function sendEmailVerification(params: EmailVerificationParams) {
-    return apiClients.then(clients => clients.profile.sendEmailVerification(params))
+    return apiClients.then((clients) => clients.profile.sendEmailVerification(params))
   }
 
   function sendPhoneNumberVerification(params: PhoneNumberVerificationParams) {
-    return apiClients.then(clients => clients.profile.sendPhoneNumberVerification(params))
+    return apiClients.then((clients) => clients.profile.sendPhoneNumberVerification(params))
   }
 
   function signup(params: SignupParams) {
-    return apiClients.then(clients => clients.oAuth.signup(params))
+    return apiClients.then((clients) => clients.oAuth.signup(params))
   }
 
   function signupWithWebAuthn(params: SignupWithWebAuthnParams, auth?: AuthOptions) {
-    return apiClients.then(clients => clients.webAuthn.signupWithWebAuthn({
-      ...params,
-      webAuthnOrigin
-    }, auth))
+    return apiClients.then((clients) =>
+      clients.webAuthn.signupWithWebAuthn(
+        {
+          ...params,
+          webAuthnOrigin
+        },
+        auth
+      )
+    )
   }
 
   function startMfaEmailRegistration(params: StartMfaEmailRegistrationParams) {
-    return apiClients.then(clients => clients.mfa.startMfaEmailRegistration(params))
+    return apiClients.then((clients) => clients.mfa.startMfaEmailRegistration(params))
   }
 
   function startMfaPhoneNumberRegistration(params: StartMfaPhoneNumberRegistrationParams) {
-    return apiClients.then(clients => clients.mfa.startMfaPhoneNumberRegistration(params))
+    return apiClients.then((clients) => clients.mfa.startMfaPhoneNumberRegistration(params))
   }
 
   function startPasswordless(params: PasswordlessParams, options: AuthOptions = {}) {
-    return apiClients.then(clients => clients.oAuth.startPasswordless(params, options))
+    return apiClients.then((clients) => clients.oAuth.startPasswordless(params, options))
   }
 
   function unlink(params: UnlinkParams) {
-    return apiClients.then(clients => clients.profile.unlink(params))
+    return apiClients.then((clients) => clients.profile.unlink(params))
   }
 
   function updateEmail(params: UpdateEmailParams) {
-    return apiClients.then(clients => clients.profile.updateEmail(params))
+    return apiClients.then((clients) => clients.profile.updateEmail(params))
   }
 
   function updatePassword(params: UpdatePasswordParams) {
-    return apiClients.then(clients => clients.profile.updatePassword(params))
+    return apiClients.then((clients) => clients.profile.updatePassword(params))
   }
 
   function updatePhoneNumber(params: UpdatePhoneNumberParams) {
-    return apiClients.then(clients => clients.profile.updatePhoneNumber(params))
+    return apiClients.then((clients) => clients.profile.updatePhoneNumber(params))
   }
 
   function updateProfile(params: UpdateProfileParams) {
-    return apiClients.then(clients => clients.profile.updateProfile(params))
+    return apiClients.then((clients) => clients.profile.updateProfile(params))
   }
 
   function verifyEmail(params: VerifyEmailParams) {
-    return apiClients.then(clients => clients.profile.verifyEmail(params))
+    return apiClients.then((clients) => clients.profile.verifyEmail(params))
   }
 
   function verifyMfaEmailRegistration(params: VerifyMfaEmailRegistrationParams) {
-    return apiClients.then(clients => clients.mfa.verifyMfaEmailRegistration(params))
+    return apiClients.then((clients) => clients.mfa.verifyMfaEmailRegistration(params))
   }
 
   function verifyMfaPasswordless(params: VerifyMfaPasswordlessParams) {
-    return apiClients.then(clients => clients.mfa.verifyMfaPasswordless(params))
+    return apiClients.then((clients) => clients.mfa.verifyMfaPasswordless(params))
   }
 
   function verifyMfaPhoneNumberRegistration(params: VerifyMfaPhoneNumberRegistrationParams) {
-    return apiClients.then(clients => clients.mfa.verifyMfaPhoneNumberRegistration(params))
+    return apiClients.then((clients) => clients.mfa.verifyMfaPhoneNumberRegistration(params))
   }
 
   function verifyPasswordless(params: VerifyPasswordlessParams, auth?: AuthOptions) {
-    return apiClients.then(clients => clients.oAuth.verifyPasswordless(params, auth))
+    return apiClients.then((clients) => clients.oAuth.verifyPasswordless(params, auth))
   }
 
   function verifyPhoneNumber(params: VerifyPhoneNumberParams) {
-    return apiClients.then(clients => clients.profile.verifyPhoneNumber(params))
+    return apiClients.then((clients) => clients.profile.verifyPhoneNumber(params))
   }
 
   return {
@@ -464,6 +488,6 @@ export function createClient(creationConfig: Config): Client {
     verifyMfaPasswordless,
     verifyMfaPhoneNumberRegistration,
     verifyPasswordless,
-    verifyPhoneNumber,
+    verifyPhoneNumber
   }
 }
