@@ -416,7 +416,8 @@ export type RemoteSettings = {
   resourceBaseUrl: string,
   mfaSmsEnabled: boolean,
   mfaEmailEnabled: boolean,
-  rbaEnabled: boolean
+  rbaEnabled: boolean,
+  isImplicitFlowForbidden: boolean
 }
 
 export type ErrorResponse = {

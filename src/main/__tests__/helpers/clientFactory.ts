@@ -21,6 +21,7 @@ export function createDefaultTestClient(remoteSettings: Partial<RemoteSettings> 
     sms: false,
     pkceEnforced: false,
     isPublic: false,
+    isImplicitFlowForbidden: false,
     language: 'en',
     rbaEnabled: false,
     webAuthn: false,
