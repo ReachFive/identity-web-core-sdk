@@ -13,7 +13,7 @@ beforeEach(() => {
   jest.resetAllMocks()
   fetchMock.resetMocks()
   jest.spyOn(global, 'fetch').mockImplementation(jest.fn((input) => {
-    var response: Response = new Response()
+    let response: Response = new Response()
     if(input.toString().endsWith("/oauth/token")) {
       response = new Response(JSON.stringify({accessToken: 'eydfsjklfjdslk'}))
     }
