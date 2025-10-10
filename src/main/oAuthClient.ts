@@ -152,7 +152,7 @@ export default class OAuthClient {
       ...opts,
       responseType: 'code',
       useWebMessage: true,
-    }, {}, false)
+    }, {}, true)
 
     if (this.isAuthorizationLocked() || this.isSessionLocked())
       return Promise.reject(new Error('An ongoing authorization flow has not yet completed.'))
@@ -354,7 +354,7 @@ export default class OAuthClient {
   private loginWithIdToken(provider: string, idToken: string, nonce: string, opts: AuthOptions = {}): Promise<void> {
     const authParams = this.authParams({
       ...opts,
-    }, {}, false)
+    }, {}, true)
 
     if(opts.useWebMessage) {
       const queryString = toQueryString({
@@ -911,10 +911,10 @@ export default class OAuthClient {
     return correctedAuthParams
   }
 
-  authParams(opts: AuthOptions, { acceptPopupMode = false } = {}, allowConfidentialCodeWebMsgFlowOverride: boolean = true ) {
-    const isConfidentialCodeWebMsg = !this.config.isPublic && !!opts.useWebMessage && (opts.responseType === 'code' || opts.redirectUri) && !this.config.isImplicitFlowForbidden
+  authParams(opts: AuthOptions, { acceptPopupMode = false } = {}, allowConfidentialCodeWebMsgFlowOverride: boolean = false ) {
+    const isConfidentialCodeWebMsg = !this.config.isPublic && !!opts.useWebMessage && (opts.responseType === 'code' || opts.redirectUri) && (!this.config.isImplicitFlowForbidden || allowConfidentialCodeWebMsgFlowOverride)
 
-    const overrideResponseType: Partial<AuthOptions> = isConfidentialCodeWebMsg && allowConfidentialCodeWebMsgFlowOverride
+    const overrideResponseType: Partial<AuthOptions> = isConfidentialCodeWebMsg
         ? { responseType: 'token', redirectUri: undefined }
         : {}
 

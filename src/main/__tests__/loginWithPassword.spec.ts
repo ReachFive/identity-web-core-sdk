@@ -1,8 +1,7 @@
 import fetchMock from 'jest-fetch-mock'
-import { LoginWithPasswordParams } from '../oAuthClient'
-import { TestKit, createDefaultTestClient } from './helpers/clientFactory'
-import { scope, tkn } from './helpers/oauthHelpers'
-import { defineWindowProperty, headers, mockWindowCrypto } from './helpers/testHelpers'
+import { createDefaultTestClient } from './helpers/clientFactory'
+import { tkn } from './helpers/oauthHelpers'
+import { defineWindowProperty, mockWindowCrypto } from './helpers/testHelpers'
 
 beforeAll(() => {
   fetchMock.enableMocks()
@@ -34,29 +33,9 @@ beforeEach(() => {
 
 })
 
-export async function loginWithPasswordTest(testkit: TestKit, params: LoginWithPasswordParams, credentials: object) {
-  const { domain, clientId, client } = testkit
-
-  // Given
-  const passwordLoginCall = fetchMock.mockResponseOnce(JSON.stringify(tkn))
-
-  // When
-  await client.loginWithPassword(params)
-
-  // Then
-  expect(passwordLoginCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/password/login`, {
-    method: 'POST',
-    headers: expect.objectContaining(headers.jsonAndDefaultLang),
-    body: JSON.stringify({
-      client_id: clientId,
-      ...scope,
-      ...credentials
-    })
-  })
-}
-
 describe('useWebMessage: true', () => {
   test('confidential client', async () => {
+    console.log("inside test loginWithPassword")
     const { client } = createDefaultTestClient({ isImplicitFlowForbidden: true, isPublic: false })
     const email = 'john.doe@example.com'
     const password = 'izDf8£Zd'
