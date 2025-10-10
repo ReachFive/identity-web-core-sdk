@@ -6,13 +6,32 @@ import { defineWindowProperty, headers, mockWindowCrypto } from './helpers/testH
 
 beforeAll(() => {
   fetchMock.enableMocks()
-  defineWindowProperty('location')
+  defineWindowProperty('location', { origin: 'https://local.reach5.net', href: 'https://local.reach5.net'})
   defineWindowProperty('crypto', mockWindowCrypto)
 })
 
 beforeEach(() => {
+  document.body.innerHTML = ''
   jest.resetAllMocks()
   fetchMock.resetMocks()
+
+  jest.spyOn(global, 'fetch').mockImplementation(jest.fn((input) => {
+    var response: Response = new Response()
+    if(input.toString().endsWith("/password/login")){
+      response = new Response(JSON.stringify(tkn), {
+        status: 200
+      })
+    }
+    else if(input.toString().endsWith("/oauth/token")) {
+      response = new Response(JSON.stringify({accessToken: 'eydfsjklfjdslk'}))
+    }
+    return Promise.resolve(response)
+  }) as jest.Mock)
+
+  jest.spyOn(document.body, 'appendChild').mockImplementation(jest.fn(() => {
+    window.dispatchEvent(new MessageEvent('message', { source: window, origin: window.location.origin, data: { type: 'authorization_response', response: {code: 'mycode12'}}}))
+  }) as jest.Mock)
+
 })
 
 export async function loginWithPasswordTest(testkit: TestKit, params: LoginWithPasswordParams, credentials: object) {
@@ -35,6 +54,50 @@ export async function loginWithPasswordTest(testkit: TestKit, params: LoginWithP
     })
   })
 }
+
+describe('useWebMessage: true', () => {
+  test('confidential client', async () => {
+    const { client } = createDefaultTestClient({ isImplicitFlowForbidden: true, isPublic: false })
+    const email = 'john.doe@example.com'
+    const password = 'izDf8£Zd'
+
+    const authenticatedHandler = jest.fn()
+    client.on('authenticated', authenticatedHandler)
+
+    await client.loginWithPassword({
+      email,
+      password,
+      auth: {
+        redirectUri: `https://test.fr/callback`,
+        useWebMessage: true
+      }
+    })
+    expect(authenticatedHandler).toHaveBeenCalledWith({
+      code: 'mycode12'
+    })
+  })
+
+  test('public client', async () => {
+    const { client } = createDefaultTestClient({ isImplicitFlowForbidden: true, isPublic: true })
+    const email = 'john.doe@example.com'
+    const password = 'izDf8£Zd'
+
+    const authenticatedHandler = jest.fn()
+    client.on('authenticated', authenticatedHandler)
+
+    await client.loginWithPassword({
+      email,
+      password,
+      auth: {
+        redirectUri: `https://test.fr/callback`,
+        useWebMessage: true
+      }
+    })
+    expect(authenticatedHandler).toHaveBeenCalledWith({
+      accessToken: 'eydfsjklfjdslk'
+    })
+  })
+})
 
 describe('error cases', () => {
   test('[login_failed] invalid credentials', async () => {

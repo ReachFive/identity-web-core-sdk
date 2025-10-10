@@ -152,7 +152,7 @@ export default class OAuthClient {
       ...opts,
       responseType: 'code',
       useWebMessage: true,
-    })
+    }, {}, false)
 
     if (this.isAuthorizationLocked() || this.isSessionLocked())
       return Promise.reject(new Error('An ongoing authorization flow has not yet completed.'))
@@ -354,7 +354,7 @@ export default class OAuthClient {
   private loginWithIdToken(provider: string, idToken: string, nonce: string, opts: AuthOptions = {}): Promise<void> {
     const authParams = this.authParams({
       ...opts,
-    })
+    }, {}, false)
 
     if(opts.useWebMessage) {
       const queryString = toQueryString({
@@ -572,7 +572,11 @@ export default class OAuthClient {
               code: result.code,
               redirectUri: redirectUri || window.location.origin,
             }))
-          } else {
+          } else if(result.code && !this.config.isPublic) {
+            this.eventManager.fireEvent('authenticated', data.response)
+            resolve(data.response)
+          }
+          else {
             this.eventManager.fireEvent('authenticated', data.response)
             resolve(enrichAuthResult(data.response))
           }
@@ -907,10 +911,10 @@ export default class OAuthClient {
     return correctedAuthParams
   }
 
-  authParams(opts: AuthOptions, { acceptPopupMode = false } = {}) {
-    const isConfidentialCodeWebMsg = !this.config.isPublic && !!opts.useWebMessage && (opts.responseType === 'code' || opts.redirectUri)
+  authParams(opts: AuthOptions, { acceptPopupMode = false } = {}, allowConfidentialCodeWebMsgFlowOverride: boolean = true ) {
+    const isConfidentialCodeWebMsg = !this.config.isPublic && !!opts.useWebMessage && (opts.responseType === 'code' || opts.redirectUri) && !this.config.isImplicitFlowForbidden
 
-    const overrideResponseType: Partial<AuthOptions> = isConfidentialCodeWebMsg
+    const overrideResponseType: Partial<AuthOptions> = isConfidentialCodeWebMsg && allowConfidentialCodeWebMsgFlowOverride
         ? { responseType: 'token', redirectUri: undefined }
         : {}
 
