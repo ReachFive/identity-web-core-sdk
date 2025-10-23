@@ -1,9 +1,10 @@
 import fetchMock from 'jest-fetch-mock'
 
-import { defineWindowProperty, mockWindowCrypto } from './helpers/testHelpers'
 import { toQueryString } from '../../utils/queryString'
 import { createDefaultTestClient } from './helpers/clientFactory'
+import { mockPkceValues } from './helpers/oauthHelpers'
 import { popNextRandomString } from './helpers/randomStringMock'
+import { defineWindowProperty, mockWindowCrypto } from './helpers/testHelpers'
 import winchanMocker from './helpers/winchanMocker'
 
 beforeAll(() => {
@@ -30,6 +31,29 @@ test('with default auth', async () => {
       toQueryString({
         client_id: clientId,
         response_type: 'token',
+        scope: 'openid profile email phone',
+        display: 'page',
+        provider: 'google'
+      })
+  )
+})
+
+test('with PKCE provided', async () => {
+  const { client, clientId, domain } = createDefaultTestClient()
+  const { code_challenge, code_challenge_method } = mockPkceValues
+
+  await client.loginWithSocialProvider('google', {
+    codeChallenge: code_challenge,
+    codeChallengeMethod: code_challenge_method
+  })
+
+  expect(window.location.assign).toHaveBeenCalledWith(
+    `https://${domain}/oauth/authorize?` +
+      toQueryString({
+        client_id: clientId,
+        response_type: 'token',
+        code_challenge,
+        code_challenge_method,
         scope: 'openid profile email phone',
         display: 'page',
         provider: 'google'
@@ -110,9 +134,7 @@ test('with popup mode with expected failure', async () => {
   client.on('authentication_failed', authenticationFailedHandler)
 
   // When
-  await expect(
-    client.loginWithSocialProvider('facebook', { popupMode: true })
-  ).rejects.toMatchObject({
+  await expect(client.loginWithSocialProvider('facebook', { popupMode: true })).rejects.toMatchObject({
     error: 'access_denied',
     errorDescription: 'The user cancelled the login process',
     errorUsrMsg: 'Login cancelled'
@@ -141,9 +163,9 @@ test('with popup mode with unexpected failure', async () => {
   client.on('authentication_failed', authenticationFailedHandler)
 
   // When
-  await expect(
-    client.loginWithSocialProvider('facebook', { popupMode: true })
-  ).rejects.toThrow('[fake error: ignore me]')
+  await expect(client.loginWithSocialProvider('facebook', { popupMode: true })).rejects.toThrow(
+    '[fake error: ignore me]'
+  )
 
   // Then
   expect(authenticatedHandler).not.toHaveBeenCalled()
