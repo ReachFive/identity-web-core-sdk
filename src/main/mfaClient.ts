@@ -1,14 +1,15 @@
-import { MFA, TrustedDevice } from './models'
+import { pick } from '../utils/utils'
 import { AuthOptions, computeAuthOptions } from './authOptions'
-import { HttpClient } from './httpClient'
 import { AuthResult } from './authResult'
+import { HttpClient } from './httpClient'
+import { ApiClientConfig } from './main'
+import { MFA, TrustedDevice } from './models'
 import OAuthClient from './oAuthClient'
+import { WithPkceParams } from './pkceService'
 import CredentialsResponse = MFA.CredentialsResponse
 import EmailCredential = MFA.EmailCredential
 import StepUpResponse = MFA.StepUpResponse
 import PhoneCredential = MFA.PhoneCredential
-import { ApiClientConfig } from './main'
-import { pick } from "../utils/utils"
 
 export type RemoveMfaEmailParams = {
   accessToken: string
@@ -41,7 +42,7 @@ export type StartMfaPhoneNumberRegistrationResponse =
   | { status: 'enabled'; credential: PhoneCredential }
 
 export type StepUpParams = {
-  options?: AuthOptions
+  options?: WithPkceParams<AuthOptions>
   accessToken?: string
   tkn?: string
   action?: string
@@ -105,13 +106,21 @@ export default class MfaClient {
     this.trustedDeviceUrl = '/mfa/trusteddevices'
   }
 
-  getMfaStepUpToken(params: StepUpParams): Promise<StepUpResponse> {
+  getMfaStepUpToken(params: WithPkceParams<StepUpParams>): Promise<StepUpResponse> {
     if (this.config.orchestrationToken) {
       const authParams = computeAuthOptions(params.options)
 
       const correctedAuthParams = {
         clientId: this.config.clientId,
-        ...pick(authParams, 'responseType', 'redirectUri', 'persistent', 'display'),
+        ...pick(
+          authParams,
+          'responseType',
+          'redirectUri',
+          'persistent',
+          'display',
+          'codeChallenge',
+          'codeChallengeMethod'
+        )
       }
       return this.http.post<StepUpResponse>(this.stepUpUrl, {
         body: {
