@@ -8,6 +8,7 @@ import OauthClient from '../oAuthClient'
 import createUrlParser from '../urlParser'
 import { mockPkceValues } from './helpers/oauthHelpers'
 import { defineWindowProperty, headers, mockWindowCrypto } from './helpers/testHelpers'
+import { RemoteSettings } from '../models'
 
 const clientId = 'kqIJE'
 const baseUrl = 'https://local.reach5.net'
@@ -18,7 +19,7 @@ const http = createHttpClient({
   acceptCookies: false
 })
 
-function apiClientAndEventManager() {
+export function apiClientAndEventManager(remoteSettings: Partial<RemoteSettings> = {}) {
   const eventManager = createEventManager()
   const client = new OauthClient({
     config: {
@@ -40,7 +41,9 @@ function apiClientAndEventManager() {
       pkceEnforced: false,
       resourceBaseUrl: '',
       isPublic: true,
-      webAuthn: false
+      webAuthn: false,
+      isImplicitFlowForbidden: false,
+      ...remoteSettings
     },
     http,
     eventManager

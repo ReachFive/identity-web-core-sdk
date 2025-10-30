@@ -2,7 +2,7 @@ import fetchMock from 'jest-fetch-mock'
 
 import {
   defineWindowProperty,
-  expectIframeWithParams,
+  expectIframeWithParams, headers,
   mockWindowCrypto
 } from './helpers/testHelpers'
 import { mockNextRandom, popNextRandomString } from './helpers/randomStringMock'
@@ -14,13 +14,12 @@ import {
   getExpectedQueryString,
   pageDisplay,
   pblic,
-  phone,
+  phone, scope,
   tkn,
   token, webMessage
 } from './helpers/oauthHelpers'
-import { createDefaultTestClient } from './helpers/clientFactory'
+import { createDefaultTestClient, TestKit } from './helpers/clientFactory'
 import { LoginWithPasswordParams } from '../oAuthClient'
-import { loginWithPasswordTest } from './loginWithPassword.spec'
 import { signupTest } from './signup.spec'
 
 beforeAll(() => {
@@ -35,6 +34,27 @@ beforeEach(() => {
   fetchMock.resetMocks()
   popNextRandomString()
 })
+
+async function loginWithPasswordTest(testkit: TestKit, params: LoginWithPasswordParams, credentials: object) {
+  const { domain, clientId, client } = testkit
+
+  // Given
+  const passwordLoginCall = fetchMock.mockResponseOnce(JSON.stringify(tkn))
+
+  // When
+  await client.loginWithPassword(params)
+
+  // Then
+  expect(passwordLoginCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/password/login`, {
+    method: 'POST',
+    headers: expect.objectContaining(headers.jsonAndDefaultLang),
+    body: JSON.stringify({
+      client_id: clientId,
+      ...scope,
+      ...credentials
+    })
+  })
+}
 
 describe('with redirection', () => {
 
@@ -206,12 +226,13 @@ describe('with web message', () => {
 
   describe('special: code flows auto-converted to implicit for confidential clients', () => {
     describe.each`
-    clientType            | responseType
-    ${confidential}       | ${code}
-    `('$clientType | $responseType', ({clientType, responseType}) => {
+    clientType            | responseType  | isImplicitFlowForbidden
+    ${confidential}       | ${code}       | ${true}
+    ${confidential}       | ${code}       | ${false}
+    `('$clientType | $responseType | isImplicitFlowForbidden', ({clientType, responseType, isImplicitFlowForbidden}) => {
 
       test.each([email, phone])('loginWithPassword: %j', async (credentials) => {
-        const testkit = createDefaultTestClient({ ...clientType })
+        const testkit = createDefaultTestClient({ ...clientType, isImplicitFlowForbidden: isImplicitFlowForbidden})
         const { domain } = testkit
         const iframeId = randomBase64String()
 
@@ -226,9 +247,10 @@ describe('with web message', () => {
 
         loginWithPasswordTest(testkit, authParams, credentials)
 
+        const expectedResponseType = isImplicitFlowForbidden ? code : token
         const expectedSrc = `https://${domain}/oauth/authorize?` + getExpectedQueryString({
           ...clientType,
-          responseType: 'token',
+          ...expectedResponseType,
           ...credentials,
           ...webMessage,
           ...tkn,
@@ -265,7 +287,7 @@ describe('with web message', () => {
       })
 
       test('checkSession', async () => {
-        const { client, domain } = createDefaultTestClient({ sso: true, ...clientType })
+        const { client, domain } = createDefaultTestClient({ sso: true, ...clientType, isImplicitFlowForbidden: true })
         const nonce = 'abc123def'
         mockNextRandom(nonce)
 
