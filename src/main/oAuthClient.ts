@@ -152,7 +152,7 @@ export default class OAuthClient {
       ...opts,
       responseType: 'code',
       useWebMessage: true,
-    })
+    }, {}, true)
 
     if (this.isAuthorizationLocked() || this.isSessionLocked())
       return Promise.reject(new Error('An ongoing authorization flow has not yet completed.'))
@@ -354,7 +354,7 @@ export default class OAuthClient {
   private loginWithIdToken(provider: string, idToken: string, nonce: string, opts: AuthOptions = {}): Promise<void> {
     const authParams = this.authParams({
       ...opts,
-    })
+    }, {}, true)
 
     if(opts.useWebMessage) {
       const queryString = toQueryString({
@@ -567,12 +567,16 @@ export default class OAuthClient {
         const result = data.response
 
         if (AuthResult.isAuthResult(result)) {
-          if (result.code) {
+          if (result.code && this.config.isPublic) {
             resolve(this.exchangeAuthorizationCodeWithPkce({
               code: result.code,
               redirectUri: redirectUri || window.location.origin,
             }))
-          } else {
+          } else if(result.code && !this.config.isPublic) {
+            this.eventManager.fireEvent('authenticated', data.response)
+            resolve(data.response)
+          }
+          else {
             this.eventManager.fireEvent('authenticated', data.response)
             resolve(enrichAuthResult(data.response))
           }
@@ -907,8 +911,8 @@ export default class OAuthClient {
     return correctedAuthParams
   }
 
-  authParams(opts: WithPkceParams<AuthOptions>, { acceptPopupMode = false } = {}) {
-    const isConfidentialCodeWebMsg = !this.config.isPublic && !!opts.useWebMessage && (opts.responseType === 'code' || opts.redirectUri)
+  authParams(opts: WithPkceParams<AuthOptions>, { acceptPopupMode = false } = {}, allowConfidentialCodeWebMsgFlowOverride: boolean = false ) {
+    const isConfidentialCodeWebMsg = !this.config.isPublic && !!opts.useWebMessage && (opts.responseType === 'code' || opts.redirectUri) && (!this.config.isImplicitFlowForbidden || allowConfidentialCodeWebMsgFlowOverride)
 
     const overrideResponseType: Partial<WithPkceParams<AuthOptions>> = isConfidentialCodeWebMsg
         ? { responseType: 'token', redirectUri: undefined }
