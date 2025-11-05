@@ -112,15 +112,7 @@ export default class MfaClient {
 
       const correctedAuthParams = {
         clientId: this.config.clientId,
-        ...pick(
-          authParams,
-          'responseType',
-          'redirectUri',
-          'persistent',
-          'display',
-          'codeChallenge',
-          'codeChallengeMethod'
-        )
+        ...pick(authParams, 'responseType', 'redirectUri', 'persistent', 'display')
       }
       return this.http.post<StepUpResponse>(this.stepUpUrl, {
         body: {
