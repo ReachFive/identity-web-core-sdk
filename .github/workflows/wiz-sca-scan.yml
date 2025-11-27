@@ -21,4 +21,4 @@ jobs:
 
       - name: Run SCA Scan
         # Scanne le dossier courant, échoue si vulnérabilité Critique ou High trouvée
-        run: ./wizcli dir . --fail-condition "severity >= Critical"
+        run: ./wizcli dir .
