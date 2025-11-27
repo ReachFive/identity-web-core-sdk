@@ -14,11 +14,11 @@ jobs:
       - uses: actions/checkout@v3
       
       - name: Download Wiz CLI
-        run: curl -o wizcli https://downloads.wiz.io/wizcli/latest/wizcli-linux-amd64 && chmod +x wizcli
+        run: curl -o wiz https://downloads.wiz.io/wizcli/latest/wiz-linux-amd64 && chmod +x wiz
 
       - name: Authenticate Wiz
-        run: ./wizcli auth --id "$WIZ_CLIENT_ID" --secret "$WIZ_CLIENT_SECRET"
+        run: ./wiz auth --id "$WIZ_CLIENT_ID" --secret "$WIZ_CLIENT_SECRET"
 
       - name: Run SCA Scan
         # Scanne le dossier courant, échoue si vulnérabilité Critique ou High trouvée
-        run: ./wizcli sca scan --path . --fail-condition "severity >= Critical"
+        run: ./wiz sca scan --path . --fail-condition "severity >= Critical"
