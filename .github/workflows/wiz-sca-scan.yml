@@ -1,0 +1,24 @@
+name: Wiz SCA Scan
+on:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * 1"
+jobs:
+  wiz-scan:
+    runs-on: ubuntu-latest
+    env:
+      WIZ_CLIENT_ID: ${{ secrets.WIZ_CLIENT_ID }}
+      WIZ_CLIENT_SECRET: ${{ secrets.WIZ_CLIENT_SECRET }}
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Download Wiz CLI
+        run: curl -o wiz https://downloads.wiz.io/wizcli/latest/wiz-linux-amd64 && chmod +x wiz
+
+      - name: Authenticate Wiz
+        run: ./wiz auth
+
+      - name: Run SCA Scan
+        # Scanne le dossier courant, échoue si vulnérabilité Critique ou High trouvée
+        run: ./wiz sca scan --path . --fail-condition "severity >= Critical"
