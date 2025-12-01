@@ -396,6 +396,20 @@ export type Consent = {
   status: ConsentStatus
 }
 
+export type SessionDevice = {
+  id: string,
+  ip?: string,
+  operatingSystem?: string,
+  userAgentName?: string,
+  deviceClass?: string,
+  deviceName?: string,
+  firstConnection: string,
+  lastConnection: string
+}
+
+export type SessionDeviceListResponse = {
+  sessionDevices: SessionDevice[]
+}
 /**
  * This type represents the settings of a ReachFive account's stored in the backend.
  */

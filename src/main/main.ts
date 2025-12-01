@@ -6,7 +6,8 @@ import {
   PasswordlessResponse,
   MFA,
   OrchestrationToken,
-  PasswordStrength
+  PasswordStrength,
+  SessionDeviceListResponse
 } from './models'
 import OAuthClient, {
   LoginWithPasswordParams,
@@ -96,6 +97,7 @@ export type Client = {
   getSignupData: (signupToken: string) => Promise<OpenIdUser>
   getUser: (params: GetUserParams) => Promise<Profile>
   listMfaCredentials: (accessToken: string) => Promise<CredentialsResponse>
+  listSessionDevices: (accessToken: string) => Promise<SessionDeviceListResponse>
   listTrustedDevices: (accessToken: string) => Promise<ListTrustedDevicesResponse>
   listWebAuthnDevices: (accessToken: string) => Promise<DeviceCredential[]>
   loginFromSession: (options?: AuthOptions) => Promise<void>
@@ -262,6 +264,10 @@ export function createClient(creationConfig: Config): Client {
 
   function listMfaCredentials(accessToken: string) {
     return apiClients.then((clients) => clients.mfa.listMfaCredentials(accessToken))
+  }
+
+  function listSessionDevices(accessToken: string) {
+    return apiClients.then((clients) => clients.profile.listSessionDevices(accessToken))
   }
 
   function listWebAuthnDevices(accessToken: string) {
@@ -450,6 +456,7 @@ export function createClient(creationConfig: Config): Client {
     getSignupData,
     getUser,
     listMfaCredentials,
+    listSessionDevices,
     listTrustedDevices,
     listWebAuthnDevices,
     loginFromSession,
