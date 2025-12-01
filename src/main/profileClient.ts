@@ -1,7 +1,7 @@
 import type { CaptchaParams } from './captcha'
 import type { HttpClient } from './httpClient'
 import type { IdentityEventManager } from './identityEventManager'
-import type { ApiClientConfig } from './main'
+import { ApiClientConfig, SessionDeviceListResponse } from './main'
 import type { OpenIdUser, Profile } from './models'
 
 export type UpdateEmailParams = {
@@ -112,6 +112,7 @@ export default class ProfileClient {
 
   private sendEmailVerificationUrl: string
   private sendPhoneNumberVerificationUrl: string
+  private sessionDevicesUrl: string
   private signupDataUrl: string
   private unlinkUrl: string
   private updateEmailUrl: string
@@ -129,6 +130,7 @@ export default class ProfileClient {
 
     this.sendEmailVerificationUrl = '/send-email-verification'
     this.sendPhoneNumberVerificationUrl = '/send-phone-number-verification'
+    this.sessionDevicesUrl = '/session-devices'
     this.signupDataUrl = '/signup/data'
     this.unlinkUrl = '/unlink'
     this.updateEmailUrl = '/update-email'
@@ -138,6 +140,10 @@ export default class ProfileClient {
     this.userInfoUrl = '/userinfo'
     this.verifyPhoneNumberUrl = '/verify-phone-number'
     this.verifyEmailUrl = '/verify-email'
+  }
+
+  listSessionDevices(accessToken: string): Promise<SessionDeviceListResponse> {
+    return this.http.get<SessionDeviceListResponse>(this.sessionDevicesUrl, { accessToken })
   }
 
   getSignupData(signupToken: string): Promise<OpenIdUser> {
