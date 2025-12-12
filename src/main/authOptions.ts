@@ -1,7 +1,8 @@
-import { Scope } from './models'
-import { AuthParameters } from './authParameters'
-import { resolveScope } from './scopeHelper'
 import { pick } from '../utils/utils'
+import { AuthParameters } from './authParameters'
+import { Scope } from './models'
+import { WithPkceParams } from './pkceService'
+import { resolveScope } from './scopeHelper'
 
 export type ResponseType = 'code' | 'token'
 export type Prompt = 'none' | 'login' | 'consent' | 'select_account'
@@ -38,20 +39,21 @@ export type AuthOptions = {
  *    Default scopes
  */
 export function computeAuthOptions(
-  opts: AuthOptions = {},
+  opts: WithPkceParams<AuthOptions> = {},
   { acceptPopupMode = false }: { acceptPopupMode?: boolean } = {},
   defaultScopes?: string
-): AuthParameters {
+): WithPkceParams<AuthParameters> {
   const isPopup = opts.popupMode && acceptPopupMode
   const responseType = opts.redirectUri ? 'code' : 'token'
   const responseMode = opts.useWebMessage && !isPopup ? 'web_message' : undefined
-  const display = isPopup ? 'popup' : (responseMode !== 'web_message') ? 'page' : undefined
+  const display = isPopup ? 'popup' : responseMode !== 'web_message' ? 'page' : undefined
   const prompt = responseMode === 'web_message' ? 'none' : opts.prompt
   const scope = resolveScope(opts, defaultScopes)
 
   return {
     responseType,
-    ...pick(opts,
+    ...pick(
+      opts,
       'responseType',
       'redirectUri',
       'origin',
@@ -61,7 +63,9 @@ export function computeAuthOptions(
       'idTokenHint',
       'loginHint',
       'accessToken',
-      'persistent'
+      'persistent',
+      'codeChallenge',
+      'codeChallengeMethod'
     ),
     scope,
     display,

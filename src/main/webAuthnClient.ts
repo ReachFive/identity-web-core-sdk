@@ -1,7 +1,11 @@
 import { AuthOptions } from './authOptions'
 import { AuthResult } from './authResult'
-import { IdentityEventManager } from './identityEventManager'
 import { HttpClient } from './httpClient'
+import { IdentityEventManager } from './identityEventManager'
+import { ApiClientConfig } from './main'
+import { AuthenticationToken } from './models'
+import OAuthClient from './oAuthClient'
+import { resolveScope } from './scopeHelper'
 import {
   CredentialRequestOptionsSerialized,
   DeviceCredential,
@@ -16,12 +20,8 @@ import {
   publicKeyCredentialType,
   RegistrationOptions,
   serializeAuthenticationPublicKeyCredential,
-  serializeRegistrationPublicKeyCredential,
+  serializeRegistrationPublicKeyCredential
 } from './webAuthnService'
-import { ApiClientConfig } from './main'
-import OAuthClient from './oAuthClient'
-import { resolveScope } from './scopeHelper'
-import { AuthenticationToken } from './models'
 
 type EmailResetPasskeysParams = {
   email: string
@@ -270,7 +270,7 @@ export default class WebAuthnClient {
               }
             })
             .then((tkn) => {
-              if(tkn.tkn == undefined) return Promise.resolve({})
+              if (tkn.tkn == undefined) return Promise.resolve({})
               else return this.oAuthClient.loginCallback(tkn, auth)
             })
         })

@@ -1,33 +1,9 @@
-import {
-  Profile,
-  RemoteSettings,
-  SessionInfo,
-  OpenIdUser,
-  PasswordlessResponse,
-  MFA,
-  OrchestrationToken,
-  PasswordStrength
-} from './models'
-import OAuthClient, {
-  LoginWithPasswordParams,
-  LoginWithCredentialsParams,
-  VerifyPasswordlessParams,
-  SignupParams,
-  TokenRequestParameters,
-  RefreshTokenParams,
-  PasswordlessParams,
-  LogoutParams,
-  LoginWithCustomTokenParams,
-  RevocationParams
-} from './oAuthClient'
+import { toQueryString } from '../utils/queryString'
 import { AuthOptions } from './authOptions'
 import { AuthResult } from './authResult'
-import { DeviceCredential, LoginWithWebAuthnParams, SignupWithWebAuthnParams } from './webAuthnService'
-import createEventManager, { Events } from './identityEventManager'
-import createUrlParser from './urlParser'
-import { toQueryString } from '../utils/queryString'
-import { createHttpClient, rawRequest } from './httpClient'
 import { initCordovaCallbackIfNecessary } from './cordovaHelper'
+import { createHttpClient, rawRequest } from './httpClient'
+import createEventManager, { Events } from './identityEventManager'
 import MfaClient, {
   DeleteTrustedDeviceParams,
   ListTrustedDevicesResponse,
@@ -42,6 +18,29 @@ import MfaClient, {
   VerifyMfaPasswordlessParams,
   VerifyMfaPhoneNumberRegistrationParams
 } from './mfaClient'
+import {
+  MFA,
+  OpenIdUser,
+  OrchestrationToken,
+  PasswordlessResponse,
+  PasswordStrength,
+  Profile,
+  RemoteSettings,
+  SessionInfo
+} from './models'
+import OAuthClient, {
+  LoginWithCredentialsParams,
+  LoginWithCustomTokenParams,
+  LoginWithPasswordParams,
+  LogoutParams,
+  PasswordlessParams,
+  RefreshTokenParams,
+  RevocationParams,
+  SignupParams,
+  TokenRequestParameters,
+  VerifyPasswordlessParams
+} from './oAuthClient'
+import { WithPkceParams } from './pkceService'
 import ProfileClient, {
   EmailVerificationParams,
   GetUserParams,
@@ -56,14 +55,16 @@ import ProfileClient, {
   VerifyEmailParams,
   VerifyPhoneNumberParams
 } from './profileClient'
+import createUrlParser from './urlParser'
 import WebAuthnClient, { ResetPasskeysParams } from './webAuthnClient'
+import { DeviceCredential, LoginWithWebAuthnParams, SignupWithWebAuthnParams } from './webAuthnService'
 import CredentialsResponse = MFA.CredentialsResponse
 import StepUpResponse = MFA.StepUpResponse
 
-export * from './oAuthClient'
-export { AuthResult } from './authResult'
 export { AuthOptions } from './authOptions'
+export { AuthResult } from './authResult'
 export * from './models'
+export * from './oAuthClient'
 export { DeviceCredential, LoginWithWebAuthnParams, SignupWithWebAuthnParams } from './webAuthnService'
 
 export interface Config {
@@ -87,10 +88,10 @@ export type ApiClientConfig = RemoteSettings & {
 
 export type Client = {
   addNewWebAuthnDevice: (accessToken: string, friendlyName?: string) => Promise<void>
-  checkSession: (options?: AuthOptions) => Promise<AuthResult>
+  checkSession: (options?: WithPkceParams<AuthOptions>) => Promise<AuthResult>
   checkUrlFragment: (url?: string) => boolean
   exchangeAuthorizationCodeWithPkce: (params: TokenRequestParameters) => Promise<AuthResult>
-  getMfaStepUpToken: (params: StepUpParams) => Promise<StepUpResponse>
+  getMfaStepUpToken: (params: WithPkceParams<StepUpParams>) => Promise<StepUpResponse>
   getPasswordStrength: (password: string) => Promise<PasswordStrength>
   getSessionInfo: () => Promise<SessionInfo>
   getSignupData: (signupToken: string) => Promise<OpenIdUser>
@@ -98,12 +99,12 @@ export type Client = {
   listMfaCredentials: (accessToken: string) => Promise<CredentialsResponse>
   listTrustedDevices: (accessToken: string) => Promise<ListTrustedDevicesResponse>
   listWebAuthnDevices: (accessToken: string) => Promise<DeviceCredential[]>
-  loginFromSession: (options?: AuthOptions) => Promise<void>
+  loginFromSession: (options?: WithPkceParams<AuthOptions>) => Promise<void>
   loginWithCredentials: (params: LoginWithCredentialsParams) => Promise<AuthResult>
   loginWithCustomToken: (params: LoginWithCustomTokenParams) => Promise<void>
   loginWithPassword: (params: LoginWithPasswordParams) => Promise<AuthResult>
   instantiateOneTap: (opts?: AuthOptions) => void
-  loginWithSocialProvider: (provider: string, options?: AuthOptions) => Promise<void | InAppBrowser>
+  loginWithSocialProvider: (provider: string, options?: WithPkceParams<AuthOptions>) => Promise<void | InAppBrowser>
   loginWithWebAuthn: (params: LoginWithWebAuthnParams) => Promise<AuthResult>
   logout: (params?: LogoutParams, revocationParams?: RevocationParams) => Promise<void>
   off: <K extends keyof Events>(eventName: K, listener: (payload: Events[K]) => void) => void
@@ -127,7 +128,7 @@ export type Client = {
   ) => Promise<StartMfaPhoneNumberRegistrationResponse>
   startPasswordless: (
     params: PasswordlessParams,
-    options?: Omit<AuthOptions, 'useWebMessage'>
+    options?: Omit<WithPkceParams<AuthOptions>, 'useWebMessage'>
   ) => Promise<PasswordlessResponse>
   unlink: (params: UnlinkParams) => Promise<void>
   updateEmail: (params: UpdateEmailParams) => Promise<void>
@@ -292,7 +293,7 @@ export function createClient(creationConfig: Config): Client {
     return apiClients.then((clients) => clients.mfa.listTrustedDevices(accessToken))
   }
 
-  function loginWithSocialProvider(provider: string, options: AuthOptions = {}) {
+  function loginWithSocialProvider(provider: string, options: WithPkceParams<AuthOptions> = {}) {
     return apiClients.then((clients) => clients.oAuth.loginWithSocialProvider(provider, options))
   }
 
@@ -391,7 +392,7 @@ export function createClient(creationConfig: Config): Client {
     return apiClients.then((clients) => clients.mfa.startMfaPhoneNumberRegistration(params))
   }
 
-  function startPasswordless(params: PasswordlessParams, options: AuthOptions = {}) {
+  function startPasswordless(params: PasswordlessParams, options: WithPkceParams<AuthOptions> = {}) {
     return apiClients.then((clients) => clients.oAuth.startPasswordless(params, options))
   }
 
