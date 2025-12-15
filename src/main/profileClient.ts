@@ -58,12 +58,6 @@ type EmailVerificationCodeUpdatePasswordParams = {
   verificationCode: string
   password: string
 }
-
-export type RemoveSessionDeviceParams = {
-  accessToken: string
-  sessionDeviceId: string
-}
-
 type SmsVerificationCodeUpdatePasswordParams = {
   accessToken?: string
   phoneNumber: string
@@ -150,11 +144,6 @@ export default class ProfileClient {
 
   listSessionDevices(accessToken: string): Promise<SessionDeviceListResponse> {
     return this.http.get<SessionDeviceListResponse>(this.sessionDevicesUrl, { accessToken })
-  }
-
-  removeSessionDevice(params: RemoveSessionDeviceParams): Promise<void> {
-    const { accessToken, sessionDeviceId } = params
-    return this.http.remove<void>(`${this.sessionDevicesUrl}/${sessionDeviceId}`, {accessToken})
   }
 
   getSignupData(signupToken: string): Promise<OpenIdUser> {

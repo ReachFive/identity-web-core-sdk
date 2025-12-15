@@ -64,29 +64,5 @@ test('list session devices', async () => {
       }
     ]
   })
+
 })
-
-test('remove session device', async () => {
-  const { client, domain } = createDefaultTestClient()
-  const accessToken = 'accesstoken'
-  const sessionDeviceId = 'UUID'
-
-  const removeSessionDeviceCall = fetchMock.mockResponseOnce(
-    JSON.stringify('')
-  )
-
-  const result = await client.removeSessionDevice({accessToken, sessionDeviceId})
-
-  expect(removeSessionDeviceCall).toHaveBeenCalledWith(
-    `https://${domain}/identity/v1/session-devices/${sessionDeviceId}`,
-    {
-      method: 'DELETE',
-      headers: expect.objectContaining({
-        ...headers.accessToken(accessToken)
-      })
-    }
-  )
-
-  expect(result).toEqual('')
-})
-
