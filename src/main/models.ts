@@ -396,6 +396,11 @@ export type Consent = {
   status: ConsentStatus
 }
 
+export type LoginTypeAllowed = {
+  email: boolean
+  phoneNumber: boolean
+  customIdentifier: boolean
+}
 /**
  * This type represents the settings of a ReachFive account's stored in the backend.
  */
@@ -418,6 +423,7 @@ export type RemoteSettings = {
   mfaEmailEnabled: boolean,
   rbaEnabled: boolean,
   isImplicitFlowForbidden: boolean
+  loginTypeAllowed: LoginTypeAllowed
 }
 
 export type ErrorResponse = {

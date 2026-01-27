@@ -35,6 +35,11 @@ export function createDefaultTestClient(remoteSettings: Partial<RemoteSettings> 
     resourceBaseUrl: `https://${domain}/hassets/sdk`,
     mfaEmailEnabled: false,
     mfaSmsEnabled: false,
+    loginTypeAllowed: {
+      email: true,
+      phoneNumber: true,
+      customIdentifier: true
+    },
     ...remoteSettings,
   }
 
