@@ -7,6 +7,16 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.40.0] - 2026-02-12
+
+### Add
+- LoginTypeAllowed in RemoteSettings
+- Support PKCE Code Challenge + Code Challenge Method overriding in methods using PKCE
+
+### Changed
+- No PKCE is generated in method getMfaStepUp when flow is orchestrated
+- Avoid to automatically exchange authentication code when useWebMessage is true and the client is private
+
 ## [1.39.0] - 2025-09-30
 
 ### Add
@@ -540,7 +550,9 @@ Automatise the deployment of a new release with `circleci`.
 - Implement `tslint`.
 - Remove `yarn`.
 
-[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.39.0...HEAD
+[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.40.0...HEAD
+
+[1.40.0]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.39.0...v1.40.0
 
 [1.39.0]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.38.0...v1.39.0
 
