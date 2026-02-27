@@ -35,7 +35,6 @@ beforeEach(() => {
 
 describe('useWebMessage: true', () => {
   test('confidential client', async () => {
-    console.log("inside test loginWithPassword")
     const { client } = createDefaultTestClient({ isImplicitFlowForbidden: true, isPublic: false })
     const email = 'john.doe@example.com'
     const password = 'izDf8£Zd'
