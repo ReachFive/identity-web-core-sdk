@@ -8,7 +8,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 ### Changed
 - method verifyMfaPasswordless redirect to GET passwordless/verify in orchestrated flow
-- method verifyMfaPasswordless does not redirect with an error when the verification code is invalid and the maximum trials limit has not been exceeded in orchestrated flow
+- method verifyMfaPasswordless does not redirect with an error when the verification code is invalid
 
 ## [1.40.0] - 2026-02-12
 
