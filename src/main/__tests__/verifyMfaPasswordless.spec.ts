@@ -80,8 +80,9 @@ describe('with orchestrated flow', () => {
 
 describe('not orchestrated flow', () => {
   test('success', async () => {
-    const { domain, client } = createDefaultTestClient()
 
+    const { domain, client } = createDefaultTestClient()
+    defineWindowProperty('location', {})
     const verifyPasswordlessCall = fetchMock.mockResponse(
       JSON.stringify({
         code: 'my-code'
