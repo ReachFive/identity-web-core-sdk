@@ -10,6 +10,7 @@ import CredentialsResponse = MFA.CredentialsResponse
 import EmailCredential = MFA.EmailCredential
 import StepUpResponse = MFA.StepUpResponse
 import PhoneCredential = MFA.PhoneCredential
+import { toQueryString } from '../utils/queryString'
 
 export type RemoveMfaEmailParams = {
   accessToken: string
@@ -85,6 +86,7 @@ export default class MfaClient {
   private credentialsUrl: string
   private emailCredentialUrl: string
   private emailCredentialVerifyUrl: string
+  private passwordlessVerifyAuthCodeUrl: string
   private passwordlessVerifyUrl: string
   private phoneNumberCredentialUrl: string
   private phoneNumberCredentialVerifyUrl: string
@@ -100,6 +102,7 @@ export default class MfaClient {
     this.emailCredentialUrl = `${this.credentialsUrl}/emails`
     this.emailCredentialVerifyUrl = `${this.emailCredentialUrl}/verify`
     this.passwordlessVerifyUrl = '/passwordless/verify'
+    this.passwordlessVerifyAuthCodeUrl = '/verify-auth-code'
     this.phoneNumberCredentialUrl = `${this.credentialsUrl}/phone-numbers`
     this.phoneNumberCredentialVerifyUrl = `${this.phoneNumberCredentialUrl}/verify`
     this.stepUpUrl = '/mfa/stepup'
@@ -199,19 +202,36 @@ export default class MfaClient {
 
   verifyMfaPasswordless(params: VerifyMfaPasswordlessParams): Promise<AuthResult> {
     const { challengeId, verificationCode, trustDevice } = params
-
-    return this.http
-      .post<AuthResult>(this.passwordlessVerifyUrl, {
-        body: {
-          challengeId,
-          verificationCode,
-          trustDevice
-        }
+    if (this.config.orchestrationToken) {
+      const queryString = toQueryString({
+        ...params
       })
-      .finally(() => {
-        this.oAuthClient.releaseSessionLock()
-        this.oAuthClient.releaseAuthorizationLock()
-      })
+      return this.http
+        .post(this.passwordlessVerifyAuthCodeUrl, { body: params })
+        .then(() => {
+          this.oAuthClient.releaseSessionLock()
+          this.oAuthClient.releaseAuthorizationLock()
+          window.location.assign(`${this.config.baseUrl}/identity/v1${this.passwordlessVerifyUrl}?${queryString}`)
+          return Promise.resolve({}) as AuthResult
+        })
+        .finally(() => {
+          this.oAuthClient.releaseSessionLock()
+          this.oAuthClient.releaseAuthorizationLock()
+        })
+    } else {
+      return this.http
+        .post<AuthResult>(this.passwordlessVerifyUrl, {
+          body: {
+            challengeId,
+            verificationCode,
+            trustDevice
+          }
+        })
+        .finally(() => {
+          this.oAuthClient.releaseSessionLock()
+          this.oAuthClient.releaseAuthorizationLock()
+        })
+    }
   }
 
   verifyMfaPhoneNumberRegistration(params: VerifyMfaPhoneNumberRegistrationParams): Promise<void> {
