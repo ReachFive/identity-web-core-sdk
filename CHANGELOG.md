@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0), 
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [1.41.0] - 2026-03-26
+
 ### Changed
 - method verifyMfaPasswordless redirect to GET passwordless/verify in orchestrated flow
 - method verifyMfaPasswordless does not redirect with an error when the verification code is invalid
@@ -553,7 +556,9 @@ Automatise the deployment of a new release with `circleci`.
 - Implement `tslint`.
 - Remove `yarn`.
 
-[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.40.0...HEAD
+[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.41.0...HEAD
+
+[1.41.0]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.40.0...v1.41.0
 
 [1.40.0]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.39.0...v1.40.0
 
