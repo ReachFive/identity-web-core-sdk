@@ -47,3 +47,5 @@ jobs:
         with:
           name: test-results
           path: jest-junit.xml
+        env:
+          JEST_JUNIT_OUTPUT_NAME: jest-junit.xml
