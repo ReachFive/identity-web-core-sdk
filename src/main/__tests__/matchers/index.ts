@@ -10,9 +10,7 @@ const toMatchURL: MatcherFunction<[expected: unknown]> =
       throw new TypeError('These must be of type string or URL!');
     }
 
-		// eslint-disable-next-line compat/compat
 		const actualUrl = new URL(actual)
-		// eslint-disable-next-line compat/compat
 		const expectedUrl = new URL(expected)
 
 		const pass = 
