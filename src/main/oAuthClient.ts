@@ -661,7 +661,7 @@ export default class OAuthClient {
       const width = Math.min(screen.width, opts.width)
       const height = Math.min(screen.height, opts.height)
       return `menubar=0,toolbar=0,resizable=1,scrollbars=1,width=${width},height=${height},top=${top},left=${left}`
-    } catch (e) {
+    } catch (_e) {
       return 'menubar=0,toolbar=0,resizable=1,scrollbars=1,width=960,height=680'
     }
   }

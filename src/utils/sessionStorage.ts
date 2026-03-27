@@ -11,7 +11,7 @@ export function getWithExpiry(key: string) {
       return null
     }
     return item.value
-  } catch (e) {
+  } catch (_e) {
     return null
   }
 }
