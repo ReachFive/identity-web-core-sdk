@@ -16,7 +16,7 @@
     "watch": "rollup -c -w",
     "test": "jest --silent",
     "watch:test": "jest --silent --watch",
-    "lint": "eslint src/",
+    "lint": "eslint src/ --ext .js,.ts",
     "format": "prettier --write \"src/**/{*.ts,*.tsx}\""
   },
   "dependencies": {
