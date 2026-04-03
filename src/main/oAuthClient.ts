@@ -56,11 +56,16 @@ export type RevocationParams = {
 
 export type RefreshTokenParams = { refreshToken: string, scope?: Scope }
 
-export type SingleFactorPasswordlessParams = {
-  authType: 'magic_link' | 'sms'
-  email?: string
-  phoneNumber?: string
-} & CaptchaParams
+export type SingleFactorPasswordlessParams = (
+  | {
+    authType: 'magic_link'
+    email?: string
+  }
+  | {
+    authType: 'sms'
+    phoneNumber?: string
+  }
+) & CaptchaParams
 
 export type StepUpPasswordlessParams = {
   authType: 'email' | 'sms'
@@ -84,12 +89,17 @@ export type TokenRequestParameters = {
   returnProviderToken?: boolean
 }
 
-export type VerifyPasswordlessParams = {
-  authType: 'magic_link' | 'sms'
-  email?: string
-  phoneNumber?: string
-  verificationCode: string
-}
+export type VerifyPasswordlessParams = 
+  | {
+    authType: 'magic_link'
+    email: string
+    verificationCode: string
+  }
+  | {
+    authType: 'sms'
+    phoneNumber: string
+    verificationCode: string
+  }
 
 /**
  * Identity Rest API Client
@@ -796,16 +806,18 @@ export default class OAuthClient {
   // TODO: Make passwordless able to handle web_message
   // Asana https://app.asana.com/0/982150578058310/1200173806808689/f
   private resolveSingleFactorPasswordlessParams(params: SingleFactorPasswordlessParams, auth: Omit<WithPkceParams<AuthOptions>, 'useWebMessage'> = {}): Promise<object> {
-    const { authType, email, phoneNumber, captchaToken, captchaProvider } = params
+    const { authType, captchaToken, captchaProvider } = params
+    const passwordlessParams = {
+      authType,
+        ...(authType === 'magic_link' ? { email: params.email } : { phoneNumber: params.phoneNumber }),
+    }
 
     if (this.config.orchestrationToken) {
       const authParams = this.orchestratedFlowParams(this.config.orchestrationToken, auth)
 
       return Promise.resolve({
         ...authParams,
-        authType,
-        email,
-        phoneNumber,
+        ...passwordlessParams,
         captchaToken,
         captchaProvider
       })
@@ -815,9 +827,7 @@ export default class OAuthClient {
       return this.getPkceParams(authParams).then(maybeChallenge => {
         return {
           ...authParams,
-          authType,
-          email,
-          phoneNumber,
+          ...passwordlessParams,
           captchaToken,
           captchaProvider,
           ...maybeChallenge,
