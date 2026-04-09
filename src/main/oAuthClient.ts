@@ -89,7 +89,7 @@ export type TokenRequestParameters = {
   returnProviderToken?: boolean
 }
 
-export type VerifyPasswordlessParams = 
+export type VerifyPasswordlessParams =
   | {
     authType: 'magic_link'
     email: string
@@ -531,15 +531,13 @@ export default class OAuthClient {
   }
 
   verifyPasswordless(params: VerifyPasswordlessParams, auth: AuthOptions = {}): Promise<AuthResult | void> {
-    return ('challengeId' in params)
-        ? Promise.resolve(this.loginWithVerificationCode(params, auth))
-        : this.http
-            .post(this.passwordlessVerifyAuthCodeUrl, { body: params })
-            .catch(err => {
-              if (err.error) this.eventManager.fireEvent('login_failed', err)
-              return Promise.reject(err)
-            })
-            .then(() => this.loginWithVerificationCode(params, auth))
+    return this.http
+      .post(this.passwordlessVerifyAuthCodeUrl, { body: params })
+      .catch(err => {
+        if (err.error) this.eventManager.fireEvent('login_failed', err)
+        return Promise.reject(err)
+      })
+      .then(() => this.loginWithVerificationCode(params, auth))
   }
 
   private getAuthorizationUrl(queryString: Record<string, string | boolean | undefined>): string {
@@ -675,11 +673,14 @@ export default class OAuthClient {
   }
 
   private loginWithVerificationCode(params: VerifyPasswordlessParams, auth: AuthOptions = {}): Promise<AuthResult | void> {
-    const queryString = toQueryString({
-      ...this.authParams(auth),
-      ...params
-    })
-    if(auth.useWebMessage) {
+    if(this.config.orchestrationToken) {
+      const queryString = toQueryString({
+        ...params
+      })
+      window.location.assign(`${this.passwordlessVerifyUrl}?${queryString}`)
+      return Promise.resolve()
+    }
+    else if(auth.useWebMessage) {
       return this.http
         .post<AuthResult>(this.passwordlessVerifyUrl, { body: params })
         .catch(err => {
@@ -708,6 +709,10 @@ export default class OAuthClient {
           }
         })
     } else {
+      const queryString = toQueryString({
+        ...this.authParams(auth),
+        ...params
+      })
       window.location.assign(`${this.passwordlessVerifyUrl}?${queryString}`)
       return Promise.resolve()
     }
