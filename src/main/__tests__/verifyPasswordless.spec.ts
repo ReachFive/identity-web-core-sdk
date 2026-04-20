@@ -48,6 +48,7 @@ test('with orchestrated flow', async () => {
       auth_type: 'magic_link',
       verification_code: 'my-code',
       email: 'email@test.fr'
+      // AuthParameters are not forwarded in orchestrated flow
     })}`
   )
 })
