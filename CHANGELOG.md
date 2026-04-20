@@ -7,6 +7,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+- method verifyPasswordless redirect to GET passwordless/verify in orchestrated flow
+- method verifyPasswordless does not forward AuthParameters to GET passwordless/verify in orchestrated flow
+
 ## [1.41.0] - 2026-03-26
 
 ### Changed
