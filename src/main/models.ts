@@ -399,6 +399,8 @@ export type Consent = {
 export type SessionDevice = {
   id: string,
   ip?: string,
+  country?: string,
+  city?: string,
   operatingSystem?: string,
   userAgentName?: string,
   deviceClass?: string,

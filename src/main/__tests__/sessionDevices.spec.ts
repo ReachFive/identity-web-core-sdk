@@ -27,6 +27,8 @@ test('list session devices', async () => {
         {
           id: "UUID",
           ip: "192.168.65.1",
+          country: "France",
+          city: "Paris",
           operatingSystem: "Android",
           userAgentName: "Chrome",
           deviceClass: "Phone",
@@ -55,6 +57,8 @@ test('list session devices', async () => {
       {
         id: "UUID",
         ip: "192.168.65.1",
+        country: "France",
+        city: "Paris",
         operatingSystem: "Android",
         userAgentName: "Chrome",
         deviceClass: "Phone",
