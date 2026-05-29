@@ -26,7 +26,7 @@ import {
   SessionInfo,
   SignupProfile,
 } from './models'
-import { computePkceParams, PkceParams } from './pkceService'
+import { computePkceParams, PkceParams, WithPkceParams } from './pkceService'
 import { popupSize } from './providerPopupSize'
 import { resolveScope } from './scopeHelper'
 export type LoginWithCredentialsParams = {
@@ -39,7 +39,7 @@ export type LoginWithCustomTokenParams = {
   auth: AuthOptions
 }
 
-type LoginWithPasswordOptions = { password: string; saveCredentials?: boolean; auth?: AuthOptions, action?: string } & CaptchaParams
+type LoginWithPasswordOptions = { password: string; saveCredentials?: boolean; auth?: WithPkceParams<AuthOptions>, action?: string } & CaptchaParams
 type EmailLoginWithPasswordParams = LoginWithPasswordOptions & { email: string }
 type PhoneNumberLoginWithPasswordParams = LoginWithPasswordOptions & { phoneNumber: string }
 type CustomIdentifierLoginWithPasswordParams = LoginWithPasswordOptions & { customIdentifier: string }
@@ -56,11 +56,16 @@ export type RevocationParams = {
 
 export type RefreshTokenParams = { refreshToken: string, scope?: Scope }
 
-export type SingleFactorPasswordlessParams = {
-  authType: 'magic_link' | 'sms'
-  email?: string
-  phoneNumber?: string
-} & CaptchaParams
+export type SingleFactorPasswordlessParams = (
+  | {
+    authType: 'magic_link'
+    email?: string
+  }
+  | {
+    authType: 'sms'
+    phoneNumber?: string
+  }
+) & CaptchaParams
 
 export type StepUpPasswordlessParams = {
   authType: 'email' | 'sms'
@@ -73,7 +78,7 @@ export type SignupParams = {
   data: SignupProfile
   returnToAfterEmailConfirmation?: string
   saveCredentials?: boolean
-  auth?: AuthOptions
+  auth?: WithPkceParams<AuthOptions>
   redirectUrl?: string
 } & CaptchaParams
 
@@ -84,12 +89,17 @@ export type TokenRequestParameters = {
   returnProviderToken?: boolean
 }
 
-export type VerifyPasswordlessParams = {
-  authType: 'magic_link' | 'sms'
-  email?: string
-  phoneNumber?: string
-  verificationCode: string
-}
+export type VerifyPasswordlessParams =
+  | {
+    authType: 'magic_link'
+    email: string
+    verificationCode: string
+  }
+  | {
+    authType: 'sms'
+    phoneNumber: string
+    verificationCode: string
+  }
 
 /**
  * Identity Rest API Client
@@ -142,7 +152,7 @@ export default class OAuthClient {
     this.mfaClient = mfaClient
   }
 
-  checkSession(opts: AuthOptions = {}): Promise<AuthResult> {
+  checkSession(opts: WithPkceParams<AuthOptions> = {}): Promise<AuthResult> {
     if (!this.config.sso)
       return Promise.reject(
           new Error("Cannot call 'checkSession' if SSO is not enabled.")
@@ -210,7 +220,7 @@ export default class OAuthClient {
     })
   }
 
-  loginFromSession(opts: AuthOptions = {}): Promise<void> {
+  loginFromSession(opts: WithPkceParams<AuthOptions> = {}): Promise<void> {
     if (!this.config.sso)
       return Promise.reject(
           new Error("Cannot call 'loginFromSession' if SSO is not enabled.")
@@ -310,7 +320,7 @@ export default class OAuthClient {
     })
   }
 
-  loginWithSocialProvider(provider: string, opts: AuthOptions = {}): Promise<void | InAppBrowser> {
+  loginWithSocialProvider(provider: string, opts: WithPkceParams<AuthOptions> = {}): Promise<void | InAppBrowser> {
     if (this.config.orchestrationToken) {
       const params = {
         ...(this.orchestratedFlowParams(this.config.orchestrationToken, {
@@ -507,7 +517,7 @@ export default class OAuthClient {
     })
   }
 
-  startPasswordless(params: PasswordlessParams, auth: Omit<AuthOptions, 'useWebMessage'> = {}): Promise<PasswordlessResponse> {
+  startPasswordless(params: PasswordlessParams, auth: Omit<WithPkceParams<AuthOptions>, 'useWebMessage'> = {}): Promise<PasswordlessResponse> {
     const passwordlessPayload =
         ('stepUp' in params)
             ? this.resolveSecondFactorPasswordlessParams(params)
@@ -521,15 +531,13 @@ export default class OAuthClient {
   }
 
   verifyPasswordless(params: VerifyPasswordlessParams, auth: AuthOptions = {}): Promise<AuthResult | void> {
-    return ('challengeId' in params)
-        ? Promise.resolve(this.loginWithVerificationCode(params, auth))
-        : this.http
-            .post(this.passwordlessVerifyAuthCodeUrl, { body: params })
-            .catch(err => {
-              if (err.error) this.eventManager.fireEvent('login_failed', err)
-              return Promise.reject(err)
-            })
-            .then(() => this.loginWithVerificationCode(params, auth))
+    return this.http
+      .post(this.passwordlessVerifyAuthCodeUrl, { body: params })
+      .catch(err => {
+        if (err.error) this.eventManager.fireEvent('login_failed', err)
+        return Promise.reject(err)
+      })
+      .then(() => this.loginWithVerificationCode(params, auth))
   }
 
   private getAuthorizationUrl(queryString: Record<string, string | boolean | undefined>): string {
@@ -651,7 +659,7 @@ export default class OAuthClient {
       const width = Math.min(screen.width, opts.width)
       const height = Math.min(screen.height, opts.height)
       return `menubar=0,toolbar=0,resizable=1,scrollbars=1,width=${width},height=${height},top=${top},left=${left}`
-    } catch (e) {
+    } catch (_e) {
       return 'menubar=0,toolbar=0,resizable=1,scrollbars=1,width=960,height=680'
     }
   }
@@ -665,11 +673,14 @@ export default class OAuthClient {
   }
 
   private loginWithVerificationCode(params: VerifyPasswordlessParams, auth: AuthOptions = {}): Promise<AuthResult | void> {
-    const queryString = toQueryString({
-      ...this.authParams(auth),
-      ...params
-    })
-    if(auth.useWebMessage) {
+    if(this.config.orchestrationToken) {
+      const queryString = toQueryString({
+        ...params
+      })
+      window.location.assign(`${this.passwordlessVerifyUrl}?${queryString}`)
+      return Promise.resolve()
+    }
+    else if(auth.useWebMessage) {
       return this.http
         .post<AuthResult>(this.passwordlessVerifyUrl, { body: params })
         .catch(err => {
@@ -698,6 +709,10 @@ export default class OAuthClient {
           }
         })
     } else {
+      const queryString = toQueryString({
+        ...this.authParams(auth),
+        ...params
+      })
       window.location.assign(`${this.passwordlessVerifyUrl}?${queryString}`)
       return Promise.resolve()
     }
@@ -795,17 +810,19 @@ export default class OAuthClient {
 
   // TODO: Make passwordless able to handle web_message
   // Asana https://app.asana.com/0/982150578058310/1200173806808689/f
-  private resolveSingleFactorPasswordlessParams(params: SingleFactorPasswordlessParams, auth: Omit<AuthOptions, 'useWebMessage'> = {}): Promise<object> {
-    const { authType, email, phoneNumber, captchaToken, captchaProvider } = params
+  private resolveSingleFactorPasswordlessParams(params: SingleFactorPasswordlessParams, auth: Omit<WithPkceParams<AuthOptions>, 'useWebMessage'> = {}): Promise<object> {
+    const { authType, captchaToken, captchaProvider } = params
+    const passwordlessParams = {
+      authType,
+        ...(authType === 'magic_link' ? { email: params.email } : { phoneNumber: params.phoneNumber }),
+    }
 
     if (this.config.orchestrationToken) {
       const authParams = this.orchestratedFlowParams(this.config.orchestrationToken, auth)
 
       return Promise.resolve({
         ...authParams,
-        authType,
-        email,
-        phoneNumber,
+        ...passwordlessParams,
         captchaToken,
         captchaProvider
       })
@@ -815,9 +832,7 @@ export default class OAuthClient {
       return this.getPkceParams(authParams).then(maybeChallenge => {
         return {
           ...authParams,
-          authType,
-          email,
-          phoneNumber,
+          ...passwordlessParams,
           captchaToken,
           captchaProvider,
           ...maybeChallenge,
@@ -863,7 +878,7 @@ export default class OAuthClient {
   }
 
   // TODO: Shared among the clients
-  loginCallback(tkn: AuthenticationToken, auth: AuthOptions = {}): Promise<AuthResult> {
+  loginCallback(tkn: AuthenticationToken, auth: WithPkceParams<AuthOptions> = {}): Promise<AuthResult> {
     if (this.config.orchestrationToken) {
       const authParams = {
         ...this.orchestratedFlowParams(this.config.orchestrationToken, auth),
@@ -895,13 +910,13 @@ export default class OAuthClient {
 
   // In an orchestrated flow, only parameters from the original request are to be considered,
   // as well as parameters that depend on user action
-  private orchestratedFlowParams(orchestrationToken: OrchestrationToken, authOptions: AuthOptions = {}) {
+  private orchestratedFlowParams(orchestrationToken: OrchestrationToken, authOptions: WithPkceParams<AuthOptions> = {}) {
     const authParams = computeAuthOptions(authOptions)
 
     const correctedAuthParams = {
       clientId: this.config.clientId,
       r5_request_token: orchestrationToken,
-      ...pick(authParams, 'responseType', 'redirectUri', 'persistent', 'display'),
+      ...pick(authParams, 'responseType', 'redirectUri', 'persistent', 'display', 'codeChallenge', 'codeChallengeMethod'),
     }
 
     const uselessParams: string[] = difference(Object.keys(authParams), Object.keys(correctedAuthParams))
@@ -911,10 +926,10 @@ export default class OAuthClient {
     return correctedAuthParams
   }
 
-  authParams(opts: AuthOptions, { acceptPopupMode = false } = {}, allowConfidentialCodeWebMsgFlowOverride: boolean = false ) {
+  authParams(opts: WithPkceParams<AuthOptions>, { acceptPopupMode = false } = {}, allowConfidentialCodeWebMsgFlowOverride: boolean = false ) {
     const isConfidentialCodeWebMsg = !this.config.isPublic && !!opts.useWebMessage && (opts.responseType === 'code' || opts.redirectUri) && (!this.config.isImplicitFlowForbidden || allowConfidentialCodeWebMsgFlowOverride)
 
-    const overrideResponseType: Partial<AuthOptions> = isConfidentialCodeWebMsg
+    const overrideResponseType: Partial<WithPkceParams<AuthOptions>> = isConfidentialCodeWebMsg
         ? { responseType: 'token', redirectUri: undefined }
         : {}
 
@@ -931,13 +946,23 @@ export default class OAuthClient {
     }
   }
 
-  getPkceParams(authParams: AuthParameters): Promise<PkceParams | object> {
-    if (this.config.isPublic && authParams.responseType === 'code')
-      return computePkceParams()
-    else if (authParams.responseType === 'token' && this.config.pkceEnforced)
+  getPkceParams(authParams: WithPkceParams<AuthParameters>): Promise<PkceParams | void> {
+    if (authParams.responseType === 'token' && this.config.pkceEnforced) {
       return Promise.reject(new Error('Cannot use implicit flow when PKCE is enforced'))
-    else
-      return Promise.resolve({})
+    }
+
+    if (authParams.codeChallenge && authParams.codeChallengeMethod) {
+      return Promise.resolve({
+        codeChallenge: authParams.codeChallenge,
+        codeChallengeMethod: authParams.codeChallengeMethod
+      })
+    }
+
+    if (this.config.isPublic && authParams.responseType === 'code') {
+      return computePkceParams()
+    }
+
+    return Promise.resolve()
   }
 
   acquireAuthorizationLock(): void {

@@ -1,7 +1,7 @@
 import fetchMock from 'jest-fetch-mock'
-import { defineWindowProperty, headers, mockWindowCrypto } from './helpers/testHelpers'
 import { createDefaultTestClient } from './helpers/clientFactory'
-import { pageDisplay, scope, tkn } from './helpers/oauthHelpers'
+import { mockPkceValues, pageDisplay, scope, tkn } from './helpers/oauthHelpers'
+import { defineWindowProperty, headers, mockWindowCrypto } from './helpers/testHelpers'
 
 beforeAll(() => {
   fetchMock.enableMocks()
@@ -52,7 +52,7 @@ describe('step up', () => {
     // Given
     const getMfaStepUpCall = fetchMock.mockResponseOnce(JSON.stringify({ amr: [], token: 'token' }))
     // When
-    await client.getMfaStepUpToken({ ...tkn, options: { redirectUri: 'http://mysite.com/login/callback'}})
+    await client.getMfaStepUpToken({ ...tkn, options: { redirectUri: 'http://mysite.com/login/callback' } })
     // Then
     expect(getMfaStepUpCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/mfa/stepup`, {
       method: 'POST',
@@ -63,7 +63,41 @@ describe('step up', () => {
         redirect_uri: 'http://mysite.com/login/callback',
         ...scope,
         ...pageDisplay,
-        ...tkn,
+        ...tkn
+      })
+    })
+  })
+
+  test('pkce provided when flow is not orchestrated, a redirect uri is specified and pkce is enforced', async () => {
+    const { client, clientId, domain } = createDefaultTestClient({ pkceEnforced: true })
+    defineWindowProperty('location', { search: '' })
+
+    const { code_challenge, code_challenge_method } = mockPkceValues
+
+    // Given
+    const getMfaStepUpCall = fetchMock.mockResponseOnce(JSON.stringify({ amr: [], token: 'token' }))
+    // When
+    await client.getMfaStepUpToken({
+      ...tkn,
+      options: {
+        redirectUri: 'http://mysite.com/login/callback',
+        codeChallenge: code_challenge,
+        codeChallengeMethod: code_challenge_method
+      }
+    })
+    // Then
+    expect(getMfaStepUpCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/mfa/stepup`, {
+      method: 'POST',
+      headers: expect.objectContaining(headers.jsonAndDefaultLang),
+      body: JSON.stringify({
+        client_id: clientId,
+        response_type: 'code',
+        redirect_uri: 'http://mysite.com/login/callback',
+        code_challenge,
+        code_challenge_method,
+        ...scope,
+        ...pageDisplay,
+        ...tkn
       })
     })
   })
