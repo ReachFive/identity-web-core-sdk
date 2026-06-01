@@ -396,8 +396,11 @@ export type Consent = {
   status: ConsentStatus
 }
 
+export type TokenType = 'ST' | 'RT'
+
 export type SessionDevice = {
   id: string,
+  tokenType: TokenType,
   ip?: string,
   country?: string,
   city?: string,
@@ -405,8 +408,9 @@ export type SessionDevice = {
   userAgentName?: string,
   deviceClass?: string,
   deviceName?: string,
-  firstConnection: string,
-  lastConnection: string
+  createdAt: string,
+  lastConnection: string,
+  expiresAt: string
 }
 
 export type SessionDeviceListResponse = {
