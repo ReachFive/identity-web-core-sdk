@@ -54,8 +54,7 @@ test('list session devices', async () => {
     }
   )
 
-  expect(result).toEqual({
-    sessionDevices: [
+  expect(result).toEqual( [
       {
         id: 'grantId',
         ip: '192.168.65.1',
@@ -71,6 +70,6 @@ test('list session devices', async () => {
         expiresAt: 'date3'
       }
     ]
-  })
+  )
 
 })

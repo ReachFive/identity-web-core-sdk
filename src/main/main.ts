@@ -25,7 +25,8 @@ import {
   PasswordlessResponse,
   PasswordStrength,
   Profile,
-  RemoteSettings, SessionDeviceListResponse,
+  RemoteSettings,
+  SessionDevice,
   SessionInfo
 } from './models'
 import OAuthClient, {
@@ -97,7 +98,7 @@ export type Client = {
   getSignupData: (signupToken: string) => Promise<OpenIdUser>
   getUser: (params: GetUserParams) => Promise<Profile>
   listMfaCredentials: (accessToken: string) => Promise<CredentialsResponse>
-  listSessionDevices: (accessToken: string) => Promise<SessionDeviceListResponse>
+  listSessionDevices: (accessToken: string) => Promise<SessionDevice[]>
   listTrustedDevices: (accessToken: string) => Promise<ListTrustedDevicesResponse>
   listWebAuthnDevices: (accessToken: string) => Promise<DeviceCredential[]>
   loginFromSession: (options?: WithPkceParams<AuthOptions>) => Promise<void>

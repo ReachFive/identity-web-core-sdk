@@ -1,7 +1,7 @@
 import type { CaptchaParams } from './captcha'
 import type { HttpClient } from './httpClient'
 import type { IdentityEventManager } from './identityEventManager'
-import { ApiClientConfig, SessionDeviceListResponse } from './main'
+import { ApiClientConfig, SessionDevice, SessionDeviceListResponse } from './main'
 import type { OpenIdUser, Profile } from './models'
 
 export type UpdateEmailParams = {
@@ -142,8 +142,8 @@ export default class ProfileClient {
     this.verifyEmailUrl = '/verify-email'
   }
 
-  listSessionDevices(accessToken: string): Promise<SessionDeviceListResponse> {
-    return this.http.get<SessionDeviceListResponse>(this.sessionDevicesUrl, { accessToken })
+  listSessionDevices(accessToken: string): Promise<SessionDevice[]> {
+    return this.http.get<SessionDeviceListResponse>(this.sessionDevicesUrl, { accessToken }).then(res => res.sessionDevices)
   }
 
   getSignupData(signupToken: string): Promise<OpenIdUser> {
