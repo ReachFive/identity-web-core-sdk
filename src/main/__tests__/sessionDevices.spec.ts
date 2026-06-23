@@ -25,17 +25,17 @@ test('list session devices', async () => {
     JSON.stringify({
       sessionDevices: [
         {
-          id: "grantId",
-          ip: "192.168.65.1",
+          id: 'grantId',
+          ip: '192.168.65.1',
           tokenType: 'RT',
-          country: "France",
-          city: "Paris",
-          operatingSystem: "Android",
-          userAgentName: "Chrome",
-          deviceClass: "Phone",
-          deviceName: "Google Nexus 6",
-          createdAt: "date1",
-          lastConnection: "date2",
+          country: 'France',
+          city: 'Paris',
+          operatingSystem: 'Android',
+          userAgentName: 'Chrome',
+          deviceClass: 'Phone',
+          deviceName: 'Google Nexus 6',
+          createdAt: 'date1',
+          lastConnection: 'date2',
           expiresAt: 'date3'
         }
       ]
@@ -44,33 +44,29 @@ test('list session devices', async () => {
 
   const result = await client.listSessionDevices(accessToken)
 
-  expect(listSessionDevicesCall).toHaveBeenCalledWith(
-    `https://${domain}/identity/v1/session-devices`,
-    {
-      method: 'GET',
-      headers: expect.objectContaining({
-        ...headers.accessToken(accessToken)
-      })
-    }
-  )
+  expect(listSessionDevicesCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/session-devices`, {
+    method: 'GET',
+    headers: expect.objectContaining({
+      ...headers.accessToken(accessToken)
+    })
+  })
 
-  expect(result).toEqual( [
-      {
-        id: 'grantId',
-        ip: '192.168.65.1',
-        tokenType: 'RT',
-        country: 'France',
-        city: 'Paris',
-        operatingSystem: 'Android',
-        userAgentName: 'Chrome',
-        deviceClass: 'Phone',
-        deviceName: 'Google Nexus 6',
-        createdAt: 'date1',
-        lastConnection: 'date2',
-        expiresAt: 'date3'
-      }
-    ]
-  )
+  expect(result).toEqual([
+    {
+      id: 'grantId',
+      ip: '192.168.65.1',
+      tokenType: 'RT',
+      country: 'France',
+      city: 'Paris',
+      operatingSystem: 'Android',
+      userAgentName: 'Chrome',
+      deviceClass: 'Phone',
+      deviceName: 'Google Nexus 6',
+      createdAt: 'date1',
+      lastConnection: 'date2',
+      expiresAt: 'date3'
+    }
+  ])
 })
 
 test('remove session device', async () => {
@@ -78,11 +74,9 @@ test('remove session device', async () => {
   const accessToken = 'accesstoken'
   const sessionDeviceId = 'UUID'
 
-  const removeSessionDeviceCall = fetchMock.mockResponseOnce(
-    JSON.stringify('')
-  )
+  const removeSessionDeviceCall = fetchMock.mockResponseOnce(JSON.stringify(''))
 
-  const result = await client.removeSessionDevice({accessToken, sessionDeviceId})
+  const result = await client.removeSessionDevice({ accessToken, sessionDeviceId })
 
   expect(removeSessionDeviceCall).toHaveBeenCalledWith(
     `https://${domain}/identity/v1/session-devices/${sessionDeviceId}`,
@@ -90,10 +84,9 @@ test('remove session device', async () => {
       method: 'DELETE',
       headers: expect.objectContaining({
         ...headers.accessToken(accessToken)
-})
+      })
     }
   )
 
   expect(result).toEqual('')
 })
-
