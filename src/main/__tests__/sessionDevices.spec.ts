@@ -70,7 +70,7 @@ test('list session devices', async () => {
         expiresAt: 'date3'
       }
     ]
-  })
+  )
 })
 
 test('remove session device', async () => {
