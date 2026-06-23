@@ -46,6 +46,7 @@ import ProfileClient, {
   EmailVerificationParams,
   GetUserParams,
   PhoneNumberVerificationParams,
+  RemoveSessionDeviceParams,
   RequestAccountRecoveryParams,
   RequestPasswordResetParams,
   UnlinkParams,
@@ -115,6 +116,7 @@ export type Client = {
   remoteSettings: Promise<RemoteSettings>
   removeMfaEmail: (params: RemoveMfaEmailParams) => Promise<void>
   removeMfaPhoneNumber: (params: RemoveMfaPhoneNumberParams) => Promise<void>
+  removeSessionDevice: (params: RemoveSessionDeviceParams) => Promise<void>
   removeTrustedDevice: (params: DeleteTrustedDeviceParams) => Promise<void>
   removeWebAuthnDevice: (accessToken: string, deviceId: string) => Promise<void>
   requestAccountRecovery: (params: RequestAccountRecoveryParams) => Promise<void>
@@ -342,6 +344,10 @@ export function createClient(creationConfig: Config): Client {
     return apiClients.then((clients) => clients.mfa.removeMfaPhoneNumber(params))
   }
 
+  function removeSessionDevice(params: RemoveSessionDeviceParams) {
+    return apiClients.then((clients) => clients.profile.removeSessionDevice(params))
+  }
+
   function removeTrustedDevice(params: DeleteTrustedDeviceParams) {
     return apiClients.then((clients) => clients.mfa.deleteTrustedDevices(params))
   }
@@ -474,6 +480,7 @@ export function createClient(creationConfig: Config): Client {
     remoteSettings,
     removeMfaEmail,
     removeMfaPhoneNumber,
+    removeSessionDevice,
     removeTrustedDevice,
     removeWebAuthnDevice,
     requestAccountRecovery,
