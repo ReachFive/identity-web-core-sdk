@@ -396,6 +396,26 @@ export type Consent = {
   status: ConsentStatus
 }
 
+export type TokenType = 'ST' | 'RT'
+
+export type SessionDevice = {
+  id: string,
+  tokenType: TokenType,
+  ip?: string,
+  country?: string,
+  city?: string,
+  operatingSystem?: string,
+  userAgentName?: string,
+  deviceClass?: string,
+  deviceName?: string,
+  createdAt: string,
+  lastConnection: string,
+  expiresAt: string
+}
+
+export type SessionDeviceListResponse = {
+  sessionDevices: SessionDevice[]
+}
 export type LoginTypeAllowed = {
   email: boolean
   phoneNumber: boolean
