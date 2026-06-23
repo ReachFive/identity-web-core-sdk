@@ -25,14 +25,18 @@ test('list session devices', async () => {
     JSON.stringify({
       sessionDevices: [
         {
-          id: "UUID",
+          id: "grantId",
           ip: "192.168.65.1",
+          tokenType: 'RT',
+          country: "France",
+          city: "Paris",
           operatingSystem: "Android",
           userAgentName: "Chrome",
           deviceClass: "Phone",
           deviceName: "Google Nexus 6",
-          firstConnection: "date1",
-          lastConnection: "date2"
+          createdAt: "date1",
+          lastConnection: "date2",
+          expiresAt: 'date3'
         }
       ]
     })
@@ -50,17 +54,20 @@ test('list session devices', async () => {
     }
   )
 
-  expect(result).toEqual({
-    sessionDevices: [
+  expect(result).toEqual( [
       {
-        id: "UUID",
-        ip: "192.168.65.1",
-        operatingSystem: "Android",
-        userAgentName: "Chrome",
-        deviceClass: "Phone",
-        deviceName: "Google Nexus 6",
-        firstConnection: "date1",
-        lastConnection: "date2"
+        id: 'grantId',
+        ip: '192.168.65.1',
+        tokenType: 'RT',
+        country: 'France',
+        city: 'Paris',
+        operatingSystem: 'Android',
+        userAgentName: 'Chrome',
+        deviceClass: 'Phone',
+        deviceName: 'Google Nexus 6',
+        createdAt: 'date1',
+        lastConnection: 'date2',
+        expiresAt: 'date3'
       }
     ]
   })
@@ -83,7 +90,7 @@ test('remove session device', async () => {
       method: 'DELETE',
       headers: expect.objectContaining({
         ...headers.accessToken(accessToken)
-      })
+})
     }
   )
 

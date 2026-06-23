@@ -43,6 +43,11 @@ export function apiClientAndEventManager(remoteSettings: Partial<RemoteSettings>
       isPublic: true,
       webAuthn: false,
       isImplicitFlowForbidden: false,
+      loginTypeAllowed: {
+        email: true,
+        phoneNumber: true,
+        customIdentifier: true
+      },
       ...remoteSettings
     },
     http,

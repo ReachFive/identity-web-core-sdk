@@ -1,14 +1,16 @@
-import { MFA, TrustedDevice } from './models'
+import { pick } from '../utils/utils'
 import { AuthOptions, computeAuthOptions } from './authOptions'
-import { HttpClient } from './httpClient'
 import { AuthResult } from './authResult'
+import { HttpClient } from './httpClient'
+import { ApiClientConfig } from './main'
+import { MFA, TrustedDevice } from './models'
 import OAuthClient from './oAuthClient'
+import { WithPkceParams } from './pkceService'
 import CredentialsResponse = MFA.CredentialsResponse
 import EmailCredential = MFA.EmailCredential
 import StepUpResponse = MFA.StepUpResponse
 import PhoneCredential = MFA.PhoneCredential
-import { ApiClientConfig } from './main'
-import { pick } from "../utils/utils"
+import { toQueryString } from '../utils/queryString'
 
 export type RemoveMfaEmailParams = {
   accessToken: string
@@ -41,7 +43,7 @@ export type StartMfaPhoneNumberRegistrationResponse =
   | { status: 'enabled'; credential: PhoneCredential }
 
 export type StepUpParams = {
-  options?: AuthOptions
+  options?: WithPkceParams<AuthOptions>
   accessToken?: string
   tkn?: string
   action?: string
@@ -84,6 +86,7 @@ export default class MfaClient {
   private credentialsUrl: string
   private emailCredentialUrl: string
   private emailCredentialVerifyUrl: string
+  private passwordlessVerifyAuthCodeUrl: string
   private passwordlessVerifyUrl: string
   private phoneNumberCredentialUrl: string
   private phoneNumberCredentialVerifyUrl: string
@@ -99,19 +102,20 @@ export default class MfaClient {
     this.emailCredentialUrl = `${this.credentialsUrl}/emails`
     this.emailCredentialVerifyUrl = `${this.emailCredentialUrl}/verify`
     this.passwordlessVerifyUrl = '/passwordless/verify'
+    this.passwordlessVerifyAuthCodeUrl = '/verify-auth-code'
     this.phoneNumberCredentialUrl = `${this.credentialsUrl}/phone-numbers`
     this.phoneNumberCredentialVerifyUrl = `${this.phoneNumberCredentialUrl}/verify`
     this.stepUpUrl = '/mfa/stepup'
     this.trustedDeviceUrl = '/mfa/trusteddevices'
   }
 
-  getMfaStepUpToken(params: StepUpParams): Promise<StepUpResponse> {
+  getMfaStepUpToken(params: WithPkceParams<StepUpParams>): Promise<StepUpResponse> {
     if (this.config.orchestrationToken) {
       const authParams = computeAuthOptions(params.options)
 
       const correctedAuthParams = {
         clientId: this.config.clientId,
-        ...pick(authParams, 'responseType', 'redirectUri', 'persistent', 'display'),
+        ...pick(authParams, 'responseType', 'redirectUri', 'persistent', 'display')
       }
       return this.http.post<StepUpResponse>(this.stepUpUrl, {
         body: {
@@ -198,19 +202,36 @@ export default class MfaClient {
 
   verifyMfaPasswordless(params: VerifyMfaPasswordlessParams): Promise<AuthResult> {
     const { challengeId, verificationCode, trustDevice } = params
-
-    return this.http
-      .post<AuthResult>(this.passwordlessVerifyUrl, {
-        body: {
-          challengeId,
-          verificationCode,
-          trustDevice
-        }
+    if (this.config.orchestrationToken) {
+      const queryString = toQueryString({
+        ...params
       })
-      .finally(() => {
-        this.oAuthClient.releaseSessionLock()
-        this.oAuthClient.releaseAuthorizationLock()
-      })
+      return this.http
+        .post(this.passwordlessVerifyAuthCodeUrl, { body: params })
+        .then(() => {
+          this.oAuthClient.releaseSessionLock()
+          this.oAuthClient.releaseAuthorizationLock()
+          window.location.assign(`${this.config.baseUrl}/identity/v1${this.passwordlessVerifyUrl}?${queryString}`)
+          return Promise.resolve({}) as AuthResult
+        })
+        .finally(() => {
+          this.oAuthClient.releaseSessionLock()
+          this.oAuthClient.releaseAuthorizationLock()
+        })
+    } else {
+      return this.http
+        .post<AuthResult>(this.passwordlessVerifyUrl, {
+          body: {
+            challengeId,
+            verificationCode,
+            trustDevice
+          }
+        })
+        .finally(() => {
+          this.oAuthClient.releaseSessionLock()
+          this.oAuthClient.releaseAuthorizationLock()
+        })
+    }
   }
 
   verifyMfaPhoneNumberRegistration(params: VerifyMfaPhoneNumberRegistrationParams): Promise<void> {

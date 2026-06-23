@@ -396,19 +396,30 @@ export type Consent = {
   status: ConsentStatus
 }
 
+export type TokenType = 'ST' | 'RT'
+
 export type SessionDevice = {
   id: string,
+  tokenType: TokenType,
   ip?: string,
+  country?: string,
+  city?: string,
   operatingSystem?: string,
   userAgentName?: string,
   deviceClass?: string,
   deviceName?: string,
-  firstConnection: string,
-  lastConnection: string
+  createdAt: string,
+  lastConnection: string,
+  expiresAt: string
 }
 
 export type SessionDeviceListResponse = {
   sessionDevices: SessionDevice[]
+}
+export type LoginTypeAllowed = {
+  email: boolean
+  phoneNumber: boolean
+  customIdentifier: boolean
 }
 /**
  * This type represents the settings of a ReachFive account's stored in the backend.
@@ -432,6 +443,7 @@ export type RemoteSettings = {
   mfaEmailEnabled: boolean,
   rbaEnabled: boolean,
   isImplicitFlowForbidden: boolean
+  loginTypeAllowed: LoginTypeAllowed
 }
 
 export type ErrorResponse = {
