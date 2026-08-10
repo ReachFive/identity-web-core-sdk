@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Add
+- Optional `state` parameter in the `logout` method, returned as-is in the query string of the redirect URL
+
 ### Changed
 - method verifyPasswordless redirect to GET passwordless/verify in orchestrated flow
 - method verifyPasswordless does not forward AuthParameters to GET passwordless/verify in orchestrated flow

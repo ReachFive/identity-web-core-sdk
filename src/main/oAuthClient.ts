@@ -48,6 +48,7 @@ export type LoginWithPasswordParams = EmailLoginWithPasswordParams | PhoneNumber
 export type LogoutParams = {
   redirectTo?: string
   removeCredentials?: boolean
+  state?: string
 }
 
 export type RevocationParams = {
