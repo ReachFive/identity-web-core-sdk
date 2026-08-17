@@ -421,6 +421,18 @@ export type LoginTypeAllowed = {
   phoneNumber: boolean
   customIdentifier: boolean
 }
+
+export type Provider = {
+  key: string;
+  name: string;
+  color: string;
+  btnBackgroundColor: string;
+  btnBorderColor: string;
+  btnTextColor: string;
+  buttonLabel: string;
+  icon: string;
+}
+
 /**
  * This type represents the settings of a ReachFive account's stored in the backend.
  */
@@ -434,6 +446,7 @@ export type RemoteSettings = {
   isPublic: boolean
   scope?: string
   socialProviders: string[]
+  customProviders?: Record<string, Provider>
   googleClientId?: string,
   passwordPolicy: PasswordPolicy,
   consents?: Consent[],
