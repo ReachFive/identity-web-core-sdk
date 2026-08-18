@@ -15,8 +15,8 @@ const fieldsNotToConvert = ['custom_fields', 'consents']
 type TransformObjectProperties<T> = T extends (infer U)[]
   ? TransformObjectProperties<U>[]
   : T extends Record<string, unknown>
-  ? { [K in keyof T]: TransformObjectProperties<T[K]> }
-  : T
+    ? { [K in keyof T]: TransformObjectProperties<T[K]> }
+    : T
 
 function transformObjectProperties<T>(input: T, transform: (path: string) => string): TransformObjectProperties<T> {
   if (Array.isArray(input)) {

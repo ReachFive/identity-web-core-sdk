@@ -28,9 +28,9 @@ const moduleEntry = 'src/main/index.ts'
 // behaviour-neutral. Note `buffer` is imported as `'buffer/'`, which does not match and is
 // therefore still inlined rather than externalised — a wart removed when `buffer` goes away.
 const runtimeDependencies = Object.keys(pkg.dependencies)
-const isRuntimeDependency = id => runtimeDependencies.includes(id) || /lodash/.test(id)
+const isRuntimeDependency = (id) => runtimeDependencies.includes(id) || /lodash/.test(id)
 
-const sourcePlugins = target => [
+const sourcePlugins = (target) => [
   nodeResolve(),
   commonjs(),
   typescript({
@@ -48,7 +48,7 @@ const sourcePlugins = target => [
  * An unresolved import silently becomes an external in a UMD bundle, producing a build that
  * looks fine but throws at load time. Treat it — and a few other structural problems — as fatal.
  */
-const onwarn = warning => {
+const onwarn = (warning) => {
   const fatal = ['UNRESOLVED_IMPORT', 'MISSING_EXPORT', 'MISSING_GLOBAL_NAME', 'CIRCULAR_DEPENDENCY']
   if (fatal.includes(warning.code)) throw new Error(`${warning.code}: ${warning.message}`)
   console.warn(warning.message)

@@ -6,7 +6,7 @@ export default class EventManager<EVENTS extends object> {
   private listeners: { [K in keyof EVENTS]?: Listeners<K, EVENTS> } = {}
 
   fire<K extends keyof EVENTS>(name: K, data: EVENTS[K]) {
-    this.getListeners(name).forEach(listener => {
+    this.getListeners(name).forEach((listener) => {
       try {
         listener(data)
       } catch (e) {
@@ -20,7 +20,7 @@ export default class EventManager<EVENTS extends object> {
   }
 
   off<K extends keyof EVENTS>(name: K, listener: (data: EVENTS[K]) => void) {
-    this.listeners[name] = this.getListeners(name).filter(l => l !== listener)
+    this.listeners[name] = this.getListeners(name).filter((l) => l !== listener)
   }
 
   private getListeners<K extends keyof EVENTS>(name: K): Array<(data: EVENTS[K]) => void> {

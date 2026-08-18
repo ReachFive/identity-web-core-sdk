@@ -41,7 +41,7 @@ jobs:
 
       - name: Run tests
         run: npm test -- --ci --reporters=default --reporters=jest-junit
-      
+
       - name: Build
         run: npm run build
 
@@ -57,7 +57,7 @@ jobs:
               printf '| `%s` | %s | %s |\n' "$f" "$(wc -c <"$f" | tr -d ' ')" "$(gzip -c "$f" | wc -c | tr -d ' ')"
             done
           } >> "$GITHUB_STEP_SUMMARY"
-      
+
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
         if: ${{ !cancelled() }}
         with:

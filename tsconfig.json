@@ -13,18 +13,8 @@
     "declaration": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "types": [
-      "cordova-plugin-inappbrowser",
-      "lodash",
-      "jest",
-      "node",
-      "webappsec-credential-management"
-    ]
+    "types": ["cordova-plugin-inappbrowser", "lodash", "jest", "node", "webappsec-credential-management"]
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
 }

@@ -23,6 +23,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Type declarations** are now bundled into a single `es/main.d.ts` instead of a tree of per-file
   declarations. This also stops publishing declarations for test files and stale artefacts.
 - `tsc` target raised from `ES6` to `ES2020` for the `es`/`cjs` bundles; the UMD bundle stays on `ES2015`.
+- **Prettier upgraded from 2.1.2 to 3.x.** The pinned 2020 release could not parse the codebase's own
+  syntax — the `satisfies` operator in `oAuthClient.ts` and the template-literal type in `utils.ts` both
+  threw `SyntaxError` — which is why the `format:check` CI step had been commented out. `format` and
+  `format:check` now cover the whole repository (see `.prettierignore`) instead of only `src/**/*.ts`,
+  and the CI step is enabled. The resulting reformat is stylistic only.
 
 ### Fixed
 - The published type declarations referenced `InAppBrowser` from `@types/cordova-plugin-inappbrowser`,

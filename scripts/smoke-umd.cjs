@@ -23,7 +23,7 @@ function loadAsScriptTag(bundlePath) {
   Object.defineProperty(window, 'crypto', {
     value: {
       randomUUID: () => '00000000-0000-4000-8000-000000000000',
-      getRandomValues: array => array,
+      getRandomValues: (array) => array,
       subtle: { digest: async () => new ArrayBuffer(32) }
     },
     configurable: true
@@ -69,7 +69,7 @@ function check(bundlePath) {
 }
 
 const bundles = ['umd/identity-core.js', 'umd/identity-core.min.js']
-const missing = bundles.filter(bundle => !fs.existsSync(bundle))
+const missing = bundles.filter((bundle) => !fs.existsSync(bundle))
 if (missing.length > 0) {
   console.error(`Missing ${missing.join(', ')} — run \`npm run build\` first.`)
   process.exit(1)

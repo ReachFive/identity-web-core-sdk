@@ -1,9 +1,8 @@
-import js from '@eslint/js';
-import compat from 'eslint-plugin-compat';
-import { defineConfig } from 'eslint/config';
-import globals from 'globals';
-import tseslint from 'typescript-eslint';
-
+import js from '@eslint/js'
+import compat from 'eslint-plugin-compat'
+import { defineConfig } from 'eslint/config'
+import globals from 'globals'
+import tseslint from 'typescript-eslint'
 
 export default defineConfig(
   // Build output is generated, not authored. ESLint 9's flat config does not read .gitignore.
@@ -15,11 +14,11 @@ export default defineConfig(
     languageOptions: {
       globals: {
         ...globals.browser,
-        ...globals.commonjs,
-      },
+        ...globals.commonjs
+      }
     },
     settings: {
-      polyfills: ['Promise', 'fetch', 'URL', 'URLSearchParams'],
+      polyfills: ['Promise', 'fetch', 'URL', 'URLSearchParams']
     },
     rules: {
       '@typescript-eslint/no-namespace': 'off',
@@ -30,9 +29,9 @@ export default defineConfig(
           caughtErrorsIgnorePattern: '^_',
           destructuredArrayIgnorePattern: '^_',
           ignoreRestSiblings: true,
-          varsIgnorePattern: '^_',
-        },
-      ],
-    },
-  },
+          varsIgnorePattern: '^_'
+        }
+      ]
+    }
+  }
 )

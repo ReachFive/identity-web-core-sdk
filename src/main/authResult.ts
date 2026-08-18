@@ -38,7 +38,8 @@ export function enrichAuthResult(response: AuthResult): AuthResult {
 
 export namespace AuthResult {
   export function isAuthResult(thing: unknown): thing is AuthResult {
-    return typeof thing === "object" && thing !== null 
-      && ('accessToken' in thing || 'idToken' in thing || 'code' in thing)
+    return (
+      typeof thing === 'object' && thing !== null && ('accessToken' in thing || 'idToken' in thing || 'code' in thing)
+    )
   }
 }

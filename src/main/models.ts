@@ -99,7 +99,7 @@ export type Identity = {
 export type LoginSummary = {
   firstLogin?: number
   lastLogin?: number
-  total: number,
+  total: number
   origins: string[]
   devices: string[]
   lastProvider?: string
@@ -147,8 +147,8 @@ export type CustomFieldsValues = Record<string, unknown>
 
 export type Interest = {
   id?: string
-  name: string,
-  minRequiredPages: number,
+  name: string
+  minRequiredPages: number
   description?: string
   facebookPageIds: string[]
   createdAt?: string
@@ -181,7 +181,7 @@ export type ThirdPartyGrant = {
 }
 
 export type FacebookIdForPage = {
-  userId: string,
+  userId: string
   pageId: string
 }
 
@@ -193,12 +193,12 @@ export type TokenRevocationRecord = {
 export type SuspensionStatus = 'temporary' | 'permanent'
 
 export type SuspensionInformation = {
-  status: SuspensionStatus,
+  status: SuspensionStatus
   reason?: string
 }
 
 export type ProviderInfos = {
-  name: string,
+  name: string
   id?: string
   email?: string
   firstLogin?: string
@@ -270,7 +270,7 @@ export type SessionInfo = {
 
 export type OrchestrationToken = string
 
-export type AuthenticationToken = { tkn?: string, mfaRequired?: boolean }
+export type AuthenticationToken = { tkn?: string; mfaRequired?: boolean }
 
 export type PasswordlessResponse = MFA.ChallengeId
 
@@ -333,7 +333,7 @@ export type TrustedDeviceMetadata = {
 export type PasswordStrengthScore = 0 | 1 | 2 | 3 | 4
 
 export interface PasswordStrength {
-    score: PasswordStrengthScore
+  score: PasswordStrengthScore
 }
 
 export type PasswordPolicy = {
@@ -346,7 +346,8 @@ export type PasswordPolicy = {
   allowUpdateWithAccessTokenOnly: boolean
 }
 
-export type CustomFieldType = 'number' | 'integer' | 'decimal' | 'string' | 'date' | 'checkbox' | 'select' | 'tags' | 'object' | 'phone' | 'email'
+export type CustomFieldType =
+  'number' | 'integer' | 'decimal' | 'string' | 'date' | 'checkbox' | 'select' | 'tags' | 'object' | 'phone' | 'email'
 
 export type LabelTranslation = {
   langCode: string
@@ -354,17 +355,17 @@ export type LabelTranslation = {
 }
 
 export type SelectableValue = {
-  value: string,
-  label: string,
+  value: string
+  label: string
   translations: LabelTranslation[]
 }
 
 export type CustomField = {
-  id?: string,
-  name: string,
+  id?: string
+  name: string
   nameTranslations?: LabelTranslation[]
-  path: string,
-  dataType: CustomFieldType,
+  path: string
+  dataType: CustomFieldType
   selectableValues?: SelectableValue[]
   scope?: string
   readScope?: string
@@ -382,9 +383,9 @@ export type ConsentVersion = {
 }
 
 export type ConsentVersions = {
-  key: string,
-  versions: ConsentVersion[],
-  consentType: ConsentType,
+  key: string
+  versions: ConsentVersion[]
+  consentType: ConsentType
   status: ConsentStatus
 }
 
@@ -399,17 +400,17 @@ export type Consent = {
 export type TokenType = 'ST' | 'RT'
 
 export type SessionDevice = {
-  id: string,
-  tokenType: TokenType,
-  ip?: string,
-  country?: string,
-  city?: string,
-  operatingSystem?: string,
-  userAgentName?: string,
-  deviceClass?: string,
-  deviceName?: string,
-  createdAt: string,
-  lastConnection: string,
+  id: string
+  tokenType: TokenType
+  ip?: string
+  country?: string
+  city?: string
+  operatingSystem?: string
+  userAgentName?: string
+  deviceClass?: string
+  deviceName?: string
+  createdAt: string
+  lastConnection: string
   expiresAt: string
 }
 
@@ -434,14 +435,14 @@ export type RemoteSettings = {
   isPublic: boolean
   scope?: string
   socialProviders: string[]
-  googleClientId?: string,
-  passwordPolicy: PasswordPolicy,
-  consents?: Consent[],
-  customFields: CustomField[],
-  resourceBaseUrl: string,
-  mfaSmsEnabled: boolean,
-  mfaEmailEnabled: boolean,
-  rbaEnabled: boolean,
+  googleClientId?: string
+  passwordPolicy: PasswordPolicy
+  consents?: Consent[]
+  customFields: CustomField[]
+  resourceBaseUrl: string
+  mfaSmsEnabled: boolean
+  mfaEmailEnabled: boolean
+  rbaEnabled: boolean
   isImplicitFlowForbidden: boolean
   loginTypeAllowed: LoginTypeAllowed
 }
