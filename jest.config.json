@@ -1,8 +1,10 @@
 {
   "testEnvironment": "jsdom",
   "testEnvironmentOptions": {
-    "url": "http://localhost"
+    "url": "http://localhost",
+    "customExportConditions": ["node", "require", "default"]
   },
+  "setupFiles": ["<rootDir>/jest.setup.ts"],
   "transformIgnorePatterns": ["<rootDir>/node_modules/"],
   "moduleFileExtensions": ["js", "json", "ts", "tsx"],
   "testMatch": ["**/src/**/__tests__/*.spec.ts"],

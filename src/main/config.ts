@@ -21,8 +21,8 @@ export interface Config {
  * creation config, the resolved base URL and the server-side settings that gate behaviour at
  * runtime (`sso`, `isPublic`, `pkceEnforced`, …).
  *
- * This lives here rather than in `main.ts` so that sub-clients do not have to import from the
- * module that constructs them, which used to make every one of them part of an import cycle.
+ * This lives in its own module, not in `main.ts`, so that sub-clients can type their config without
+ * importing from the module that constructs them — which would put each of them in an import cycle.
  */
 export type ApiClientConfig = RemoteSettings & {
   clientId: string

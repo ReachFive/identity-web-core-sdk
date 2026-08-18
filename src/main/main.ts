@@ -74,6 +74,9 @@ export { AuthResult } from './authResult'
 export * from '../api/models'
 export * from './oAuthClient'
 export { DeviceCredential, LoginWithWebAuthnParams, SignupWithWebAuthnParams } from './webAuthnService'
+// `AuthResult.idTokenPayload` has always been typed with these, but they were never exported, so
+// consumers could not name the type they were already handed.
+export type { Gender, IdTokenAddress, IdTokenPayload } from '../utils/jwt'
 
 export type Client = {
   addNewWebAuthnDevice: (accessToken: string, friendlyName?: string) => Promise<void>

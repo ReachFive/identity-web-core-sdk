@@ -1,14 +1,13 @@
 /**
- * Runtime polyfills for the UMD bundle only — see `src/umd.ts`.
+ * Runtime polyfills for the UMD bundle only — see `src/umd.ts`. Bundler and Node consumers get
+ * `src/main/index.ts` and polyfill according to their own targets.
  *
- * This used to be a blanket `import 'core-js'`, which accounted for ~86 kB gzipped of the
- * UMD bundle and was inlined into the `es`/`cjs` bundles as well. It polyfilled nothing the
- * SDK actually needs: the most modern built-in used in `src/` is `Object.fromEntries`
- * (ES2019, Chrome 73+ / Safari 12.1+), while the SDK's hard floor is already Chrome 92 /
- * Safari 15.4 because of `crypto.subtle` (PKCE, One Tap nonce) and `crypto.randomUUID`
- * (correlation id) — neither of which any polyfill can provide.
+ * `fetch` is the one API a `<script>`-tag consumer could plausibly be missing, and it fails hard
+ * rather than degrading, so it is worth shipping.
  *
- * `fetch` is kept because it is the one API a `<script>`-tag consumer could plausibly be
- * missing, and because it fails hard rather than degrading.
+ * ES built-ins are not polyfilled, and polyfilling them would be pointless. The SDK's floor is
+ * Chrome 92 / Safari 15.4, set by `crypto.subtle` (PKCE code challenge, One Tap nonce) and
+ * `crypto.randomUUID` (correlation id), which no polyfill can provide. Every built-in the SDK uses
+ * is native well below that floor — the most modern is `Object.fromEntries`, from ES2019.
  */
 import 'whatwg-fetch'

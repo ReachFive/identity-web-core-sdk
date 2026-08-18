@@ -1,7 +1,6 @@
-import { Buffer } from 'buffer/'
+import { base64url } from 'jose'
 import type * as OneTap from 'google-one-tap'
 import WinChan from 'winchan'
-import { encodeToBase64 } from '../utils/base64'
 import { logError } from '../utils/logger'
 import type { QueryString } from '../utils/queryString'
 import { toQueryString } from '../utils/queryString'
@@ -398,14 +397,14 @@ export default class OAuthClient {
   }
 
   private googleOneTap(opts: AuthOptions = {}, nonce: string = randomBase64String()): Promise<void> {
-    const binaryNonce = Buffer.from(nonce, 'utf-8')
+    const binaryNonce = new TextEncoder().encode(nonce)
 
     return window.crypto.subtle.digest('SHA-256', binaryNonce).then((hash) => {
       const googleIdConfiguration: OneTap.IdConfiguration = {
         client_id: this.config.googleClientId,
         callback: (response: OneTap.CredentialResponse) =>
           this.loginWithIdToken('google', response.credential, nonce, opts),
-        nonce: encodeToBase64(hash),
+        nonce: base64url.encode(new Uint8Array(hash)),
         // Enable auto sign-in
         auto_select: true
       }
