@@ -12,7 +12,11 @@ export type LoginTypeAllowed = {
 }
 
 /**
- * This type represents the settings of a ReachFive account's stored in the backend.
+ * A ReachFive account's configuration, returned by `GET /identity/v1/config`.
+ *
+ * Several of these fields gate behaviour at runtime rather than merely describing it: `sso` decides
+ * whether requests send cookies, `isPublic` and `pkceEnforced` decide which OAuth flow is allowed,
+ * and `scope` supplies the default scopes.
  */
 export type RemoteSettings = {
   sso: boolean
