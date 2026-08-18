@@ -26,6 +26,9 @@ const TRICKY_BYTES = new Uint8Array([0, 0, 0, 251, 255, 190])
 const TRICKY_BASE64_STANDARD = 'AAAA+/++'
 const TRICKY_BASE64URL = 'AAAA-_--'
 
+/** Five bytes encode to seven base64 characters, so this pair exercises padding. */
+const FIVE_BYTES = new Uint8Array([1, 2, 3, 4, 5])
+
 const bytesOf = (value: BufferSource) =>
   Array.from(
     ArrayBuffer.isView(value) ? new Uint8Array(value.buffer, value.byteOffset, value.byteLength) : new Uint8Array(value)
@@ -74,22 +77,22 @@ describe('webAuthnService encoding invariants', () => {
       expect(bytesOf(encoded.allowCredentials![0].id)).toEqual([1, 2, 3, 4, 5])
     })
 
-    test('accepts the standard alphabet too, so a lenient decoder stays lenient', () => {
-      // The backend only ever emits base64url (`Base64.getUrlEncoder`), so nothing should depend on
-      // this. It is pinned because the decoder in use happens to be lenient, and swapping in a strict
-      // one — jose 6 rejects `+` and `/`, for instance — would be a behaviour change worth noticing
-      // deliberately rather than discovering in production.
-      const fromUrlSafe = encodePublicKeyCredentialRequestOptions({
-        challenge: TRICKY_BASE64URL,
-        allowCredentials: []
-      } as never)
-      const fromStandard = encodePublicKeyCredentialRequestOptions({
-        challenge: TRICKY_BASE64_STANDARD,
-        allowCredentials: []
-      } as never)
+    // Decoding tolerance is owned by `decodeBytes`, not inherited from whichever base64
+    // implementation happens to be installed: jose 5 accepts the standard alphabet and jose 6 does
+    // not. A failed passkey decode breaks registration and login outright, and nothing in this
+    // repository can exercise that path, so the tolerance is pinned here.
+    //
+    // The first case of each pair is what the backend actually emits. The second is not, and is
+    // covered so that tightening the decoder shows up as a test failure rather than a support ticket.
+    test.each([
+      ['base64url (what the backend emits)', TRICKY_BASE64URL, TRICKY_BYTES],
+      ['standard base64', TRICKY_BASE64_STANDARD, TRICKY_BYTES],
+      ['base64url with padding (what the backend emits)', 'AQIDBAU=', FIVE_BYTES],
+      ['base64url without padding', 'AQIDBAU', FIVE_BYTES]
+    ])('decodes %s', (_label, challenge, expected) => {
+      const encoded = encodePublicKeyCredentialRequestOptions({ challenge, allowCredentials: [] } as never)
 
-      expect(bytesOf(fromStandard.challenge)).toEqual(bytesOf(fromUrlSafe.challenge))
-      expect(bytesOf(fromUrlSafe.challenge)).toEqual(Array.from(TRICKY_BYTES))
+      expect(bytesOf(encoded.challenge)).toEqual(Array.from(expected))
     })
   })
 
