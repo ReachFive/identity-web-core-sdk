@@ -1,5 +1,5 @@
 import { Buffer } from 'buffer/'
-import * as OneTap from 'google-one-tap'
+import type * as OneTap from 'google-one-tap'
 import WinChan from 'winchan'
 import { encodeToBase64 } from '../utils/base64'
 import { logError } from '../utils/logger'
