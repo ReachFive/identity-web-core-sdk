@@ -1,20 +1,6 @@
 import { Buffer } from 'buffer/'
 
 /**
- * return an UTF-8 encoded string as URL Safe Base64
- *
- * Note: This function encodes to the RFC 4648 Spec where '+' is encoded
- *       as '-' and '/' is encoded as '_'. The padding character '=' is
- *       removed.
- */
-export function encodeBase64UrlSafe(str: string) {
-  return encodeBase64(str)
-    .replace(/\+/g, '-') // Convert '+' to '-'
-    .replace(/\//g, '_') // Convert '/' to '_'
-    .replace(/=+$/, '') // Remove ending '='
-}
-
-/**
  * encode an UTF-8 encoded string as Base64
  */
 export function encodeBase64(str: string) {

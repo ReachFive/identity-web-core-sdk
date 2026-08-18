@@ -14,7 +14,7 @@ import { AuthResult, enrichAuthResult } from './authResult'
 import { CaptchaParams } from './captcha'
 import { HttpClient } from './httpClient'
 import { IdentityEventManager } from './identityEventManager'
-import { ApiClientConfig } from './main'
+import { ApiClientConfig } from './config'
 import MfaClient from './mfaClient'
 import {
   AuthenticationToken,

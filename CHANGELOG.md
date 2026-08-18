@@ -34,6 +34,16 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   which was a dev dependency — so consumers could never resolve it and type-checking the SDK's public API
   failed. That package is now a runtime dependency.
 
+### Internal
+- `Config` and `ApiClientConfig` moved out of `main.ts` into `main/config.ts`. All four sub-clients used
+  to import `ApiClientConfig` from the very module that constructs them, putting each of them in an
+  import cycle; those cycles are gone. Both types are still re-exported from the entry point, so the
+  public surface is unchanged.
+- Removed dead code with no callers: `src/utils/obj.ts` (which also shadowed the global `Set`),
+  `encodeBase64UrlSafe`, `parseQueryString`, `snakeCasePath`, `camelCasePath`, `log` and `logWarn`.
+- `WebAuthnClient`'s constructor re-assigned six endpoint URLs to the exact values its field
+  initialisers had already set, while silently omitting the two reset-passkeys ones. Removed.
+
 ### Removed
 - `core-js` and `regenerator-runtime` are no longer bundled. They polyfilled nothing the SDK needs: the
   most modern built-in used in the source is `Object.fromEntries` (ES2019), whereas the SDK's real floor

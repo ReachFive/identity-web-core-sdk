@@ -2,7 +2,7 @@ import { AuthOptions } from './authOptions'
 import { AuthResult } from './authResult'
 import { HttpClient } from './httpClient'
 import { IdentityEventManager } from './identityEventManager'
-import { ApiClientConfig } from './main'
+import { ApiClientConfig } from './config'
 import { AuthenticationToken } from './models'
 import OAuthClient from './oAuthClient'
 import { resolveScope } from './scopeHelper'
@@ -68,13 +68,6 @@ export default class WebAuthnClient {
     this.http = props.http
     this.eventManager = props.eventManager
     this.oAuthClient = props.oAuthClient
-
-    this.authenticationOptionsUrl = '/webauthn/authentication-options'
-    this.authenticationUrl = '/webauthn/authentication'
-    this.registrationOptionsUrl = '/webauthn/registration-options'
-    this.registrationUrl = '/webauthn/registration'
-    this.signupOptionsUrl = '/webauthn/signup-options'
-    this.signupUrl = '/webauthn/signup'
   }
 
   isPublicKeyCredential(credentials: Credential): credentials is PublicKeyCredential {

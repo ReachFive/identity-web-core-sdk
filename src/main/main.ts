@@ -2,6 +2,7 @@ import { toQueryString } from '../utils/queryString'
 import { AuthOptions } from './authOptions'
 import { AuthResult } from './authResult'
 import { initCordovaCallbackIfNecessary } from './cordovaHelper'
+import { ApiClientConfig, Config } from './config'
 import { createHttpClient, rawRequest } from './httpClient'
 import createEventManager, { Events } from './identityEventManager'
 import MfaClient, {
@@ -21,7 +22,6 @@ import MfaClient, {
 import {
   MFA,
   OpenIdUser,
-  OrchestrationToken,
   PasswordlessResponse,
   PasswordStrength,
   Profile,
@@ -64,29 +64,11 @@ import CredentialsResponse = MFA.CredentialsResponse
 import StepUpResponse = MFA.StepUpResponse
 
 export { AuthOptions } from './authOptions'
+export { ApiClientConfig, Config } from './config'
 export { AuthResult } from './authResult'
 export * from './models'
 export * from './oAuthClient'
 export { DeviceCredential, LoginWithWebAuthnParams, SignupWithWebAuthnParams } from './webAuthnService'
-
-export interface Config {
-  clientId: string
-  domain: string
-  /**
-   * Used to define which Google provider variant to use with Google One Tap
-   * @default "default"
-   * */
-  googleVariant?: string
-  language?: string
-  locale?: string
-  webAuthnOrigin?: string
-}
-
-export type ApiClientConfig = RemoteSettings & {
-  clientId: string
-  baseUrl: string
-  orchestrationToken?: OrchestrationToken
-}
 
 export type Client = {
   addNewWebAuthnDevice: (accessToken: string, friendlyName?: string) => Promise<void>
