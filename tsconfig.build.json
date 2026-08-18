@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "types": ["cordova-plugin-inappbrowser", "lodash", "webappsec-credential-management"]
+  },
+  "exclude": ["node_modules", "src/**/__tests__/**"]
+}

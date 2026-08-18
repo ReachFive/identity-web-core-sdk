@@ -6,6 +6,8 @@ import tseslint from 'typescript-eslint';
 
 
 export default defineConfig(
+  // Build output is generated, not authored. ESLint 9's flat config does not read .gitignore.
+  { ignores: ['cjs/', 'es/', 'umd/'] },
   js.configs.recommended,
   tseslint.configs.recommended,
   compat.configs['flat/recommended'],

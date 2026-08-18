@@ -17,8 +17,7 @@
   ],
   "globals": {
     "ts-jest": {
-      "tsconfig": "<rootDir>/tsconfig.test.json",
-      "babelConfig": false
+      "tsconfig": "<rootDir>/tsconfig.test.json"
     }
   },
   "preset": "ts-jest/presets/default"
