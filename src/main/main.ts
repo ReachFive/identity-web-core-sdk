@@ -28,7 +28,7 @@ import {
   RemoteSettings,
   SessionDevice,
   SessionInfo
-} from './models'
+} from '../api/models'
 import OAuthClient, {
   LoginWithCredentialsParams,
   LoginWithCustomTokenParams,
@@ -66,7 +66,7 @@ import StepUpResponse = MFA.StepUpResponse
 export { AuthOptions } from './authOptions'
 export { ApiClientConfig, Config } from './config'
 export { AuthResult } from './authResult'
-export * from './models'
+export * from '../api/models'
 export * from './oAuthClient'
 export { DeviceCredential, LoginWithWebAuthnParams, SignupWithWebAuthnParams } from './webAuthnService'
 

@@ -36,6 +36,11 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      # Fails if anything under src/ is compiled without DOM libs and still references a browser
+      # global. The root tsconfig cannot catch this: it has DOM in `lib` for the whole project.
+      - name: Typecheck the isomorphic API layer (no DOM)
+        run: npm run typecheck:api
+
       - name: Install JUnit coverage reporter
         run: npm install --save-dev jest-junit
 

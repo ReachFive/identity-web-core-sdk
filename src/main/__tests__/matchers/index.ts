@@ -32,6 +32,8 @@ expect.extend({
 })
 
 declare global {
+  // Augmenting Jest's globals is only expressible as a namespace.
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace jest {
     interface Expect {
       toMatchURL(url: string | URL): void

@@ -3,7 +3,7 @@ import { AuthOptions, computeAuthOptions } from './authOptions'
 import { AuthResult } from './authResult'
 import { HttpClient } from './httpClient'
 import { ApiClientConfig } from './config'
-import { MFA, TrustedDevice } from './models'
+import { MFA, TrustedDevice } from '../api/models'
 import OAuthClient from './oAuthClient'
 import { WithPkceParams } from './pkceService'
 import CredentialsResponse = MFA.CredentialsResponse

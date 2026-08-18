@@ -3,7 +3,7 @@ import { AuthResult } from './authResult'
 import { HttpClient } from './httpClient'
 import { IdentityEventManager } from './identityEventManager'
 import { ApiClientConfig } from './config'
-import { AuthenticationToken } from './models'
+import { AuthenticationToken } from '../api/models'
 import OAuthClient from './oAuthClient'
 import { resolveScope } from './scopeHelper'
 import {

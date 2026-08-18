@@ -25,7 +25,7 @@ import {
   Scope,
   SessionInfo,
   SignupProfile
-} from './models'
+} from '../api/models'
 import { computePkceParams, PkceParams, WithPkceParams } from './pkceService'
 import { popupSize } from './providerPopupSize'
 import { resolveScope } from './scopeHelper'
