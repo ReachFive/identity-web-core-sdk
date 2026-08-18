@@ -20,8 +20,7 @@ describe('logout', () => {
     await client.logout({ redirectTo: 'https://example.com/callback', state: 'L2ZyL3BhZ2U=' })
 
     expect(window.location.assign).toHaveBeenCalledWith(
-      `https://${domain}/identity/v1/logout?` +
-        'redirect_to=https%3A%2F%2Fexample.com%2Fcallback&state=L2ZyL3BhZ2U%3D'
+      `https://${domain}/identity/v1/logout?` + 'redirect_to=https%3A%2F%2Fexample.com%2Fcallback&state=L2ZyL3BhZ2U%3D'
     )
   })
 

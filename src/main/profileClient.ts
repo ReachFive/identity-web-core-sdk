@@ -71,9 +71,7 @@ type SmsVerificationCodeUpdatePasswordParams = {
   password: string
 }
 export type UpdatePasswordParams =
-  | AccessTokenUpdatePasswordParams
-  | EmailVerificationCodeUpdatePasswordParams
-  | SmsVerificationCodeUpdatePasswordParams
+  AccessTokenUpdatePasswordParams | EmailVerificationCodeUpdatePasswordParams | SmsVerificationCodeUpdatePasswordParams
 
 export type GetUserParams = {
   accessToken: string

@@ -16,9 +16,7 @@ export type PhoneNumberLoginWithWebAuthnParams = { phoneNumber: string }
  */
 export type DiscoverableLoginWithWebAuthnParams = { conditionalMediation: boolean | 'preferred' }
 export type LoginWithWebAuthnParams = { auth?: AuthOptions; signal?: AbortSignal } & (
-  | EmailLoginWithWebAuthnParams
-  | PhoneNumberLoginWithWebAuthnParams
-  | DiscoverableLoginWithWebAuthnParams
+  EmailLoginWithWebAuthnParams | PhoneNumberLoginWithWebAuthnParams | DiscoverableLoginWithWebAuthnParams
 )
 
 export type InternalLoginWithWebAuthnParams = LoginWithWebAuthnParams & { webAuthnOrigin?: string }
@@ -87,7 +85,7 @@ export type RegistrationPublicKeyCredentialSerialized = {
   response: {
     attestationObject: string
     clientDataJSON: string
-    transports: ReturnType<typeof AuthenticatorAttestationResponse.prototype['getTransports']>
+    transports: ReturnType<(typeof AuthenticatorAttestationResponse.prototype)['getTransports']>
   }
 }
 

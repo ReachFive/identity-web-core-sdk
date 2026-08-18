@@ -1,0 +1,9 @@
+# Single source of truth for browser targets, shared by eslint-plugin-compat and any
+# future syntax transpilation.
+#
+# The SDK's real floor is not `defaults` but the Web Crypto APIs it depends on, for which
+# no polyfill exists: `crypto.subtle` (PKCE code challenge, One Tap nonce) and
+# `crypto.randomUUID` (correlation id). That puts the honest minimum at early 2022 —
+# IE11 was never actually supported, despite Babel having targeted it until now.
+defaults
+not dead
