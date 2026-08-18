@@ -3,6 +3,7 @@ import nodeResolve from '@rollup/plugin-node-resolve'
 import terser from '@rollup/plugin-terser'
 import typescript from '@rollup/plugin-typescript'
 import { createRequire } from 'node:module'
+import { fileURLToPath } from 'node:url'
 import dts from 'rollup-plugin-dts'
 
 const pkg = createRequire(import.meta.url)('./package.json')
@@ -44,13 +45,22 @@ const sourcePlugins = (target) => [
   })
 ]
 
+const sourceDirectory = fileURLToPath(new URL('src/', import.meta.url))
+
 /**
- * An unresolved import silently becomes an external in a UMD bundle, producing a build that
- * looks fine but throws at load time. Treat it — and a few other structural problems — as fatal.
+ * An unresolved import silently becomes an external in a UMD bundle, producing a build that looks
+ * fine and then throws at load time, so treat that and a few other structural problems as fatal.
+ *
+ * Import cycles are fatal only when they involve this package's own sources. Cycles inside
+ * dependencies are common, usually harmless, and outside our control — failing the build on them
+ * would mean a dependency bump could break it for no good reason.
  */
 const onwarn = (warning) => {
-  const fatal = ['UNRESOLVED_IMPORT', 'MISSING_EXPORT', 'MISSING_GLOBAL_NAME', 'CIRCULAR_DEPENDENCY']
-  if (fatal.includes(warning.code)) throw new Error(`${warning.code}: ${warning.message}`)
+  const fatal = ['UNRESOLVED_IMPORT', 'MISSING_EXPORT', 'MISSING_GLOBAL_NAME']
+  const isOwnCycle =
+    warning.code === 'CIRCULAR_DEPENDENCY' && (warning.ids ?? []).some((id) => id.startsWith(sourceDirectory))
+
+  if (fatal.includes(warning.code) || isOwnCycle) throw new Error(`${warning.code}: ${warning.message}`)
   console.warn(warning.message)
 }
 

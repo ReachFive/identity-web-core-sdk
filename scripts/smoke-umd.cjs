@@ -33,6 +33,12 @@ function loadAsScriptTag(bundlePath) {
   for (const key of globals) globalThis[key] = window[key]
   globalThis.self = window
 
+  // Node has its own `fetch`, so leaving it in place would make the assertion below pass whether or
+  // not the bundle polyfills anything. Removing it reproduces the only situation the polyfill exists
+  // for: a browser without `fetch`.
+  delete globalThis.fetch
+  delete window.fetch
+
   // A real script tag has no `module`, `exports` or `define` in scope, which is what forces
   // the UMD wrapper down its browser-global branch.
   const source = fs.readFileSync(bundlePath, 'utf8')
@@ -48,8 +54,10 @@ function check(bundlePath) {
   if (typeof reach5?.createClient !== 'function') {
     throw new Error(`${name}: expected a global \`reach5.createClient\` function, got ${typeof reach5?.createClient}`)
   }
+  // `whatwg-fetch` installs onto the global object. Here that is `globalThis`; in a browser
+  // `globalThis` and `window` are the same object.
   if (typeof globalThis.fetch !== 'function') {
-    throw new Error(`${name}: the bundle should polyfill \`fetch\` for script-tag consumers`)
+    throw new Error(`${name}: the bundle did not install a \`fetch\` polyfill for script-tag consumers`)
   }
 
   // `createClient` fires its /config bootstrap immediately; a never-settling fetch keeps the
