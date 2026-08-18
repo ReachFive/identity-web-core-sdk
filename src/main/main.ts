@@ -1,11 +1,12 @@
 import { toQueryString } from '../utils/queryString'
-import { AuthOptions } from './authOptions'
-import { AuthResult } from './authResult'
+import type { AuthOptions } from './authOptions'
+import type { AuthResult } from './authResult'
 import { initCordovaCallbackIfNecessary } from './cordovaHelper'
-import { ApiClientConfig, Config } from './config'
+import type { ApiClientConfig, Config } from './config'
 import { createHttpClient, rawRequest } from './httpClient'
-import createEventManager, { Events } from './identityEventManager'
-import MfaClient, {
+import type { Events } from './identityEventManager'
+import createEventManager from './identityEventManager'
+import type {
   DeleteTrustedDeviceParams,
   ListTrustedDevicesResponse,
   RemoveMfaEmailParams,
@@ -19,8 +20,8 @@ import MfaClient, {
   VerifyMfaPasswordlessParams,
   VerifyMfaPhoneNumberRegistrationParams
 } from './mfaClient'
-import {
-  MFA,
+import MfaClient from './mfaClient'
+import type {
   OpenIdUser,
   PasswordlessResponse,
   PasswordStrength,
@@ -29,7 +30,8 @@ import {
   SessionDevice,
   SessionInfo
 } from './models'
-import OAuthClient, {
+import { MFA } from './models'
+import type {
   LoginWithCredentialsParams,
   LoginWithCustomTokenParams,
   LoginWithPasswordParams,
@@ -41,8 +43,9 @@ import OAuthClient, {
   TokenRequestParameters,
   VerifyPasswordlessParams
 } from './oAuthClient'
-import { WithPkceParams } from './pkceService'
-import ProfileClient, {
+import OAuthClient from './oAuthClient'
+import type { WithPkceParams } from './pkceService'
+import type {
   EmailVerificationParams,
   GetUserParams,
   PhoneNumberVerificationParams,
@@ -57,9 +60,11 @@ import ProfileClient, {
   VerifyEmailParams,
   VerifyPhoneNumberParams
 } from './profileClient'
+import ProfileClient from './profileClient'
 import createUrlParser from './urlParser'
-import WebAuthnClient, { ResetPasskeysParams } from './webAuthnClient'
-import { DeviceCredential, LoginWithWebAuthnParams, SignupWithWebAuthnParams } from './webAuthnService'
+import type { ResetPasskeysParams } from './webAuthnClient'
+import WebAuthnClient from './webAuthnClient'
+import type { DeviceCredential, LoginWithWebAuthnParams, SignupWithWebAuthnParams } from './webAuthnService'
 import CredentialsResponse = MFA.CredentialsResponse
 import StepUpResponse = MFA.StepUpResponse
 

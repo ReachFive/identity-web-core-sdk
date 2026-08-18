@@ -1,4 +1,4 @@
-import { Prompt, ResponseType } from './authOptions'
+import type { Prompt, ResponseType } from './authOptions'
 
 type ResponseMode = 'web_message'
 type Display = 'page' | 'popup' | 'touch' | 'wap'

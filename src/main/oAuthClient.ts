@@ -3,22 +3,23 @@ import type * as OneTap from 'google-one-tap'
 import WinChan from 'winchan'
 import { encodeToBase64 } from '../utils/base64'
 import { logError } from '../utils/logger'
-import { QueryString, toQueryString } from '../utils/queryString'
+import type { QueryString } from '../utils/queryString'
+import { toQueryString } from '../utils/queryString'
 import { randomBase64String } from '../utils/random'
 import { getWithExpiry, setWithExpiry } from '../utils/sessionStorage'
 import { camelCaseProperties } from '../utils/transformObjectProperties'
 import { difference, pick } from '../utils/utils'
-import { AuthOptions, computeAuthOptions } from './authOptions'
-import { AuthParameters } from './authParameters'
+import type { AuthOptions } from './authOptions'
+import { computeAuthOptions } from './authOptions'
+import type { AuthParameters } from './authParameters'
 import { AuthResult, enrichAuthResult } from './authResult'
-import { CaptchaParams } from './captcha'
-import { HttpClient } from './httpClient'
-import { IdentityEventManager } from './identityEventManager'
-import { ApiClientConfig } from './config'
-import MfaClient from './mfaClient'
-import {
+import type { CaptchaParams } from './captcha'
+import type { HttpClient } from './httpClient'
+import type { IdentityEventManager } from './identityEventManager'
+import type { ApiClientConfig } from './config'
+import type MfaClient from './mfaClient'
+import type {
   AuthenticationToken,
-  ErrorResponse,
   OrchestrationToken,
   PasswordlessResponse,
   PasswordStrength,
@@ -26,7 +27,9 @@ import {
   SessionInfo,
   SignupProfile
 } from './models'
-import { computePkceParams, PkceParams, WithPkceParams } from './pkceService'
+import { ErrorResponse } from './models'
+import type { PkceParams, WithPkceParams } from './pkceService'
+import { computePkceParams } from './pkceService'
 import { popupSize } from './providerPopupSize'
 import { resolveScope } from './scopeHelper'
 export type LoginWithCredentialsParams = {

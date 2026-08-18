@@ -21,6 +21,10 @@ export default defineConfig(
       polyfills: ['Promise', 'fetch', 'URL', 'URLSearchParams']
     },
     rules: {
+      // Type-only imports must say so. They are erased at compile time, so marking them keeps the
+      // module graph honest: a reader can tell at a glance which imports create a runtime edge, and
+      // a type-only reference cannot quietly reintroduce an import cycle.
+      '@typescript-eslint/consistent-type-imports': ['error', { fixStyle: 'separate-type-imports' }],
       '@typescript-eslint/no-namespace': 'off',
       '@typescript-eslint/no-unused-vars': [
         'error',

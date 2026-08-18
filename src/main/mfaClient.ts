@@ -1,11 +1,13 @@
 import { pick } from '../utils/utils'
-import { AuthOptions, computeAuthOptions } from './authOptions'
-import { AuthResult } from './authResult'
-import { HttpClient } from './httpClient'
-import { ApiClientConfig } from './config'
-import { MFA, TrustedDevice } from './models'
-import OAuthClient from './oAuthClient'
-import { WithPkceParams } from './pkceService'
+import type { AuthOptions } from './authOptions'
+import { computeAuthOptions } from './authOptions'
+import type { AuthResult } from './authResult'
+import type { HttpClient } from './httpClient'
+import type { ApiClientConfig } from './config'
+import type { TrustedDevice } from './models'
+import { MFA } from './models'
+import type OAuthClient from './oAuthClient'
+import type { WithPkceParams } from './pkceService'
 import CredentialsResponse = MFA.CredentialsResponse
 import EmailCredential = MFA.EmailCredential
 import StepUpResponse = MFA.StepUpResponse
