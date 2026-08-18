@@ -1,8 +1,9 @@
 import fetchMock from 'jest-fetch-mock'
 
 import { randomBase64String } from '../../utils/random'
-import { LoginWithPasswordParams, SignupParams } from '../oAuthClient'
-import { createDefaultTestClient, TestKit } from './helpers/clientFactory'
+import type { LoginWithPasswordParams, SignupParams } from '../oAuthClient'
+import type { TestKit } from './helpers/clientFactory'
+import { createDefaultTestClient } from './helpers/clientFactory'
 import {
   code,
   confidential,

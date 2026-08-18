@@ -1,4 +1,4 @@
-import { AuthOptions } from './authOptions'
+import type { AuthOptions } from './authOptions'
 
 /**
  * Resolve the actual oauth2 scope according to the authentication options.
