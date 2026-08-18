@@ -6,11 +6,9 @@ on:
       - main
       - master
       - develop
+  # Deliberately unfiltered: a stacked pull request targets a feature branch, not master, and
+  # would otherwise get no CI at all until its base is merged.
   pull_request:
-    branches:
-      - main
-      - master
-      - develop
 
 jobs:
   test:
