@@ -38,6 +38,16 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   which was a dev dependency — so consumers could never resolve it and type-checking the SDK's public API
   failed. That package is now a runtime dependency.
 
+### Add
+- `IdTokenPayload`, `IdTokenAddress` and `Gender` are now exported from the entry point.
+  `AuthResult.idTokenPayload` has always been typed with them, but they were never exported, so
+  consumers could not name a type they were already being handed.
+- `IdTokenPayload` now inherits the RFC 7519 registered claims from jose, which adds the previously
+  missing `jti` and `nbf`. Only the registered claims are inherited, not `JWTPayload` wholesale: that
+  interface carries an index signature, and inheriting it would turn every mistyped claim access into
+  a silent `unknown` rather than a compile error.
+- Added tests for `utils/jwt.ts`, which had none.
+
 ### Internal
 - Hand-rolled crypto and base64 primitives replaced by [`jose`](https://github.com/panva/jose): deleted
   `utils/base64.ts` entirely, `utils/jwt.ts` now delegates to `decodeJwt`, and `utils/random.ts`,
