@@ -1,24 +1,26 @@
-import { AuthOptions } from './authOptions'
-import { AuthResult } from './authResult'
-import { HttpClient } from './httpClient'
-import { IdentityEventManager } from './identityEventManager'
-import { ApiClientConfig } from './config'
-import { AuthenticationToken } from '../api/models'
-import OAuthClient from './oAuthClient'
+import type { AuthOptions } from './authOptions'
+import type { AuthResult } from './authResult'
+import type { HttpClient } from './httpClient'
+import type { IdentityEventManager } from './identityEventManager'
+import type { ApiClientConfig } from './config'
+import type { AuthenticationToken } from '../api/models'
+import type OAuthClient from './oAuthClient'
 import { resolveScope } from './scopeHelper'
-import {
+import type {
   CredentialRequestOptionsSerialized,
   DeviceCredential,
   DiscoverableLoginWithWebAuthnParams,
   EmailLoginWithWebAuthnParams,
-  encodePublicKeyCredentialCreationOptions,
-  encodePublicKeyCredentialRequestOptions,
   InternalLoginWithWebAuthnParams,
   InternalSignupWithWebAuthnParams,
   LoginWithWebAuthnParams,
   PhoneNumberLoginWithWebAuthnParams,
+  RegistrationOptions
+} from './webAuthnService'
+import {
+  encodePublicKeyCredentialCreationOptions,
+  encodePublicKeyCredentialRequestOptions,
   publicKeyCredentialType,
-  RegistrationOptions,
   serializeAuthenticationPublicKeyCredential,
   serializeRegistrationPublicKeyCredential
 } from './webAuthnService'

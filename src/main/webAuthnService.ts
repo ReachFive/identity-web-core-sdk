@@ -1,7 +1,7 @@
 import { base64url } from 'jose'
 
-import { AuthOptions } from './authOptions'
-import { SignupProfileData } from '../api/models'
+import type { AuthOptions } from './authOptions'
+import type { SignupProfileData } from '../api/models'
 
 export const publicKeyCredentialType = 'public-key'
 

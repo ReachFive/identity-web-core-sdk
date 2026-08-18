@@ -1,4 +1,5 @@
-import { IdTokenPayload, parseJwtTokenPayload } from '../utils/jwt'
+import type { IdTokenPayload } from '../utils/jwt'
+import { parseJwtTokenPayload } from '../utils/jwt'
 import { logError } from '../utils/logger'
 
 export type TokenType = 'Bearer'

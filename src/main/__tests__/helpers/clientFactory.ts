@@ -1,6 +1,7 @@
 import fetchMock from 'jest-fetch-mock'
-import { RemoteSettings } from '../../../api/models'
-import { Client, Config, createClient } from '../../main'
+import type { RemoteSettings } from '../../../api/models'
+import type { Client, Config } from '../../main'
+import { createClient } from '../../main'
 
 fetchMock.enableMocks()
 

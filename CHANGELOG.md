@@ -78,6 +78,18 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   public surface is unchanged.
 - Removed dead code with no callers: `src/utils/obj.ts` (which also shadowed the global `Set`),
   `encodeBase64UrlSafe`, `parseQueryString`, `snakeCasePath`, `camelCasePath`, `log` and `logWarn`.
+
+  These were never part of the consumable API, despite living in exported modules. `src/` is not
+  published (`files` lists only `cjs`, `es` and `umd`), the runtime bundles export nothing but the
+  entry point's surface, and all five symbols appear **zero** times in the published 1.41.0 bundles
+  because Rollup already tree-shook them. A deep import such as
+  `@reachfive/identity-core/es/utils/queryString` would have type-checked against the per-file
+  declarations that used to be published, then failed at runtime: there was no matching `.js` file.
+- All type-only imports are now written as `import type`, enforced by
+  `@typescript-eslint/consistent-type-imports`. Type-only imports are erased at compile time, so
+  marking them keeps the module graph readable — a reviewer can see which imports create a runtime
+  edge — and stops a type-only reference from quietly reintroducing an import cycle. The emitted
+  JavaScript is byte-identical before and after.
 - `WebAuthnClient`'s constructor re-assigned six endpoint URLs to the exact values its field
   initialisers had already set, while silently omitting the two reset-passkeys ones. Removed.
 
