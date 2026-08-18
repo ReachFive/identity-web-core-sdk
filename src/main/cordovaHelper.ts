@@ -1,4 +1,4 @@
-import { UrlParser } from './urlParser'
+import type { UrlParser } from './urlParser'
 
 export function initCordovaCallbackIfNecessary(urlParser: UrlParser): void {
   if (typeof window === 'undefined' || !('cordova' in window)) return

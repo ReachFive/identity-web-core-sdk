@@ -1,8 +1,5 @@
 import { camelCase, snakeCase as underlingSnakeCase } from './utils'
 
-export const snakeCasePath = (path: string) => path.split('.').map(snakeCase).join('.')
-export const camelCasePath = (path: string) => path.split('.').map(camelCase).join('.')
-
 export const camelCaseProperties = <T>(object: T) => transformObjectProperties(object, camelCase)
 export const snakeCaseProperties = <T>(object: T) => transformObjectProperties(object, snakeCase)
 

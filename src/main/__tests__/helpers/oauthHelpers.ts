@@ -1,8 +1,8 @@
 import { toQueryString } from '../../../utils/queryString'
 import { pick } from '../../../utils/utils'
-import { ResponseType } from '../../authOptions'
-import { AuthParameters } from '../../authParameters'
-import { WithPkceParams } from '../../pkceService'
+import type { ResponseType } from '../../authOptions'
+import type { AuthParameters } from '../../authParameters'
+import type { WithPkceParams } from '../../pkceService'
 
 export const mockPkceValues = {
   code_challenge: 'KBHQASQDHCtWjDGVGQaPjsK8c8SlrH2yfm3nQh75o14',

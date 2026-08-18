@@ -1,6 +1,6 @@
 import fetchMock from 'jest-fetch-mock'
-import { AuthOptions } from '../authOptions'
-import { PasswordlessParams } from '../oAuthClient'
+import type { AuthOptions } from '../authOptions'
+import type { PasswordlessParams } from '../oAuthClient'
 import { createDefaultTestClient } from './helpers/clientFactory'
 import { confidential, mockPkceValues, pageDisplay, pblic, scope } from './helpers/oauthHelpers'
 import { defineWindowProperty, headers, mockWindowCrypto } from './helpers/testHelpers'

@@ -1,6 +1,6 @@
 import { camelCaseProperties } from '../utils/transformObjectProperties'
 import { AuthResult } from './authResult'
-import { IdentityEventManager } from './identityEventManager'
+import type { IdentityEventManager } from './identityEventManager'
 import { ErrorResponse } from './models'
 
 export type UrlParser = {

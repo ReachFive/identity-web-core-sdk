@@ -1,8 +1,8 @@
 import type { CaptchaParams } from './captcha'
+import type { ApiClientConfig } from './config'
 import type { HttpClient } from './httpClient'
 import type { IdentityEventManager } from './identityEventManager'
-import { ApiClientConfig, SessionDevice, SessionDeviceListResponse } from './main'
-import type { OpenIdUser, Profile } from './models'
+import type { OpenIdUser, Profile, SessionDevice, SessionDeviceListResponse } from './models'
 
 export type UpdateEmailParams = {
   accessToken: string
