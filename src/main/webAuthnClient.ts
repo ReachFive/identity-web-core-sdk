@@ -3,7 +3,7 @@ import type { AuthResult } from './authResult'
 import type { HttpClient } from './httpClient'
 import type { IdentityEventManager } from './identityEventManager'
 import type { ApiClientConfig } from './config'
-import type { AuthenticationToken } from './models'
+import type { AuthenticationToken } from '../api/models'
 import type OAuthClient from './oAuthClient'
 import { resolveScope } from './scopeHelper'
 import type {

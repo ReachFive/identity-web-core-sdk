@@ -8,7 +8,7 @@ import OauthClient from '../oAuthClient'
 import createUrlParser from '../urlParser'
 import { mockPkceValues } from './helpers/oauthHelpers'
 import { defineWindowProperty, headers, mockWindowCrypto } from './helpers/testHelpers'
-import type { RemoteSettings } from '../models'
+import type { RemoteSettings } from '../../api/models'
 
 const clientId = 'kqIJE'
 const baseUrl = 'https://local.reach5.net'

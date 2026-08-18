@@ -17,6 +17,7 @@
     "build": "rollup -c",
     "watch": "rollup -c -w",
     "typecheck": "tsc --noEmit",
+    "typecheck:api": "tsc --noEmit -p tsconfig.api.json",
     "test": "jest --silent",
     "watch:test": "jest --silent --watch",
     "lint": "eslint src/",

@@ -35,6 +35,15 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   failed. That package is now a runtime dependency.
 
 ### Internal
+- `main/models.ts` (469 lines, opening with a literal `// TODO: To sort`) split into ten focused modules
+  under `api/models/`, grouped by aggregate: profile, signup, session, tokens, mfa, password,
+  customFields, consents, settings, errors. Every type is still re-exported from the entry point.
+- Added `tsconfig.api.json` and `npm run typecheck:api`: a purity guard that compiles `src/api` with no
+  DOM libs and no ambient `@types`, so a browser global creeping into the isomorphic layer fails the
+  build. The root tsconfig cannot catch this — it has `DOM` in `lib` for the whole project. Wired into CI.
+- `@typescript-eslint/no-namespace` is no longer disabled project-wide. The four namespaces that must
+  stay (the public `ErrorResponse`, `MFA` and `AuthResult` merged namespaces, plus the Jest matcher
+  augmentation) now carry a scoped exemption with the reason, so any *new* namespace is reported.
 - `Config` and `ApiClientConfig` moved out of `main.ts` into `main/config.ts`. All four sub-clients used
   to import `ApiClientConfig` from the very module that constructs them, putting each of them in an
   import cycle; those cycles are gone. Both types are still re-exported from the entry point, so the

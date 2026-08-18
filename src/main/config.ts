@@ -1,4 +1,4 @@
-import type { OrchestrationToken, RemoteSettings } from './models'
+import type { OrchestrationToken, RemoteSettings } from '../api/models'
 
 /**
  * Options accepted by `createClient`.
