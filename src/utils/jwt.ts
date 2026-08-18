@@ -1,5 +1,6 @@
+import { decodeJwt } from 'jose'
+
 import { camelCaseProperties } from './transformObjectProperties'
-import { decodeBase64UrlSafe } from './base64'
 
 export type Gender = 'female' | 'male' | 'other'
 
@@ -48,7 +49,10 @@ export interface IdTokenPayload {
   updatedAt?: string
 }
 
+/**
+ * Reads an id token's claims. The signature is NOT verified — callers only use this to surface
+ * the payload alongside the tokens the authorization server just handed us over a trusted channel.
+ */
 export function parseJwtTokenPayload(token: string): IdTokenPayload {
-  const bodyPart = token.split('.')[1]
-  return camelCaseProperties(JSON.parse(decodeBase64UrlSafe(bodyPart))) as IdTokenPayload
+  return camelCaseProperties(decodeJwt(token)) as IdTokenPayload
 }

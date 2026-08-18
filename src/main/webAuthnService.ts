@@ -1,10 +1,19 @@
-import { Buffer } from 'buffer/'
+import { base64url } from 'jose'
 
 import { AuthOptions } from './authOptions'
 import { SignupProfileData } from '../api/models'
-import { encodeToBase64 } from '../utils/base64'
 
 export const publicKeyCredentialType = 'public-key'
+
+/**
+ * The WebAuthn API exposes credential fields as `ArrayBuffer`, whereas jose encodes byte arrays.
+ *
+ * base64url is required rather than merely conventional: the CIAM backend reads these fields with
+ * Java's `Base64.getUrlDecoder`, which rejects `+` and `/` (see `webauthn/api/ByteList.scala`).
+ * In the other direction the backend writes with `Base64.getUrlEncoder` — padded for challenges
+ * and user ids, unpadded for credential descriptor ids — and jose's decoder accepts both.
+ */
+const encodeBytes = (bytes: ArrayBuffer): string => base64url.encode(new Uint8Array(bytes))
 
 export type EmailLoginWithWebAuthnParams = { email: string }
 export type PhoneNumberLoginWithWebAuthnParams = { phoneNumber: string }
@@ -106,16 +115,16 @@ export function encodePublicKeyCredentialCreationOptions(
 ): PublicKeyCredentialCreationOptions {
   return {
     ...serializedOptions,
-    challenge: Buffer.from(serializedOptions.challenge, 'base64'),
+    challenge: base64url.decode(serializedOptions.challenge),
     user: {
       ...serializedOptions.user,
-      id: Buffer.from(serializedOptions.user.id, 'base64')
+      id: base64url.decode(serializedOptions.user.id)
     },
     excludeCredentials:
       serializedOptions.excludeCredentials &&
       serializedOptions.excludeCredentials!.map((excludeCredential) => ({
         ...excludeCredential,
-        id: Buffer.from(excludeCredential.id, 'base64')
+        id: base64url.decode(excludeCredential.id)
       }))
   }
 }
@@ -125,10 +134,10 @@ export function encodePublicKeyCredentialRequestOptions(
 ): PublicKeyCredentialRequestOptions {
   return {
     ...serializedOptions,
-    challenge: Buffer.from(serializedOptions.challenge, 'base64'),
+    challenge: base64url.decode(serializedOptions.challenge),
     allowCredentials: serializedOptions.allowCredentials.map((allowCrendential) => ({
       ...allowCrendential,
-      id: Buffer.from(allowCrendential.id, 'base64')
+      id: base64url.decode(allowCrendential.id)
     }))
   }
 }
@@ -140,11 +149,11 @@ export function serializeRegistrationPublicKeyCredential(
 
   return {
     id: encodedPublicKey.id,
-    rawId: encodeToBase64(encodedPublicKey.rawId),
+    rawId: encodeBytes(encodedPublicKey.rawId),
     type: 'public-key',
     response: {
-      clientDataJSON: encodeToBase64(response.clientDataJSON),
-      attestationObject: encodeToBase64(response.attestationObject),
+      clientDataJSON: encodeBytes(response.clientDataJSON),
+      attestationObject: encodeBytes(response.attestationObject),
       transports: response.getTransports()
     }
   }
@@ -157,13 +166,13 @@ export function serializeAuthenticationPublicKeyCredential(
 
   return {
     id: encodedPublicKey.id,
-    rawId: encodeToBase64(encodedPublicKey.rawId),
+    rawId: encodeBytes(encodedPublicKey.rawId),
     type: 'public-key',
     response: {
-      authenticatorData: encodeToBase64(response.authenticatorData),
-      clientDataJSON: encodeToBase64(response.clientDataJSON),
-      signature: encodeToBase64(response.signature),
-      userHandle: response.userHandle && encodeToBase64(response.userHandle)
+      authenticatorData: encodeBytes(response.authenticatorData),
+      clientDataJSON: encodeBytes(response.clientDataJSON),
+      signature: encodeBytes(response.signature),
+      userHandle: response.userHandle && encodeBytes(response.userHandle)
     }
   }
 }

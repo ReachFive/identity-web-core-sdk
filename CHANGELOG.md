@@ -30,11 +30,29 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   and the CI step is enabled. The resulting reformat is stylistic only.
 
 ### Fixed
+- Bundle sizes drop again, because the `buffer` polyfill is gone. Gzipped: `es`/`cjs`
+  **28 kB → 15 kB**, `umd/identity-core.min.js` **21 kB → 15 kB**. Against the 1.41.0 baseline that is
+  **172 kB → 15 kB (−91%)** for `es`/`cjs` and **91 kB → 15 kB (−83%)** for the minified UMD bundle.
+
 - The published type declarations referenced `InAppBrowser` from `@types/cordova-plugin-inappbrowser`,
   which was a dev dependency — so consumers could never resolve it and type-checking the SDK's public API
   failed. That package is now a runtime dependency.
 
 ### Internal
+- Hand-rolled crypto and base64 primitives replaced by [`jose`](https://github.com/panva/jose): deleted
+  `utils/base64.ts` entirely, `utils/jwt.ts` now delegates to `decodeJwt`, and `utils/random.ts`,
+  `main/pkceService.ts`, `main/webAuthnService.ts` and the Google One Tap nonce all use
+  `jose.base64url` plus Web Crypto. Outputs verified byte-identical to the previous implementation
+  over 12 600 random cases.
+- Dropped the `buffer` polyfill dependency (pinned at 5.6.0, from 2020). It was inlined into the
+  `es`/`cjs` bundles because the externals predicate matched `buffer` but the code imported `buffer/`.
+- Added tests for `webAuthnService`, which had none. They pin the wire format against the CIAM
+  backend's `Base64.getUrlEncoder`/`getUrlDecoder` contract, using fixtures whose standard-base64
+  form contains both `+` and `/` so an alphabet mistake cannot pass.
+- Test setup: added `jest.setup.ts` providing `TextEncoder`/`TextDecoder`, which jsdom 19 does not
+  expose, and pointed jsdom's export conditions at `node` so packages shipping separate ESM browser
+  builds resolve to their CommonJS entry point under ts-jest.
+
 - `main/models.ts` (469 lines, opening with a literal `// TODO: To sort`) split into ten focused modules
   under `api/models/`, grouped by aggregate: profile, signup, session, tokens, mfa, password,
   customFields, consents, settings, errors. Every type is still re-exported from the entry point.

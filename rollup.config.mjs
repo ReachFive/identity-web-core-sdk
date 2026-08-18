@@ -24,14 +24,16 @@ const umdEntry = 'src/umd.ts'
 /** Consumed by a bundler or Node: no polyfills, modern syntax, dependencies left external. */
 const moduleEntry = 'src/main/index.ts'
 
-// Matches the previous `isNpmDependency` predicate exactly, so this build change stays
-// behaviour-neutral. Note `buffer` is imported as `'buffer/'`, which does not match and is
-// therefore still inlined rather than externalised — a wart removed when `buffer` goes away.
+// Runtime dependencies are left external in the `es`/`cjs` bundles and inlined in the UMD one.
+// `jose` qualifies because it publishes both ESM and CJS entry points; an ESM-only package would
+// have to be bundled instead, or `require('cjs/main.js')` would fail on Node below 22.
 const runtimeDependencies = Object.keys(pkg.dependencies)
 const isRuntimeDependency = (id) => runtimeDependencies.includes(id) || /lodash/.test(id)
 
-const sourcePlugins = (target) => [
-  nodeResolve(),
+const sourcePlugins = ({ target, browser = false }) => [
+  // `browser` matters for the UMD bundle, which inlines its dependencies: jose publishes separate
+  // node and browser builds, and the node one imports `node:buffer`, which cannot ship to a browser.
+  nodeResolve({ browser }),
   commonjs(),
   typescript({
     tsconfig: './tsconfig.json',
@@ -70,7 +72,7 @@ export default [
         plugins: [terser({ format: { preamble: banner } })]
       }
     ],
-    plugins: sourcePlugins('ES2015')
+    plugins: sourcePlugins({ target: 'ES2015', browser: true })
   },
   {
     input: moduleEntry,
@@ -80,7 +82,7 @@ export default [
     ],
     external: isRuntimeDependency,
     onwarn,
-    plugins: sourcePlugins('ES2020')
+    plugins: sourcePlugins({ target: 'ES2020' })
   },
   {
     input: moduleEntry,
