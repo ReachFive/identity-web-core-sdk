@@ -1,5 +1,5 @@
 import { base64url } from 'jose'
-import * as OneTap from 'google-one-tap'
+import type * as OneTap from 'google-one-tap'
 import WinChan from 'winchan'
 import { logError } from '../utils/logger'
 import { QueryString, toQueryString } from '../utils/queryString'
