@@ -1,5 +1,5 @@
 /**
- * Covers the WebAuthn serialisation boundary, which had no tests at all.
+ * Covers the WebAuthn serialisation boundary.
  *
  * The encodings here are not arbitrary: the CIAM backend serialises these fields with Java's
  * `Base64.getUrlEncoder` and reads them back with `Base64.getUrlDecoder`
@@ -9,8 +9,7 @@
  *   - credential descriptor ids   base64url WITHOUT padding (`withoutPadding = true`)
  *   - everything the SDK sends    must be base64url, because `getUrlDecoder` rejects `+` and `/`
  *
- * The expected values below were produced by the previous `buffer`-based implementation, so these
- * tests pin the wire format across that swap.
+ * These tests pin that wire format, so a change of encoding library cannot quietly alter it.
  */
 import {
   encodePublicKeyCredentialCreationOptions,
@@ -20,8 +19,8 @@ import {
 } from '../webAuthnService'
 
 /**
- * Bytes whose *standard* base64 needs both `+` and `/`, so an alphabet mistake cannot slip past.
- * The encodings below come from the previous `buffer`-based implementation.
+ * Six bytes whose *standard* base64 needs both `+` and `/`, so an alphabet mistake cannot slip past.
+ * Six bytes also encode to exactly eight base64 characters, hence no padding in either form.
  */
 const TRICKY_BYTES = new Uint8Array([0, 0, 0, 251, 255, 190])
 const TRICKY_BASE64_STANDARD = 'AAAA+/++'
@@ -75,11 +74,11 @@ describe('webAuthnService encoding invariants', () => {
       expect(bytesOf(encoded.allowCredentials![0].id)).toEqual([1, 2, 3, 4, 5])
     })
 
-    test('is alphabet-agnostic on the way in, matching the previous buffer-based behaviour', () => {
-      // jose 5's decoder is lenient: it accepts the standard alphabet too, exactly as
-      // `Buffer.from(x, 'base64')` did. The backend only ever emits base64url
-      // (`Base64.getUrlEncoder`), so this is about not regressing, not about relying on it.
-      // Note jose 6 tightened this and rejects `+` and `/`.
+    test('accepts the standard alphabet too, so a lenient decoder stays lenient', () => {
+      // The backend only ever emits base64url (`Base64.getUrlEncoder`), so nothing should depend on
+      // this. It is pinned because the decoder in use happens to be lenient, and swapping in a strict
+      // one — jose 6 rejects `+` and `/`, for instance — would be a behaviour change worth noticing
+      // deliberately rather than discovering in production.
       const fromUrlSafe = encodePublicKeyCredentialRequestOptions({
         challenge: TRICKY_BASE64URL,
         allowCredentials: []

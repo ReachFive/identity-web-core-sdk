@@ -5,9 +5,10 @@ export type PkceParams = { codeChallenge: string; codeChallengeMethod: string }
 export type WithPkceParams<T> = T & Partial<PkceParams>
 
 /**
- * PKCE per RFC 7636. Both steps are three lines of Web Crypto, so they stay in-house rather than
- * pulling in `oauth4webapi`, which is ESM-only and would have to be bundled into the CJS output.
- * The outputs are byte-identical to the previous `buffer`-based implementation.
+ * Proof Key for Code Exchange, per RFC 7636.
+ *
+ * Generates a `code_verifier`, stashes it for the later token exchange, and returns the
+ * `code_challenge` derived from it.
  */
 export async function computePkceParams(): Promise<PkceParams> {
   const codeVerifier = generateCodeVerifier()
