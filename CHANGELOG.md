@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+
+## [1.42.0] - 2026-08-20
+
 ### Add
 - Optional `state` parameter in the `logout` method, returned as-is in the query string of the redirect URL
 
