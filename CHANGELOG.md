@@ -566,7 +566,9 @@ Automatise the deployment of a new release with `circleci`.
 - Implement `tslint`.
 - Remove `yarn`.
 
-[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.41.0...HEAD
+[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.42.0...HEAD
+
+[1.42.0]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.41.0...v1.42.0
 
 [1.41.0]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.40.0...v1.41.0
 
