@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+
+## [1.42.0] - 2026-08-20
+
 ### Add
 - Optional `state` parameter in the `logout` method, returned as-is in the query string of the redirect URL
 
@@ -595,7 +598,9 @@ Automatise the deployment of a new release with `circleci`.
 - Implement `tslint`.
 - Remove `yarn`.
 
-[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.41.0...HEAD
+[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.42.0...HEAD
+
+[1.42.0]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.41.0...v1.42.0
 
 [1.41.0]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.40.0...v1.41.0
 
