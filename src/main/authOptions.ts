@@ -1,6 +1,6 @@
 import { pick } from '../utils/utils'
 import type { AuthParameters } from './authParameters'
-import type { Scope } from './models'
+import type { Scope } from '../api/models'
 import type { WithPkceParams } from './pkceService'
 import { resolveScope } from './scopeHelper'
 

@@ -1,7 +1,7 @@
 import type { AuthResult } from './authResult'
 import { enrichAuthResult } from './authResult'
 import EventManager from '../utils/eventManager'
-import type { ErrorResponse, Profile } from './models'
+import type { ErrorResponse, Profile } from '../api/models'
 
 export type Events = {
   authenticated: AuthResult

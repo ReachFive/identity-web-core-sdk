@@ -26,8 +26,8 @@ import type {
   Scope,
   SessionInfo,
   SignupProfile
-} from './models'
-import { ErrorResponse } from './models'
+} from '../api/models'
+import { ErrorResponse } from '../api/models'
 import type { PkceParams, WithPkceParams } from './pkceService'
 import { computePkceParams } from './pkceService'
 import { popupSize } from './providerPopupSize'

@@ -25,7 +25,6 @@ export default defineConfig(
       // module graph honest: a reader can tell at a glance which imports create a runtime edge, and
       // a type-only reference cannot quietly reintroduce an import cycle.
       '@typescript-eslint/consistent-type-imports': ['error', { fixStyle: 'separate-type-imports' }],
-      '@typescript-eslint/no-namespace': 'off',
       '@typescript-eslint/no-unused-vars': [
         'error',
         {

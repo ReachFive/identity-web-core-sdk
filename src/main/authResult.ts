@@ -37,6 +37,8 @@ export function enrichAuthResult(response: AuthResult): AuthResult {
   return response
 }
 
+// Declaration merging is what puts `isAuthResult` on the exported `AuthResult` type. Public API.
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AuthResult {
   export function isAuthResult(thing: unknown): thing is AuthResult {
     return (

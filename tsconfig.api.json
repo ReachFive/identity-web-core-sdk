@@ -1,0 +1,17 @@
+{
+  "//": [
+    "Purity guard for the isomorphic API layer.",
+    "The root tsconfig puts DOM and DOM.Iterable in `lib` for the whole project, so TypeScript",
+    "would happily accept `window`, `document` or `localStorage` inside src/api. This config",
+    "compiles that directory with no DOM lib and no ambient @types, so any browser dependency",
+    "creeping in fails the check instead of silently shipping in a bundle meant for Node."
+  ],
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "declaration": false,
+    "lib": ["ES2020"],
+    "types": []
+  },
+  "include": ["src/api/**/*"]
+}
