@@ -1,8 +1,8 @@
 import type { CaptchaParams } from './captcha'
+import type { ApiClientConfig } from './config'
 import type { HttpClient } from './httpClient'
 import type { IdentityEventManager } from './identityEventManager'
-import { ApiClientConfig, SessionDevice, SessionDeviceListResponse } from './main'
-import type { OpenIdUser, Profile } from './models'
+import type { OpenIdUser, Profile, SessionDevice, SessionDeviceListResponse } from '../api/models'
 
 export type UpdateEmailParams = {
   accessToken: string
@@ -71,9 +71,7 @@ type SmsVerificationCodeUpdatePasswordParams = {
   password: string
 }
 export type UpdatePasswordParams =
-  | AccessTokenUpdatePasswordParams
-  | EmailVerificationCodeUpdatePasswordParams
-  | SmsVerificationCodeUpdatePasswordParams
+  AccessTokenUpdatePasswordParams | EmailVerificationCodeUpdatePasswordParams | SmsVerificationCodeUpdatePasswordParams
 
 export type GetUserParams = {
   accessToken: string

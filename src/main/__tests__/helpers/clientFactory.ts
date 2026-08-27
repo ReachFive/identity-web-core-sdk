@@ -1,13 +1,14 @@
 import fetchMock from 'jest-fetch-mock'
-import { RemoteSettings } from '../../models'
-import { Client, Config, createClient } from '../../main'
+import type { RemoteSettings } from '../../../api/models'
+import type { Client, Config } from '../../main'
+import { createClient } from '../../main'
 
 fetchMock.enableMocks()
 
 export type TestKit = {
   client: Client
   remoteSettings: RemoteSettings
-  domain: string,
+  domain: string
   clientId: string
 }
 
@@ -30,7 +31,7 @@ export function createDefaultTestClient(remoteSettings: Partial<RemoteSettings> 
     passwordPolicy: {
       minLength: 8,
       minStrength: 2,
-      allowUpdateWithAccessTokenOnly: true,
+      allowUpdateWithAccessTokenOnly: true
     },
     resourceBaseUrl: `https://${domain}/hassets/sdk`,
     mfaEmailEnabled: false,
@@ -40,7 +41,7 @@ export function createDefaultTestClient(remoteSettings: Partial<RemoteSettings> 
       phoneNumber: true,
       customIdentifier: true
     },
-    ...remoteSettings,
+    ...remoteSettings
   }
 
   // Mocks the initial config fetching

@@ -1,10 +1,12 @@
 import { toQueryString } from '../utils/queryString'
-import { AuthOptions } from './authOptions'
-import { AuthResult } from './authResult'
+import type { AuthOptions } from './authOptions'
+import type { AuthResult } from './authResult'
 import { initCordovaCallbackIfNecessary } from './cordovaHelper'
+import type { ApiClientConfig, Config } from './config'
 import { createHttpClient, rawRequest } from './httpClient'
-import createEventManager, { Events } from './identityEventManager'
-import MfaClient, {
+import type { Events } from './identityEventManager'
+import createEventManager from './identityEventManager'
+import type {
   DeleteTrustedDeviceParams,
   ListTrustedDevicesResponse,
   RemoveMfaEmailParams,
@@ -18,18 +20,18 @@ import MfaClient, {
   VerifyMfaPasswordlessParams,
   VerifyMfaPhoneNumberRegistrationParams
 } from './mfaClient'
-import {
-  MFA,
+import MfaClient from './mfaClient'
+import type {
   OpenIdUser,
-  OrchestrationToken,
   PasswordlessResponse,
   PasswordStrength,
   Profile,
   RemoteSettings,
   SessionDevice,
   SessionInfo
-} from './models'
-import OAuthClient, {
+} from '../api/models'
+import { MFA } from '../api/models'
+import type {
   LoginWithCredentialsParams,
   LoginWithCustomTokenParams,
   LoginWithPasswordParams,
@@ -41,8 +43,9 @@ import OAuthClient, {
   TokenRequestParameters,
   VerifyPasswordlessParams
 } from './oAuthClient'
-import { WithPkceParams } from './pkceService'
-import ProfileClient, {
+import OAuthClient from './oAuthClient'
+import type { WithPkceParams } from './pkceService'
+import type {
   EmailVerificationParams,
   GetUserParams,
   PhoneNumberVerificationParams,
@@ -57,36 +60,23 @@ import ProfileClient, {
   VerifyEmailParams,
   VerifyPhoneNumberParams
 } from './profileClient'
+import ProfileClient from './profileClient'
 import createUrlParser from './urlParser'
-import WebAuthnClient, { ResetPasskeysParams } from './webAuthnClient'
-import { DeviceCredential, LoginWithWebAuthnParams, SignupWithWebAuthnParams } from './webAuthnService'
+import type { ResetPasskeysParams } from './webAuthnClient'
+import WebAuthnClient from './webAuthnClient'
+import type { DeviceCredential, LoginWithWebAuthnParams, SignupWithWebAuthnParams } from './webAuthnService'
 import CredentialsResponse = MFA.CredentialsResponse
 import StepUpResponse = MFA.StepUpResponse
 
 export { AuthOptions } from './authOptions'
+export { ApiClientConfig, Config } from './config'
 export { AuthResult } from './authResult'
-export * from './models'
+export * from '../api/models'
 export * from './oAuthClient'
 export { DeviceCredential, LoginWithWebAuthnParams, SignupWithWebAuthnParams } from './webAuthnService'
-
-export interface Config {
-  clientId: string
-  domain: string
-  /**
-   * Used to define which Google provider variant to use with Google One Tap
-   * @default "default"
-   * */
-  googleVariant?: string
-  language?: string
-  locale?: string
-  webAuthnOrigin?: string
-}
-
-export type ApiClientConfig = RemoteSettings & {
-  clientId: string
-  baseUrl: string
-  orchestrationToken?: OrchestrationToken
-}
+// `AuthResult.idTokenPayload` has always been typed with these, but they were never exported, so
+// consumers could not name the type they were already handed.
+export type { Gender, IdTokenAddress, IdTokenPayload } from '../utils/jwt'
 
 export type Client = {
   addNewWebAuthnDevice: (accessToken: string, friendlyName?: string) => Promise<void>

@@ -1,29 +1,33 @@
-import { Buffer } from 'buffer/'
-
-import { encodeToBase64 } from '../utils/base64'
-import { randomBase64String } from '../utils/random'
+import { base64url } from 'jose'
 
 export type PkceParams = { codeChallenge: string; codeChallengeMethod: string }
 
 export type WithPkceParams<T> = T & Partial<PkceParams>
 
-export function computePkceParams(): Promise<PkceParams> {
-  const codeVerifier = randomBase64String()
+/**
+ * Proof Key for Code Exchange, per RFC 7636.
+ *
+ * Generates a `code_verifier`, stashes it for the later token exchange, and returns the
+ * `code_challenge` derived from it.
+ */
+export async function computePkceParams(): Promise<PkceParams> {
+  const codeVerifier = generateCodeVerifier()
 
   localStorage.setItem('verifier_key', codeVerifier)
-  return computeCodeChallenge(codeVerifier).then((challenge) => {
-    return {
-      codeChallenge: challenge,
-      codeChallengeMethod: 'S256'
-    }
-  })
+
+  return {
+    codeChallenge: await calculateCodeChallenge(codeVerifier),
+    codeChallengeMethod: 'S256'
+  }
 }
 
-function computeCodeChallenge(verifier: string): Promise<string> {
-  const binaryChallenge = Buffer.from(verifier, 'utf-8')
-  return new Promise((resolve) => {
-    window.crypto.subtle.digest('SHA-256', binaryChallenge).then((hash) => {
-      return resolve(encodeToBase64(hash))
-    })
-  })
+/** RFC 7636 §4.1: 32 random bytes, base64url-encoded, giving a 43-character verifier. */
+function generateCodeVerifier(): string {
+  return base64url.encode(crypto.getRandomValues(new Uint8Array(32)))
+}
+
+/** RFC 7636 §4.2, S256 transformation: BASE64URL(SHA256(ASCII(code_verifier))). */
+async function calculateCodeChallenge(codeVerifier: string): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(codeVerifier))
+  return base64url.encode(new Uint8Array(digest))
 }

@@ -1,4 +1,5 @@
-import { IdTokenPayload, parseJwtTokenPayload } from '../utils/jwt'
+import type { IdTokenPayload } from '../utils/jwt'
+import { parseJwtTokenPayload } from '../utils/jwt'
 import { logError } from '../utils/logger'
 
 export type TokenType = 'Bearer'
@@ -36,9 +37,12 @@ export function enrichAuthResult(response: AuthResult): AuthResult {
   return response
 }
 
+// Declaration merging is what puts `isAuthResult` on the exported `AuthResult` type. Public API.
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AuthResult {
   export function isAuthResult(thing: unknown): thing is AuthResult {
-    return typeof thing === "object" && thing !== null 
-      && ('accessToken' in thing || 'idToken' in thing || 'code' in thing)
+    return (
+      typeof thing === 'object' && thing !== null && ('accessToken' in thing || 'idToken' in thing || 'code' in thing)
+    )
   }
 }

@@ -1,24 +1,26 @@
-import { AuthOptions } from './authOptions'
-import { AuthResult } from './authResult'
-import { HttpClient } from './httpClient'
-import { IdentityEventManager } from './identityEventManager'
-import { ApiClientConfig } from './main'
-import { AuthenticationToken } from './models'
-import OAuthClient from './oAuthClient'
+import type { AuthOptions } from './authOptions'
+import type { AuthResult } from './authResult'
+import type { HttpClient } from './httpClient'
+import type { IdentityEventManager } from './identityEventManager'
+import type { ApiClientConfig } from './config'
+import type { AuthenticationToken } from '../api/models'
+import type OAuthClient from './oAuthClient'
 import { resolveScope } from './scopeHelper'
-import {
+import type {
   CredentialRequestOptionsSerialized,
   DeviceCredential,
   DiscoverableLoginWithWebAuthnParams,
   EmailLoginWithWebAuthnParams,
-  encodePublicKeyCredentialCreationOptions,
-  encodePublicKeyCredentialRequestOptions,
   InternalLoginWithWebAuthnParams,
   InternalSignupWithWebAuthnParams,
   LoginWithWebAuthnParams,
   PhoneNumberLoginWithWebAuthnParams,
+  RegistrationOptions
+} from './webAuthnService'
+import {
+  encodePublicKeyCredentialCreationOptions,
+  encodePublicKeyCredentialRequestOptions,
   publicKeyCredentialType,
-  RegistrationOptions,
   serializeAuthenticationPublicKeyCredential,
   serializeRegistrationPublicKeyCredential
 } from './webAuthnService'
@@ -68,13 +70,6 @@ export default class WebAuthnClient {
     this.http = props.http
     this.eventManager = props.eventManager
     this.oAuthClient = props.oAuthClient
-
-    this.authenticationOptionsUrl = '/webauthn/authentication-options'
-    this.authenticationUrl = '/webauthn/authentication'
-    this.registrationOptionsUrl = '/webauthn/registration-options'
-    this.registrationUrl = '/webauthn/registration'
-    this.signupOptionsUrl = '/webauthn/signup-options'
-    this.signupUrl = '/webauthn/signup'
   }
 
   isPublicKeyCredential(credentials: Credential): credentials is PublicKeyCredential {

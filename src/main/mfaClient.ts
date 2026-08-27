@@ -1,11 +1,13 @@
 import { pick } from '../utils/utils'
-import { AuthOptions, computeAuthOptions } from './authOptions'
-import { AuthResult } from './authResult'
-import { HttpClient } from './httpClient'
-import { ApiClientConfig } from './main'
-import { MFA, TrustedDevice } from './models'
-import OAuthClient from './oAuthClient'
-import { WithPkceParams } from './pkceService'
+import type { AuthOptions } from './authOptions'
+import { computeAuthOptions } from './authOptions'
+import type { AuthResult } from './authResult'
+import type { HttpClient } from './httpClient'
+import type { ApiClientConfig } from './config'
+import type { TrustedDevice } from '../api/models'
+import { MFA } from '../api/models'
+import type OAuthClient from './oAuthClient'
+import type { WithPkceParams } from './pkceService'
 import CredentialsResponse = MFA.CredentialsResponse
 import EmailCredential = MFA.EmailCredential
 import StepUpResponse = MFA.StepUpResponse
@@ -28,8 +30,7 @@ export type StartMfaEmailRegistrationParams = {
 }
 
 export type StartMfaEmailRegistrationResponse =
-  | { status: 'email_sent' }
-  | { status: 'enabled'; credential: EmailCredential }
+  { status: 'email_sent' } | { status: 'enabled'; credential: EmailCredential }
 
 export type StartMfaPhoneNumberRegistrationParams = {
   accessToken: string
@@ -39,8 +40,7 @@ export type StartMfaPhoneNumberRegistrationParams = {
 }
 
 export type StartMfaPhoneNumberRegistrationResponse =
-  | { status: 'sms_sent' }
-  | { status: 'enabled'; credential: PhoneCredential }
+  { status: 'sms_sent' } | { status: 'enabled'; credential: PhoneCredential }
 
 export type StepUpParams = {
   options?: WithPkceParams<AuthOptions>

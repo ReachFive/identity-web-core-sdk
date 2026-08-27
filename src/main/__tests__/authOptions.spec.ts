@@ -103,7 +103,7 @@ describe('computeAuthOptions', () => {
       display: 'page',
       responseType: 'token',
       scope: 'openid profile email phone',
-      origin: 'single',
+      origin: 'single'
     })
   })
 
@@ -116,7 +116,7 @@ describe('computeAuthOptions', () => {
       display: 'page',
       responseType: 'token',
       scope: 'openid profile email phone',
-      accessToken: 'abc.123.def',
+      accessToken: 'abc.123.def'
     })
   })
 })

@@ -7,6 +7,97 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- `IdTokenPayload`, `IdTokenAddress` and `Gender` are now exported from the entry point.
+  `AuthResult.idTokenPayload` has always been typed with them, but they were never exported, so
+  consumers could not name a type they were already being handed.
+- `IdTokenPayload` inherits the RFC 7519 registered claims from jose, which adds `jti` and `nbf`. Only
+  the registered claims are inherited, not `JWTPayload` wholesale: that interface carries an index
+  signature, and inheriting it would turn every mistyped claim access into a silent `unknown` rather
+  than a compile error.
+- Tests for `utils/jwt.ts` and `main/webAuthnService.ts`, neither of which was covered. The WebAuthn
+  ones pin the wire format against the CIAM backend's `Base64.getUrlEncoder` / `getUrlDecoder`
+  contract, with fixtures whose standard-base64 form contains both `+` and `/` so an alphabet mistake
+  cannot pass.
+- `npm run typecheck`, `npm run typecheck:api`, `npm run clean` and `npm run smoke:umd`.
+
+### Changed
+- **Bundle size.** Gzipped, against 1.42.0: `es/main.js` and `cjs/main.js` go **172 kB → 15 kB (−91%)**,
+  `umd/identity-core.min.js` goes **91 kB → 15 kB (−83%)**. Three causes: `core-js` is no longer
+  bundled, the `es`/`cjs` bundles no longer inline runtime polyfills, and the `buffer` polyfill is gone.
+- **Build**: migrated to Rollup 4 with the official `@rollup/plugin-*` plugins, replacing Rollup 2 and
+  the deprecated `rollup-plugin-babel` / `-commonjs` / `-node-resolve` / `-typescript2`. Babel is gone:
+  it never transpiled the SDK's own TypeScript, since its default extension filter excludes `.ts`, so
+  the emitted syntax was, and still is, decided by `tsc` alone.
+- **Type declarations** are bundled into a single `es/main.d.ts` rather than a tree of per-file
+  declarations, which also stops publishing declarations for test files and stale artefacts.
+- `tsc` target raised from `ES6` to `ES2020` for the `es`/`cjs` bundles; the UMD bundle stays on `ES2015`.
+- **Prettier upgraded from 2.1.2 to 3.x.** The pinned 2020 release could not parse the codebase's own
+  syntax — the `satisfies` operator in `oAuthClient.ts` and the template-literal type in `utils.ts` both
+  threw `SyntaxError` — which is why the `format:check` CI step had been commented out. `format` and
+  `format:check` now cover the whole repository (see `.prettierignore`) instead of only `src/**/*.ts`,
+  and the CI step is enabled. The resulting reformat is stylistic only.
+
+### Fixed
+- The published type declarations referenced `InAppBrowser` from `@types/cordova-plugin-inappbrowser`,
+  which was a dev dependency — so consumers could never resolve it and type-checking the SDK's public
+  API failed. That package is now a runtime dependency.
+
+### Removed
+- `core-js` and `regenerator-runtime` are no longer bundled. They polyfilled nothing the SDK needs: the
+  most modern built-in used in the source is `Object.fromEntries` (ES2019), whereas the SDK's floor is
+  Chrome 92 / Safari 15.4 because of `crypto.subtle` (PKCE, One Tap nonce) and `crypto.randomUUID`
+  (correlation id), which no polyfill can provide. Despite Babel targeting `ie: 11`, IE11 was never
+  actually supported. `fetch` is still polyfilled in the UMD bundle.
+
+  If your application relied on the polyfills the SDK happened to inline, import them yourself
+  according to your own browser targets.
+- The `buffer` polyfill dependency, pinned at 5.6.0 from 2020. It was inlined into the `es`/`cjs`
+  bundles because the externals predicate matched `buffer` while the code imported `buffer/`.
+- Deep imports into the package internals, for example `@reachfive/identity-core/es/utils/jwt`. Only the
+  documented entry points are supported.
+
+### Internal
+- Hand-rolled crypto and base64 primitives replaced by [`jose`](https://github.com/panva/jose):
+  `utils/base64.ts` deleted, `utils/jwt.ts` delegates to `decodeJwt`, and `utils/random.ts`,
+  `main/pkceService.ts`, `main/webAuthnService.ts` and the Google One Tap nonce use `jose.base64url`
+  plus Web Crypto. Outputs verified byte-identical to the previous implementation over 12 600 random
+  cases. WebAuthn decoding normalises alphabet and padding itself, so tolerance is a property of the
+  SDK rather than of the installed base64 implementation.
+- `main/models.ts` (469 lines, opening with a literal `// TODO: To sort`) split into ten focused modules
+  under `api/models/`, grouped by aggregate: profile, signup, session, tokens, mfa, password,
+  customFields, consents, settings, errors. Every type is still re-exported from the entry point.
+- `tsconfig.api.json` and `npm run typecheck:api` add a purity guard that compiles `src/api` with no DOM
+  libs and no ambient `@types`, so a browser global reaching the isomorphic layer fails the build. The
+  root tsconfig cannot catch this — it has `DOM` in `lib` for the whole project. Wired into CI.
+- `Config` and `ApiClientConfig` moved out of `main.ts` into `main/config.ts`. All four sub-clients
+  imported `ApiClientConfig` from the very module that constructs them, putting each of them in an
+  import cycle; those cycles are gone. Both types are still re-exported from the entry point.
+- All type-only imports are written as `import type`, enforced by
+  `@typescript-eslint/consistent-type-imports`. They are erased at compile time, so marking them keeps
+  the module graph readable — a reviewer can see which imports create a runtime edge — and stops a
+  type-only reference from quietly reintroducing a cycle. The emitted JavaScript is byte-identical.
+- `@typescript-eslint/no-namespace` is no longer disabled project-wide. The four namespaces that must
+  stay — the public `ErrorResponse`, `MFA` and `AuthResult` merged namespaces, plus the Jest matcher
+  augmentation — carry a scoped exemption with the reason, so any *new* namespace is reported.
+- Dead code with no callers removed: `src/utils/obj.ts`, which also shadowed the global `Set`, plus
+  `encodeBase64UrlSafe`, `parseQueryString`, `snakeCasePath`, `camelCasePath`, `log` and `logWarn`.
+
+  None was part of the consumable API despite living in exported modules. `src/` is not published
+  (`files` lists only `cjs`, `es` and `umd`), and all five symbols appear **zero** times in the
+  published bundles because Rollup already tree-shook them. A deep import such as
+  `@reachfive/identity-core/es/utils/queryString` would have type-checked against the per-file
+  declarations that used to be published, then failed at runtime: there was no matching `.js` file.
+- `WebAuthnClient`'s constructor re-assigned six endpoint URLs to the values its field initialisers had
+  already set, while silently omitting the two reset-passkeys ones. Removed.
+- Unresolved imports fail the build, as do import cycles involving the SDK's own sources. Cycles inside
+  dependencies remain warnings, since they are common and outside our control.
+- `jest.setup.ts` provides `TextEncoder` / `TextDecoder`, which jsdom 19 does not expose, and jsdom's
+  export conditions ask for `node` so packages shipping separate ESM browser builds resolve to their
+  CommonJS entry point under ts-jest.
+
+## [1.42.0] - 2026-08-20
+
 ### Add
 - Optional `state` parameter in the `logout` method, returned as-is in the query string of the redirect URL
 
@@ -563,7 +654,9 @@ Automatise the deployment of a new release with `circleci`.
 - Implement `tslint`.
 - Remove `yarn`.
 
-[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.41.0...HEAD
+[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.42.0...HEAD
+
+[1.42.0]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.41.0...v1.42.0
 
 [1.41.0]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.40.0...v1.41.0
 
