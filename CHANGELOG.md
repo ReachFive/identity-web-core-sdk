@@ -7,6 +7,64 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+- **Build**: migrated to Rollup 4 with the official `@rollup/plugin-*` plugins, replacing Rollup 2 and the
+  deprecated `rollup-plugin-babel` / `rollup-plugin-commonjs` / `rollup-plugin-node-resolve` /
+  `rollup-plugin-typescript2`. Babel is gone: it never transpiled the SDK's own TypeScript (its default
+  extension filter excludes `.ts`), so the emitted syntax was, and still is, decided by `tsc` alone.
+- **Bundle size**: the `es` and `cjs` bundles no longer inline runtime polyfills, and the UMD bundle no
+  longer ships `core-js`. Gzipped: `es`/`cjs` **172 kB → 28 kB (−84%)**, `umd/identity-core.min.js`
+  **91 kB → 21 kB (−77%)**.
+- **Type declarations** are now bundled into a single `es/main.d.ts` instead of a tree of per-file
+  declarations. This also stops publishing declarations for test files and stale artefacts.
+- `tsc` target raised from `ES6` to `ES2020` for the `es`/`cjs` bundles; the UMD bundle stays on `ES2015`.
+- **Prettier upgraded from 2.1.2 to 3.x.** The pinned 2020 release could not parse the codebase's own
+  syntax — the `satisfies` operator in `oAuthClient.ts` and the template-literal type in `utils.ts` both
+  threw `SyntaxError` — which is why the `format:check` CI step had been commented out. `format` and
+  `format:check` now cover the whole repository (see `.prettierignore`) instead of only `src/**/*.ts`,
+  and the CI step is enabled. The resulting reformat is stylistic only.
+
+### Fixed
+- The published type declarations referenced `InAppBrowser` from `@types/cordova-plugin-inappbrowser`,
+  which was a dev dependency — so consumers could never resolve it and type-checking the SDK's public API
+  failed. That package is now a runtime dependency.
+
+### Removed
+- `core-js` and `regenerator-runtime` are no longer bundled. They polyfilled nothing the SDK needs: the
+  most modern built-in used in the source is `Object.fromEntries` (ES2019), whereas the SDK's real floor
+  is already Chrome 92 / Safari 15.4 because of `crypto.subtle` (PKCE, One Tap nonce) and
+  `crypto.randomUUID` (correlation id), which no polyfill can provide. Despite Babel targeting `ie: 11`,
+  IE11 was never actually supported. `fetch` is still polyfilled in the UMD bundle.
+
+  If your application relied on the polyfills the SDK happened to inline, import them yourself according
+  to your own browser targets.
+- Deep imports into the package internals (for example `@reachfive/identity-core/es/utils/jwt`) are no
+  longer possible for the removed per-file declaration tree. Only the documented entry points are supported.
+
+### Internal
+- `Config` and `ApiClientConfig` moved out of `main.ts` into `main/config.ts`. All four sub-clients used
+  to import `ApiClientConfig` from the very module that constructs them, putting each of them in an
+  import cycle; those cycles are gone. Both types are still re-exported from the entry point, so the
+  public surface is unchanged.
+- Removed dead code with no callers: `src/utils/obj.ts` (which also shadowed the global `Set`),
+  `encodeBase64UrlSafe`, `parseQueryString`, `snakeCasePath`, `camelCasePath`, `log` and `logWarn`.
+
+  These were never part of the consumable API, despite living in exported modules. `src/` is not
+  published (`files` lists only `cjs`, `es` and `umd`), the runtime bundles export nothing but the
+  entry point's surface, and all five symbols appear **zero** times in the published 1.41.0 bundles
+  because Rollup already tree-shook them. A deep import such as
+  `@reachfive/identity-core/es/utils/queryString` would have type-checked against the per-file
+  declarations that used to be published, then failed at runtime: there was no matching `.js` file.
+- All type-only imports are now written as `import type`, enforced by
+  `@typescript-eslint/consistent-type-imports`. Type-only imports are erased at compile time, so
+  marking them keeps the module graph readable — a reviewer can see which imports create a runtime
+  edge — and stops a type-only reference from quietly reintroducing an import cycle. The emitted
+  JavaScript is byte-identical before and after.
+- `WebAuthnClient`'s constructor re-assigned six endpoint URLs to the exact values its field
+  initialisers had already set, while silently omitting the two reset-passkeys ones. Removed.
+
+## [1.42.0] - 2026-08-20
+
 ### Add
 - Optional `state` parameter in the `logout` method, returned as-is in the query string of the redirect URL
 
@@ -626,7 +684,9 @@ Automatise the deployment of a new release with `circleci`.
 - Implement `tslint`.
 - Remove `yarn`.
 
-[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.41.0...HEAD
+[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.42.0...HEAD
+
+[1.42.0]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.41.0...v1.42.0
 
 [1.41.0]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.40.0...v1.41.0
 
