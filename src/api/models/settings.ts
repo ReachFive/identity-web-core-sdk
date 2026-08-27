@@ -11,6 +11,17 @@ export type LoginTypeAllowed = {
   customIdentifier: boolean
 }
 
+export type Provider = {
+  key: string
+  name: string
+  color: string
+  btnBackgroundColor: string
+  btnBorderColor: string
+  btnTextColor: string
+  buttonLabel: string
+  icon: string
+}
+
 /**
  * A ReachFive account's configuration, returned by `GET /identity/v1/config`.
  *
@@ -28,6 +39,7 @@ export type RemoteSettings = {
   isPublic: boolean
   scope?: string
   socialProviders: string[]
+  customProviders?: Record<string, Provider>
   googleClientId?: string
   passwordPolicy: PasswordPolicy
   consents?: Consent[]
