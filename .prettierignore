@@ -1,0 +1,10 @@
+# Build output
+cjs/
+es/
+umd/
+
+# Generated
+package-lock.json
+
+# Prose: Prettier's markdown reflow would rewrite unrelated history
+*.md

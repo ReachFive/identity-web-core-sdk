@@ -29,13 +29,13 @@ class WinChanMocker {
   mockClear() {
     if (jest.isMockFunction(WinChan.open)) {
       WinChan.open.mockClear()
-    } 
+    }
   }
 
   mockReset() {
     if (jest.isMockFunction(WinChan.open)) {
       WinChan.open.mockReset()
-    } 
+    }
     this.initialized = false
   }
 

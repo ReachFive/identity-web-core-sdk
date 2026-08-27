@@ -23,20 +23,20 @@ export function pick<Obj extends Record<string, unknown>, K extends keyof Obj>(
  * type foo_bar = CamelCase<"foo_bar"> // =>"fooBar"
  * type foo_bar_baz = CamelCase<"foo_bar_baz"> // => "fooBarBaz"
  */
-export type CamelCase<S extends string> = S extends `${infer T}_${infer U}` 
+export type CamelCase<S extends string> = S extends `${infer T}_${infer U}`
   ? `${Lowercase<T>}${Capitalize<CamelCase<U>>}`
-  : Lowercase<S>;
+  : Lowercase<S>
 
 export function camelCase<S extends string>(string: S): CamelCase<S> {
-    return string
+  return string
     .replace(/([^A-Z])([A-Z])/g, '$1 $2') // "aB" become "a B"
     .toLowerCase()
-    .replace(/[^a-z0-9]/ig, ' ')
+    .replace(/[^a-z0-9]/gi, ' ')
     .trim()
-    .replace(/(?:^\w|[A-Z]|\b\w)/g, function(word, index) {
-        return index === 0 ? word.toLowerCase() : word.toUpperCase();
+    .replace(/(?:^\w|[A-Z]|\b\w)/g, function (word, index) {
+      return index === 0 ? word.toLowerCase() : word.toUpperCase()
     })
-    .replace(/\s+/g, '') as CamelCase<S>;
+    .replace(/\s+/g, '') as CamelCase<S>
 }
 
 export function snakeCase(string: string) {
