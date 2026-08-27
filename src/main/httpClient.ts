@@ -1,4 +1,5 @@
-import { QueryString, toQueryString } from '../utils/queryString'
+import type { QueryString } from '../utils/queryString'
+import { toQueryString } from '../utils/queryString'
 import { camelCaseProperties, snakeCaseProperties } from '../utils/transformObjectProperties'
 import { isEmpty } from '../utils/utils'
 

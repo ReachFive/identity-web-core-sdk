@@ -1,7 +1,7 @@
 import { pick } from '../utils/utils'
-import { AuthParameters } from './authParameters'
-import { Scope } from './models'
-import { WithPkceParams } from './pkceService'
+import type { AuthParameters } from './authParameters'
+import type { Scope } from './models'
+import type { WithPkceParams } from './pkceService'
 import { resolveScope } from './scopeHelper'
 
 export type ResponseType = 'code' | 'token'

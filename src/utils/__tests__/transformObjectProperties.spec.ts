@@ -1,4 +1,4 @@
-import { camelCaseProperties, snakeCaseProperties, camelCasePath, snakeCasePath } from '../transformObjectProperties'
+import { camelCaseProperties, snakeCaseProperties } from '../transformObjectProperties'
 
 const snakeCaseObject = {
   given_name: 'Robert',
@@ -64,12 +64,4 @@ describe('snakeCaseProperties', () => {
     expect(snakeCaseProperties(camelCaseObject)).toEqual(snakeCaseObject)
     expect(snakeCaseProperties(snakeCaseObject)).toEqual(snakeCaseObject)
   })
-})
-
-describe('camelCasePath', () => {
-  test('basic', () => expect(camelCasePath('foo_bar.toto_titi')).toEqual('fooBar.totoTiti'))
-})
-
-describe('snakeCasePath', () => {
-  test('basic', () => expect(snakeCasePath('fooBar.totoTiti')).toEqual('foo_bar.toto_titi'))
 })

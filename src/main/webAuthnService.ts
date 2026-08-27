@@ -1,7 +1,7 @@
 import { Buffer } from 'buffer/'
 
-import { AuthOptions } from './authOptions'
-import { SignupProfileData } from './models'
+import type { AuthOptions } from './authOptions'
+import type { SignupProfileData } from './models'
 import { encodeToBase64 } from '../utils/base64'
 
 export const publicKeyCredentialType = 'public-key'
