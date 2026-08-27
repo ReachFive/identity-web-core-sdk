@@ -7,12 +7,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-### Add
-- Optional `state` parameter in the `logout` method, returned as-is in the query string of the redirect URL
-
 ### Changed
-- method verifyPasswordless redirect to GET passwordless/verify in orchestrated flow
-- method verifyPasswordless does not forward AuthParameters to GET passwordless/verify in orchestrated flow
 - **Build**: migrated to Rollup 4 with the official `@rollup/plugin-*` plugins, replacing Rollup 2 and the
   deprecated `rollup-plugin-babel` / `rollup-plugin-commonjs` / `rollup-plugin-node-resolve` /
   `rollup-plugin-typescript2`. Babel is gone: it never transpiled the SDK's own TypeScript (its default
@@ -33,6 +28,18 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - The published type declarations referenced `InAppBrowser` from `@types/cordova-plugin-inappbrowser`,
   which was a dev dependency — so consumers could never resolve it and type-checking the SDK's public API
   failed. That package is now a runtime dependency.
+
+### Removed
+- `core-js` and `regenerator-runtime` are no longer bundled. They polyfilled nothing the SDK needs: the
+  most modern built-in used in the source is `Object.fromEntries` (ES2019), whereas the SDK's real floor
+  is already Chrome 92 / Safari 15.4 because of `crypto.subtle` (PKCE, One Tap nonce) and
+  `crypto.randomUUID` (correlation id), which no polyfill can provide. Despite Babel targeting `ie: 11`,
+  IE11 was never actually supported. `fetch` is still polyfilled in the UMD bundle.
+
+  If your application relied on the polyfills the SDK happened to inline, import them yourself according
+  to your own browser targets.
+- Deep imports into the package internals (for example `@reachfive/identity-core/es/utils/jwt`) are no
+  longer possible for the removed per-file declaration tree. Only the documented entry points are supported.
 
 ### Internal
 - `Config` and `ApiClientConfig` moved out of `main.ts` into `main/config.ts`. All four sub-clients used
@@ -56,17 +63,14 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `WebAuthnClient`'s constructor re-assigned six endpoint URLs to the exact values its field
   initialisers had already set, while silently omitting the two reset-passkeys ones. Removed.
 
-### Removed
-- `core-js` and `regenerator-runtime` are no longer bundled. They polyfilled nothing the SDK needs: the
-  most modern built-in used in the source is `Object.fromEntries` (ES2019), whereas the SDK's real floor
-  is already Chrome 92 / Safari 15.4 because of `crypto.subtle` (PKCE, One Tap nonce) and
-  `crypto.randomUUID` (correlation id), which no polyfill can provide. Despite Babel targeting `ie: 11`,
-  IE11 was never actually supported. `fetch` is still polyfilled in the UMD bundle.
+## [1.42.0] - 2026-08-20
 
-  If your application relied on the polyfills the SDK happened to inline, import them yourself according
-  to your own browser targets.
-- Deep imports into the package internals (for example `@reachfive/identity-core/es/utils/jwt`) are no
-  longer possible for the removed per-file declaration tree. Only the documented entry points are supported.
+### Add
+- Optional `state` parameter in the `logout` method, returned as-is in the query string of the redirect URL
+
+### Changed
+- method verifyPasswordless redirect to GET passwordless/verify in orchestrated flow
+- method verifyPasswordless does not forward AuthParameters to GET passwordless/verify in orchestrated flow
 
 ## [1.41.0] - 2026-03-26
 
@@ -617,7 +621,9 @@ Automatise the deployment of a new release with `circleci`.
 - Implement `tslint`.
 - Remove `yarn`.
 
-[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.41.0...HEAD
+[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.42.0...HEAD
+
+[1.42.0]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.41.0...v1.42.0
 
 [1.41.0]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.40.0...v1.41.0
 
