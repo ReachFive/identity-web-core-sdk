@@ -8,7 +8,6 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
-- Optional `state` parameter in the `logout` method, returned as-is in the query string of the redirect URL
 - `IdTokenPayload`, `IdTokenAddress` and `Gender` are now exported from the entry point.
   `AuthResult.idTokenPayload` has always been typed with them, but they were never exported, so
   consumers could not name a type they were already being handed.
@@ -23,9 +22,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `npm run typecheck`, `npm run typecheck:api`, `npm run clean` and `npm run smoke:umd`.
 
 ### Changed
-- method verifyPasswordless redirect to GET passwordless/verify in orchestrated flow
-- method verifyPasswordless does not forward AuthParameters to GET passwordless/verify in orchestrated flow
-- **Bundle size.** Gzipped, against 1.41.0: `es/main.js` and `cjs/main.js` go **172 kB → 15 kB (−91%)**,
+- **Bundle size.** Gzipped, against 1.42.0: `es/main.js` and `cjs/main.js` go **172 kB → 15 kB (−91%)**,
   `umd/identity-core.min.js` goes **91 kB → 15 kB (−83%)**. Three causes: `core-js` is no longer
   bundled, the `es`/`cjs` bundles no longer inline runtime polyfills, and the `buffer` polyfill is gone.
 - **Build**: migrated to Rollup 4 with the official `@rollup/plugin-*` plugins, replacing Rollup 2 and
@@ -88,7 +85,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
   None was part of the consumable API despite living in exported modules. `src/` is not published
   (`files` lists only `cjs`, `es` and `umd`), and all five symbols appear **zero** times in the
-  published 1.41.0 bundles because Rollup already tree-shook them. A deep import such as
+  published bundles because Rollup already tree-shook them. A deep import such as
   `@reachfive/identity-core/es/utils/queryString` would have type-checked against the per-file
   declarations that used to be published, then failed at runtime: there was no matching `.js` file.
 - `WebAuthnClient`'s constructor re-assigned six endpoint URLs to the values its field initialisers had
@@ -98,6 +95,15 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `jest.setup.ts` provides `TextEncoder` / `TextDecoder`, which jsdom 19 does not expose, and jsdom's
   export conditions ask for `node` so packages shipping separate ESM browser builds resolve to their
   CommonJS entry point under ts-jest.
+
+## [1.42.0] - 2026-08-20
+
+### Add
+- Optional `state` parameter in the `logout` method, returned as-is in the query string of the redirect URL
+
+### Changed
+- method verifyPasswordless redirect to GET passwordless/verify in orchestrated flow
+- method verifyPasswordless does not forward AuthParameters to GET passwordless/verify in orchestrated flow
 
 ## [1.41.0] - 2026-03-26
 
@@ -648,7 +654,9 @@ Automatise the deployment of a new release with `circleci`.
 - Implement `tslint`.
 - Remove `yarn`.
 
-[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.41.0...HEAD
+[Unreleased]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.42.0...HEAD
+
+[1.42.0]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.41.0...v1.42.0
 
 [1.41.0]: https://github.com/ReachFive/identity-web-core-sdk/compare/v1.40.0...v1.41.0
 
