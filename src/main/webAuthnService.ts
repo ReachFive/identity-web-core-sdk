@@ -1,10 +1,31 @@
-import { Buffer } from 'buffer/'
+import { base64url } from 'jose'
 
 import type { AuthOptions } from './authOptions'
 import type { SignupProfileData } from '../api/models'
-import { encodeToBase64 } from '../utils/base64'
 
 export const publicKeyCredentialType = 'public-key'
+
+/**
+ * Encodes credential bytes for the CIAM backend, which reads these fields with Java's
+ * `Base64.getUrlDecoder` and so rejects `+` and `/` (see `webauthn/api/ByteList.scala`). base64url
+ * is therefore required, not merely conventional. The WebAuthn API hands these fields over as
+ * `ArrayBuffer`, whereas jose encodes byte arrays.
+ */
+const encodeBytes = (bytes: ArrayBuffer): string => base64url.encode(new Uint8Array(bytes))
+
+/**
+ * Decodes credential bytes coming from the backend, which writes them with
+ * `Base64.getUrlEncoder` — padded for challenges and user ids, unpadded for credential descriptor
+ * ids (see `webauthn/api/ByteList.scala`).
+ *
+ * Normalising before decoding keeps this tolerant of alphabet and padding as a deliberate property
+ * of the SDK rather than of whichever base64 implementation happens to be installed: jose 5 accepts
+ * the standard alphabet, jose 6 rejects it. Failing to decode a passkey challenge breaks
+ * registration and login outright, and nothing in this repository can exercise that path, so the
+ * tolerance is worth owning explicitly.
+ */
+const decodeBytes = (encoded: string): Uint8Array =>
+  base64url.decode(encoded.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''))
 
 export type EmailLoginWithWebAuthnParams = { email: string }
 export type PhoneNumberLoginWithWebAuthnParams = { phoneNumber: string }
@@ -106,16 +127,16 @@ export function encodePublicKeyCredentialCreationOptions(
 ): PublicKeyCredentialCreationOptions {
   return {
     ...serializedOptions,
-    challenge: Buffer.from(serializedOptions.challenge, 'base64'),
+    challenge: decodeBytes(serializedOptions.challenge),
     user: {
       ...serializedOptions.user,
-      id: Buffer.from(serializedOptions.user.id, 'base64')
+      id: decodeBytes(serializedOptions.user.id)
     },
     excludeCredentials:
       serializedOptions.excludeCredentials &&
       serializedOptions.excludeCredentials!.map((excludeCredential) => ({
         ...excludeCredential,
-        id: Buffer.from(excludeCredential.id, 'base64')
+        id: decodeBytes(excludeCredential.id)
       }))
   }
 }
@@ -125,10 +146,10 @@ export function encodePublicKeyCredentialRequestOptions(
 ): PublicKeyCredentialRequestOptions {
   return {
     ...serializedOptions,
-    challenge: Buffer.from(serializedOptions.challenge, 'base64'),
+    challenge: decodeBytes(serializedOptions.challenge),
     allowCredentials: serializedOptions.allowCredentials.map((allowCrendential) => ({
       ...allowCrendential,
-      id: Buffer.from(allowCrendential.id, 'base64')
+      id: decodeBytes(allowCrendential.id)
     }))
   }
 }
@@ -140,11 +161,11 @@ export function serializeRegistrationPublicKeyCredential(
 
   return {
     id: encodedPublicKey.id,
-    rawId: encodeToBase64(encodedPublicKey.rawId),
+    rawId: encodeBytes(encodedPublicKey.rawId),
     type: 'public-key',
     response: {
-      clientDataJSON: encodeToBase64(response.clientDataJSON),
-      attestationObject: encodeToBase64(response.attestationObject),
+      clientDataJSON: encodeBytes(response.clientDataJSON),
+      attestationObject: encodeBytes(response.attestationObject),
       transports: response.getTransports()
     }
   }
@@ -157,13 +178,13 @@ export function serializeAuthenticationPublicKeyCredential(
 
   return {
     id: encodedPublicKey.id,
-    rawId: encodeToBase64(encodedPublicKey.rawId),
+    rawId: encodeBytes(encodedPublicKey.rawId),
     type: 'public-key',
     response: {
-      authenticatorData: encodeToBase64(response.authenticatorData),
-      clientDataJSON: encodeToBase64(response.clientDataJSON),
-      signature: encodeToBase64(response.signature),
-      userHandle: response.userHandle && encodeToBase64(response.userHandle)
+      authenticatorData: encodeBytes(response.authenticatorData),
+      clientDataJSON: encodeBytes(response.clientDataJSON),
+      signature: encodeBytes(response.signature),
+      userHandle: response.userHandle && encodeBytes(response.userHandle)
     }
   }
 }
