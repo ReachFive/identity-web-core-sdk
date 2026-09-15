@@ -11,6 +11,19 @@
   "main": "cjs/main.js",
   "module": "es/main.js",
   "types": "es/main.d.ts",
+  "typesVersions": {
+    "*": {
+      "es/*": [
+        "es/main.d.ts"
+      ],
+      "cjs/*": [
+        "es/main.d.ts"
+      ],
+      "umd/*": [
+        "es/main.d.ts"
+      ]
+    }
+  },
   "scripts": {
     "clean": "rm -rf cjs es umd",
     "prebuild": "npm run clean",

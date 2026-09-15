@@ -8,6 +8,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- The 28 sub-client parameter and response types named in `Client` are now exported from the entry
+  point, and the old `es/main/*` deep type paths still resolve.
 - `IdTokenPayload`, `IdTokenAddress` and `Gender` are now exported from the entry point.
   `AuthResult.idTokenPayload` has always been typed with them, but they were never exported, so
   consumers could not name a type they were already being handed.
