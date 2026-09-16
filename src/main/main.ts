@@ -81,6 +81,7 @@ export type { Gender, IdTokenAddress, IdTokenPayload } from '../utils/jwt'
 // The sub-client parameter and response types are named all over the `Client` signature below.
 // They used to reach consumers through `es/main/<module>` deep imports; the bundled declarations
 // no longer publish those paths, so the entry point has to re-export them explicitly.
+export type { CaptchaParams, CaptchaProvider } from './captcha'
 export type { Events } from './identityEventManager'
 export type {
   DeleteTrustedDeviceParams,
