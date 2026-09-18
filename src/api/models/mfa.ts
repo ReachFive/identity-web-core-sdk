@@ -20,9 +20,13 @@ export namespace MFA {
     return credential.type === 'email'
   }
 
+  export function isPasskeyCredential(credential: Credential): credential is PasskeyCredential {
+    return credential.type === 'passkey'
+  }
+
   export type CredentialType = Credential['type']
 
-  export type Credential = PhoneCredential | EmailCredential
+  export type Credential = PhoneCredential | EmailCredential | PasskeyCredential
 
   export type PhoneCredential = {
     type: 'sms'
@@ -36,6 +40,14 @@ export namespace MFA {
     email: string
     createdAt: string
     friendlyName: string
+  }
+
+  export type PasskeyCredential = {
+    type: 'passkey'
+    id: string
+    friendlyName: string
+    createdAt: string
+    lastUsedAt?: string
   }
 
   export type CredentialsResponse = {
