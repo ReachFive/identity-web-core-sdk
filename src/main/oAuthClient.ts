@@ -69,11 +69,13 @@ export type RefreshTokenParams = { refreshToken: string; scope?: Scope }
 export type SingleFactorPasswordlessParams = (
   | {
       authType: 'magic_link'
-      email?: string
+      /** Required: the API needs it to send the magic link. */
+      email: string
     }
   | {
       authType: 'sms'
-      phoneNumber?: string
+      /** Required: the API needs it to send the code. */
+      phoneNumber: string
     }
 ) &
   CaptchaParams

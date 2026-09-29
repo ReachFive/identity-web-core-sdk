@@ -11,17 +11,21 @@ export type SignupProfileData = {
   familyName?: string
   name?: string
   nickname?: string
+  /** `YYYY-MM-DD`. */
   birthdate?: string
+  /** @deprecated Not read by the API on signup. */
   profileURL?: string
   picture?: string
   username?: string
   gender?: string
   addresses?: ProfileAddress[]
   locale?: string
+  /** @deprecated Not read by the API on signup. */
   bio?: string
   customFields?: Record<string, unknown>
   consents?: Record<string, unknown>
   company?: string
+  /** @deprecated Not read by the API on signup. */
   liteOnly?: boolean
   customIdentifier?: string
 }

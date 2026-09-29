@@ -50,7 +50,8 @@ type SmsRequestAccountRecoveryParams = {
 export type RequestAccountRecoveryParams = EmailRequestAccountRecoveryParams | SmsRequestAccountRecoveryParams
 
 type AccessTokenUpdatePasswordParams = {
-  accessToken?: string
+  /** Required without a verification code: the API identifies the user by this token. */
+  accessToken: string
   password: string
   oldPassword?: string
   /** @deprecated Not read by the API, and no longer sent: the user is the one the token identifies. */
@@ -95,6 +96,11 @@ export type UpdatePhoneNumberParams = {
 export type UpdateProfileParams = {
   accessToken: string
   redirectUrl?: string
+  /**
+   * The API only updates `email`, `phoneNumber`, `givenName`, `middleName`, `familyName`, `name`, `nickname`,
+   * `username`, `birthdate`, `gender`, `addresses`, `picture`, `company`, `locale`, `customFields`, `consents`
+   * and `customIdentifier`. Any other field is silently ignored.
+   */
   data: Partial<Profile>
 }
 
