@@ -17,16 +17,24 @@ export type AuthOptions = {
   fetchBasicProfile?: boolean
   useWebMessage?: boolean
   popupMode?: boolean
-  prompt?: Prompt
+  /** One value, or several, sent space-separated. */
+  prompt?: Prompt | Prompt[]
   origin?: string
   state?: string
   nonce?: string
   providerScope?: string
   idTokenHint?: string
   loginHint?: string
+  /** Only sent on a social login, where it links the provider to the signed-in user. */
   accessToken?: string
   requireRefreshToken?: boolean
   persistent?: boolean
+  /** Maximum age of the user's authentication, in seconds, beyond which they must log in again. */
+  maxAge?: number
+  /** Preferred languages for the pages shown to the user, as space-separated BCP 47 tags. */
+  uiLocales?: string
+  /** Requested authentication context class references, space-separated. */
+  acrValues?: string
 }
 
 /**
@@ -47,7 +55,8 @@ export function computeAuthOptions(
   const responseType = opts.redirectUri ? 'code' : 'token'
   const responseMode = opts.useWebMessage && !isPopup ? 'web_message' : undefined
   const display = isPopup ? 'popup' : responseMode !== 'web_message' ? 'page' : undefined
-  const prompt = responseMode === 'web_message' ? 'none' : opts.prompt
+  const prompt =
+    responseMode === 'web_message' ? 'none' : Array.isArray(opts.prompt) ? opts.prompt.join(' ') : opts.prompt
   const scope = resolveScope(opts, defaultScopes)
 
   return {
@@ -65,7 +74,10 @@ export function computeAuthOptions(
       'accessToken',
       'persistent',
       'codeChallenge',
-      'codeChallengeMethod'
+      'codeChallengeMethod',
+      'maxAge',
+      'uiLocales',
+      'acrValues'
     ),
     scope,
     display,

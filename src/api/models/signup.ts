@@ -32,6 +32,25 @@ export type SignupProfileData = {
 
 export type SignupProfile = SignupProfileData & { password: string }
 
+/** Profile data for a user signing up through passwordless, on their first login. */
+export type PasswordlessSignupData = Pick<
+  SignupProfileData,
+  | 'givenName'
+  | 'middleName'
+  | 'familyName'
+  | 'name'
+  | 'nickname'
+  | 'username'
+  | 'birthdate'
+  | 'gender'
+  | 'addresses'
+  | 'picture'
+  | 'company'
+  | 'locale'
+  | 'customFields'
+  | 'consents'
+>
+
 export type OpenIdUser = {
   sub: string
   name?: string

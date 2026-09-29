@@ -25,7 +25,8 @@ import type {
   PasswordStrength,
   Scope,
   SessionInfo,
-  SignupProfile
+  SignupProfile,
+  PasswordlessSignupData
 } from '../api/models'
 import { ErrorResponse } from '../api/models'
 import type { PkceParams, WithPkceParams } from './pkceService'
@@ -66,7 +67,10 @@ export type RevocationParams = {
 
 export type RefreshTokenParams = { refreshToken: string; scope?: Scope }
 
-export type SingleFactorPasswordlessParams = (
+export type SingleFactorPasswordlessParams = {
+  /** Used to create the profile when the user does not exist yet, if the account allows it. */
+  data?: PasswordlessSignupData
+} & (
   | {
       authType: 'magic_link'
       /** Required: the API needs it to send the magic link. */
@@ -558,7 +562,7 @@ export default class OAuthClient {
       .then(() => this.loginWithVerificationCode(params, auth))
   }
 
-  private getAuthorizationUrl(queryString: Record<string, string | boolean | undefined>): string {
+  private getAuthorizationUrl(queryString: QueryString): string {
     return `${this.authorizeUrl}?${toQueryString(queryString)}`
   }
 
@@ -623,7 +627,7 @@ export default class OAuthClient {
     })
   }
 
-  private loginWithPopup(opts: AuthOptions & { provider: string }): Promise<void> {
+  private loginWithPopup(opts: Partial<AuthParameters> & { provider: string }): Promise<void> {
     type WinChanResponse<D> = { success: true; data: D } | { success: false; data: ErrorResponse }
     const { responseType, redirectUri, provider } = opts
 
@@ -677,7 +681,7 @@ export default class OAuthClient {
     }
   }
 
-  private redirectThruAuthorization(queryString: Record<string, string | boolean | undefined>): Promise<void> {
+  private redirectThruAuthorization(queryString: QueryString): Promise<void> {
     const location = this.getAuthorizationUrl(queryString)
     this.releaseAuthorizationLock()
     this.releaseSessionLock()
@@ -744,7 +748,7 @@ export default class OAuthClient {
           username: this.getAuthenticationId(params),
           password: params.password,
           scope: resolveScope(auth, this.config.scope),
-          ...pick(auth, 'origin')
+          ...pick(auth, 'origin', 'nonce')
         }
       })
       .then((authResult) => {
@@ -829,10 +833,11 @@ export default class OAuthClient {
     params: SingleFactorPasswordlessParams,
     auth: Omit<WithPkceParams<AuthOptions>, 'useWebMessage'> = {}
   ): Promise<object> {
-    const { authType, captchaToken, captchaProvider } = params
+    const { authType, captchaToken, captchaProvider, data } = params
     const passwordlessParams = {
       authType,
-      ...(authType === 'magic_link' ? { email: params.email } : { phoneNumber: params.phoneNumber })
+      ...(authType === 'magic_link' ? { email: params.email } : { phoneNumber: params.phoneNumber }),
+      ...(data && { data: toWireProfileData(data) })
     }
 
     if (this.config.orchestrationToken) {

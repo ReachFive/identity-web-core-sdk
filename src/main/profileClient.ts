@@ -21,6 +21,8 @@ export type PhoneNumberVerificationParams = { accessToken: string }
 
 type EmailRequestPasswordResetParams = {
   email: string
+  /** Returned to `redirectUrl` along with the reset. */
+  state?: string
   /** @deprecated Not read by the API, and no longer sent. */
   loginLink?: string
   origin?: string
@@ -31,9 +33,19 @@ type EmailRequestPasswordResetParams = {
 type SmsRequestPasswordResetParams = {
   phoneNumber: string
   origin?: string
+  state?: string
 } & CaptchaParams
 
-export type RequestPasswordResetParams = EmailRequestPasswordResetParams | SmsRequestPasswordResetParams
+type CustomIdentifierRequestPasswordResetParams = {
+  customIdentifier: string
+  origin?: string
+  redirectUrl?: string
+  returnToAfterPasswordReset?: string
+  state?: string
+} & CaptchaParams
+
+export type RequestPasswordResetParams =
+  EmailRequestPasswordResetParams | SmsRequestPasswordResetParams | CustomIdentifierRequestPasswordResetParams
 
 type EmailRequestAccountRecoveryParams = {
   email: string
@@ -86,6 +98,8 @@ export type GetUserParams = {
 export type UnlinkParams = {
   accessToken: string
   identityId: string
+  /** Keeps the identity's data in a lite profile instead of discarding it. */
+  keepInLiteProfile?: boolean
 }
 
 export type UpdatePhoneNumberParams = {
@@ -216,8 +230,11 @@ export default class ProfileClient {
   }
 
   unlink(params: UnlinkParams): Promise<void> {
-    const { accessToken, ...data } = params
-    return this.http.post(this.unlinkUrl, { body: data, accessToken })
+    const { accessToken, keepInLiteProfile, ...data } = params
+    // The API reads `keepInLiteProfile` from the query string, under that exact camelCase name.
+    const path =
+      keepInLiteProfile === undefined ? this.unlinkUrl : `${this.unlinkUrl}?keepInLiteProfile=${keepInLiteProfile}`
+    return this.http.post(path, { body: data, accessToken })
   }
 
   updateEmail(params: UpdateEmailParams): Promise<void> {
