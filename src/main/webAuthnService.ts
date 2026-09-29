@@ -95,6 +95,7 @@ type PublicKeyCredentialRequestOptionsSerialized = {
     type: PublicKeyCredentialType
   }[]
   userVerification: UserVerificationRequirement
+  extensions?: AuthenticationExtensionsClientInputs
 }
 
 export type RegistrationPublicKeyCredentialSerialized = {

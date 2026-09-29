@@ -40,6 +40,8 @@ import type {
   RefreshTokenParams,
   RevocationParams,
   SignupParams,
+  SingleFactorPasswordlessParams,
+  StepUpPasswordlessParams,
   TokenRequestParameters,
   VerifyPasswordlessParams
 } from './oAuthClient'
@@ -159,10 +161,22 @@ export type Client = {
   startMfaPhoneNumberRegistration: (
     params: StartMfaPhoneNumberRegistrationParams
   ) => Promise<StartMfaPhoneNumberRegistrationResponse>
-  startPasswordless: (
-    params: PasswordlessParams,
-    options?: Omit<WithPkceParams<AuthOptions>, 'useWebMessage'>
-  ) => Promise<PasswordlessResponse>
+  startPasswordless: {
+    /** Single-factor passwordless: the API answers with no body. */
+    (
+      params: SingleFactorPasswordlessParams,
+      options?: Omit<WithPkceParams<AuthOptions>, 'useWebMessage'>
+    ): Promise<void>
+    /** Step-up passwordless: the API answers with the challenge to verify. */
+    (
+      params: StepUpPasswordlessParams,
+      options?: Omit<WithPkceParams<AuthOptions>, 'useWebMessage'>
+    ): Promise<PasswordlessResponse>
+    (
+      params: PasswordlessParams,
+      options?: Omit<WithPkceParams<AuthOptions>, 'useWebMessage'>
+    ): Promise<PasswordlessResponse | void>
+  }
   unlink: (params: UnlinkParams) => Promise<void>
   updateEmail: (params: UpdateEmailParams) => Promise<void>
   updatePassword: (params: UpdatePasswordParams) => Promise<void>
@@ -433,6 +447,18 @@ export function createClient(creationConfig: Config): Client {
     return apiClients.then((clients) => clients.mfa.startMfaPhoneNumberRegistration(params))
   }
 
+  function startPasswordless(
+    params: SingleFactorPasswordlessParams,
+    options?: WithPkceParams<AuthOptions>
+  ): Promise<void>
+  function startPasswordless(
+    params: StepUpPasswordlessParams,
+    options?: WithPkceParams<AuthOptions>
+  ): Promise<PasswordlessResponse>
+  function startPasswordless(
+    params: PasswordlessParams,
+    options?: WithPkceParams<AuthOptions>
+  ): Promise<PasswordlessResponse | void>
   function startPasswordless(params: PasswordlessParams, options: WithPkceParams<AuthOptions> = {}) {
     return apiClients.then((clients) => clients.oAuth.startPasswordless(params, options))
   }

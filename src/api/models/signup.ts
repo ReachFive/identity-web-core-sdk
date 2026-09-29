@@ -35,19 +35,37 @@ export type OpenIdUser = {
   familyName?: string
   middleName?: string
   nickname?: string
+  /** @deprecated Never returned by the API. */
   preferredUsername?: string
   profile?: string
   picture?: string
+  /** @deprecated Never returned by the API. */
   website?: string
   email?: string
   emailVerified?: boolean
   gender?: string
   birthdate?: string
+  /** @deprecated Never returned by the API. */
   zoneinfo?: string
   locale?: string
   phoneNumber?: string
   phoneNumberVerified?: boolean
-  address?: ProfileAddress[]
-  updatedAt?: number
+  /** The profile's first address. */
+  address?: OpenIdAddress
+  addresses?: OpenIdAddress[]
+  /** ISO 8601 date-time. */
+  updatedAt?: string
+  externalId?: string
+  /** Only the custom fields whose read scope the client is configured with. */
   customFields?: Record<string, unknown>
+}
+
+/** An address in the OpenID Connect format. */
+export type OpenIdAddress = {
+  formatted?: string
+  streetAddress?: string
+  locality?: string
+  region?: string
+  postalCode?: string
+  country?: string
 }
