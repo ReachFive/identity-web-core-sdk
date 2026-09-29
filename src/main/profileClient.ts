@@ -62,8 +62,8 @@ type SmsRequestAccountRecoveryParams = {
 export type RequestAccountRecoveryParams = EmailRequestAccountRecoveryParams | SmsRequestAccountRecoveryParams
 
 type AccessTokenUpdatePasswordParams = {
-  /** Required without a verification code: the API identifies the user by this token. */
-  accessToken: string
+  /** Without a verification code, the API identifies the user by this token: the call fails without it. */
+  accessToken?: string
   password: string
   oldPassword?: string
   /** @deprecated Not read by the API, and no longer sent: the user is the one the token identifies. */

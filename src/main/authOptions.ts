@@ -56,7 +56,11 @@ export function computeAuthOptions(
   const responseMode = opts.useWebMessage && !isPopup ? 'web_message' : undefined
   const display = isPopup ? 'popup' : responseMode !== 'web_message' ? 'page' : undefined
   const prompt =
-    responseMode === 'web_message' ? 'none' : Array.isArray(opts.prompt) ? opts.prompt.join(' ') : opts.prompt
+    responseMode === 'web_message'
+      ? 'none'
+      : Array.isArray(opts.prompt)
+        ? opts.prompt.join(' ') || undefined
+        : opts.prompt
   const scope = resolveScope(opts, defaultScopes)
 
   return {

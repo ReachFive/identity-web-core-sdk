@@ -51,6 +51,7 @@ export interface IdTokenPayload extends RegisteredJwtClaims {
   birthdate?: string
   /** Only the custom fields whose read scope was requested. */
   customFields?: Record<string, unknown>
+  /** Requires the `profile` scope. */
   customIdentifier?: string
   /** Requires the `email` scope. */
   email?: string
