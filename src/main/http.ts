@@ -64,8 +64,8 @@ export function createBootstrapHttp(baseUrl: string): Http {
  *
  * A body that is not JSON has no historical shape to restore — it used to surface as a `SyntaxError` —
  * so it is left as the `ApiError`, which at least carries the status. The same goes for a JSON body
- * that is not an object (`null`, a bare string): the API never sends one, `AppError` always
- * serialises to an object.
+ * that is not an object (`null`, a bare string): the API never sends one, its error bodies are always
+ * objects.
  */
 function withLegacyErrorShape(): Middleware {
   return (next) => (request) =>
