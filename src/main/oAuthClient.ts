@@ -13,7 +13,7 @@ import { computeAuthOptions } from './authOptions'
 import type { AuthParameters } from './authParameters'
 import { AuthResult, enrichAuthResult } from './authResult'
 import type { CaptchaParams } from './captcha'
-import type { HttpClient } from './httpClient'
+import type { Http } from '../api/http/pipeline'
 import type { IdentityEventManager } from './identityEventManager'
 import type { ApiClientConfig } from './config'
 import type MfaClient from './mfaClient'
@@ -116,7 +116,7 @@ export type VerifyPasswordlessParams =
  */
 export default class OAuthClient {
   private config: ApiClientConfig
-  private http: HttpClient
+  private http: Http
   private eventManager: IdentityEventManager
   private mfaClient: MfaClient | undefined
 
@@ -136,7 +136,7 @@ export default class OAuthClient {
   private signupUrl: string
   private signupTokenUrl: string
 
-  constructor(props: { config: ApiClientConfig; http: HttpClient; eventManager: IdentityEventManager }) {
+  constructor(props: { config: ApiClientConfig; http: Http; eventManager: IdentityEventManager }) {
     this.config = props.config
     this.http = props.http
     this.eventManager = props.eventManager
@@ -144,18 +144,18 @@ export default class OAuthClient {
     this.authorizeUrl = `${this.config.baseUrl}/oauth/authorize`
     this.customTokenUrl = `${this.config.baseUrl}/identity/v1/custom-token/login`
     this.logoutUrl = `${this.config.baseUrl}/identity/v1/logout`
-    this.revokeUrl = `${this.config.baseUrl}/oauth/revoke`
-    this.passwordlessVerifyUrl = `${this.config.baseUrl}/identity/v1/passwordless/verify`
-    this.passwordStrengthUrl = `${this.config.baseUrl}/identity/v1/password/strength`
+    this.revokeUrl = '/oauth/revoke'
+    this.passwordlessVerifyUrl = '/identity/v1/passwordless/verify'
+    this.passwordStrengthUrl = '/identity/v1/password/strength'
     this.popupRelayUrl = `${this.config.baseUrl}/popup/relay`
-    this.tokenUrl = `${this.config.baseUrl}/oauth/token`
+    this.tokenUrl = '/oauth/token'
 
-    this.passwordlessVerifyAuthCodeUrl = '/verify-auth-code'
-    this.passwordLoginUrl = '/password/login'
-    this.passwordlessStartUrl = '/passwordless/start'
-    this.sessionInfoUrl = '/sso/data'
-    this.signupUrl = '/signup'
-    this.signupTokenUrl = '/signup-token'
+    this.passwordlessVerifyAuthCodeUrl = '/identity/v1/verify-auth-code'
+    this.passwordLoginUrl = '/identity/v1/password/login'
+    this.passwordlessStartUrl = '/identity/v1/passwordless/start'
+    this.sessionInfoUrl = '/identity/v1/sso/data'
+    this.signupUrl = '/identity/v1/signup'
+    this.signupTokenUrl = '/identity/v1/signup-token'
   }
 
   setMfaClient(mfaClient: MfaClient): void {
@@ -686,7 +686,7 @@ export default class OAuthClient {
       const queryString = toQueryString({
         ...params
       })
-      window.location.assign(`${this.passwordlessVerifyUrl}?${queryString}`)
+      window.location.assign(`${this.config.baseUrl}${this.passwordlessVerifyUrl}?${queryString}`)
       return Promise.resolve()
     } else if (auth.useWebMessage) {
       return this.http
@@ -721,7 +721,7 @@ export default class OAuthClient {
         ...this.authParams(auth),
         ...params
       })
-      window.location.assign(`${this.passwordlessVerifyUrl}?${queryString}`)
+      window.location.assign(`${this.config.baseUrl}${this.passwordlessVerifyUrl}?${queryString}`)
       return Promise.resolve()
     }
   }
