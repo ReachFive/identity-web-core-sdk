@@ -1,4 +1,4 @@
-import type { Prompt, ResponseType } from './authOptions'
+import type { ResponseType } from './authOptions'
 
 type ResponseMode = 'web_message'
 type Display = 'page' | 'popup' | 'touch' | 'wap'
@@ -12,7 +12,8 @@ export type AuthParameters = {
   scope: string
   display?: Display
   redirectUri?: string
-  prompt?: Prompt
+  /** One or several `Prompt` values, space-separated. */
+  prompt?: string
   origin?: string
   state?: string
   nonce?: string
@@ -21,4 +22,7 @@ export type AuthParameters = {
   loginHint?: string
   accessToken?: string
   persistent?: boolean
+  maxAge?: number
+  uiLocales?: string
+  acrValues?: string
 }

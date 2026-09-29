@@ -28,6 +28,8 @@ export type StartMfaEmailRegistrationParams = {
   accessToken: string
   trustDevice?: boolean
   action?: string
+  /** Where the verification email sends the user. Must be an allowed redirect URI of the client. */
+  redirectUrl?: string
 }
 
 export type StartMfaEmailRegistrationResponse =
@@ -174,11 +176,12 @@ export default class MfaClient {
   }
 
   startMfaEmailRegistration(params: StartMfaEmailRegistrationParams): Promise<StartMfaEmailRegistrationResponse> {
-    const { accessToken, trustDevice, action } = params
+    const { accessToken, trustDevice, action, redirectUrl } = params
     return this.http.post<StartMfaEmailRegistrationResponse>(this.emailCredentialUrl, {
       body: {
         ...trustDeviceParam(trustDevice),
-        action
+        action,
+        redirectUrl
       },
       accessToken
     })
