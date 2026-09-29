@@ -3,91 +3,164 @@
  */
 import type { ConsentType } from './consents'
 
+/**
+ * A profile as the API returns it.
+ *
+ * Fields come and go with the request: when `fields` is passed, only the fields it lists are returned, and
+ * most fields also require an OAuth scope, noted on each. A field the access token's scopes do not cover is
+ * absent, not empty.
+ */
 export type Profile = {
   uid?: string
+  /** @deprecated Never returned by the API. */
   signedUid?: string
+  /** Requires the `profile` scope. */
   givenName?: string
+  /** Requires the `profile` scope. */
   middleName?: string
+  /** Requires the `profile` scope. */
   familyName?: string
+  /** Requires the `profile` scope. */
   name?: string
+  /** Requires the `profile` scope. */
   nickname?: string
+  /** `YYYY-MM-DD`. Requires the `profile` scope. */
   birthdate?: string
-  birthDate?: number
+  /** ISO 8601 date-time. Requires the `profile` scope. */
+  birthDate?: string
+  /** Requires the `profile` scope. */
   birthDay?: number
+  /** Requires the `profile` scope. */
   birthMonth?: number
+  /** Requires the `profile` scope. */
   birthYear?: number
+  /** Requires the `profile` scope. */
+  profileUrl?: string
+  /** @deprecated Never populated: the API's `profile_url` arrives as `profileUrl`. */
   profileURL?: string
+  /** Requires the `profile` scope. */
   picture?: string
   externalId?: string
   identities?: Identity[]
-  authTypes: string[]
+  authTypes?: string[]
   loginSummary?: LoginSummary
+  /** Requires the `profile` scope. */
   username?: string
+  /** Requires the `email` scope. */
   email?: string
+  /** Requires the `email` scope. */
   emailVerified?: boolean
-  emails: Emails
+  /** Requires the `email` scope. */
+  emails?: Emails
+  /** Requires the `profile` scope. */
   gender?: string
+  /** Requires the `address` scope. */
   addresses?: ProfileAddress[]
+  /** Requires the `address` scope. */
   city?: string
+  /** Requires the `address` scope. */
   country?: string
+  /** Requires the `phone` scope. */
   phoneNumber?: string
+  /** Requires the `phone` scope. */
   phoneNumberVerified?: boolean
+  /** @deprecated Never returned by the API. */
   likes?: Like[]
+  /** Requires the `profile` scope. */
   educationLevel?: string
+  /** Requires the `profile` scope. */
   bio?: string
+  /** Requires the `profile` scope. */
   relationshipStatus?: string
+  /** Requires the `address` scope. */
   hometown?: string
+  /** Requires the `profile` scope. */
   professionalHeadline?: string
+  /** Requires the `profile` scope. */
   professionalIndustry?: string
+  /** Requires the `profile` scope. */
   company?: string
+  /** @deprecated Never returned by the API. */
   friends?: Friend[]
+  /** Requires the `profile` scope. */
   locale?: string
+  /** @deprecated Never returned by the API. */
   followersCount?: number
+  /** @deprecated Never returned by the API. */
   friendsCount?: number
+  /** @deprecated Never returned by the API. */
   likesCount?: number
+  /** Only the custom fields whose read scope the access token carries. Values are returned as stored. */
   customFields?: CustomFieldsValues
-  // audiences?: Segment[]
+  /** @deprecated Never returned by the API. */
   interests?: Interest[]
-  // signins?: UserEvent[]
+  /** Keyed by consent key. */
   consents?: UserConsents
-  thirdPartyGrants: ThirdPartyGrant[]
+  thirdPartyGrants?: ThirdPartyGrant[]
+  /** @deprecated Never returned by the API. */
   facebookIdsForPages?: FacebookIdForPage[]
-  createdAt?: number
+  /** ISO 8601 date-time. Requires the `profile` scope. */
+  createdAt?: string
+  /** Requires the `profile` scope. */
   nameAlias?: string
+  /** Requires the `profile` scope. */
   givenNameAlias?: string
+  /** Requires the `profile` scope. */
   familyNameAlias?: string
-  updatedAt?: number
+  /** ISO 8601 date-time. Requires the `profile` scope. */
+  updatedAt?: string
   liteOnly?: boolean
-  tokenRevocationRecord: TokenRevocationRecord
-  lockoutEndDate?: number
+  tokenRevocationRecord?: TokenRevocationRecord
+  /** ISO 8601 date-time. */
+  lockoutEndDate?: string
   suspended?: boolean
   suspensionStatus?: SuspensionStatus
   suspensionInformation?: SuspensionInformation
+  /** Requires the `profile` scope. */
   customIdentifier?: string
+  /** Requires the `profile` scope. */
+  synchronizationId?: string
   id?: string
   sub?: string
+  /** Requires the `profile` scope. */
   age?: number
   profile?: string
-  providers: string[]
-  likesFriendsRatio: number
-  localFriendsCount: number
-  firstLogin?: number
-  lastLogin?: number
-  loginsCount: number
-  origins: string[]
-  devices: string[]
+  providers?: string[]
+  /** @deprecated Never returned by the API. */
+  likesFriendsRatio?: number
+  /** @deprecated Never returned by the API. */
+  localFriendsCount?: number
+  /** ISO 8601 date-time. */
+  firstLogin?: string
+  /** ISO 8601 date-time. */
+  lastLogin?: string
+  loginsCount?: number
+  origins?: string[]
+  devices?: string[]
   lastLoginType?: string
   lastLoginProvider?: string
-  hasPassword: boolean
-  socialIdentities: Identity[]
-  hasManagedProfile: boolean
-  providerMetadata?: ProviderMetadata[]
+  hasPassword?: boolean
+  socialIdentities?: Identity[]
+  hasManagedProfile?: boolean
+  /**
+   * Data from the providers the user logged in with, keyed by provider name, e.g. `{ kakaotalk: { ci } }`.
+   * Requires the `profile` scope.
+   */
+  providerMetadata?: Record<string, Record<string, unknown>>
+  /** Requires a permission to read leaked credentials. */
+  hasLeakedCredentials?: boolean
   // Legacy fields
+  /** Requires the `profile` scope. */
   firstName?: string
+  /** Requires the `profile` scope. */
   lastName?: string
+  /** Requires the `profile` scope. */
   fullName?: string
+  /** Requires the `profile` scope. */
+  photoUrl?: string
+  /** @deprecated Never populated: the API's `photo_url` arrives as `photoUrl`. */
   photoURL?: string
-  providerDetails: ProviderInfos[]
+  providerDetails?: ProviderInfos[]
 }
 
 export type Identity = {
@@ -204,7 +277,8 @@ export type TokenRevocationRecord = {
 export type SuspensionStatus = 'temporary' | 'permanent'
 
 export type SuspensionInformation = {
-  status: SuspensionStatus
+  /** @deprecated Never returned by the API: read `Profile.suspensionStatus` instead. */
+  status?: SuspensionStatus
   reason?: string
 }
 
@@ -216,6 +290,7 @@ export type ProviderInfos = {
   lastLogin?: string
 }
 
+/** @deprecated Not the shape the API returns: see `Profile.providerMetadata`. */
 export type ProviderMetadata = {
   provider: string
   data: Record<string, unknown>

@@ -533,14 +533,14 @@ export default class OAuthClient {
   startPasswordless(
     params: PasswordlessParams,
     auth: Omit<WithPkceParams<AuthOptions>, 'useWebMessage'> = {}
-  ): Promise<PasswordlessResponse> {
+  ): Promise<PasswordlessResponse | void> {
     const passwordlessPayload =
       'stepUp' in params
         ? this.resolveSecondFactorPasswordlessParams(params)
         : this.resolveSingleFactorPasswordlessParams(params, auth)
 
     return passwordlessPayload.then((payload) =>
-      this.http.post<PasswordlessResponse>(this.passwordlessStartUrl, {
+      this.http.post<PasswordlessResponse | void>(this.passwordlessStartUrl, {
         body: payload
       })
     )
