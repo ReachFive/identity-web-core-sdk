@@ -130,6 +130,9 @@ export type Client = {
   listWebAuthnDevices: (accessToken: string) => Promise<DeviceCredential[]>
   loginFromSession: (options?: WithPkceParams<AuthOptions>) => Promise<void>
   loginWithCredentials: (params: LoginWithCredentialsParams) => Promise<AuthResult>
+  /**
+   * @deprecated The API has no custom token login endpoint: this redirects to a page that does not exist.
+   */
   loginWithCustomToken: (params: LoginWithCustomTokenParams) => Promise<void>
   loginWithPassword: (params: LoginWithPasswordParams) => Promise<AuthResult>
   instantiateOneTap: (opts?: AuthOptions) => void
