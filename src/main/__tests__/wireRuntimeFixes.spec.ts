@@ -1,6 +1,6 @@
 import fetchMock from 'jest-fetch-mock'
 
-import { createDefaultTestClient } from './helpers/clientFactory'
+import { createDefaultTestClient, createTestClient } from './helpers/clientFactory'
 import { defineWindowProperty, mockWindowCrypto } from './helpers/testHelpers'
 
 // Requests the SDK used to get wrong: values the API ignores, SDK-only options leaking onto the wire, and
@@ -49,6 +49,30 @@ describe('access token and provider scope', () => {
   })
 })
 
+test('stripping them keeps every other authorization parameter', async () => {
+  const { client } = createDefaultTestClient({ sso: true })
+
+  await client.loginFromSession({
+    redirectUri: 'https://example.com/callback',
+    state: 's',
+    nonce: 'n',
+    loginHint: 'john@example.com',
+    accessToken,
+    providerScope: 'x'
+  })
+
+  const url = new URL((window.location.assign as jest.Mock).mock.calls[0][0])
+  expect(url.searchParams.has('access_token')).toBe(false)
+  expect(url.searchParams.has('provider_scope')).toBe(false)
+  expect(Object.fromEntries(url.searchParams)).toMatchObject({
+    redirect_uri: 'https://example.com/callback',
+    state: 's',
+    nonce: 'n',
+    login_hint: 'john@example.com',
+    scope: 'openid profile email phone'
+  })
+})
+
 describe('the default address flag', () => {
   test('is sent under the name the API reads, `default`', async () => {
     const { client } = createDefaultTestClient()
@@ -57,6 +81,17 @@ describe('the default address flag', () => {
     await client.updateProfile({ accessToken, data: { addresses: [{ streetAddress: '1 rue X', isDefault: true }] } })
 
     expect(lastCall().body.addresses).toEqual([{ street_address: '1 rue X', default: true }])
+  })
+
+  test('is sent as `default` on signup too', async () => {
+    const { client } = createDefaultTestClient()
+    fetchMock.mockResponseOnce(JSON.stringify({ id: '1234' }))
+
+    await client.signup({
+      data: { email: 'john@example.com', password: 'p', addresses: [{ streetAddress: '1 rue X', isDefault: false }] }
+    })
+
+    expect(lastCall().body.data.addresses).toEqual([{ street_address: '1 rue X', default: false }])
   })
 
   test('can also be given as `default`, the name the API returns it under', async () => {
@@ -138,9 +173,11 @@ describe('options that only mean something to the SDK', () => {
 
     await client.loginWithPassword({ email: 'john@example.com', password: 'p', saveCredentials: false, action: 'x' })
 
-    const { body } = fetchMock.mock.calls[1][1] as { body: string }
-    expect(JSON.parse(body)).not.toHaveProperty('save_credentials')
-    expect(JSON.parse(body)).not.toHaveProperty('action')
+    const [, init] = fetchMock.mock.calls.find(([url]) => String(url).endsWith('/password/login'))!
+    const body = JSON.parse(init!.body as string)
+    expect(body).not.toHaveProperty('save_credentials')
+    expect(body).not.toHaveProperty('action')
+    expect(body).toMatchObject({ email: 'john@example.com', password: 'p' })
   })
 
   test('are not sent with a logout', async () => {
@@ -180,5 +217,53 @@ describe('values the API ignores', () => {
     await client.exchangeAuthorizationCodeWithPkce({ code: 'c', redirectUri: 'https://example.com', persistent: true })
 
     expect(lastCall().body).not.toHaveProperty('persistent')
+  })
+})
+
+test('unlink sends no query string when keepInLiteProfile is not given', async () => {
+  const { client } = createDefaultTestClient()
+  fetchMock.mockResponseOnce('', { status: 204 })
+
+  await client.unlink({ accessToken, identityId: 'facebook:1' })
+
+  expect(new URL(lastCall().url).search).toBe('')
+})
+
+test('the passkey reset sends the origin and the name with the options request only', async () => {
+  const clientId = 'ijzdfpidjf'
+  const client = createTestClient({ clientId, domain: 'local.reach5.net', webAuthnOrigin: 'https://app.example.com' })
+  const bytes = new Uint8Array([1, 2, 3]).buffer
+  const credential = {
+    type: 'public-key',
+    id: 'cred',
+    rawId: bytes,
+    response: { clientDataJSON: bytes, attestationObject: bytes, getTransports: () => [] }
+  }
+  defineWindowProperty('PublicKeyCredential', {})
+  Object.defineProperty(navigator, 'credentials', {
+    configurable: true,
+    value: { create: jest.fn().mockResolvedValue(credential) }
+  })
+  fetchMock.mockResponseOnce(
+    JSON.stringify({
+      options: { public_key: { challenge: 'AQID', user: { id: 'AQID', name: 'j', display_name: 'j' } } }
+    })
+  )
+  fetchMock.mockResponseOnce('', { status: 204 })
+  try {
+    await client.resetPasskeys({ email: 'john@example.com', verificationCode: '1234', clientId, friendlyName: 'Phone' })
+  } finally {
+    delete (window as { PublicKeyCredential?: unknown }).PublicKeyCredential
+    delete (navigator as { credentials?: unknown }).credentials
+  }
+
+  const [options, reset] = fetchMock.mock.calls.slice(1).map(([, init]) => JSON.parse(init!.body as string))
+  expect(options).toMatchObject({ friendly_name: 'Phone', origin: 'https://app.example.com' })
+  expect(options).not.toHaveProperty('web_authn_origin')
+  expect(reset).toEqual({
+    email: 'john@example.com',
+    verification_code: '1234',
+    client_id: clientId,
+    public_key_credential: expect.objectContaining({ id: 'cred' })
   })
 })

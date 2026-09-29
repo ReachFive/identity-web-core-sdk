@@ -6,9 +6,9 @@ import type { ConsentType } from './consents'
 /**
  * A profile as the API returns it.
  *
- * Fields come and go with the request: when `fields` is passed, only the fields it lists are returned, and
- * most fields also require an OAuth scope, noted on each. A field the access token's scopes do not cover is
- * absent, not empty.
+ * Fields come and go with the request. Most require an OAuth scope, noted on each: a field the access
+ * token's scopes do not cover is absent, not empty. And when `fields` is passed, only the fields it lists are
+ * returned — including the ones typed as always present, which are only guaranteed without `fields`.
  */
 export type Profile = {
   uid?: string
@@ -42,7 +42,7 @@ export type Profile = {
   picture?: string
   externalId?: string
   identities?: Identity[]
-  authTypes?: string[]
+  authTypes: string[]
   loginSummary?: LoginSummary
   /** Requires the `profile` scope. */
   username?: string
@@ -96,7 +96,7 @@ export type Profile = {
   interests?: Interest[]
   /** Keyed by consent key. */
   consents?: UserConsents
-  thirdPartyGrants?: ThirdPartyGrant[]
+  thirdPartyGrants: ThirdPartyGrant[]
   /** @deprecated Never returned by the API. */
   facebookIdsForPages?: FacebookIdForPage[]
   /** ISO 8601 date-time. Requires the `profile` scope. */
@@ -110,7 +110,7 @@ export type Profile = {
   /** ISO 8601 date-time. Requires the `profile` scope. */
   updatedAt?: string
   liteOnly?: boolean
-  tokenRevocationRecord?: TokenRevocationRecord
+  tokenRevocationRecord: TokenRevocationRecord
   /** ISO 8601 date-time. */
   lockoutEndDate?: string
   suspended?: boolean
@@ -125,7 +125,7 @@ export type Profile = {
   /** Requires the `profile` scope. */
   age?: number
   profile?: string
-  providers?: string[]
+  providers: string[]
   /** @deprecated Never returned by the API. */
   likesFriendsRatio?: number
   /** @deprecated Never returned by the API. */
@@ -134,14 +134,14 @@ export type Profile = {
   firstLogin?: string
   /** ISO 8601 date-time. */
   lastLogin?: string
-  loginsCount?: number
-  origins?: string[]
-  devices?: string[]
+  loginsCount: number
+  origins: string[]
+  devices: string[]
   lastLoginType?: string
   lastLoginProvider?: string
-  hasPassword?: boolean
-  socialIdentities?: Identity[]
-  hasManagedProfile?: boolean
+  hasPassword: boolean
+  socialIdentities: Identity[]
+  hasManagedProfile: boolean
   /**
    * Data from the providers the user logged in with, keyed by provider name, e.g. `{ kakaotalk: { ci } }`.
    * Requires the `profile` scope.
@@ -160,7 +160,7 @@ export type Profile = {
   photoUrl?: string
   /** @deprecated Never populated: the API's `photo_url` arrives as `photoUrl`. */
   photoURL?: string
-  providerDetails?: ProviderInfos[]
+  providerDetails: ProviderInfos[]
 }
 
 export type Identity = {

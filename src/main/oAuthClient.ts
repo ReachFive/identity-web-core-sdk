@@ -472,7 +472,8 @@ export default class OAuthClient {
         clientId: this.config.clientId,
         grantType: 'refresh_token',
         refreshToken: params.refreshToken,
-        ...(params.scope && { scope: Array.isArray(params.scope) ? params.scope.join(' ') : params.scope })
+        ...(params.scope &&
+          params.scope.length > 0 && { scope: Array.isArray(params.scope) ? params.scope.join(' ') : params.scope })
       }
     })
 

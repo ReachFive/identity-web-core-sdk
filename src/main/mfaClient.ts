@@ -82,8 +82,8 @@ export type ListTrustedDevicesResponse = {
  * Identity Rest API Client
  */
 /**
- * The API rejects any `trust_device` when trusted devices are not enabled on the account, even `false`, and
- * treats an absent value as `false`: only `true` is ever worth sending.
+ * An absent `trust_device` means `false` to the API, which rejects `true` when trusted devices are not enabled
+ * on the account — and, on the passwordless verification, any value at all. Only `true` is ever worth sending.
  */
 function trustDeviceParam(trustDevice?: boolean) {
   return trustDevice ? { trustDevice: true } : {}
