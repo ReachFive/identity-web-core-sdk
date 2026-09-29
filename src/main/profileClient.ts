@@ -1,6 +1,7 @@
 import type { CaptchaParams } from './captcha'
 import type { ApiClientConfig } from './config'
 import type { HttpClient } from './httpClient'
+import { toWireProfileData } from './profileData'
 import type { IdentityEventManager } from './identityEventManager'
 import type { OpenIdUser, Profile, SessionDevice, SessionDeviceListResponse } from '../api/models'
 
@@ -20,6 +21,7 @@ export type PhoneNumberVerificationParams = { accessToken: string }
 
 type EmailRequestPasswordResetParams = {
   email: string
+  /** @deprecated Not read by the API, and no longer sent. */
   loginLink?: string
   origin?: string
   redirectUrl?: string
@@ -36,6 +38,7 @@ export type RequestPasswordResetParams = EmailRequestPasswordResetParams | SmsRe
 type EmailRequestAccountRecoveryParams = {
   email: string
   redirectUrl?: string
+  /** @deprecated Not read by the API, and no longer sent. */
   loginLink?: string
   returnToAfterAccountRecovery?: string
 } & CaptchaParams
@@ -50,6 +53,7 @@ type AccessTokenUpdatePasswordParams = {
   accessToken?: string
   password: string
   oldPassword?: string
+  /** @deprecated Not read by the API, and no longer sent: the user is the one the token identifies. */
   userId?: string
 }
 type EmailVerificationCodeUpdatePasswordParams = {
@@ -109,6 +113,12 @@ export type VerifyEmailParams = {
 /**
  * Identity Rest API Client
  */
+// `loginLink` is not read by the API, which builds its own links.
+function withoutLoginLink<T extends object>(params: T): Omit<T, 'loginLink'> {
+  const { loginLink: _loginLink, ...rest } = params as T & { loginLink?: string }
+  return rest
+}
+
 export default class ProfileClient {
   private config: ApiClientConfig
   private http: HttpClient
@@ -175,7 +185,7 @@ export default class ProfileClient {
     return this.http.post('/account-recovery', {
       body: {
         clientId: this.config.clientId,
-        ...params
+        ...withoutLoginLink(params)
       }
     })
   }
@@ -184,7 +194,7 @@ export default class ProfileClient {
     return this.http.post('/forgot-password', {
       body: {
         clientId: this.config.clientId,
-        ...params
+        ...withoutLoginLink(params)
       }
     })
   }
@@ -205,8 +215,11 @@ export default class ProfileClient {
   }
 
   updateEmail(params: UpdateEmailParams): Promise<void> {
-    const { accessToken, email, redirectUrl, captchaToken } = params
-    return this.http.post(this.updateEmailUrl, { body: { email, redirectUrl, captchaToken }, accessToken })
+    const { accessToken, email, redirectUrl, captchaToken, captchaProvider } = params
+    return this.http.post(this.updateEmailUrl, {
+      body: { email, redirectUrl, captchaToken, captchaProvider },
+      accessToken
+    })
   }
 
   updatePhoneNumber(params: UpdatePhoneNumberParams): Promise<void> {
@@ -217,12 +230,13 @@ export default class ProfileClient {
   updateProfile(params: UpdateProfileParams): Promise<void> {
     const { accessToken, redirectUrl, data } = params
     return this.http
-      .post(this.updateProfileUrl, { body: { ...data, redirectUrl }, accessToken })
+      .post(this.updateProfileUrl, { body: { ...toWireProfileData(data), redirectUrl }, accessToken })
       .then(() => this.eventManager.fireEvent('profile_updated', data))
   }
 
   updatePassword(params: UpdatePasswordParams): Promise<void> {
-    const { accessToken, ...data } = params
+    // `userId` is not read by the API: the user is the one the access token or verification code identifies.
+    const { accessToken, userId: _userId, ...data } = params as UpdatePasswordParams & { userId?: string }
     return this.http.post(this.updatePasswordUrl, {
       body: { clientId: this.config.clientId, ...data },
       accessToken

@@ -10,6 +10,7 @@ import { camelCaseProperties } from '../utils/transformObjectProperties'
 import { difference, pick } from '../utils/utils'
 import type { AuthOptions } from './authOptions'
 import { computeAuthOptions } from './authOptions'
+import { toWireProfileData } from './profileData'
 import type { AuthParameters } from './authParameters'
 import { AuthResult, enrichAuthResult } from './authResult'
 import type { CaptchaParams } from './captcha'
@@ -95,7 +96,8 @@ export type SignupParams = {
 export type TokenRequestParameters = {
   code: string
   redirectUri: string
-  persistent?: boolean // Whether the remember me is enabled
+  /** @deprecated Not read by the token endpoint, and no longer sent. Pass `persistent` in the auth options instead. */
+  persistent?: boolean
   returnProviderToken?: boolean
 }
 
@@ -193,13 +195,14 @@ export default class OAuthClient {
   }
 
   exchangeAuthorizationCodeWithPkce(params: TokenRequestParameters): Promise<AuthResult> {
+    const { persistent: _persistent, ...tokenParams } = params
     return this.http
       .post<AuthResult>(this.tokenUrl, {
         body: {
           clientId: this.config.clientId,
           grantType: 'authorization_code',
           codeVerifier: localStorage.getItem('verifier_key'),
-          ...params
+          ...tokenParams
         }
       })
       .then((authResult) => {
@@ -288,7 +291,8 @@ export default class OAuthClient {
   }
 
   loginWithPassword(params: LoginWithPasswordParams): Promise<AuthResult> {
-    const { auth = {}, ...rest } = params
+    // `saveCredentials` and `action` are for the SDK itself: the password login endpoint does not read them.
+    const { auth = {}, saveCredentials: _saveCredentials, action: _action, ...rest } = params
 
     this.acquireAuthorizationLock()
 
@@ -347,7 +351,7 @@ export default class OAuthClient {
           ...opts,
           useWebMessage: false
         },
-        { acceptPopupMode: true }
+        { acceptPopupMode: true, socialLogin: true }
       )
 
       return this.getPkceParams(authParams).then((maybeChallenge) => {
@@ -430,15 +434,16 @@ export default class OAuthClient {
   }
 
   logout(opts: LogoutParams = {}, revocationParams?: RevocationParams): Promise<void> {
-    if (navigator.credentials && navigator.credentials.preventSilentAccess && opts.removeCredentials === true) {
+    const { removeCredentials, ...query } = opts
+    if (navigator.credentials && navigator.credentials.preventSilentAccess && removeCredentials === true) {
       navigator.credentials.preventSilentAccess()
     }
     if (this.config.isPublic && revocationParams) {
       return this.revokeToken(revocationParams).then(() =>
-        window.location.assign(`${this.logoutUrl}?${toQueryString(opts)}`)
+        window.location.assign(`${this.logoutUrl}?${toQueryString(query)}`)
       )
     } else {
-      return Promise.resolve(window.location.assign(`${this.logoutUrl}?${toQueryString(opts)}`))
+      return Promise.resolve(window.location.assign(`${this.logoutUrl}?${toQueryString(query)}`))
     }
   }
 
@@ -461,7 +466,7 @@ export default class OAuthClient {
         clientId: this.config.clientId,
         grantType: 'refresh_token',
         refreshToken: params.refreshToken,
-        ...pick(params, 'scope')
+        ...(params.scope && { scope: Array.isArray(params.scope) ? params.scope.join(' ') : params.scope })
       }
     })
 
@@ -489,7 +494,7 @@ export default class OAuthClient {
               redirectUrl,
               scope,
               ...pick(auth, 'origin'),
-              data,
+              data: toWireProfileData(data),
               returnToAfterEmailConfirmation,
               captchaToken,
               captchaProvider
@@ -505,7 +510,7 @@ export default class OAuthClient {
               clientId,
               redirectUrl,
               scope,
-              data,
+              data: toWireProfileData(data),
               returnToAfterEmailConfirmation,
               captchaToken,
               captchaProvider
@@ -946,7 +951,7 @@ export default class OAuthClient {
 
   authParams(
     opts: WithPkceParams<AuthOptions>,
-    { acceptPopupMode = false } = {},
+    { acceptPopupMode = false, socialLogin = false } = {},
     allowConfidentialCodeWebMsgFlowOverride: boolean = false
   ) {
     const isConfidentialCodeWebMsg =
@@ -959,16 +964,20 @@ export default class OAuthClient {
       ? { responseType: 'token', redirectUri: undefined }
       : {}
 
+    const { accessToken, providerScope, ...authOptions } = computeAuthOptions(
+      {
+        ...opts,
+        ...overrideResponseType
+      },
+      { acceptPopupMode },
+      this.config.scope
+    )
+
     return {
       clientId: this.config.clientId,
-      ...computeAuthOptions(
-        {
-          ...opts,
-          ...overrideResponseType
-        },
-        { acceptPopupMode },
-        this.config.scope
-      )
+      ...authOptions,
+      // Only a social login reads these: they link the provider to the signed-in user and scope its access.
+      ...(socialLogin && { accessToken, providerScope })
     }
   }
 
