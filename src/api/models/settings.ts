@@ -44,6 +44,7 @@ export type RemoteSettings = {
   passwordPolicy: PasswordPolicy
   consents?: Consent[]
   customFields: CustomField[]
+  addressFields?: CustomField[]
   resourceBaseUrl: string
   mfaSmsEnabled: boolean
   mfaEmailEnabled: boolean
