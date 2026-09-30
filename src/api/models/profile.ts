@@ -142,11 +142,8 @@ export type Profile = {
   hasPassword: boolean
   socialIdentities: Identity[]
   hasManagedProfile: boolean
-  /**
-   * Data from the providers the user logged in with, keyed by provider name, e.g. `{ kakaotalk: { ci } }`.
-   * Requires the `profile` scope.
-   */
-  providerMetadata?: Record<string, Record<string, unknown>>
+  /** Requires the `profile` scope. */
+  providerMetadata?: ProviderMetadata
   /** Requires a permission to read leaked credentials. */
   hasLeakedCredentials?: boolean
   // Legacy fields
@@ -290,10 +287,17 @@ export type ProviderInfos = {
   lastLogin?: string
 }
 
-/** @deprecated Not the shape the API returns: see `Profile.providerMetadata`. */
+/**
+ * Data from the providers the user logged in with, keyed by provider name. Only the providers below attach
+ * metadata, and only for users who logged in with them.
+ */
 export type ProviderMetadata = {
-  provider: string
-  data: Record<string, unknown>
+  bconnect?: { cico?: string }
+  kakaotalk?: { ci?: string; ciAuthenticatedAt?: string; kakaotalkAgeRange?: string }
+  naver?: { naverAgeRange: string; ci?: string }
+  wechat?: { unionId: string }
+  tiktok?: { openId: string }
+  line?: { givenNamePronunciation?: string; familyNamePronunciation?: string }
 }
 
 /** What `sendEmailVerification` resolves with. */
