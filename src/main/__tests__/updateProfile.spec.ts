@@ -16,34 +16,6 @@ beforeEach(() => {
   fetchMock.resetMocks()
 })
 
-describe('updateProfile', () => {
-  test("sends an address's default flag under the name the API reads, `default`", async () => {
-    const { client } = createDefaultTestClient()
-    fetchMock.mockResponseOnce(JSON.stringify({}))
-
-    // With a single address, the API makes it the default whatever the flag: two are needed for the flag to matter.
-    const addresses = [
-      { streetAddress: '1 rue X', isDefault: false },
-      { streetAddress: '2 rue Y', isDefault: true }
-    ]
-    await client.updateProfile({ accessToken, data: { addresses } })
-
-    expect(lastFetchCall().body.addresses).toEqual([
-      { street_address: '1 rue X', default: false },
-      { street_address: '2 rue Y', default: true }
-    ])
-  })
-
-  test('accepts the default flag as `default` too', async () => {
-    const { client } = createDefaultTestClient()
-    fetchMock.mockResponseOnce(JSON.stringify({}))
-
-    await client.updateProfile({ accessToken, data: { addresses: [{ streetAddress: '1 rue X', default: true }] } })
-
-    expect(lastFetchCall().body.addresses).toEqual([{ street_address: '1 rue X', default: true }])
-  })
-})
-
 describe('updateEmail', () => {
   test('sends the captcha provider along with its token', async () => {
     const { client } = createDefaultTestClient()

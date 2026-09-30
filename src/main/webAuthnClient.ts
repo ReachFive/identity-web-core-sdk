@@ -1,7 +1,6 @@
 import type { AuthOptions } from './authOptions'
 import type { AuthResult } from './authResult'
 import type { HttpClient } from './httpClient'
-import { toWireProfileData } from './profileData'
 import type { IdentityEventManager } from './identityEventManager'
 import type { ApiClientConfig } from './config'
 import type { AuthenticationToken } from '../api/models'
@@ -238,7 +237,7 @@ export default class WebAuthnClient {
         origin: params.webAuthnOrigin || window.location.origin,
         clientId: this.config.clientId,
         friendlyName: params.friendlyName || window.navigator.platform,
-        profile: toWireProfileData(params.profile),
+        profile: params.profile,
         scope: resolveScope(auth, this.config.scope),
         redirectUrl: params.redirectUrl,
         returnToAfterEmailConfirmation: params.returnToAfterEmailConfirmation

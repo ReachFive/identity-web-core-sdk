@@ -190,10 +190,6 @@ export type ProfileAddress = {
   title?: string
   /** Whether this is the profile's default address. */
   default?: boolean
-  /**
-   * @deprecated Never returned by the API, which names this flag `default`. When sent, it is sent as `default`.
-   */
-  isDefault?: boolean
   addressType?: 'billing' | 'delivery'
   streetAddress?: string
   addressComplement?: string

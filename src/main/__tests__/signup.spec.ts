@@ -5,7 +5,7 @@ import type { SignupParams } from '../oAuthClient'
 import type { TestKit } from './helpers/clientFactory'
 import { createDefaultTestClient } from './helpers/clientFactory'
 import { scope, tkn } from './helpers/oauthHelpers'
-import { defineWindowProperty, headers, lastFetchCall, mockWindowCrypto } from './helpers/testHelpers'
+import { defineWindowProperty, headers, mockWindowCrypto } from './helpers/testHelpers'
 
 beforeAll(() => {
   fetchMock.enableMocks()
@@ -101,26 +101,4 @@ test('with unexpected error', async () => {
 
   await expect(promise).rejects.toThrow(expectedError)
   await expect(signupFailedHandler).not.toHaveBeenCalled()
-})
-
-test("sends an address's default flag under the name the API reads, `default`", async () => {
-  const { client } = createDefaultTestClient()
-  fetchMock.mockResponseOnce(JSON.stringify({ id: '1234' }))
-
-  // With a single address, the API makes it the default whatever the flag: two are needed for the flag to matter.
-  await client.signup({
-    data: {
-      email: 'john@example.com',
-      password: 'p',
-      addresses: [
-        { streetAddress: '1 rue X', isDefault: false },
-        { streetAddress: '2 rue Y', isDefault: true }
-      ]
-    }
-  })
-
-  expect(lastFetchCall().body.data.addresses).toEqual([
-    { street_address: '1 rue X', default: false },
-    { street_address: '2 rue Y', default: true }
-  ])
 })

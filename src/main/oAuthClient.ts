@@ -10,7 +10,6 @@ import { camelCaseProperties } from '../utils/transformObjectProperties'
 import { difference, pick } from '../utils/utils'
 import type { AuthOptions } from './authOptions'
 import { computeAuthOptions } from './authOptions'
-import { toWireProfileData } from './profileData'
 import type { AuthParameters } from './authParameters'
 import { AuthResult, enrichAuthResult } from './authResult'
 import type { CaptchaParams } from './captcha'
@@ -501,7 +500,7 @@ export default class OAuthClient {
               redirectUrl,
               scope,
               ...pick(auth, 'origin'),
-              data: toWireProfileData(data),
+              data,
               returnToAfterEmailConfirmation,
               captchaToken,
               captchaProvider
@@ -517,7 +516,7 @@ export default class OAuthClient {
               clientId,
               redirectUrl,
               scope,
-              data: toWireProfileData(data),
+              data,
               returnToAfterEmailConfirmation,
               captchaToken,
               captchaProvider
@@ -838,7 +837,7 @@ export default class OAuthClient {
     const passwordlessParams = {
       authType,
       ...(authType === 'magic_link' ? { email: params.email } : { phoneNumber: params.phoneNumber }),
-      ...(data && { data: toWireProfileData(data) })
+      ...(data && { data })
     }
 
     if (this.config.orchestrationToken) {
