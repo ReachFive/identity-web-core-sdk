@@ -107,9 +107,20 @@ test("sends an address's default flag under the name the API reads, `default`", 
   const { client } = createDefaultTestClient()
   fetchMock.mockResponseOnce(JSON.stringify({ id: '1234' }))
 
+  // With a single address, the API makes it the default whatever the flag: two are needed for the flag to matter.
   await client.signup({
-    data: { email: 'john@example.com', password: 'p', addresses: [{ streetAddress: '1 rue X', isDefault: false }] }
+    data: {
+      email: 'john@example.com',
+      password: 'p',
+      addresses: [
+        { streetAddress: '1 rue X', isDefault: false },
+        { streetAddress: '2 rue Y', isDefault: true }
+      ]
+    }
   })
 
-  expect(lastFetchCall().body.data.addresses).toEqual([{ street_address: '1 rue X', default: false }])
+  expect(lastFetchCall().body.data.addresses).toEqual([
+    { street_address: '1 rue X', default: false },
+    { street_address: '2 rue Y', default: true }
+  ])
 })

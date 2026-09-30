@@ -19,7 +19,7 @@ beforeEach(() => {
 describe('startMfaEmailRegistration', () => {
   test('sends the redirect URL of the verification email', async () => {
     const { client } = createDefaultTestClient()
-    fetchMock.mockResponseOnce(JSON.stringify({ status: 'email_sent' }))
+    fetchMock.mockResponseOnce(JSON.stringify({ status: 'email_sent' }), { status: 202 })
 
     await client.startMfaEmailRegistration({ accessToken, redirectUrl: 'https://example.com/verified' })
 
@@ -29,8 +29,8 @@ describe('startMfaEmailRegistration', () => {
   // An absent `trust_device` means `false` to the API, which rejects `true` when trusted devices are not enabled.
   test('only sends trustDevice when it is true', async () => {
     const { client } = createDefaultTestClient()
-    fetchMock.mockResponseOnce(JSON.stringify({ status: 'email_sent' }))
-    fetchMock.mockResponseOnce(JSON.stringify({ status: 'email_sent' }))
+    fetchMock.mockResponseOnce(JSON.stringify({ status: 'email_sent' }), { status: 202 })
+    fetchMock.mockResponseOnce(JSON.stringify({ status: 'email_sent' }), { status: 202 })
 
     await client.startMfaEmailRegistration({ accessToken, trustDevice: false })
     expect(lastFetchCall().body).toEqual({})
