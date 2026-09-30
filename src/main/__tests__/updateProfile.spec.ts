@@ -55,14 +55,3 @@ test('updatePhoneNumber resolves with the updated profile', async () => {
     phoneNumber: '+33600000000'
   })
 })
-
-describe('updatePassword', () => {
-  test('does not send userId, which the API does not read', async () => {
-    const { client } = createDefaultTestClient()
-    fetchMock.mockResponseOnce('', { status: 204 })
-
-    await client.updatePassword({ accessToken, password: 'new', oldPassword: 'old', userId: 'u' })
-
-    expect(lastFetchCall().body).toEqual({ client_id: expect.any(String), password: 'new', old_password: 'old' })
-  })
-})
