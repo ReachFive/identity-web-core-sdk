@@ -49,7 +49,7 @@ export type RemoteSettings = {
   /** Only when the Google provider is configured. */
   googleClientId?: string
   /**
-   * Absent when the RaaS feature is not enabled on the account. Typed as always present so as not to break
+   * Absent when Registration as a Service (RaaS) is not enabled on the account. Typed as always present so as not to break
    * existing code in a minor release: check for it before use.
    */
   passwordPolicy: PasswordPolicy
