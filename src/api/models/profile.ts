@@ -295,3 +295,13 @@ export type ProviderMetadata = {
   provider: string
   data: Record<string, unknown>
 }
+
+/** What `sendEmailVerification` resolves with. */
+export type EmailVerificationResponse = {
+  verificationEmailSent: boolean
+}
+
+/** What `sendPhoneNumberVerification` resolves with. */
+export type PhoneNumberVerificationResponse = {
+  verificationCodeSent: boolean
+}
