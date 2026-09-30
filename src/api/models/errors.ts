@@ -2,6 +2,8 @@
  * The error envelope every non-2xx API response rejects with.
  */
 export type ErrorResponse = {
+  /** Identifies this occurrence of the error, e.g. for support requests. */
+  errorId?: string
   error: string
   errorDescription?: string
   errorUserMsg?: string
@@ -10,7 +12,7 @@ export type ErrorResponse = {
 }
 
 export type FieldError = {
-  field: string
+  field?: string
   message: string
   code: 'missing' | 'invalid'
 }
