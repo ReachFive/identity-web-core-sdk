@@ -81,12 +81,3 @@ test('accepts a state', async () => {
 
   expect(lastFetchCall().body).toMatchObject({ state: 'xyz' })
 })
-
-test('does not send loginLink, which the API does not read', async () => {
-  const { client } = createDefaultTestClient()
-  fetchMock.mockResponseOnce('', { status: 204 })
-
-  await client.requestPasswordReset({ email: 'john@example.com', loginLink: 'https://example.com' })
-
-  expect(lastFetchCall().body).not.toHaveProperty('login_link')
-})

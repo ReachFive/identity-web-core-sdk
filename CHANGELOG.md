@@ -64,6 +64,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Deep imports into the package internals, for example `@reachfive/identity-core/es/utils/jwt`. Only the
   documented entry points are supported.
 - `ProfileAddress.isDefault`, replaced by `default`, the name the API uses.
+- `loginLink` from the `requestPasswordReset` and `requestAccountRecovery` parameters, which the API does not read.
+- `userId` from the `updatePassword` parameters, which the API does not read.
+- `persistent` from the `exchangeAuthorizationCodeWithPkce` parameters, which the API does not read.
 
 ### Internal
 - Hand-rolled crypto and base64 primitives replaced by [`jose`](https://github.com/panva/jose):

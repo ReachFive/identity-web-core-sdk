@@ -101,8 +101,6 @@ export type SignupParams = {
 export type TokenRequestParameters = {
   code: string
   redirectUri: string
-  /** @deprecated Not read by the token endpoint, and no longer sent. Pass `persistent` in the auth options instead. */
-  persistent?: boolean
   returnProviderToken?: boolean
 }
 
@@ -200,14 +198,13 @@ export default class OAuthClient {
   }
 
   exchangeAuthorizationCodeWithPkce(params: TokenRequestParameters): Promise<AuthResult> {
-    const { persistent: _persistent, ...tokenParams } = params
     return this.http
       .post<AuthResult>(this.tokenUrl, {
         body: {
           clientId: this.config.clientId,
           grantType: 'authorization_code',
           codeVerifier: localStorage.getItem('verifier_key'),
-          ...tokenParams
+          ...params
         }
       })
       .then((authResult) => {

@@ -29,8 +29,6 @@ type EmailRequestPasswordResetParams = {
   email: string
   /** Returned to `redirectUrl` along with the reset. */
   state?: string
-  /** @deprecated Not read by the API, and no longer sent. */
-  loginLink?: string
   origin?: string
   redirectUrl?: string
   returnToAfterPasswordReset?: string
@@ -56,8 +54,6 @@ export type RequestPasswordResetParams =
 type EmailRequestAccountRecoveryParams = {
   email: string
   redirectUrl?: string
-  /** @deprecated Not read by the API, and no longer sent. */
-  loginLink?: string
   returnToAfterAccountRecovery?: string
 } & CaptchaParams
 
@@ -72,8 +68,6 @@ type AccessTokenUpdatePasswordParams = {
   accessToken?: string
   password: string
   oldPassword?: string
-  /** @deprecated Not read by the API, and no longer sent: the user is the one the token identifies. */
-  userId?: string
 }
 type EmailVerificationCodeUpdatePasswordParams = {
   accessToken?: string
@@ -139,12 +133,6 @@ export type VerifyEmailParams = {
 /**
  * Identity Rest API Client
  */
-// `loginLink` is not read by the API, which builds its own links.
-function withoutLoginLink<T extends object>(params: T): Omit<T, 'loginLink'> {
-  const { loginLink: _loginLink, ...rest } = params as T & { loginLink?: string }
-  return rest
-}
-
 export default class ProfileClient {
   private config: ApiClientConfig
   private http: HttpClient
@@ -211,7 +199,7 @@ export default class ProfileClient {
     return this.http.post('/account-recovery', {
       body: {
         clientId: this.config.clientId,
-        ...withoutLoginLink(params)
+        ...params
       }
     })
   }
@@ -220,7 +208,7 @@ export default class ProfileClient {
     return this.http.post('/forgot-password', {
       body: {
         clientId: this.config.clientId,
-        ...withoutLoginLink(params)
+        ...params
       }
     })
   }
@@ -265,8 +253,7 @@ export default class ProfileClient {
   }
 
   updatePassword(params: UpdatePasswordParams): Promise<void> {
-    // `userId` is not read by the API: the user is the one the access token or verification code identifies.
-    const { accessToken, userId: _userId, ...data } = params as UpdatePasswordParams & { userId?: string }
+    const { accessToken, ...data } = params
     return this.http.post(this.updatePasswordUrl, {
       body: { clientId: this.config.clientId, ...data },
       accessToken
