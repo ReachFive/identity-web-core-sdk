@@ -115,7 +115,7 @@ test('can send the profile data used to sign up a new user', async () => {
     data: {
       givenName: 'John',
       customFields: { my_obj: { someKey: 1 } },
-      addresses: [{ streetAddress: '1 rue X', isDefault: true }]
+      addresses: [{ streetAddress: '1 rue X', default: true }]
     }
   })
 

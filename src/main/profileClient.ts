@@ -1,7 +1,6 @@
 import type { CaptchaParams } from './captcha'
 import type { ApiClientConfig } from './config'
 import type { HttpClient } from './httpClient'
-import { toWireProfileData } from './profileData'
 import type { IdentityEventManager } from './identityEventManager'
 import type {
   EmailVerificationResponse,
@@ -261,7 +260,7 @@ export default class ProfileClient {
   updateProfile(params: UpdateProfileParams): Promise<void> {
     const { accessToken, redirectUrl, data } = params
     return this.http
-      .post(this.updateProfileUrl, { body: { ...toWireProfileData(data), redirectUrl }, accessToken })
+      .post(this.updateProfileUrl, { body: { ...data, redirectUrl }, accessToken })
       .then(() => this.eventManager.fireEvent('profile_updated', data))
   }
 
