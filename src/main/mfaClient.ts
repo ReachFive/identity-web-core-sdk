@@ -201,9 +201,9 @@ export default class MfaClient {
     })
   }
 
-  verifyMfaEmailRegistration(params: VerifyMfaEmailRegistrationParams): Promise<void> {
+  verifyMfaEmailRegistration(params: VerifyMfaEmailRegistrationParams): Promise<MFA.EmailCredential> {
     const { accessToken, verificationCode, trustDevice } = params
-    return this.http.post<void>(this.emailCredentialVerifyUrl, {
+    return this.http.post<MFA.EmailCredential>(this.emailCredentialVerifyUrl, {
       body: {
         verificationCode,
         ...trustDeviceParam(trustDevice)
@@ -246,9 +246,9 @@ export default class MfaClient {
     }
   }
 
-  verifyMfaPhoneNumberRegistration(params: VerifyMfaPhoneNumberRegistrationParams): Promise<void> {
+  verifyMfaPhoneNumberRegistration(params: VerifyMfaPhoneNumberRegistrationParams): Promise<MFA.PhoneCredential> {
     const { accessToken, verificationCode, trustDevice } = params
-    return this.http.post<void>(this.phoneNumberCredentialVerifyUrl, {
+    return this.http.post<MFA.PhoneCredential>(this.phoneNumberCredentialVerifyUrl, {
       body: {
         verificationCode,
         ...trustDeviceParam(trustDevice)

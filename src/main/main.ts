@@ -22,9 +22,11 @@ import type {
 } from './mfaClient'
 import MfaClient from './mfaClient'
 import type {
+  EmailVerificationResponse,
   OpenIdUser,
-  PasswordlessResponse,
   PasswordStrength,
+  PasswordlessResponse,
+  PhoneNumberVerificationResponse,
   Profile,
   RemoteSettings,
   SessionDevice,
@@ -153,8 +155,8 @@ export type Client = {
   requestAccountRecovery: (params: RequestAccountRecoveryParams) => Promise<void>
   requestPasswordReset: (params: RequestPasswordResetParams) => Promise<void>
   resetPasskeys: (params: ResetPasskeysParams) => Promise<void>
-  sendEmailVerification: (params: EmailVerificationParams) => Promise<void>
-  sendPhoneNumberVerification: (params: PhoneNumberVerificationParams) => Promise<void>
+  sendEmailVerification: (params: EmailVerificationParams) => Promise<EmailVerificationResponse>
+  sendPhoneNumberVerification: (params: PhoneNumberVerificationParams) => Promise<PhoneNumberVerificationResponse>
   signup: (params: SignupParams) => Promise<AuthResult>
   signupWithWebAuthn: (params: SignupWithWebAuthnParams, auth?: AuthOptions) => Promise<AuthResult>
   startMfaEmailRegistration: (params: StartMfaEmailRegistrationParams) => Promise<StartMfaEmailRegistrationResponse>
@@ -177,15 +179,16 @@ export type Client = {
       options?: Omit<WithPkceParams<AuthOptions>, 'useWebMessage'>
     ): Promise<PasswordlessResponse | void>
   }
-  unlink: (params: UnlinkParams) => Promise<void>
-  updateEmail: (params: UpdateEmailParams) => Promise<void>
+  /** Resolves with the profile, or with nothing when unlinking leaves no profile behind. */
+  unlink: (params: UnlinkParams) => Promise<Profile | void>
+  updateEmail: (params: UpdateEmailParams) => Promise<Profile>
   updatePassword: (params: UpdatePasswordParams) => Promise<void>
-  updatePhoneNumber: (params: UpdatePhoneNumberParams) => Promise<void>
+  updatePhoneNumber: (params: UpdatePhoneNumberParams) => Promise<Profile>
   updateProfile: (params: UpdateProfileParams) => Promise<void>
   verifyEmail: (params: VerifyEmailParams) => Promise<void>
-  verifyMfaEmailRegistration: (params: VerifyMfaEmailRegistrationParams) => Promise<void>
+  verifyMfaEmailRegistration: (params: VerifyMfaEmailRegistrationParams) => Promise<MFA.EmailCredential>
   verifyMfaPasswordless: (params: VerifyMfaPasswordlessParams) => Promise<AuthResult>
-  verifyMfaPhoneNumberRegistration: (params: VerifyMfaPhoneNumberRegistrationParams) => Promise<void>
+  verifyMfaPhoneNumberRegistration: (params: VerifyMfaPhoneNumberRegistrationParams) => Promise<MFA.PhoneCredential>
   verifyPasswordless: (params: VerifyPasswordlessParams, options?: AuthOptions) => Promise<AuthResult | void>
   verifyPhoneNumber: (params: VerifyPhoneNumberParams) => Promise<void>
 }

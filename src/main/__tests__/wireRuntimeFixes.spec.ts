@@ -1,5 +1,7 @@
 import fetchMock from 'jest-fetch-mock'
 
+import type { EmailVerificationResponse, MFA, PhoneNumberVerificationResponse, Profile } from '../../api/models'
+
 import { createDefaultTestClient, createTestClient } from './helpers/clientFactory'
 import { defineWindowProperty, mockWindowCrypto } from './helpers/testHelpers'
 
@@ -265,5 +267,76 @@ test('the passkey reset sends the origin and the name with the options request o
     verification_code: '1234',
     client_id: clientId,
     public_key_credential: expect.objectContaining({ id: 'cred' })
+  })
+})
+
+describe('methods that resolve with the body the API returns', () => {
+  const profile = { id: 'AVPw', given_name: 'John', email: 'new@example.com' }
+  const camelProfile = { id: 'AVPw', givenName: 'John', email: 'new@example.com' }
+
+  test.each([
+    ['updateEmail', { accessToken, email: 'new@example.com' }],
+    ['updatePhoneNumber', { accessToken, phoneNumber: '+33600000000' }],
+    ['unlink', { accessToken, identityId: 'facebook:1' }]
+  ] as const)('%s resolves with the updated profile', async (method, params) => {
+    const { client } = createDefaultTestClient()
+    fetchMock.mockResponseOnce(JSON.stringify(profile))
+
+    const result: Profile | void = await (client[method] as (p: typeof params) => Promise<Profile | void>)(params)
+
+    expect(result).toEqual(camelProfile)
+  })
+
+  test('unlink resolves with nothing when the API returns no profile', async () => {
+    const { client } = createDefaultTestClient()
+    fetchMock.mockResponseOnce('', { status: 204 })
+
+    await expect(client.unlink({ accessToken, identityId: 'facebook:1' })).resolves.toBeUndefined()
+  })
+
+  test('the MFA registration verifications resolve with the new credential', async () => {
+    const { client } = createDefaultTestClient()
+    fetchMock.mockResponseOnce(
+      JSON.stringify({
+        type: 'email',
+        email: 'john@example.com',
+        friendly_name: 'Email',
+        created_at: '2026-09-30T00:00:00Z'
+      })
+    )
+    fetchMock.mockResponseOnce(
+      JSON.stringify({
+        type: 'sms',
+        phone_number: '+33600000000',
+        friendly_name: 'SMS',
+        created_at: '2026-09-30T00:00:00Z'
+      })
+    )
+
+    const email: MFA.EmailCredential = await client.verifyMfaEmailRegistration({ accessToken, verificationCode: '1' })
+    const phone: MFA.PhoneCredential = await client.verifyMfaPhoneNumberRegistration({
+      accessToken,
+      verificationCode: '1'
+    })
+
+    expect(email).toEqual({
+      type: 'email',
+      email: 'john@example.com',
+      friendlyName: 'Email',
+      createdAt: '2026-09-30T00:00:00Z'
+    })
+    expect(phone).toMatchObject({ type: 'sms', phoneNumber: '+33600000000' })
+  })
+
+  test('the verification requests resolve with whether the message was sent', async () => {
+    const { client } = createDefaultTestClient()
+    fetchMock.mockResponseOnce(JSON.stringify({ verification_email_sent: true }))
+    fetchMock.mockResponseOnce(JSON.stringify({ verification_code_sent: false }))
+
+    const email: EmailVerificationResponse = await client.sendEmailVerification({ accessToken })
+    const phone: PhoneNumberVerificationResponse = await client.sendPhoneNumberVerification({ accessToken })
+
+    expect(email).toEqual({ verificationEmailSent: true })
+    expect(phone).toEqual({ verificationCodeSent: false })
   })
 })

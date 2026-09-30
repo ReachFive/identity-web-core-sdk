@@ -3,7 +3,14 @@ import type { ApiClientConfig } from './config'
 import type { HttpClient } from './httpClient'
 import { toWireProfileData } from './profileData'
 import type { IdentityEventManager } from './identityEventManager'
-import type { OpenIdUser, Profile, SessionDevice, SessionDeviceListResponse } from '../api/models'
+import type {
+  EmailVerificationResponse,
+  OpenIdUser,
+  PhoneNumberVerificationResponse,
+  Profile,
+  SessionDevice,
+  SessionDeviceListResponse
+} from '../api/models'
 
 export type UpdateEmailParams = {
   accessToken: string
@@ -219,35 +226,36 @@ export default class ProfileClient {
     })
   }
 
-  sendEmailVerification(params: EmailVerificationParams): Promise<void> {
+  sendEmailVerification(params: EmailVerificationParams): Promise<EmailVerificationResponse> {
     const { accessToken, ...data } = params
-    return this.http.post(this.sendEmailVerificationUrl, { body: { ...data }, accessToken })
+    return this.http.post<EmailVerificationResponse>(this.sendEmailVerificationUrl, { body: { ...data }, accessToken })
   }
 
-  sendPhoneNumberVerification(params: PhoneNumberVerificationParams): Promise<void> {
+  sendPhoneNumberVerification(params: PhoneNumberVerificationParams): Promise<PhoneNumberVerificationResponse> {
     const { accessToken } = params
-    return this.http.post(this.sendPhoneNumberVerificationUrl, { accessToken })
+    return this.http.post<PhoneNumberVerificationResponse>(this.sendPhoneNumberVerificationUrl, { accessToken })
   }
 
-  unlink(params: UnlinkParams): Promise<void> {
+  /** Resolves with the profile, or with nothing when unlinking leaves no profile behind. */
+  unlink(params: UnlinkParams): Promise<Profile | void> {
     const { accessToken, keepInLiteProfile, ...data } = params
     // The API reads `keepInLiteProfile` from the query string, under that exact camelCase name.
     const path =
       keepInLiteProfile === undefined ? this.unlinkUrl : `${this.unlinkUrl}?keepInLiteProfile=${keepInLiteProfile}`
-    return this.http.post(path, { body: data, accessToken })
+    return this.http.post<Profile | void>(path, { body: data, accessToken })
   }
 
-  updateEmail(params: UpdateEmailParams): Promise<void> {
+  updateEmail(params: UpdateEmailParams): Promise<Profile> {
     const { accessToken, email, redirectUrl, captchaToken, captchaProvider } = params
-    return this.http.post(this.updateEmailUrl, {
+    return this.http.post<Profile>(this.updateEmailUrl, {
       body: { email, redirectUrl, captchaToken, captchaProvider },
       accessToken
     })
   }
 
-  updatePhoneNumber(params: UpdatePhoneNumberParams): Promise<void> {
+  updatePhoneNumber(params: UpdatePhoneNumberParams): Promise<Profile> {
     const { accessToken, ...data } = params
-    return this.http.post(this.updatePhoneNumberUrl, { body: data, accessToken })
+    return this.http.post<Profile>(this.updatePhoneNumberUrl, { body: data, accessToken })
   }
 
   updateProfile(params: UpdateProfileParams): Promise<void> {
