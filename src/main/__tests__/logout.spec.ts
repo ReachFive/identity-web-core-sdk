@@ -1,7 +1,7 @@
 import fetchMock from 'jest-fetch-mock'
 
 import { createDefaultTestClient } from './helpers/clientFactory'
-import { defineWindowProperty } from './helpers/testHelpers'
+import { defineWindowProperty, lastAssignedUrl } from './helpers/testHelpers'
 
 beforeAll(() => {
   fetchMock.enableMocks()
@@ -41,4 +41,13 @@ describe('logout', () => {
       `https://${domain}/identity/v1/logout?redirect_to=https%3A%2F%2Fexample.com%2Fcallback`
     )
   })
+})
+
+test('does not send removeCredentials, which only means something to the SDK', async () => {
+  const { client } = createDefaultTestClient()
+
+  await client.logout({ redirectTo: 'https://example.com', removeCredentials: true })
+
+  expect(lastAssignedUrl().searchParams.has('remove_credentials')).toBe(false)
+  expect(lastAssignedUrl().searchParams.get('redirect_to')).toBe('https://example.com')
 })

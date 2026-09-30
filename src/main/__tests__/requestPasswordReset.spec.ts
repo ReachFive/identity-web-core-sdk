@@ -1,7 +1,7 @@
 import fetchMock from 'jest-fetch-mock'
 
 import { createDefaultTestClient } from './helpers/clientFactory'
-import { defineWindowProperty, headers, mockWindowCrypto } from './helpers/testHelpers'
+import { defineWindowProperty, headers, lastFetchCall, mockWindowCrypto } from './helpers/testHelpers'
 
 beforeAll(() => {
   fetchMock.enableMocks()
@@ -62,4 +62,31 @@ test('with origin', async () => {
       })
     )
   })
+})
+
+test('accepts a custom identifier', async () => {
+  const { client } = createDefaultTestClient()
+  fetchMock.mockResponseOnce('', { status: 204 })
+
+  await client.requestPasswordReset({ customIdentifier: 'member-42' })
+
+  expect(lastFetchCall().body).toMatchObject({ custom_identifier: 'member-42' })
+})
+
+test('accepts a state', async () => {
+  const { client } = createDefaultTestClient()
+  fetchMock.mockResponseOnce('', { status: 204 })
+
+  await client.requestPasswordReset({ email: 'john@example.com', state: 'xyz' })
+
+  expect(lastFetchCall().body).toMatchObject({ state: 'xyz' })
+})
+
+test('does not send loginLink, which the API does not read', async () => {
+  const { client } = createDefaultTestClient()
+  fetchMock.mockResponseOnce('', { status: 204 })
+
+  await client.requestPasswordReset({ email: 'john@example.com', loginLink: 'https://example.com' })
+
+  expect(lastFetchCall().body).not.toHaveProperty('login_link')
 })

@@ -40,3 +40,10 @@ test('send verification mail', async () => {
     })
   })
 })
+
+test('resolves with whether the email was sent', async () => {
+  const { client } = createDefaultTestClient()
+  fetchMock.mockResponseOnce(JSON.stringify({ verification_email_sent: true }))
+
+  await expect(client.sendEmailVerification({ accessToken: 'tkn' })).resolves.toEqual({ verificationEmailSent: true })
+})
