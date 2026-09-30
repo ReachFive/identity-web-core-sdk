@@ -58,10 +58,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   bundles because the externals predicate matched `buffer` while the code imported `buffer/`.
 - Deep imports into the package internals, for example `@reachfive/identity-core/es/utils/jwt`. Only the
   documented entry points are supported.
-- **Breaking (types):** `ProfileAddress.isDefault`. The API names an address's default flag `default`: it
-  never read `isDefault`, which the SDK sent as `is_default`, and never returned it. Rename it to `default`
-  in the addresses you pass to `signup`, `updateProfile`, `startPasswordless` or `signupWithWebAuthn`, and
-  in the addresses you read from a profile.
+- `ProfileAddress.isDefault`, replaced by `default`, the name the API uses.
 
 ### Internal
 - Hand-rolled crypto and base64 primitives replaced by [`jose`](https://github.com/panva/jose):
