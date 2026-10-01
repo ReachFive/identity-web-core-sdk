@@ -5,7 +5,7 @@
     "customExportConditions": ["node", "require", "default"]
   },
   "setupFiles": ["<rootDir>/jest.setup.ts"],
-  "transformIgnorePatterns": ["<rootDir>/node_modules/"],
+  "transformIgnorePatterns": ["<rootDir>/node_modules/(?!jose/)"],
   "moduleFileExtensions": ["js", "json", "ts", "tsx"],
   "testMatch": ["**/src/**/__tests__/*.spec.ts"],
   "transform": {
