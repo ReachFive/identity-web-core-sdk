@@ -36,7 +36,8 @@
     "lint": "eslint src/",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "smoke:umd": "node scripts/smoke-umd.cjs"
+    "smoke:umd": "node scripts/smoke-umd.cjs",
+    "smoke:package": "node scripts/smoke-package.mjs"
   },
   "dependencies": {
     "@types/cordova-plugin-inappbrowser": "2.0.0",
@@ -75,5 +76,7 @@
     "cjs",
     "es",
     "umd"
-  ]
+  ],
+  "jsdelivr": "umd/identity-core.min.js",
+  "unpkg": "umd/identity-core.min.js"
 }
