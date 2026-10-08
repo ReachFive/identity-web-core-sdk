@@ -51,6 +51,11 @@ jobs:
       - name: Smoke-test the UMD bundles
         run: npm run smoke:umd
 
+      # Installs the packed tarball in a throwaway project and uses it from CommonJS, Node ESM,
+      # a bundler, TypeScript and a <script> tag, the ways the documentation describes.
+      - name: Smoke-test the published package
+        run: npm run smoke:package
+
       - name: Report bundle sizes
         run: |
           {

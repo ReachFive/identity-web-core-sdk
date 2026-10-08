@@ -22,6 +22,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   contract, with fixtures whose standard-base64 form contains both `+` and `/` so an alphabet mistake
   cannot pass.
 - `npm run typecheck`, `npm run typecheck:api`, `npm run clean` and `npm run smoke:umd`.
+- `npm run smoke:package`, which installs the packed tarball and uses it from CommonJS, Node ESM, a bundler,
+  TypeScript and a `<script>` tag.
+- `jsdelivr` and `unpkg` fields, so the package's root CDN URL serves `umd/identity-core.min.js`.
 
 ### Changed
 - **Bundle size.** Gzipped, against 1.42.0: `es/main.js` and `cjs/main.js` go **172 kB → 15 kB (−91%)**,
@@ -39,6 +42,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   threw `SyntaxError` — which is why the `format:check` CI step had been commented out. `format` and
   `format:check` now cover the whole repository (see `.prettierignore`) instead of only `src/**/*.ts`,
   and the CI step is enabled. The resulting reformat is stylistic only.
+- `jose` upgraded from 5 to 6, and inlined in `cjs/main.js` because it is now ESM-only.
+- `es/main.d.ts` no longer imports from `jose`: the `JWTPayload` type is inlined.
 
 ### Fixed
 - The published type declarations referenced `InAppBrowser` from `@types/cordova-plugin-inappbrowser`,
@@ -94,9 +99,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   already set, while silently omitting the two reset-passkeys ones. Removed.
 - Unresolved imports fail the build, as do import cycles involving the SDK's own sources. Cycles inside
   dependencies remain warnings, since they are common and outside our control.
-- `jest.setup.ts` provides `TextEncoder` / `TextDecoder`, which jsdom 19 does not expose, and jsdom's
+- `jest.setup.ts` provides `TextEncoder` / `TextDecoder`, which jsdom does not expose, and jsdom's
   export conditions ask for `node` so packages shipping separate ESM browser builds resolve to their
   CommonJS entry point under ts-jest.
+- Jest 28 → 30 and ts-jest 28 → 29.
+- The release workflow runs the tests, `npm run smoke:umd` and `npm run smoke:package` before publishing.
 
 ## [1.42.0] - 2026-08-20
 
