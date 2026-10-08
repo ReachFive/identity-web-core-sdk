@@ -111,10 +111,12 @@ export default class WebAuthnClient {
 
   resetPasskeys(params: InternalResetPasskeysParams): Promise<void> {
     if (window.PublicKeyCredential) {
+      // `webAuthnOrigin` travels as `origin`; `friendlyName` only belongs to the options request.
+      const { webAuthnOrigin, friendlyName, ...identification } = params
       const body = {
-        ...params,
-        origin: params.webAuthnOrigin || window.location.origin,
-        friendlyName: params.friendlyName || window.navigator.platform
+        ...identification,
+        origin: webAuthnOrigin || window.location.origin,
+        friendlyName: friendlyName || window.navigator.platform
       }
 
       return this.http
@@ -132,7 +134,7 @@ export default class WebAuthnClient {
           const serializedCredentials = serializeRegistrationPublicKeyCredential(credentials)
 
           return this.http.post<void>(this.resetPasskeysUrl, {
-            body: { ...params, publicKeyCredential: serializedCredentials }
+            body: { ...identification, publicKeyCredential: serializedCredentials }
           })
         })
         .catch((err) => {
