@@ -13,5 +13,6 @@
     "lib": ["ES2020"],
     "types": []
   },
-  "include": ["src/api/**/*"]
+  "include": ["src/api/**/*"],
+  "exclude": ["src/api/**/__tests__/**"]
 }
