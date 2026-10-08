@@ -18,8 +18,6 @@ export type Provider = {
   btnBackgroundColor?: string
   btnBorderColor?: string
   btnTextColor?: string
-  /** @deprecated Never returned by the API. */
-  buttonLabel?: string
   icon: string
   scope?: string[]
 }
