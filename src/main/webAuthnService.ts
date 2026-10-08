@@ -6,17 +6,15 @@ import type { SignupProfileData } from '../api/models'
 export const publicKeyCredentialType = 'public-key'
 
 /**
- * Encodes credential bytes for the CIAM backend, which reads these fields with Java's
- * `Base64.getUrlDecoder` and so rejects `+` and `/` (see `webauthn/api/ByteList.scala`). base64url
- * is therefore required, not merely conventional. The WebAuthn API hands these fields over as
+ * Encodes credential bytes for the API, which reads these fields as base64url only and rejects `+`
+ * and `/`. base64url is therefore required, not merely conventional. The WebAuthn API hands these fields over as
  * `ArrayBuffer`, whereas jose encodes byte arrays.
  */
 const encodeBytes = (bytes: ArrayBuffer): string => base64url.encode(new Uint8Array(bytes))
 
 /**
- * Decodes credential bytes coming from the backend, which writes them with
- * `Base64.getUrlEncoder` — padded for challenges and user ids, unpadded for credential descriptor
- * ids (see `webauthn/api/ByteList.scala`).
+ * Decodes credential bytes coming from the API, which sends them as base64url — padded for
+ * challenges and user ids, unpadded for credential descriptor ids.
  *
  * Normalising before decoding keeps this tolerant of alphabet and padding as a deliberate property
  * of the SDK rather than of whichever base64 implementation happens to be installed: jose 5 accepts
