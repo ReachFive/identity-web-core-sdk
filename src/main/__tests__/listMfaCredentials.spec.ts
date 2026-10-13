@@ -32,11 +32,10 @@ describe('list mfa credentials', () => {
       friendlyName: 'My email'
     }
     const passkeyCredential: MFA.PasskeyCredential = {
-      type: 'passkey',
+      type: 'webauthn',
       id: 'credential-id',
       friendlyName: 'My passkey',
-      createdAt: '2026-01-03T00:00:00.000Z',
-      lastUsedAt: '2026-01-04T00:00:00.000Z'
+      createdAt: '2026-01-03T00:00:00.000Z'
     }
 
     // Given

@@ -21,7 +21,7 @@ export namespace MFA {
   }
 
   export function isPasskeyCredential(credential: Credential): credential is PasskeyCredential {
-    return credential.type === 'passkey'
+    return credential.type === 'webauthn'
   }
 
   export type CredentialType = Credential['type']
@@ -43,11 +43,10 @@ export namespace MFA {
   }
 
   export type PasskeyCredential = {
-    type: 'passkey'
+    type: 'webauthn'
     id: string
     friendlyName: string
     createdAt: string
-    lastUsedAt?: string
   }
 
   export type CredentialsResponse = {
