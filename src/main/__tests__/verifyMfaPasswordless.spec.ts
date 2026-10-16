@@ -1,5 +1,5 @@
 import fetchMock from 'jest-fetch-mock'
-import { defineWindowProperty, headers, mockWindowCrypto } from './helpers/testHelpers'
+import { defineWindowProperty, headers, lastFetchCall, mockWindowCrypto } from './helpers/testHelpers'
 import { createDefaultTestClient } from './helpers/clientFactory'
 import { toQueryString } from '../../utils/queryString'
 
@@ -129,4 +129,43 @@ describe('not orchestrated flow', () => {
 
     await expect(promise).rejects.toEqual(expectedError)
   })
+})
+
+describe('trustDevice', () => {
+  // The passwordless verification rejects any `trust_device` when trusted devices are not enabled on the
+  // account, even `false`, and treats an absent value as `false`: only `true` is worth sending.
+  test('is left out unless it is true', async () => {
+    const { client } = createDefaultTestClient()
+    fetchMock.mockResponseOnce(JSON.stringify({}))
+
+    await client.verifyMfaPasswordless({ challengeId: 'c', verificationCode: '1234', trustDevice: false })
+
+    expect(lastFetchCall().body).toEqual({ challenge_id: 'c', verification_code: '1234' })
+  })
+
+  test('is sent when true', async () => {
+    const { client } = createDefaultTestClient()
+    fetchMock.mockResponseOnce(JSON.stringify({}))
+
+    await client.verifyMfaPasswordless({ challengeId: 'c', verificationCode: '1234', trustDevice: true })
+
+    expect(lastFetchCall().body).toEqual({ challenge_id: 'c', verification_code: '1234', trust_device: true })
+  })
+})
+
+test('decodes the id token, like every other login method', async () => {
+  const { client } = createDefaultTestClient()
+  const payload = Buffer.from(JSON.stringify({ sub: 'AVPw', given_name: 'John' })).toString('base64url')
+  fetchMock.mockResponseOnce(
+    JSON.stringify({
+      id_token: `eyJhbGciOiJub25lIn0.${payload}.`,
+      access_token: 'a',
+      expires_in: 1,
+      token_type: 'Bearer'
+    })
+  )
+
+  const result = await client.verifyMfaPasswordless({ challengeId: 'c', verificationCode: '1234' })
+
+  expect(result.idTokenPayload).toMatchObject({ sub: 'AVPw', givenName: 'John' })
 })

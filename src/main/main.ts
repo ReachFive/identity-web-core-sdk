@@ -22,9 +22,11 @@ import type {
 } from './mfaClient'
 import MfaClient from './mfaClient'
 import type {
+  EmailVerificationResponse,
   OpenIdUser,
-  PasswordlessResponse,
   PasswordStrength,
+  PasswordlessResponse,
+  PhoneNumberVerificationResponse,
   Profile,
   RemoteSettings,
   SessionDevice,
@@ -40,6 +42,8 @@ import type {
   RefreshTokenParams,
   RevocationParams,
   SignupParams,
+  SingleFactorPasswordlessParams,
+  StepUpPasswordlessParams,
   TokenRequestParameters,
   VerifyPasswordlessParams
 } from './oAuthClient'
@@ -130,6 +134,9 @@ export type Client = {
   listWebAuthnDevices: (accessToken: string) => Promise<DeviceCredential[]>
   loginFromSession: (options?: WithPkceParams<AuthOptions>) => Promise<void>
   loginWithCredentials: (params: LoginWithCredentialsParams) => Promise<AuthResult>
+  /**
+   * @deprecated The API has no custom token login endpoint: this redirects to a page that does not exist.
+   */
   loginWithCustomToken: (params: LoginWithCustomTokenParams) => Promise<void>
   loginWithPassword: (params: LoginWithPasswordParams) => Promise<AuthResult>
   instantiateOneTap: (opts?: AuthOptions) => void
@@ -148,27 +155,40 @@ export type Client = {
   requestAccountRecovery: (params: RequestAccountRecoveryParams) => Promise<void>
   requestPasswordReset: (params: RequestPasswordResetParams) => Promise<void>
   resetPasskeys: (params: ResetPasskeysParams) => Promise<void>
-  sendEmailVerification: (params: EmailVerificationParams) => Promise<void>
-  sendPhoneNumberVerification: (params: PhoneNumberVerificationParams) => Promise<void>
+  sendEmailVerification: (params: EmailVerificationParams) => Promise<EmailVerificationResponse>
+  sendPhoneNumberVerification: (params: PhoneNumberVerificationParams) => Promise<PhoneNumberVerificationResponse>
   signup: (params: SignupParams) => Promise<AuthResult>
   signupWithWebAuthn: (params: SignupWithWebAuthnParams, auth?: AuthOptions) => Promise<AuthResult>
   startMfaEmailRegistration: (params: StartMfaEmailRegistrationParams) => Promise<StartMfaEmailRegistrationResponse>
   startMfaPhoneNumberRegistration: (
     params: StartMfaPhoneNumberRegistrationParams
   ) => Promise<StartMfaPhoneNumberRegistrationResponse>
-  startPasswordless: (
-    params: PasswordlessParams,
-    options?: Omit<WithPkceParams<AuthOptions>, 'useWebMessage'>
-  ) => Promise<PasswordlessResponse>
-  unlink: (params: UnlinkParams) => Promise<void>
-  updateEmail: (params: UpdateEmailParams) => Promise<void>
+  startPasswordless: {
+    /** Single-factor passwordless: the API answers with no body. */
+    (
+      params: SingleFactorPasswordlessParams,
+      options?: Omit<WithPkceParams<AuthOptions>, 'useWebMessage'>
+    ): Promise<void>
+    /** Step-up passwordless: the API answers with the challenge to verify. */
+    (
+      params: StepUpPasswordlessParams,
+      options?: Omit<WithPkceParams<AuthOptions>, 'useWebMessage'>
+    ): Promise<PasswordlessResponse>
+    (
+      params: PasswordlessParams,
+      options?: Omit<WithPkceParams<AuthOptions>, 'useWebMessage'>
+    ): Promise<PasswordlessResponse | void>
+  }
+  /** Resolves with the profile, or with nothing when unlinking leaves no profile behind. */
+  unlink: (params: UnlinkParams) => Promise<Profile | void>
+  updateEmail: (params: UpdateEmailParams) => Promise<Profile>
   updatePassword: (params: UpdatePasswordParams) => Promise<void>
-  updatePhoneNumber: (params: UpdatePhoneNumberParams) => Promise<void>
+  updatePhoneNumber: (params: UpdatePhoneNumberParams) => Promise<Profile>
   updateProfile: (params: UpdateProfileParams) => Promise<void>
   verifyEmail: (params: VerifyEmailParams) => Promise<void>
-  verifyMfaEmailRegistration: (params: VerifyMfaEmailRegistrationParams) => Promise<void>
+  verifyMfaEmailRegistration: (params: VerifyMfaEmailRegistrationParams) => Promise<MFA.EmailCredential>
   verifyMfaPasswordless: (params: VerifyMfaPasswordlessParams) => Promise<AuthResult>
-  verifyMfaPhoneNumberRegistration: (params: VerifyMfaPhoneNumberRegistrationParams) => Promise<void>
+  verifyMfaPhoneNumberRegistration: (params: VerifyMfaPhoneNumberRegistrationParams) => Promise<MFA.PhoneCredential>
   verifyPasswordless: (params: VerifyPasswordlessParams, options?: AuthOptions) => Promise<AuthResult | void>
   verifyPhoneNumber: (params: VerifyPhoneNumberParams) => Promise<void>
 }
@@ -430,6 +450,18 @@ export function createClient(creationConfig: Config): Client {
     return apiClients.then((clients) => clients.mfa.startMfaPhoneNumberRegistration(params))
   }
 
+  function startPasswordless(
+    params: SingleFactorPasswordlessParams,
+    options?: WithPkceParams<AuthOptions>
+  ): Promise<void>
+  function startPasswordless(
+    params: StepUpPasswordlessParams,
+    options?: WithPkceParams<AuthOptions>
+  ): Promise<PasswordlessResponse>
+  function startPasswordless(
+    params: PasswordlessParams,
+    options?: WithPkceParams<AuthOptions>
+  ): Promise<PasswordlessResponse | void>
   function startPasswordless(params: PasswordlessParams, options: WithPkceParams<AuthOptions> = {}) {
     return apiClients.then((clients) => clients.oAuth.startPasswordless(params, options))
   }

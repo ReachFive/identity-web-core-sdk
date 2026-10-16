@@ -3,7 +3,7 @@ import type { AuthOptions } from '../authOptions'
 import type { PasswordlessParams } from '../oAuthClient'
 import { createDefaultTestClient } from './helpers/clientFactory'
 import { confidential, mockPkceValues, pageDisplay, pblic, scope } from './helpers/oauthHelpers'
-import { defineWindowProperty, headers, mockWindowCrypto } from './helpers/testHelpers'
+import { defineWindowProperty, headers, lastFetchCall, mockWindowCrypto } from './helpers/testHelpers'
 
 beforeAll(() => {
   fetchMock.enableMocks()
@@ -103,4 +103,32 @@ test('with confidential client', async () => {
       email: authParams.email
     })
   })
+})
+
+test('can send the profile data used to sign up a new user', async () => {
+  const { client } = createDefaultTestClient()
+  fetchMock.mockResponseOnce('', { status: 204 })
+
+  await client.startPasswordless({
+    authType: 'magic_link',
+    email: 'john@example.com',
+    data: {
+      givenName: 'John',
+      customFields: { my_obj: { someKey: 1 } },
+      addresses: [{ streetAddress: '1 rue X', default: true }]
+    }
+  })
+
+  expect(lastFetchCall().body.data).toEqual({
+    given_name: 'John',
+    custom_fields: { my_obj: { someKey: 1 } },
+    addresses: [{ street_address: '1 rue X', default: true }]
+  })
+})
+
+test('resolves with nothing for a single-factor passwordless start', async () => {
+  const { client } = createDefaultTestClient()
+  fetchMock.mockResponseOnce('', { status: 204 })
+
+  await expect(client.startPasswordless({ authType: 'magic_link', email: 'john@example.com' })).resolves.toBeUndefined()
 })

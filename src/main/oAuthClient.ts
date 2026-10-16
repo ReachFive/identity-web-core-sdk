@@ -24,7 +24,8 @@ import type {
   PasswordStrength,
   Scope,
   SessionInfo,
-  SignupProfile
+  SignupProfile,
+  PasswordlessSignupData
 } from '../api/models'
 import { ErrorResponse } from '../api/models'
 import type { PkceParams, WithPkceParams } from './pkceService'
@@ -65,14 +66,19 @@ export type RevocationParams = {
 
 export type RefreshTokenParams = { refreshToken: string; scope?: Scope }
 
-export type SingleFactorPasswordlessParams = (
+export type SingleFactorPasswordlessParams = {
+  /** Used to create the profile when the user does not exist yet, if the account allows it. */
+  data?: PasswordlessSignupData
+} & (
   | {
       authType: 'magic_link'
-      email?: string
+      /** Required: the API needs it to send the magic link. */
+      email: string
     }
   | {
       authType: 'sms'
-      phoneNumber?: string
+      /** Required: the API needs it to send the code. */
+      phoneNumber: string
     }
 ) &
   CaptchaParams
@@ -95,7 +101,6 @@ export type SignupParams = {
 export type TokenRequestParameters = {
   code: string
   redirectUri: string
-  persistent?: boolean // Whether the remember me is enabled
   returnProviderToken?: boolean
 }
 
@@ -288,7 +293,8 @@ export default class OAuthClient {
   }
 
   loginWithPassword(params: LoginWithPasswordParams): Promise<AuthResult> {
-    const { auth = {}, ...rest } = params
+    // `saveCredentials` and `action` are for the SDK itself: the password login endpoint does not read them.
+    const { auth = {}, saveCredentials: _saveCredentials, action: _action, ...rest } = params
 
     this.acquireAuthorizationLock()
 
@@ -347,7 +353,7 @@ export default class OAuthClient {
           ...opts,
           useWebMessage: false
         },
-        { acceptPopupMode: true }
+        { acceptPopupMode: true, socialLogin: true }
       )
 
       return this.getPkceParams(authParams).then((maybeChallenge) => {
@@ -430,15 +436,16 @@ export default class OAuthClient {
   }
 
   logout(opts: LogoutParams = {}, revocationParams?: RevocationParams): Promise<void> {
-    if (navigator.credentials && navigator.credentials.preventSilentAccess && opts.removeCredentials === true) {
+    const { removeCredentials, ...query } = opts
+    if (navigator.credentials && navigator.credentials.preventSilentAccess && removeCredentials === true) {
       navigator.credentials.preventSilentAccess()
     }
     if (this.config.isPublic && revocationParams) {
       return this.revokeToken(revocationParams).then(() =>
-        window.location.assign(`${this.logoutUrl}?${toQueryString(opts)}`)
+        window.location.assign(`${this.logoutUrl}?${toQueryString(query)}`)
       )
     } else {
-      return Promise.resolve(window.location.assign(`${this.logoutUrl}?${toQueryString(opts)}`))
+      return Promise.resolve(window.location.assign(`${this.logoutUrl}?${toQueryString(query)}`))
     }
   }
 
@@ -461,7 +468,8 @@ export default class OAuthClient {
         clientId: this.config.clientId,
         grantType: 'refresh_token',
         refreshToken: params.refreshToken,
-        ...pick(params, 'scope')
+        ...(params.scope &&
+          params.scope.length > 0 && { scope: Array.isArray(params.scope) ? params.scope.join(' ') : params.scope })
       }
     })
 
@@ -528,14 +536,14 @@ export default class OAuthClient {
   startPasswordless(
     params: PasswordlessParams,
     auth: Omit<WithPkceParams<AuthOptions>, 'useWebMessage'> = {}
-  ): Promise<PasswordlessResponse> {
+  ): Promise<PasswordlessResponse | void> {
     const passwordlessPayload =
       'stepUp' in params
         ? this.resolveSecondFactorPasswordlessParams(params)
         : this.resolveSingleFactorPasswordlessParams(params, auth)
 
     return passwordlessPayload.then((payload) =>
-      this.http.post<PasswordlessResponse>(this.passwordlessStartUrl, {
+      this.http.post<PasswordlessResponse | void>(this.passwordlessStartUrl, {
         body: payload
       })
     )
@@ -551,7 +559,7 @@ export default class OAuthClient {
       .then(() => this.loginWithVerificationCode(params, auth))
   }
 
-  private getAuthorizationUrl(queryString: Record<string, string | boolean | undefined>): string {
+  private getAuthorizationUrl(queryString: QueryString): string {
     return `${this.authorizeUrl}?${toQueryString(queryString)}`
   }
 
@@ -616,7 +624,7 @@ export default class OAuthClient {
     })
   }
 
-  private loginWithPopup(opts: AuthOptions & { provider: string }): Promise<void> {
+  private loginWithPopup(opts: Partial<AuthParameters> & { provider: string }): Promise<void> {
     type WinChanResponse<D> = { success: true; data: D } | { success: false; data: ErrorResponse }
     const { responseType, redirectUri, provider } = opts
 
@@ -670,7 +678,7 @@ export default class OAuthClient {
     }
   }
 
-  private redirectThruAuthorization(queryString: Record<string, string | boolean | undefined>): Promise<void> {
+  private redirectThruAuthorization(queryString: QueryString): Promise<void> {
     const location = this.getAuthorizationUrl(queryString)
     this.releaseAuthorizationLock()
     this.releaseSessionLock()
@@ -737,7 +745,7 @@ export default class OAuthClient {
           username: this.getAuthenticationId(params),
           password: params.password,
           scope: resolveScope(auth, this.config.scope),
-          ...pick(auth, 'origin')
+          ...pick(auth, 'origin', 'nonce')
         }
       })
       .then((authResult) => {
@@ -822,10 +830,11 @@ export default class OAuthClient {
     params: SingleFactorPasswordlessParams,
     auth: Omit<WithPkceParams<AuthOptions>, 'useWebMessage'> = {}
   ): Promise<object> {
-    const { authType, captchaToken, captchaProvider } = params
+    const { authType, captchaToken, captchaProvider, data } = params
     const passwordlessParams = {
       authType,
-      ...(authType === 'magic_link' ? { email: params.email } : { phoneNumber: params.phoneNumber })
+      ...(authType === 'magic_link' ? { email: params.email } : { phoneNumber: params.phoneNumber }),
+      ...(data && { data })
     }
 
     if (this.config.orchestrationToken) {
@@ -946,7 +955,7 @@ export default class OAuthClient {
 
   authParams(
     opts: WithPkceParams<AuthOptions>,
-    { acceptPopupMode = false } = {},
+    { acceptPopupMode = false, socialLogin = false } = {},
     allowConfidentialCodeWebMsgFlowOverride: boolean = false
   ) {
     const isConfidentialCodeWebMsg =
@@ -959,16 +968,20 @@ export default class OAuthClient {
       ? { responseType: 'token', redirectUri: undefined }
       : {}
 
+    const { accessToken, providerScope, ...authOptions } = computeAuthOptions(
+      {
+        ...opts,
+        ...overrideResponseType
+      },
+      { acceptPopupMode },
+      this.config.scope
+    )
+
     return {
       clientId: this.config.clientId,
-      ...computeAuthOptions(
-        {
-          ...opts,
-          ...overrideResponseType
-        },
-        { acceptPopupMode },
-        this.config.scope
-      )
+      ...authOptions,
+      // Only a social login reads these: they link the provider to the signed-in user and scope its access.
+      ...(socialLogin && { accessToken, providerScope })
     }
   }
 

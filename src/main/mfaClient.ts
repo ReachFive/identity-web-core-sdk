@@ -2,6 +2,7 @@ import { pick } from '../utils/utils'
 import type { AuthOptions } from './authOptions'
 import { computeAuthOptions } from './authOptions'
 import type { AuthResult } from './authResult'
+import { enrichAuthResult } from './authResult'
 import type { HttpClient } from './httpClient'
 import type { ApiClientConfig } from './config'
 import type { TrustedDevice } from '../api/models'
@@ -27,6 +28,8 @@ export type StartMfaEmailRegistrationParams = {
   accessToken: string
   trustDevice?: boolean
   action?: string
+  /** Where the verification email sends the user. Must be an allowed redirect URI of the client. */
+  redirectUrl?: string
 }
 
 export type StartMfaEmailRegistrationResponse =
@@ -78,6 +81,14 @@ export type ListTrustedDevicesResponse = {
 /**
  * Identity Rest API Client
  */
+/**
+ * An absent `trust_device` means `false` to the API, which rejects `true` when trusted devices are not enabled
+ * on the account — and, on the passwordless verification, any value at all. Only `true` is ever worth sending.
+ */
+function trustDeviceParam(trustDevice?: boolean) {
+  return trustDevice ? { trustDevice: true } : {}
+}
+
 export default class MfaClient {
   private config: ApiClientConfig
   private http: HttpClient
@@ -165,11 +176,12 @@ export default class MfaClient {
   }
 
   startMfaEmailRegistration(params: StartMfaEmailRegistrationParams): Promise<StartMfaEmailRegistrationResponse> {
-    const { accessToken, trustDevice = false, action } = params
+    const { accessToken, trustDevice, action, redirectUrl } = params
     return this.http.post<StartMfaEmailRegistrationResponse>(this.emailCredentialUrl, {
       body: {
-        trustDevice,
-        action
+        ...trustDeviceParam(trustDevice),
+        action,
+        redirectUrl
       },
       accessToken
     })
@@ -178,23 +190,23 @@ export default class MfaClient {
   startMfaPhoneNumberRegistration(
     params: StartMfaPhoneNumberRegistrationParams
   ): Promise<StartMfaPhoneNumberRegistrationResponse> {
-    const { accessToken, phoneNumber, trustDevice = false, action } = params
+    const { accessToken, phoneNumber, trustDevice, action } = params
     return this.http.post<StartMfaPhoneNumberRegistrationResponse>(this.phoneNumberCredentialUrl, {
       body: {
         phoneNumber,
-        trustDevice,
+        ...trustDeviceParam(trustDevice),
         action
       },
       accessToken
     })
   }
 
-  verifyMfaEmailRegistration(params: VerifyMfaEmailRegistrationParams): Promise<void> {
-    const { accessToken, verificationCode, trustDevice = false } = params
-    return this.http.post<void>(this.emailCredentialVerifyUrl, {
+  verifyMfaEmailRegistration(params: VerifyMfaEmailRegistrationParams): Promise<MFA.EmailCredential> {
+    const { accessToken, verificationCode, trustDevice } = params
+    return this.http.post<MFA.EmailCredential>(this.emailCredentialVerifyUrl, {
       body: {
         verificationCode,
-        trustDevice
+        ...trustDeviceParam(trustDevice)
       },
       accessToken
     })
@@ -203,11 +215,10 @@ export default class MfaClient {
   verifyMfaPasswordless(params: VerifyMfaPasswordlessParams): Promise<AuthResult> {
     const { challengeId, verificationCode, trustDevice } = params
     if (this.config.orchestrationToken) {
-      const queryString = toQueryString({
-        ...params
-      })
+      const verification = { challengeId, verificationCode, ...trustDeviceParam(trustDevice) }
+      const queryString = toQueryString(verification)
       return this.http
-        .post(this.passwordlessVerifyAuthCodeUrl, { body: params })
+        .post(this.passwordlessVerifyAuthCodeUrl, { body: verification })
         .then(() => {
           this.oAuthClient.releaseSessionLock()
           this.oAuthClient.releaseAuthorizationLock()
@@ -224,9 +235,10 @@ export default class MfaClient {
           body: {
             challengeId,
             verificationCode,
-            trustDevice
+            ...trustDeviceParam(trustDevice)
           }
         })
+        .then(enrichAuthResult)
         .finally(() => {
           this.oAuthClient.releaseSessionLock()
           this.oAuthClient.releaseAuthorizationLock()
@@ -234,12 +246,12 @@ export default class MfaClient {
     }
   }
 
-  verifyMfaPhoneNumberRegistration(params: VerifyMfaPhoneNumberRegistrationParams): Promise<void> {
+  verifyMfaPhoneNumberRegistration(params: VerifyMfaPhoneNumberRegistrationParams): Promise<MFA.PhoneCredential> {
     const { accessToken, verificationCode, trustDevice } = params
-    return this.http.post<void>(this.phoneNumberCredentialVerifyUrl, {
+    return this.http.post<MFA.PhoneCredential>(this.phoneNumberCredentialVerifyUrl, {
       body: {
         verificationCode,
-        trustDevice
+        ...trustDeviceParam(trustDevice)
       },
       accessToken
     })

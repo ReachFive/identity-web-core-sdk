@@ -1,3 +1,5 @@
+import fetchMock from 'jest-fetch-mock'
+
 import { delay } from '../../../utils/promise'
 import '../matchers'
 
@@ -56,4 +58,16 @@ export const mockWindowCrypto = {
         ]).buffer
       )
   }
+}
+
+/** The URL and the decoded JSON body of the last request sent through fetchMock. */
+export function lastFetchCall() {
+  const [url, init] = fetchMock.mock.calls[fetchMock.mock.calls.length - 1]
+  return { url: String(url), body: init?.body ? JSON.parse(init.body as string) : undefined }
+}
+
+/** The URL `window.location.assign` was last called with, parsed. */
+export function lastAssignedUrl() {
+  const calls = (window.location.assign as jest.Mock).mock.calls
+  return new URL(calls[calls.length - 1][0])
 }

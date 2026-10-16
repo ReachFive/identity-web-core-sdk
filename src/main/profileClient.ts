@@ -2,7 +2,14 @@ import type { CaptchaParams } from './captcha'
 import type { ApiClientConfig } from './config'
 import type { HttpClient } from './httpClient'
 import type { IdentityEventManager } from './identityEventManager'
-import type { OpenIdUser, Profile, SessionDevice, SessionDeviceListResponse } from '../api/models'
+import type {
+  EmailVerificationResponse,
+  OpenIdUser,
+  PhoneNumberVerificationResponse,
+  Profile,
+  SessionDevice,
+  SessionDeviceListResponse
+} from '../api/models'
 
 export type UpdateEmailParams = {
   accessToken: string
@@ -20,7 +27,8 @@ export type PhoneNumberVerificationParams = { accessToken: string }
 
 type EmailRequestPasswordResetParams = {
   email: string
-  loginLink?: string
+  /** Returned to `redirectUrl` along with the reset. */
+  state?: string
   origin?: string
   redirectUrl?: string
   returnToAfterPasswordReset?: string
@@ -29,14 +37,23 @@ type EmailRequestPasswordResetParams = {
 type SmsRequestPasswordResetParams = {
   phoneNumber: string
   origin?: string
+  state?: string
 } & CaptchaParams
 
-export type RequestPasswordResetParams = EmailRequestPasswordResetParams | SmsRequestPasswordResetParams
+type CustomIdentifierRequestPasswordResetParams = {
+  customIdentifier: string
+  origin?: string
+  redirectUrl?: string
+  returnToAfterPasswordReset?: string
+  state?: string
+} & CaptchaParams
+
+export type RequestPasswordResetParams =
+  EmailRequestPasswordResetParams | SmsRequestPasswordResetParams | CustomIdentifierRequestPasswordResetParams
 
 type EmailRequestAccountRecoveryParams = {
   email: string
   redirectUrl?: string
-  loginLink?: string
   returnToAfterAccountRecovery?: string
 } & CaptchaParams
 
@@ -47,10 +64,10 @@ type SmsRequestAccountRecoveryParams = {
 export type RequestAccountRecoveryParams = EmailRequestAccountRecoveryParams | SmsRequestAccountRecoveryParams
 
 type AccessTokenUpdatePasswordParams = {
+  /** Without a verification code, the API identifies the user by this token: the call fails without it. */
   accessToken?: string
   password: string
   oldPassword?: string
-  userId?: string
 }
 type EmailVerificationCodeUpdatePasswordParams = {
   accessToken?: string
@@ -81,6 +98,8 @@ export type GetUserParams = {
 export type UnlinkParams = {
   accessToken: string
   identityId: string
+  /** Keeps the identity's data in a lite profile instead of discarding it. */
+  keepInLiteProfile?: boolean
 }
 
 export type UpdatePhoneNumberParams = {
@@ -91,6 +110,11 @@ export type UpdatePhoneNumberParams = {
 export type UpdateProfileParams = {
   accessToken: string
   redirectUrl?: string
+  /**
+   * The API only updates `email`, `phoneNumber`, `givenName`, `middleName`, `familyName`, `name`, `nickname`,
+   * `username`, `birthdate`, `gender`, `addresses`, `picture`, `company`, `locale`, `customFields`, `consents`
+   * and `customIdentifier`. Any other field is silently ignored.
+   */
   data: Partial<Profile>
 }
 
@@ -189,29 +213,36 @@ export default class ProfileClient {
     })
   }
 
-  sendEmailVerification(params: EmailVerificationParams): Promise<void> {
+  sendEmailVerification(params: EmailVerificationParams): Promise<EmailVerificationResponse> {
     const { accessToken, ...data } = params
-    return this.http.post(this.sendEmailVerificationUrl, { body: { ...data }, accessToken })
+    return this.http.post<EmailVerificationResponse>(this.sendEmailVerificationUrl, { body: { ...data }, accessToken })
   }
 
-  sendPhoneNumberVerification(params: PhoneNumberVerificationParams): Promise<void> {
+  sendPhoneNumberVerification(params: PhoneNumberVerificationParams): Promise<PhoneNumberVerificationResponse> {
     const { accessToken } = params
-    return this.http.post(this.sendPhoneNumberVerificationUrl, { accessToken })
+    return this.http.post<PhoneNumberVerificationResponse>(this.sendPhoneNumberVerificationUrl, { accessToken })
   }
 
-  unlink(params: UnlinkParams): Promise<void> {
+  /** Resolves with the profile, or with nothing when unlinking leaves no profile behind. */
+  unlink(params: UnlinkParams): Promise<Profile | void> {
+    const { accessToken, keepInLiteProfile, ...data } = params
+    // The API reads `keepInLiteProfile` from the query string, under that exact camelCase name.
+    const path =
+      keepInLiteProfile === undefined ? this.unlinkUrl : `${this.unlinkUrl}?keepInLiteProfile=${keepInLiteProfile}`
+    return this.http.post<Profile | void>(path, { body: data, accessToken })
+  }
+
+  updateEmail(params: UpdateEmailParams): Promise<Profile> {
+    const { accessToken, email, redirectUrl, captchaToken, captchaProvider } = params
+    return this.http.post<Profile>(this.updateEmailUrl, {
+      body: { email, redirectUrl, captchaToken, captchaProvider },
+      accessToken
+    })
+  }
+
+  updatePhoneNumber(params: UpdatePhoneNumberParams): Promise<Profile> {
     const { accessToken, ...data } = params
-    return this.http.post(this.unlinkUrl, { body: data, accessToken })
-  }
-
-  updateEmail(params: UpdateEmailParams): Promise<void> {
-    const { accessToken, email, redirectUrl, captchaToken } = params
-    return this.http.post(this.updateEmailUrl, { body: { email, redirectUrl, captchaToken }, accessToken })
-  }
-
-  updatePhoneNumber(params: UpdatePhoneNumberParams): Promise<void> {
-    const { accessToken, ...data } = params
-    return this.http.post(this.updatePhoneNumberUrl, { body: data, accessToken })
+    return this.http.post<Profile>(this.updatePhoneNumberUrl, { body: data, accessToken })
   }
 
   updateProfile(params: UpdateProfileParams): Promise<void> {
