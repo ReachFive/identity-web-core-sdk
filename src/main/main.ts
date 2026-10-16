@@ -1,9 +1,8 @@
-import { toQueryString } from '../utils/queryString'
 import type { AuthOptions } from './authOptions'
 import type { AuthResult } from './authResult'
 import { initCordovaCallbackIfNecessary } from './cordovaHelper'
 import type { ApiClientConfig, Config } from './config'
-import { createHttpClient, rawRequest } from './httpClient'
+import { createBootstrapHttp, createBrowserHttp } from './http'
 import type { Events } from './identityEventManager'
 import createEventManager from './identityEventManager'
 import type {
@@ -194,11 +193,9 @@ export function createClient(creationConfig: Config): Client {
 
   const baseUrl = `https://${domain}`
 
-  const baseIdentityUrl = `${baseUrl}/identity/v1`
-
-  const remoteSettings = rawRequest<RemoteSettings>(
-    `https://${domain}/identity/v1/config?${toQueryString({ clientId, lang: language, googleVariant })}`
-  )
+  const remoteSettings = createBootstrapHttp(baseUrl).get<RemoteSettings>('/identity/v1/config', {
+    query: { clientId, lang: language, googleVariant }
+  })
 
   const apiClients = remoteSettings.then((remoteConfig) => {
     const { language, sso } = remoteConfig
@@ -213,8 +210,8 @@ export function createClient(creationConfig: Config): Client {
       ...remoteConfig
     }
 
-    const http = createHttpClient({
-      baseUrl: baseIdentityUrl,
+    const http = createBrowserHttp({
+      baseUrl,
       language,
       acceptCookies: sso,
       locale

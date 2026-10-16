@@ -1,6 +1,6 @@
 import type { CaptchaParams } from './captcha'
 import type { ApiClientConfig } from './config'
-import type { HttpClient } from './httpClient'
+import type { Http } from '../api/http/pipeline'
 import type { IdentityEventManager } from './identityEventManager'
 import type { OpenIdUser, Profile, SessionDevice, SessionDeviceListResponse } from '../api/models'
 
@@ -111,7 +111,7 @@ export type VerifyEmailParams = {
  */
 export default class ProfileClient {
   private config: ApiClientConfig
-  private http: HttpClient
+  private http: Http
   private eventManager: IdentityEventManager
 
   private sendEmailVerificationUrl: string
@@ -127,23 +127,23 @@ export default class ProfileClient {
   private verifyPhoneNumberUrl: string
   private verifyEmailUrl: string
 
-  constructor(props: { config: ApiClientConfig; http: HttpClient; eventManager: IdentityEventManager }) {
+  constructor(props: { config: ApiClientConfig; http: Http; eventManager: IdentityEventManager }) {
     this.config = props.config
     this.http = props.http
     this.eventManager = props.eventManager
 
-    this.sendEmailVerificationUrl = '/send-email-verification'
-    this.sendPhoneNumberVerificationUrl = '/send-phone-number-verification'
-    this.sessionDevicesUrl = '/session-devices'
-    this.signupDataUrl = '/signup/data'
-    this.unlinkUrl = '/unlink'
-    this.updateEmailUrl = '/update-email'
-    this.updatePasswordUrl = '/update-password'
-    this.updatePhoneNumberUrl = '/update-phone-number'
-    this.updateProfileUrl = '/update-profile'
-    this.userInfoUrl = '/userinfo'
-    this.verifyPhoneNumberUrl = '/verify-phone-number'
-    this.verifyEmailUrl = '/verify-email'
+    this.sendEmailVerificationUrl = '/identity/v1/send-email-verification'
+    this.sendPhoneNumberVerificationUrl = '/identity/v1/send-phone-number-verification'
+    this.sessionDevicesUrl = '/identity/v1/session-devices'
+    this.signupDataUrl = '/identity/v1/signup/data'
+    this.unlinkUrl = '/identity/v1/unlink'
+    this.updateEmailUrl = '/identity/v1/update-email'
+    this.updatePasswordUrl = '/identity/v1/update-password'
+    this.updatePhoneNumberUrl = '/identity/v1/update-phone-number'
+    this.updateProfileUrl = '/identity/v1/update-profile'
+    this.userInfoUrl = '/identity/v1/userinfo'
+    this.verifyPhoneNumberUrl = '/identity/v1/verify-phone-number'
+    this.verifyEmailUrl = '/identity/v1/verify-email'
   }
 
   listSessionDevices(accessToken: string): Promise<SessionDevice[]> {
@@ -154,7 +154,7 @@ export default class ProfileClient {
 
   removeSessionDevice(params: RemoveSessionDeviceParams): Promise<void> {
     const { accessToken, sessionDeviceId } = params
-    return this.http.remove<void>(`${this.sessionDevicesUrl}/${sessionDeviceId}`, { accessToken })
+    return this.http.delete<void>(`${this.sessionDevicesUrl}/${sessionDeviceId}`, { accessToken })
   }
 
   getSignupData(signupToken: string): Promise<OpenIdUser> {
@@ -172,7 +172,7 @@ export default class ProfileClient {
   }
 
   requestAccountRecovery(params: RequestAccountRecoveryParams): Promise<void> {
-    return this.http.post('/account-recovery', {
+    return this.http.post('/identity/v1/account-recovery', {
       body: {
         clientId: this.config.clientId,
         ...params
@@ -181,7 +181,7 @@ export default class ProfileClient {
   }
 
   requestPasswordReset(params: RequestPasswordResetParams): Promise<void> {
-    return this.http.post('/forgot-password', {
+    return this.http.post('/identity/v1/forgot-password', {
       body: {
         clientId: this.config.clientId,
         ...params

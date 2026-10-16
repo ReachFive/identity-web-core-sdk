@@ -2,7 +2,7 @@ import fetchMock from 'jest-fetch-mock'
 
 import { toQueryString } from '../../utils/queryString'
 import { initCordovaCallbackIfNecessary } from '../cordovaHelper'
-import { createHttpClient } from '../httpClient'
+import { createBrowserHttp } from '../http'
 import createEventManager from '../identityEventManager'
 import OauthClient from '../oAuthClient'
 import createUrlParser from '../urlParser'
@@ -13,8 +13,8 @@ import type { RemoteSettings } from '../../api/models'
 const clientId = 'kqIJE'
 const baseUrl = 'https://local.reach5.net'
 const baseIdentityUrl = `${baseUrl}/identity/v1`
-const http = createHttpClient({
-  baseUrl: baseIdentityUrl,
+const http = createBrowserHttp({
+  baseUrl,
   language: 'en',
   acceptCookies: false
 })
