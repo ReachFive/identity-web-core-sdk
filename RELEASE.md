@@ -27,6 +27,9 @@
 
 4. Create a pull request named `Release vx.y.z` (add the Github tag `release`) and submit it.
 
+   Before merging it, test the candidate in the [QA playground](README.md#qa-playground): build this branch
+   (`npm run build`) and run a local playground with `PLAYGROUND_SDK_DIR` pointing at this checkout.
+
 5. Once the branch is merged into `master`, create and push the new tag.
 
     ```sh
@@ -41,7 +44,10 @@
 
    Refer to the [.circleci/config.yml](.circleci/config.yml) file to set up the integration.
 
-6. Purge the cache of a @latest or version aliased URL to force users to get the new updated version. Otherwise they might wait up to 7 days.
+6. Once the version is on npm, run the QA playground's deployment on demand (its "CI and deployment" workflow) so
+   that its online page offers the new version with forms; until then it opens it in JSON mode.
+
+7. Purge the cache of a @latest or version aliased URL to force users to get the new updated version. Otherwise they might wait up to 7 days.
 
    Copy and submit the following URLS in the [Purge jsDelivr CDN cache](https://www.jsdelivr.com/tools/purge) form.
 
@@ -52,5 +58,5 @@
    https://cdn.jsdelivr.net/npm/@reachfive/identity-core@latest/umd/identity-core.min.js
    ```
 
-7. Draft a new release in the [Github releases tab](https://github.com/ReachFive/identity-web-core-sdk/releases) (
+8. Draft a new release in the [Github releases tab](https://github.com/ReachFive/identity-web-core-sdk/releases) (
    copy/paste the changelog in the release's description).
