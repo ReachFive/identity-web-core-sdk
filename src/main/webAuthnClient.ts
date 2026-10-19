@@ -6,6 +6,7 @@ import type { ApiClientConfig } from './config'
 import type { AuthenticationToken } from '../api/models'
 import type OAuthClient from './oAuthClient'
 import { resolveScope } from './scopeHelper'
+import { postWithNavigation } from '../utils/postNavigation'
 import type {
   CredentialRequestOptionsSerialized,
   DeviceCredential,
@@ -13,6 +14,7 @@ import type {
   EmailLoginWithWebAuthnParams,
   InternalLoginWithWebAuthnParams,
   InternalSignupWithWebAuthnParams,
+  InternalStepUpWithWebauthnParams,
   LoginWithWebAuthnParams,
   PhoneNumberLoginWithWebAuthnParams,
   RegistrationOptions
@@ -59,6 +61,8 @@ export default class WebAuthnClient {
   private resetPasskeysUrl = '/webauthn/reset'
   private signupOptionsUrl = '/webauthn/signup-options'
   private signupUrl = '/webauthn/signup'
+  private stepUpOptionsUrl = '/webauthn/stepup/options'
+  private stepUpVerifyUrl = '/webauthn/stepup/verify'
 
   constructor(props: {
     config: ApiClientConfig
@@ -221,6 +225,49 @@ export default class WebAuthnClient {
           if (err.error) this.eventManager.fireEvent('login_failed', err)
 
           return Promise.reject(err)
+        })
+    })
+  }
+
+  achieveStepUpWithWebauthn(params: InternalStepUpWithWebauthnParams): Promise<AuthResult> {
+    if (!window.PublicKeyCredential) {
+      return Promise.reject(new Error('Unsupported WebAuthn API'))
+    }
+
+    const conditionalMediationAvailablePromise =
+      PublicKeyCredential.isConditionalMediationAvailable?.() ?? Promise.resolve(false)
+
+    return conditionalMediationAvailablePromise.then((conditionalMediationAvailable) => {
+      if (params.conditionalMediation === true && !conditionalMediationAvailable) {
+        return Promise.reject(new Error('Conditional mediation unavailable'))
+      }
+
+      return this.http
+        .post<CredentialRequestOptionsSerialized>(this.stepUpOptionsUrl, {
+          body: {
+            origin: params.webAuthnOrigin || window.location.origin,
+            stepUpToken: params.stepUpToken
+          }
+        })
+        .then((response) => {
+          const options = encodePublicKeyCredentialRequestOptions(response.publicKey)
+          if (params.conditionalMediation !== false && conditionalMediationAvailable) {
+            // do autofill query
+            return navigator.credentials.get({ publicKey: options, mediation: 'conditional', signal: params.signal })
+          }
+          // do modal query
+          return navigator.credentials.get({ publicKey: options, signal: params.signal })
+        })
+        .then((credentials) => {
+          if (!credentials || !this.isPublicKeyCredential(credentials)) {
+            return Promise.reject(new Error('Unable to stepup with invalid public key credentials.'))
+          }
+          const serializedCredentials = serializeAuthenticationPublicKeyCredential(credentials)
+
+          // The verification answers with a redirection to the redirect URI, carrying the authorization
+          // code: the page must follow it itself, which a `fetch` would not do.
+          postWithNavigation(`${this.config.baseUrl}/identity/v1${this.stepUpVerifyUrl}`, serializedCredentials)
+          return {} as AuthResult
         })
     })
   }

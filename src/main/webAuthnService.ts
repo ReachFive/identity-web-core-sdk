@@ -38,6 +38,13 @@ export type LoginWithWebAuthnParams = { auth?: AuthOptions; signal?: AbortSignal
   EmailLoginWithWebAuthnParams | PhoneNumberLoginWithWebAuthnParams | DiscoverableLoginWithWebAuthnParams
 )
 
+export type StepUpWithWebauthnParams = {
+  stepUpToken: string
+  signal?: AbortSignal
+} & DiscoverableLoginWithWebAuthnParams
+
+export type InternalStepUpWithWebauthnParams = StepUpWithWebauthnParams & { webAuthnOrigin?: string }
+
 export type InternalLoginWithWebAuthnParams = LoginWithWebAuthnParams & { webAuthnOrigin?: string }
 
 export type SignupWithWebAuthnParams = {

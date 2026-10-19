@@ -64,7 +64,12 @@ import ProfileClient from './profileClient'
 import createUrlParser from './urlParser'
 import type { ResetPasskeysParams } from './webAuthnClient'
 import WebAuthnClient from './webAuthnClient'
-import type { DeviceCredential, LoginWithWebAuthnParams, SignupWithWebAuthnParams } from './webAuthnService'
+import type {
+  DeviceCredential,
+  LoginWithWebAuthnParams,
+  SignupWithWebAuthnParams,
+  StepUpWithWebauthnParams
+} from './webAuthnService'
 import CredentialsResponse = MFA.CredentialsResponse
 import StepUpResponse = MFA.StepUpResponse
 
@@ -116,6 +121,7 @@ export type { ResetPasskeysParams } from './webAuthnClient'
 
 export type Client = {
   addNewWebAuthnDevice: (accessToken: string, friendlyName?: string) => Promise<void>
+  achieveStepUpWithWebauthn: (params: StepUpWithWebauthnParams) => Promise<AuthResult>
   checkSession: (options?: WithPkceParams<AuthOptions>) => Promise<AuthResult>
   checkUrlFragment: (url?: string) => boolean
   exchangeAuthorizationCodeWithPkce: (params: TokenRequestParameters) => Promise<AuthResult>
@@ -340,6 +346,15 @@ export function createClient(creationConfig: Config): Client {
     )
   }
 
+  function achieveStepUpWithWebauthn(params: StepUpWithWebauthnParams) {
+    return apiClients.then((clients) =>
+      clients.webAuthn.achieveStepUpWithWebauthn({
+        ...params,
+        webAuthnOrigin
+      })
+    )
+  }
+
   function logout(params: LogoutParams = {}, revocationParams?: RevocationParams) {
     return apiClients.then((clients) => clients.oAuth.logout(params, revocationParams))
   }
@@ -480,6 +495,7 @@ export function createClient(creationConfig: Config): Client {
 
   return {
     addNewWebAuthnDevice,
+    achieveStepUpWithWebauthn,
     checkSession,
     checkUrlFragment,
     exchangeAuthorizationCodeWithPkce,
