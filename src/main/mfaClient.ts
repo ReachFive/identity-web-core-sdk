@@ -28,7 +28,10 @@ export type StartMfaEmailRegistrationParams = {
   accessToken: string
   trustDevice?: boolean
   action?: string
-  /** Where the verification email sends the user. Must be an allowed redirect URI of the client. */
+  /**
+   * Used to build the verification link (`{{link}}`) of the email template; ignored if the template has none.
+   * Defaults to the URL configured on the account. Must be an allowed redirect URI of the client.
+   */
   redirectUrl?: string
 }
 
@@ -81,14 +84,6 @@ export type ListTrustedDevicesResponse = {
 /**
  * Identity Rest API Client
  */
-/**
- * An absent `trust_device` means `false` to the API, which rejects `true` when trusted devices are not enabled
- * on the account — and, on the passwordless verification, any value at all. Only `true` is ever worth sending.
- */
-function trustDeviceParam(trustDevice?: boolean) {
-  return trustDevice ? { trustDevice: true } : {}
-}
-
 export default class MfaClient {
   private config: ApiClientConfig
   private http: HttpClient
@@ -179,7 +174,7 @@ export default class MfaClient {
     const { accessToken, trustDevice, action, redirectUrl } = params
     return this.http.post<StartMfaEmailRegistrationResponse>(this.emailCredentialUrl, {
       body: {
-        ...trustDeviceParam(trustDevice),
+        trustDevice,
         action,
         redirectUrl
       },
@@ -194,7 +189,7 @@ export default class MfaClient {
     return this.http.post<StartMfaPhoneNumberRegistrationResponse>(this.phoneNumberCredentialUrl, {
       body: {
         phoneNumber,
-        ...trustDeviceParam(trustDevice),
+        trustDevice,
         action
       },
       accessToken
@@ -206,7 +201,7 @@ export default class MfaClient {
     return this.http.post<MFA.EmailCredential>(this.emailCredentialVerifyUrl, {
       body: {
         verificationCode,
-        ...trustDeviceParam(trustDevice)
+        trustDevice
       },
       accessToken
     })
@@ -215,7 +210,7 @@ export default class MfaClient {
   verifyMfaPasswordless(params: VerifyMfaPasswordlessParams): Promise<AuthResult> {
     const { challengeId, verificationCode, trustDevice } = params
     if (this.config.orchestrationToken) {
-      const verification = { challengeId, verificationCode, ...trustDeviceParam(trustDevice) }
+      const verification = { challengeId, verificationCode, trustDevice }
       const queryString = toQueryString(verification)
       return this.http
         .post(this.passwordlessVerifyAuthCodeUrl, { body: verification })
@@ -235,7 +230,7 @@ export default class MfaClient {
           body: {
             challengeId,
             verificationCode,
-            ...trustDeviceParam(trustDevice)
+            trustDevice
           }
         })
         .then(enrichAuthResult)
@@ -251,7 +246,7 @@ export default class MfaClient {
     return this.http.post<MFA.PhoneCredential>(this.phoneNumberCredentialVerifyUrl, {
       body: {
         verificationCode,
-        ...trustDeviceParam(trustDevice)
+        trustDevice
       },
       accessToken
     })

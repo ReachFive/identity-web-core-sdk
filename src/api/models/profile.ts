@@ -284,10 +284,11 @@ export type ProviderInfos = {
 }
 
 /**
- * Data from the providers the user logged in with, keyed by provider name. Only the providers below attach
- * metadata, and only for users who logged in with them.
+ * Data from the providers the user logged in with, keyed by provider name, and only for users who logged in with
+ * them. The providers below are the ones known to attach metadata; any other is typed loosely.
  */
 export type ProviderMetadata = {
+  [provider: string]: Record<string, unknown> | undefined
   bconnect?: { cico?: string }
   kakaotalk?: { ci?: string; ciAuthenticatedAt?: string; kakaotalkAgeRange?: string }
   naver?: { naverAgeRange: string; ci?: string }
@@ -296,12 +297,10 @@ export type ProviderMetadata = {
   line?: { givenNamePronunciation?: string; familyNamePronunciation?: string }
 }
 
-/** What `sendEmailVerification` resolves with. */
 export type EmailVerificationResponse = {
   verificationEmailSent: boolean
 }
 
-/** What `sendPhoneNumberVerification` resolves with. */
 export type PhoneNumberVerificationResponse = {
   verificationCodeSent: boolean
 }

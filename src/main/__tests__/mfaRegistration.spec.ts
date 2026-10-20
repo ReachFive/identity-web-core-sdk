@@ -27,13 +27,17 @@ describe('startMfaEmailRegistration', () => {
   })
 
   // An absent `trust_device` means `false` to the API, which rejects `true` when trusted devices are not enabled.
-  test('only sends trustDevice when it is true', async () => {
+  test('sends trustDevice as given, and leaves it out when absent', async () => {
     const { client } = createDefaultTestClient()
     fetchMock.mockResponseOnce(JSON.stringify({ status: 'email_sent' }), { status: 202 })
     fetchMock.mockResponseOnce(JSON.stringify({ status: 'email_sent' }), { status: 202 })
+    fetchMock.mockResponseOnce(JSON.stringify({ status: 'email_sent' }), { status: 202 })
+
+    await client.startMfaEmailRegistration({ accessToken })
+    expect(lastFetchCall().body).toEqual({})
 
     await client.startMfaEmailRegistration({ accessToken, trustDevice: false })
-    expect(lastFetchCall().body).toEqual({})
+    expect(lastFetchCall().body).toEqual({ trust_device: false })
 
     await client.startMfaEmailRegistration({ accessToken, trustDevice: true })
     expect(lastFetchCall().body).toEqual({ trust_device: true })
@@ -41,7 +45,7 @@ describe('startMfaEmailRegistration', () => {
 })
 
 describe('verifyMfaEmailRegistration', () => {
-  test('only sends trustDevice when it is true', async () => {
+  test('leaves trustDevice out when absent', async () => {
     const { client } = createDefaultTestClient()
     fetchMock.mockResponseOnce(JSON.stringify({}))
 

@@ -34,3 +34,12 @@ test('provider metadata is an object keyed by provider, with its fields camel-ca
   }
   expect(providerMetadata).toEqual(expected)
 })
+
+test('provider metadata stays readable for a provider the SDK does not know yet', async () => {
+  const { client } = createDefaultTestClient()
+  fetchMock.mockResponseOnce(JSON.stringify({ provider_metadata: { newprovider: { some_id: 'abc' } } }))
+
+  const { providerMetadata } = await client.getUser({ accessToken, fields: 'provider_metadata' })
+
+  expect(providerMetadata?.newprovider).toEqual({ someId: 'abc' })
+})

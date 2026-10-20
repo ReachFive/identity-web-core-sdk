@@ -132,15 +132,22 @@ describe('not orchestrated flow', () => {
 })
 
 describe('trustDevice', () => {
-  // The passwordless verification rejects any `trust_device` when trusted devices are not enabled on the
-  // account, even `false`, and treats an absent value as `false`: only `true` is worth sending.
-  test('is left out unless it is true', async () => {
+  test('is left out when absent', async () => {
+    const { client } = createDefaultTestClient()
+    fetchMock.mockResponseOnce(JSON.stringify({}))
+
+    await client.verifyMfaPasswordless({ challengeId: 'c', verificationCode: '1234' })
+
+    expect(lastFetchCall().body).toEqual({ challenge_id: 'c', verification_code: '1234' })
+  })
+
+  test('is sent when false, so the API can reject it when trusted devices are not enabled', async () => {
     const { client } = createDefaultTestClient()
     fetchMock.mockResponseOnce(JSON.stringify({}))
 
     await client.verifyMfaPasswordless({ challengeId: 'c', verificationCode: '1234', trustDevice: false })
 
-    expect(lastFetchCall().body).toEqual({ challenge_id: 'c', verification_code: '1234' })
+    expect(lastFetchCall().body).toEqual({ challenge_id: 'c', verification_code: '1234', trust_device: false })
   })
 
   test('is sent when true', async () => {

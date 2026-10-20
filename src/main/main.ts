@@ -174,6 +174,7 @@ export type Client = {
       params: StepUpPasswordlessParams,
       options?: Omit<WithPkceParams<AuthOptions>, 'useWebMessage'>
     ): Promise<PasswordlessResponse>
+    /** For callers holding the `PasswordlessParams` union, which neither overload above accepts. */
     (
       params: PasswordlessParams,
       options?: Omit<WithPkceParams<AuthOptions>, 'useWebMessage'>
