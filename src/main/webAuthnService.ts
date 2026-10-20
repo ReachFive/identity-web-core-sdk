@@ -41,6 +41,7 @@ export type LoginWithWebAuthnParams = { auth?: AuthOptions; signal?: AbortSignal
 export type StepUpWithWebauthnParams = {
   stepUpToken: string
   signal?: AbortSignal
+  trustDevice?: boolean
 } & DiscoverableLoginWithWebAuthnParams
 
 export type InternalStepUpWithWebauthnParams = StepUpWithWebauthnParams & { webAuthnOrigin?: string }

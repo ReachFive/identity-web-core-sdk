@@ -78,6 +78,47 @@ describe('achieveStepUpWithWebauthn', () => {
     })
   })
 
+  test('sends the orchestration token along with the options request in an orchestrated flow', async () => {
+    const originalLocation = window.location
+    defineWindowProperty('location', { origin: 'http://localhost', search: 'r5_request_token=orchestratedtoken' })
+    try {
+      const { client, domain } = createDefaultTestClient()
+      const stepUpOptionsCall = fetchMock.mockResponseOnce(JSON.stringify(stepUpOptions))
+      getCredentials.mockResolvedValue(assertion)
+
+      await client.achieveStepUpWithWebauthn({ stepUpToken: 'step-up-token', conditionalMediation: false })
+
+      expect(stepUpOptionsCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/webauthn/stepup/options`, {
+        method: 'POST',
+        headers: expect.objectContaining(headers.jsonAndDefaultLang),
+        body: JSON.stringify({
+          origin: 'http://localhost',
+          step_up_token: 'step-up-token',
+          r5_request_token: 'orchestratedtoken'
+        })
+      })
+    } finally {
+      defineWindowProperty('location', originalLocation)
+    }
+  })
+
+  test('submits the trust device choice with the assertion', async () => {
+    const { client } = createDefaultTestClient()
+    fetchMock.mockResponseOnce(JSON.stringify(stepUpOptions))
+    getCredentials.mockResolvedValue(assertion)
+
+    await client.achieveStepUpWithWebauthn({
+      stepUpToken: 'step-up-token',
+      conditionalMediation: false,
+      trustDevice: true
+    })
+
+    expect(submit).toHaveBeenCalledTimes(1)
+    expect(Object.fromEntries(new FormData(submittedForm()))).toEqual(
+      expect.objectContaining({ id: 'credential-id', trust_device: 'true' })
+    )
+  })
+
   test('does not submit anything without a credential', async () => {
     const { client } = createDefaultTestClient()
     fetchMock.mockResponseOnce(JSON.stringify(stepUpOptions))

@@ -246,7 +246,8 @@ export default class WebAuthnClient {
         .post<CredentialRequestOptionsSerialized>(this.stepUpOptionsUrl, {
           body: {
             origin: params.webAuthnOrigin || window.location.origin,
-            stepUpToken: params.stepUpToken
+            stepUpToken: params.stepUpToken,
+            r5RequestToken: this.config.orchestrationToken
           }
         })
         .then((response) => {
@@ -266,7 +267,10 @@ export default class WebAuthnClient {
 
           // The verification answers with a redirection to the redirect URI, carrying the authorization
           // code: the page must follow it itself, which a `fetch` would not do.
-          postWithNavigation(`${this.config.baseUrl}/identity/v1${this.stepUpVerifyUrl}`, serializedCredentials)
+          postWithNavigation(`${this.config.baseUrl}/identity/v1${this.stepUpVerifyUrl}`, {
+            ...serializedCredentials,
+            trustDevice: params.trustDevice
+          })
           return {} as AuthResult
         })
     })
