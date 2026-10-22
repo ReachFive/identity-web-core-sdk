@@ -55,4 +55,12 @@ describe('postWithNavigation', () => {
       ['hidden', 'enabled', 'true']
     ])
   })
+
+  test('submits the form to the frame named by the target, and removes it as the page stays', () => {
+    postWithNavigation('https://local.reach5.net/endpoint', { key: 'value' }, 'frame-name')
+
+    expect(submit).toHaveBeenCalledTimes(1)
+    expect(submittedForm().target).toBe('frame-name')
+    expect(document.querySelector('form')).toBeNull()
+  })
 })

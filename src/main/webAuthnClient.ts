@@ -26,6 +26,7 @@ import {
   serializeAuthenticationPublicKeyCredential,
   serializeRegistrationPublicKeyCredential
 } from './webAuthnService'
+import { getStepUpContext, removeStepUpContext } from './stepUpContextService'
 
 type EmailResetPasskeysParams = {
   email: string
@@ -230,6 +231,7 @@ export default class WebAuthnClient {
   }
 
   achieveStepUpWithWebauthn(params: InternalStepUpWithWebauthnParams): Promise<AuthResult> {
+    console.log("last version of sdk core")
     if (!window.PublicKeyCredential) {
       return Promise.reject(new Error('Unsupported WebAuthn API'))
     }
@@ -265,12 +267,28 @@ export default class WebAuthnClient {
           }
           const serializedCredentials = serializeAuthenticationPublicKeyCredential(credentials)
 
+          const context = getStepUpContext(params.stepUpToken)
+          const verifyUrl = `${this.config.baseUrl}/identity/v1${this.stepUpVerifyUrl}`
+          const verifyData = {
+            ...serializedCredentials,
+            trustDevice: params.trustDevice,
+            // Only used by the server to answer a failure when the original request cannot be retrieved
+            clientId: this.config.clientId,
+            redirectUri: context?.redirectUri
+          }
+
+          if (context?.responseMode === 'web_message') {
+            // The verification posts the authorization response to this page instead of redirecting it
+            return this.oAuthClient
+              .postWebMessage(verifyUrl, verifyData, this.config.baseUrl, context.redirectUri)
+              .then((authResult) => {
+                removeStepUpContext(params.stepUpToken)
+                return authResult
+              })
+          }
           // The verification answers with a redirection to the redirect URI, carrying the authorization
           // code: the page must follow it itself, which a `fetch` would not do.
-          postWithNavigation(`${this.config.baseUrl}/identity/v1${this.stepUpVerifyUrl}`, {
-            ...serializedCredentials,
-            trustDevice: params.trustDevice
-          })
+          postWithNavigation(verifyUrl, verifyData)
           return {} as AuthResult
         })
     })
