@@ -32,7 +32,8 @@ const stepUpOptions = {
 
 beforeAll(() => {
   fetchMock.enableMocks()
-  defineWindowProperty('PublicKeyCredential', { isConditionalMediationAvailable: () => Promise.resolve(false) })
+  // A browser supporting conditional mediation, which the step-up does not use anyway
+  defineWindowProperty('PublicKeyCredential', { isConditionalMediationAvailable: () => Promise.resolve(true) })
   Object.defineProperty(navigator, 'credentials', { value: { get: getCredentials }, configurable: true })
 })
 
@@ -53,16 +54,14 @@ describe('achieveStepUpWithWebAuthn', () => {
     const stepUpOptionsCall = fetchMock.mockResponseOnce(JSON.stringify(stepUpOptions))
     getCredentials.mockResolvedValue(assertion)
 
-    await expect(
-      client.achieveStepUpWithWebAuthn({ stepUpToken: 'step-up-token', conditionalMediation: false })
-    ).resolves.toEqual({})
+    await expect(client.achieveStepUpWithWebAuthn({ stepUpToken: 'step-up-token' })).resolves.toEqual({})
 
     expect(stepUpOptionsCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/webauthn/stepup/options`, {
       method: 'POST',
       headers: expect.objectContaining(headers.jsonAndDefaultLang),
       body: JSON.stringify({ origin: 'http://localhost', step_up_token: 'step-up-token' })
     })
-    // Modal request
+    // Modal request, even though the browser supports conditional mediation
     expect(getCredentials).toHaveBeenCalledWith({ publicKey: expect.anything(), signal: undefined })
 
     // The verification is not fetched: only the config and the options were
@@ -89,7 +88,7 @@ describe('achieveStepUpWithWebAuthn', () => {
     getCredentials.mockResolvedValue(assertion)
     storeStepUpContext('step-up-token', { redirectUri: 'https://example.com/callback' })
 
-    await client.achieveStepUpWithWebAuthn({ stepUpToken: 'step-up-token', conditionalMediation: false })
+    await client.achieveStepUpWithWebAuthn({ stepUpToken: 'step-up-token' })
 
     const form = submittedForm()
     // Not in web message mode: the page navigates
@@ -107,7 +106,7 @@ describe('achieveStepUpWithWebAuthn', () => {
       const stepUpOptionsCall = fetchMock.mockResponseOnce(JSON.stringify(stepUpOptions))
       getCredentials.mockResolvedValue(assertion)
 
-      await client.achieveStepUpWithWebAuthn({ stepUpToken: 'step-up-token', conditionalMediation: false })
+      await client.achieveStepUpWithWebAuthn({ stepUpToken: 'step-up-token' })
 
       expect(stepUpOptionsCall).toHaveBeenCalledWith(`https://${domain}/identity/v1/webauthn/stepup/options`, {
         method: 'POST',
@@ -130,7 +129,6 @@ describe('achieveStepUpWithWebAuthn', () => {
 
     await client.achieveStepUpWithWebAuthn({
       stepUpToken: 'step-up-token',
-      conditionalMediation: false,
       trustDevice: true
     })
 
@@ -145,9 +143,9 @@ describe('achieveStepUpWithWebAuthn', () => {
     fetchMock.mockResponseOnce(JSON.stringify(stepUpOptions))
     getCredentials.mockResolvedValue(null)
 
-    await expect(
-      client.achieveStepUpWithWebAuthn({ stepUpToken: 'step-up-token', conditionalMediation: false })
-    ).rejects.toThrow('Unable to stepup with invalid public key credentials.')
+    await expect(client.achieveStepUpWithWebAuthn({ stepUpToken: 'step-up-token' })).rejects.toThrow(
+      'Unable to stepup with invalid public key credentials.'
+    )
     expect(submit).not.toHaveBeenCalled()
   })
 
@@ -157,9 +155,10 @@ describe('achieveStepUpWithWebAuthn', () => {
       status: 400
     })
 
-    await expect(
-      client.achieveStepUpWithWebAuthn({ stepUpToken: 'step-up-token', conditionalMediation: false })
-    ).rejects.toEqual({ error: 'invalid_grant', errorDescription: 'Invalid step up token' })
+    await expect(client.achieveStepUpWithWebAuthn({ stepUpToken: 'step-up-token' })).rejects.toEqual({
+      error: 'invalid_grant',
+      errorDescription: 'Invalid step up token'
+    })
     expect(getCredentials).not.toHaveBeenCalled()
     expect(submit).not.toHaveBeenCalled()
   })
@@ -177,7 +176,7 @@ describe('achieveStepUpWithWebAuthn', () => {
       getCredentials.mockResolvedValue(assertion)
       lockAuthorizationFlow()
 
-      await client.achieveStepUpWithWebAuthn({ stepUpToken: 'step-up-token', conditionalMediation: false })
+      await client.achieveStepUpWithWebAuthn({ stepUpToken: 'step-up-token' })
 
       expect(submit).toHaveBeenCalledTimes(1)
       expect(sessionStorage.getItem('authorize_state')).toBeNull()
@@ -190,9 +189,9 @@ describe('achieveStepUpWithWebAuthn', () => {
       getCredentials.mockResolvedValue(null)
       lockAuthorizationFlow()
 
-      await expect(
-        client.achieveStepUpWithWebAuthn({ stepUpToken: 'step-up-token', conditionalMediation: false })
-      ).rejects.toThrow('Unable to stepup with invalid public key credentials.')
+      await expect(client.achieveStepUpWithWebAuthn({ stepUpToken: 'step-up-token' })).rejects.toThrow(
+        'Unable to stepup with invalid public key credentials.'
+      )
 
       expect(sessionStorage.getItem('authorize_state')).toBeNull()
       expect(sessionStorage.getItem('session_state')).toBeNull()
@@ -226,9 +225,9 @@ describe('achieveStepUpWithWebAuthn', () => {
       storeStepUpContext('step-up-token', { responseMode: 'web_message', redirectUri: 'https://example.com/callback' })
       answerWithWebMessage(`https://${domain}`, { code: 'step-up-code' })
 
-      await expect(
-        client.achieveStepUpWithWebAuthn({ stepUpToken: 'step-up-token', conditionalMediation: false })
-      ).resolves.toEqual({ code: 'step-up-code' })
+      await expect(client.achieveStepUpWithWebAuthn({ stepUpToken: 'step-up-token' })).resolves.toEqual({
+        code: 'step-up-code'
+      })
 
       const form = submittedForm()
       expect(form.action).toBe(`https://${domain}/identity/v1/webauthn/stepup/verify`)
@@ -252,7 +251,7 @@ describe('achieveStepUpWithWebAuthn', () => {
       answerWithWebMessage(`https://${domain}`, { code: 'step-up-code' })
       const tokenCall = fetchMock.mockResponseOnce(JSON.stringify({ access_token: 'access-token' }))
 
-      await client.achieveStepUpWithWebAuthn({ stepUpToken: 'step-up-token', conditionalMediation: false })
+      await client.achieveStepUpWithWebAuthn({ stepUpToken: 'step-up-token' })
 
       expect(tokenCall).toHaveBeenLastCalledWith(
         `https://${domain}/oauth/token`,
@@ -269,15 +268,16 @@ describe('achieveStepUpWithWebAuthn', () => {
       storeStepUpContext('step-up-token', { responseMode: 'web_message', redirectUri: 'https://example.com/callback' })
       answerWithWebMessage(`https://${domain}`, { error: 'invalid_grant', errorDescription: 'Invalid assertion' })
 
-      await expect(
-        client.achieveStepUpWithWebAuthn({ stepUpToken: 'step-up-token', conditionalMediation: false })
-      ).rejects.toEqual({ error: 'invalid_grant', errorDescription: 'Invalid assertion' })
+      await expect(client.achieveStepUpWithWebAuthn({ stepUpToken: 'step-up-token' })).rejects.toEqual({
+        error: 'invalid_grant',
+        errorDescription: 'Invalid assertion'
+      })
       expect(localStorage.getItem('stepup_context:step-up-token')).not.toBeNull()
 
       answerWithWebMessage(`https://${domain}`, { code: 'step-up-code' })
-      await expect(
-        client.achieveStepUpWithWebAuthn({ stepUpToken: 'step-up-token', conditionalMediation: false })
-      ).resolves.toEqual({ code: 'step-up-code' })
+      await expect(client.achieveStepUpWithWebAuthn({ stepUpToken: 'step-up-token' })).resolves.toEqual({
+        code: 'step-up-code'
+      })
       // Both attempts targeted an iframe rather than navigating the page
       expect(submit.mock.contexts.map((form) => (form as HTMLFormElement).target)).toEqual([
         expect.stringMatching(/^wm/),
@@ -301,9 +301,10 @@ describe('achieveStepUpWithWebAuthn', () => {
         iframe.dispatchEvent(new Event('load'))
       })
 
-      await expect(
-        client.achieveStepUpWithWebAuthn({ stepUpToken: 'step-up-token', conditionalMediation: false })
-      ).rejects.toEqual({ error: 'invalid_grant', errorDescription: 'Expired challenge' })
+      await expect(client.achieveStepUpWithWebAuthn({ stepUpToken: 'step-up-token' })).rejects.toEqual({
+        error: 'invalid_grant',
+        errorDescription: 'Expired challenge'
+      })
       expect(document.querySelector('iframe')).toBeNull()
 
       // A later message is no longer listened to
@@ -338,9 +339,9 @@ describe('achieveStepUpWithWebAuthn', () => {
         window.dispatchEvent(webMessage(`https://${domain}`, { code: 'step-up-code' }))
       })
 
-      await expect(
-        client.achieveStepUpWithWebAuthn({ stepUpToken: 'step-up-token', conditionalMediation: false })
-      ).resolves.toEqual({ code: 'step-up-code' })
+      await expect(client.achieveStepUpWithWebAuthn({ stepUpToken: 'step-up-token' })).resolves.toEqual({
+        code: 'step-up-code'
+      })
     })
 
     test('ignores the messages of another origin', async () => {
@@ -353,9 +354,9 @@ describe('achieveStepUpWithWebAuthn', () => {
         webMessage(`https://${domain}`, { code: 'step-up-code' })
       )
 
-      await expect(
-        client.achieveStepUpWithWebAuthn({ stepUpToken: 'step-up-token', conditionalMediation: false })
-      ).resolves.toEqual({ code: 'step-up-code' })
+      await expect(client.achieveStepUpWithWebAuthn({ stepUpToken: 'step-up-token' })).resolves.toEqual({
+        code: 'step-up-code'
+      })
     })
   })
 })
