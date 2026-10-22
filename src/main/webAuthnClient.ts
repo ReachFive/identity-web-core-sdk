@@ -238,59 +238,64 @@ export default class WebAuthnClient {
     const conditionalMediationAvailablePromise =
       PublicKeyCredential.isConditionalMediationAvailable?.() ?? Promise.resolve(false)
 
-    return conditionalMediationAvailablePromise.then((conditionalMediationAvailable) => {
-      if (params.conditionalMediation === true && !conditionalMediationAvailable) {
-        return Promise.reject(new Error('Conditional mediation unavailable'))
-      }
+    return conditionalMediationAvailablePromise
+      .then((conditionalMediationAvailable) => {
+        if (params.conditionalMediation === true && !conditionalMediationAvailable) {
+          return Promise.reject(new Error('Conditional mediation unavailable'))
+        }
 
-      return this.http
-        .post<CredentialRequestOptionsSerialized>(this.stepUpOptionsUrl, {
-          body: {
-            origin: params.webAuthnOrigin || window.location.origin,
-            stepUpToken: params.stepUpToken,
-            r5RequestToken: this.config.orchestrationToken
-          }
-        })
-        .then((response) => {
-          const options = encodePublicKeyCredentialRequestOptions(response.publicKey)
-          if (params.conditionalMediation !== false && conditionalMediationAvailable) {
-            // do autofill query
-            return navigator.credentials.get({ publicKey: options, mediation: 'conditional', signal: params.signal })
-          }
-          // do modal query
-          return navigator.credentials.get({ publicKey: options, signal: params.signal })
-        })
-        .then((credentials) => {
-          if (!credentials || !this.isPublicKeyCredential(credentials)) {
-            return Promise.reject(new Error('Unable to stepup with invalid public key credentials.'))
-          }
-          const serializedCredentials = serializeAuthenticationPublicKeyCredential(credentials)
+        return this.http
+          .post<CredentialRequestOptionsSerialized>(this.stepUpOptionsUrl, {
+            body: {
+              origin: params.webAuthnOrigin || window.location.origin,
+              stepUpToken: params.stepUpToken,
+              r5RequestToken: this.config.orchestrationToken
+            }
+          })
+          .then((response) => {
+            const options = encodePublicKeyCredentialRequestOptions(response.publicKey)
+            if (params.conditionalMediation !== false && conditionalMediationAvailable) {
+              // do autofill query
+              return navigator.credentials.get({ publicKey: options, mediation: 'conditional', signal: params.signal })
+            }
+            // do modal query
+            return navigator.credentials.get({ publicKey: options, signal: params.signal })
+          })
+          .then((credentials) => {
+            if (!credentials || !this.isPublicKeyCredential(credentials)) {
+              return Promise.reject(new Error('Unable to stepup with invalid public key credentials.'))
+            }
+            const serializedCredentials = serializeAuthenticationPublicKeyCredential(credentials)
 
-          const context = getStepUpContext(params.stepUpToken)
-          const verifyUrl = `${this.config.baseUrl}/identity/v1${this.stepUpVerifyUrl}`
-          const verifyData = {
-            ...serializedCredentials,
-            trustDevice: params.trustDevice,
-            // Only used by the server to answer a failure when the original request cannot be retrieved
-            clientId: this.config.clientId,
-            redirectUri: context?.redirectUri
-          }
+            const context = getStepUpContext(params.stepUpToken)
+            const verifyUrl = `${this.config.baseUrl}/identity/v1${this.stepUpVerifyUrl}`
+            const verifyData = {
+              ...serializedCredentials,
+              trustDevice: params.trustDevice,
+              // Only used by the server to answer a failure when the original request cannot be retrieved
+              clientId: this.config.clientId,
+              redirectUri: context?.redirectUri
+            }
 
-          if (context?.responseMode === 'web_message') {
-            // The verification posts the authorization response to this page instead of redirecting it
-            return this.oAuthClient
-              .postWebMessage(verifyUrl, verifyData, this.config.baseUrl, context.redirectUri)
-              .then((authResult) => {
-                removeStepUpContext(params.stepUpToken)
-                return authResult
-              })
-          }
-          // The verification answers with a redirection to the redirect URI, carrying the authorization
-          // code: the page must follow it itself, which a `fetch` would not do.
-          postWithNavigation(verifyUrl, verifyData)
-          return {} as AuthResult
-        })
-    })
+            if (context?.responseMode === 'web_message') {
+              // The verification posts the authorization response to this page instead of redirecting it
+              return this.oAuthClient
+                .postWebMessage(verifyUrl, verifyData, this.config.baseUrl, context.redirectUri)
+                .then((authResult) => {
+                  removeStepUpContext(params.stepUpToken)
+                  return authResult
+                })
+            }
+            // The verification answers with a redirection to the redirect URI, carrying the authorization
+            // code: the page must follow it itself, which a `fetch` would not do.
+            postWithNavigation(verifyUrl, verifyData)
+            return {} as AuthResult
+          })
+      })
+      .finally(() => {
+        this.oAuthClient.releaseSessionLock()
+        this.oAuthClient.releaseAuthorizationLock()
+      })
   }
 
   removeWebAuthnDevice(accessToken: string, deviceId: string): Promise<void> {

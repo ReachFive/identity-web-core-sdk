@@ -2,6 +2,7 @@ import fetchMock from 'jest-fetch-mock'
 import { createDefaultTestClient } from './helpers/clientFactory'
 import { defineWindowProperty, headers } from './helpers/testHelpers'
 import { storeStepUpContext } from '../stepUpContextService'
+import { setWithExpiry } from '../../utils/sessionStorage'
 
 const submit = jest.spyOn(HTMLFormElement.prototype, 'submit').mockImplementation(() => {})
 const getCredentials = jest.fn<Promise<Credential | null>, [CredentialRequestOptions?]>()
@@ -41,6 +42,7 @@ beforeEach(() => {
   getCredentials.mockReset()
   document.body.innerHTML = ''
   localStorage.clear()
+  sessionStorage.clear()
 })
 
 const submittedForm = () => submit.mock.contexts[0] as HTMLFormElement
@@ -160,6 +162,41 @@ describe('achieveStepUpWithWebauthn', () => {
     ).rejects.toEqual({ error: 'invalid_grant', errorDescription: 'Invalid step up token' })
     expect(getCredentials).not.toHaveBeenCalled()
     expect(submit).not.toHaveBeenCalled()
+  })
+
+  describe('ends the authorization flow it belongs to, by releasing its locks', () => {
+    // As taken by a login requiring MFA, which leaves them to the step-up
+    const lockAuthorizationFlow = () => {
+      setWithExpiry('authorize_state', 'state', 20000)
+      setWithExpiry('session_state', 'state', 20000)
+    }
+
+    test('before the page navigates in redirect mode', async () => {
+      const { client } = createDefaultTestClient()
+      fetchMock.mockResponseOnce(JSON.stringify(stepUpOptions))
+      getCredentials.mockResolvedValue(assertion)
+      lockAuthorizationFlow()
+
+      await client.achieveStepUpWithWebauthn({ stepUpToken: 'step-up-token', conditionalMediation: false })
+
+      expect(submit).toHaveBeenCalledTimes(1)
+      expect(sessionStorage.getItem('authorize_state')).toBeNull()
+      expect(sessionStorage.getItem('session_state')).toBeNull()
+    })
+
+    test('when the step-up fails', async () => {
+      const { client } = createDefaultTestClient()
+      fetchMock.mockResponseOnce(JSON.stringify(stepUpOptions))
+      getCredentials.mockResolvedValue(null)
+      lockAuthorizationFlow()
+
+      await expect(
+        client.achieveStepUpWithWebauthn({ stepUpToken: 'step-up-token', conditionalMediation: false })
+      ).rejects.toThrow('Unable to stepup with invalid public key credentials.')
+
+      expect(sessionStorage.getItem('authorize_state')).toBeNull()
+      expect(sessionStorage.getItem('session_state')).toBeNull()
+    })
   })
 
   describe('in web message mode', () => {
