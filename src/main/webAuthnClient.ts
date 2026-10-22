@@ -14,7 +14,7 @@ import type {
   EmailLoginWithWebAuthnParams,
   InternalLoginWithWebAuthnParams,
   InternalSignupWithWebAuthnParams,
-  InternalStepUpWithWebauthnParams,
+  InternalStepUpWithWebAuthnParams,
   LoginWithWebAuthnParams,
   PhoneNumberLoginWithWebAuthnParams,
   RegistrationOptions
@@ -230,7 +230,7 @@ export default class WebAuthnClient {
     })
   }
 
-  achieveStepUpWithWebauthn(params: InternalStepUpWithWebauthnParams): Promise<AuthResult> {
+  achieveStepUpWithWebAuthn(params: InternalStepUpWithWebAuthnParams): Promise<AuthResult> {
     if (!window.PublicKeyCredential) {
       return Promise.reject(new Error('Unsupported WebAuthn API'))
     }

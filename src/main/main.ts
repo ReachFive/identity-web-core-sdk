@@ -68,7 +68,7 @@ import type {
   DeviceCredential,
   LoginWithWebAuthnParams,
   SignupWithWebAuthnParams,
-  StepUpWithWebauthnParams
+  StepUpWithWebAuthnParams
 } from './webAuthnService'
 import CredentialsResponse = MFA.CredentialsResponse
 import StepUpResponse = MFA.StepUpResponse
@@ -121,7 +121,7 @@ export type { ResetPasskeysParams } from './webAuthnClient'
 
 export type Client = {
   addNewWebAuthnDevice: (accessToken: string, friendlyName?: string) => Promise<void>
-  achieveStepUpWithWebauthn: (params: StepUpWithWebauthnParams) => Promise<AuthResult>
+  achieveStepUpWithWebAuthn: (params: StepUpWithWebAuthnParams) => Promise<AuthResult>
   checkSession: (options?: WithPkceParams<AuthOptions>) => Promise<AuthResult>
   checkUrlFragment: (url?: string) => boolean
   exchangeAuthorizationCodeWithPkce: (params: TokenRequestParameters) => Promise<AuthResult>
@@ -346,9 +346,9 @@ export function createClient(creationConfig: Config): Client {
     )
   }
 
-  function achieveStepUpWithWebauthn(params: StepUpWithWebauthnParams) {
+  function achieveStepUpWithWebAuthn(params: StepUpWithWebAuthnParams) {
     return apiClients.then((clients) =>
-      clients.webAuthn.achieveStepUpWithWebauthn({
+      clients.webAuthn.achieveStepUpWithWebAuthn({
         ...params,
         webAuthnOrigin
       })
@@ -495,7 +495,7 @@ export function createClient(creationConfig: Config): Client {
 
   return {
     addNewWebAuthnDevice,
-    achieveStepUpWithWebauthn,
+    achieveStepUpWithWebAuthn,
     checkSession,
     checkUrlFragment,
     exchangeAuthorizationCodeWithPkce,
