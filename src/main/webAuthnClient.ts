@@ -231,7 +231,6 @@ export default class WebAuthnClient {
   }
 
   achieveStepUpWithWebauthn(params: InternalStepUpWithWebauthnParams): Promise<AuthResult> {
-    console.log("last version of sdk core")
     if (!window.PublicKeyCredential) {
       return Promise.reject(new Error('Unsupported WebAuthn API'))
     }
