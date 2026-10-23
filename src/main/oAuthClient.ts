@@ -4,6 +4,7 @@ import WinChan from 'winchan'
 import { logError } from '../utils/logger'
 import type { QueryString } from '../utils/queryString'
 import { toQueryString } from '../utils/queryString'
+import { postWithNavigation } from '../utils/postNavigation'
 import { randomBase64String } from '../utils/random'
 import { getWithExpiry, setWithExpiry } from '../utils/sessionStorage'
 import { camelCaseProperties } from '../utils/transformObjectProperties'
@@ -556,6 +557,21 @@ export default class OAuthClient {
   }
 
   private getWebMessage(src: string, origin: string, redirectUri?: string): Promise<AuthResult> {
+    const iframe = this.createWebMessageIframe()
+    iframe.setAttribute('src', src)
+    return this.receiveWebMessage(iframe, origin, redirectUri, () => document.body.appendChild(iframe))
+  }
+
+  postWebMessage(url: string, data: object, origin: string, redirectUri?: string): Promise<AuthResult> {
+    const iframe = this.createWebMessageIframe()
+    return this.receiveWebMessage(iframe, origin, redirectUri, () => {
+      // The frame must be in the document before the form targets it
+      document.body.appendChild(iframe)
+      postWithNavigation(url, data, iframe.name)
+    })
+  }
+
+  private createWebMessageIframe(): HTMLIFrameElement {
     const iframe = document.createElement('iframe')
     // "wm" needed to make sure the randomized id is valid
     const id = `wm${randomBase64String()}`
@@ -563,8 +579,17 @@ export default class OAuthClient {
     iframe.setAttribute('height', '0')
     iframe.setAttribute('style', 'display:none;')
     iframe.setAttribute('id', id)
-    iframe.setAttribute('src', src)
+    iframe.setAttribute('name', id)
+    return iframe
+  }
 
+  /** Listens to the authorization response posted by the iframe, once `load` has started loading it. */
+  private receiveWebMessage(
+    iframe: HTMLIFrameElement,
+    origin: string,
+    redirectUri: string | undefined,
+    load: () => void
+  ): Promise<AuthResult> {
     return new Promise<AuthResult>((resolve, reject) => {
       const listener = (event: MessageEvent) => {
         // Verify the event's origin
@@ -608,8 +633,18 @@ export default class OAuthClient {
         window.removeEventListener('message', listener, false)
       }
 
+      // Listen error occurring when the server redirect in a web_message flow
+      const loadListener = () => {
+        const error = resolveErrorFromLocation(iframe.contentWindow?.location)
+        if (!error) return
+        window.removeEventListener('message', listener, false)
+        iframe.remove()
+        reject(error)
+      }
+
       window.addEventListener('message', listener, false)
-      document.body.appendChild(iframe)
+      iframe.addEventListener('load', loadListener)
+      load()
     }).finally(() => {
       this.releaseAuthorizationLock()
       this.releaseSessionLock()
@@ -1013,5 +1048,19 @@ export default class OAuthClient {
 
   isAuthorizationLocked(): boolean {
     return getWithExpiry('authorize_state') !== null
+  }
+}
+
+function resolveErrorFromLocation(location: Location | undefined): ErrorResponse | undefined {
+  if (!location) return undefined
+  try {
+    const params = Object.fromEntries([
+      ...new URLSearchParams(location.search).entries(),
+      ...new URLSearchParams(location.hash.replace(/^#/, '')).entries()
+    ])
+    const response = camelCaseProperties(params)
+    return ErrorResponse.isErrorResponse(response) ? response : undefined
+  } catch (_e) {
+    return undefined
   }
 }

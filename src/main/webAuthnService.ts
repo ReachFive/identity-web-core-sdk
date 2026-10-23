@@ -38,6 +38,18 @@ export type LoginWithWebAuthnParams = { auth?: AuthOptions; signal?: AbortSignal
   EmailLoginWithWebAuthnParams | PhoneNumberLoginWithWebAuthnParams | DiscoverableLoginWithWebAuthnParams
 )
 
+/**
+ * The step-up always makes a modal request: the user is already identified, so there is no identifier field on which
+ * a conditional mediation (= autofill request) could offer the passkeys.
+ */
+export type StepUpWithWebAuthnParams = {
+  stepUpToken: string
+  signal?: AbortSignal
+  trustDevice?: boolean
+}
+
+export type InternalStepUpWithWebAuthnParams = StepUpWithWebAuthnParams & { webAuthnOrigin?: string }
+
 export type InternalLoginWithWebAuthnParams = LoginWithWebAuthnParams & { webAuthnOrigin?: string }
 
 export type SignupWithWebAuthnParams = {
