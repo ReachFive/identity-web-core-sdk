@@ -1,6 +1,6 @@
 import type { AuthOptions } from './authOptions'
 import type { AuthResult } from './authResult'
-import type { HttpClient } from './httpClient'
+import type { Http } from '../api/http/pipeline'
 import type { ApiClientConfig } from './config'
 import type { TrustedDevice } from '../api/models'
 import { MFA } from '../api/models'
@@ -79,7 +79,7 @@ export type ListTrustedDevicesResponse = {
  */
 export default class MfaClient {
   private config: ApiClientConfig
-  private http: HttpClient
+  private http: Http
   private oAuthClient: OAuthClient
 
   private credentialsUrl: string
@@ -92,20 +92,20 @@ export default class MfaClient {
   private stepUpUrl: string
   private trustedDeviceUrl: string
 
-  constructor(props: { config: ApiClientConfig; http: HttpClient; oAuthClient: OAuthClient }) {
+  constructor(props: { config: ApiClientConfig; http: Http; oAuthClient: OAuthClient }) {
     this.http = props.http
     this.oAuthClient = props.oAuthClient
     this.config = props.config
 
-    this.credentialsUrl = '/mfa/credentials'
+    this.credentialsUrl = '/identity/v1/mfa/credentials'
     this.emailCredentialUrl = `${this.credentialsUrl}/emails`
     this.emailCredentialVerifyUrl = `${this.emailCredentialUrl}/verify`
-    this.passwordlessVerifyUrl = '/passwordless/verify'
-    this.passwordlessVerifyAuthCodeUrl = '/verify-auth-code'
+    this.passwordlessVerifyUrl = '/identity/v1/passwordless/verify'
+    this.passwordlessVerifyAuthCodeUrl = '/identity/v1/verify-auth-code'
     this.phoneNumberCredentialUrl = `${this.credentialsUrl}/phone-numbers`
     this.phoneNumberCredentialVerifyUrl = `${this.phoneNumberCredentialUrl}/verify`
-    this.stepUpUrl = '/mfa/stepup'
-    this.trustedDeviceUrl = '/mfa/trusteddevices'
+    this.stepUpUrl = '/identity/v1/mfa/stepup'
+    this.trustedDeviceUrl = '/identity/v1/mfa/trusteddevices'
   }
 
   getMfaStepUpToken(params: WithPkceParams<StepUpParams>): Promise<StepUpResponse> {
@@ -143,14 +143,14 @@ export default class MfaClient {
 
   removeMfaEmail(params: RemoveMfaEmailParams): Promise<void> {
     const { accessToken } = params
-    return this.http.remove<void>(this.emailCredentialUrl, {
+    return this.http.delete<void>(this.emailCredentialUrl, {
       accessToken
     })
   }
 
   removeMfaPhoneNumber(params: RemoveMfaPhoneNumberParams): Promise<void> {
     const { accessToken, phoneNumber } = params
-    return this.http.remove<void>(this.phoneNumberCredentialUrl, {
+    return this.http.delete<void>(this.phoneNumberCredentialUrl, {
       body: {
         phoneNumber
       },
@@ -205,7 +205,7 @@ export default class MfaClient {
         .then(() => {
           this.oAuthClient.releaseSessionLock()
           this.oAuthClient.releaseAuthorizationLock()
-          window.location.assign(`${this.config.baseUrl}/identity/v1${this.passwordlessVerifyUrl}?${queryString}`)
+          window.location.assign(`${this.config.baseUrl}${this.passwordlessVerifyUrl}?${queryString}`)
           return Promise.resolve({}) as AuthResult
         })
         .finally(() => {
@@ -247,6 +247,6 @@ export default class MfaClient {
 
   deleteTrustedDevices(params: DeleteTrustedDeviceParams): Promise<void> {
     const { accessToken, trustedDeviceId } = params
-    return this.http.remove<void>(this.trustedDeviceUrl + '/' + trustedDeviceId, { accessToken })
+    return this.http.delete<void>(this.trustedDeviceUrl + '/' + trustedDeviceId, { accessToken })
   }
 }

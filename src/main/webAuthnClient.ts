@@ -1,6 +1,6 @@
 import type { AuthOptions } from './authOptions'
 import type { AuthResult } from './authResult'
-import type { HttpClient } from './httpClient'
+import type { Http } from '../api/http/pipeline'
 import type { IdentityEventManager } from './identityEventManager'
 import type { ApiClientConfig } from './config'
 import type { AuthenticationToken } from '../api/models'
@@ -50,24 +50,24 @@ export type InternalResetPasskeysParams = { webAuthnOrigin?: string } & ResetPas
  */
 export default class WebAuthnClient {
   private config: ApiClientConfig
-  private http: HttpClient
+  private http: Http
   private eventManager: IdentityEventManager
   private oAuthClient: OAuthClient
 
-  private authenticationOptionsUrl = '/webauthn/authentication-options'
-  private authenticationUrl = '/webauthn/authentication'
-  private registrationOptionsUrl = '/webauthn/registration-options'
-  private registrationUrl = '/webauthn/registration'
-  private resetPasskeysOptionsUrl = '/webauthn/reset-options'
-  private resetPasskeysUrl = '/webauthn/reset'
-  private signupOptionsUrl = '/webauthn/signup-options'
-  private signupUrl = '/webauthn/signup'
-  private stepUpOptionsUrl = '/webauthn/stepup/options'
-  private stepUpVerifyUrl = '/webauthn/stepup/verify'
+  private authenticationOptionsUrl = '/identity/v1/webauthn/authentication-options'
+  private authenticationUrl = '/identity/v1/webauthn/authentication'
+  private registrationOptionsUrl = '/identity/v1/webauthn/registration-options'
+  private registrationUrl = '/identity/v1/webauthn/registration'
+  private resetPasskeysOptionsUrl = '/identity/v1/webauthn/reset-options'
+  private resetPasskeysUrl = '/identity/v1/webauthn/reset'
+  private signupOptionsUrl = '/identity/v1/webauthn/signup-options'
+  private signupUrl = '/identity/v1/webauthn/signup'
+  private stepUpOptionsUrl = '/identity/v1/webauthn/stepup/options'
+  private stepUpVerifyUrl = '/identity/v1/webauthn/stepup/verify'
 
   constructor(props: {
     config: ApiClientConfig
-    http: HttpClient
+    http: Http
     eventManager: IdentityEventManager
     oAuthClient: OAuthClient
   }) {
@@ -263,7 +263,7 @@ export default class WebAuthnClient {
         const serializedCredentials = serializeAuthenticationPublicKeyCredential(credentials)
 
         const context = getStepUpContext(params.stepUpToken)
-        const verifyUrl = `${this.config.baseUrl}/identity/v1${this.stepUpVerifyUrl}`
+        const verifyUrl = `${this.config.baseUrl}${this.stepUpVerifyUrl}`
         const verifyData = {
           ...serializedCredentials,
           trustDevice: params.trustDevice,
@@ -294,7 +294,7 @@ export default class WebAuthnClient {
   }
 
   removeWebAuthnDevice(accessToken: string, deviceId: string): Promise<void> {
-    return this.http.remove<void>(`${this.registrationUrl}/${deviceId}`, { accessToken })
+    return this.http.delete<void>(`${this.registrationUrl}/${deviceId}`, { accessToken })
   }
 
   signupWithWebAuthn(params: InternalSignupWithWebAuthnParams, auth?: AuthOptions): Promise<AuthResult> {
