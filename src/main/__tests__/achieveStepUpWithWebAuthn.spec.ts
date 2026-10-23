@@ -98,6 +98,31 @@ describe('achieveStepUpWithWebAuthn', () => {
     )
   })
 
+  test('removes the context once the page navigates to the verification', async () => {
+    const { client } = createDefaultTestClient()
+    fetchMock.mockResponseOnce(JSON.stringify(stepUpOptions))
+    getCredentials.mockResolvedValue(assertion)
+    storeStepUpContext('step-up-token', { redirectUri: 'https://example.com/callback' })
+
+    await client.achieveStepUpWithWebAuthn({ stepUpToken: 'step-up-token' })
+
+    expect(submit).toHaveBeenCalledTimes(1)
+    expect(localStorage.getItem('stepup_context:step-up-token')).toBeNull()
+  })
+
+  test('keeps the context when the step-up fails before the verification, for a new attempt', async () => {
+    const { client } = createDefaultTestClient()
+    fetchMock.mockResponseOnce(JSON.stringify(stepUpOptions))
+    getCredentials.mockResolvedValue(null)
+    storeStepUpContext('step-up-token', { redirectUri: 'https://example.com/callback' })
+
+    await expect(client.achieveStepUpWithWebAuthn({ stepUpToken: 'step-up-token' })).rejects.toThrow(
+      'Unable to stepup with invalid public key credentials.'
+    )
+
+    expect(localStorage.getItem('stepup_context:step-up-token')).not.toBeNull()
+  })
+
   test('sends the orchestration token along with the options request in an orchestrated flow', async () => {
     const originalLocation = window.location
     defineWindowProperty('location', { origin: 'http://localhost', search: 'r5_request_token=orchestratedtoken' })

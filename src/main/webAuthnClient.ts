@@ -274,6 +274,7 @@ export default class WebAuthnClient {
               return authResult
             })
         }
+        removeStepUpContext(params.stepUpToken)
         // The verification answers with a redirection to the redirect URI, carrying the authorization
         // code: the page must follow it itself, which a `fetch` would not do.
         postWithNavigation(verifyUrl, verifyData)
