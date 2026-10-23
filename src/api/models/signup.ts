@@ -11,22 +11,45 @@ export type SignupProfileData = {
   familyName?: string
   name?: string
   nickname?: string
+  /** `YYYY-MM-DD`. */
   birthdate?: string
+  /** @deprecated Not read by the API on signup. */
   profileURL?: string
   picture?: string
   username?: string
   gender?: string
   addresses?: ProfileAddress[]
   locale?: string
+  /** @deprecated Not read by the API on signup. */
   bio?: string
   customFields?: Record<string, unknown>
   consents?: Record<string, unknown>
   company?: string
+  /** @deprecated Not read by the API on signup. */
   liteOnly?: boolean
   customIdentifier?: string
 }
 
 export type SignupProfile = SignupProfileData & { password: string }
+
+/** Profile data for a user signing up through passwordless, on their first login. */
+export type PasswordlessSignupData = Pick<
+  SignupProfileData,
+  | 'givenName'
+  | 'middleName'
+  | 'familyName'
+  | 'name'
+  | 'nickname'
+  | 'username'
+  | 'birthdate'
+  | 'gender'
+  | 'addresses'
+  | 'picture'
+  | 'company'
+  | 'locale'
+  | 'customFields'
+  | 'consents'
+>
 
 export type OpenIdUser = {
   sub: string
@@ -35,19 +58,37 @@ export type OpenIdUser = {
   familyName?: string
   middleName?: string
   nickname?: string
+  /** @deprecated Never returned by the API. */
   preferredUsername?: string
   profile?: string
   picture?: string
+  /** @deprecated Never returned by the API. */
   website?: string
   email?: string
   emailVerified?: boolean
   gender?: string
   birthdate?: string
+  /** @deprecated Never returned by the API. */
   zoneinfo?: string
   locale?: string
   phoneNumber?: string
   phoneNumberVerified?: boolean
-  address?: ProfileAddress[]
-  updatedAt?: number
+  /** The profile's first address. */
+  address?: OpenIdAddress
+  addresses?: OpenIdAddress[]
+  /** ISO 8601 date-time. */
+  updatedAt?: string
+  externalId?: string
+  /** Only the custom fields whose read scope the client is configured with. */
   customFields?: Record<string, unknown>
+}
+
+/** An address in the OpenID Connect format. */
+export type OpenIdAddress = {
+  formatted?: string
+  streetAddress?: string
+  locality?: string
+  region?: string
+  postalCode?: string
+  country?: string
 }

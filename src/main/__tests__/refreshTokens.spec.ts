@@ -1,7 +1,7 @@
 import fetchMock from 'jest-fetch-mock'
 
 import { createDefaultTestClient } from './helpers/clientFactory'
-import { defineWindowProperty, headers, mockWindowCrypto } from './helpers/testHelpers'
+import { defineWindowProperty, headers, lastFetchCall, mockWindowCrypto } from './helpers/testHelpers'
 
 beforeAll(() => {
   fetchMock.enableMocks()
@@ -66,4 +66,13 @@ test('refresh token with a refresh token', async () => {
       scope
     })
   })
+})
+
+test('sends a scope given as an array as the space-separated string the API reads', async () => {
+  const { client } = createDefaultTestClient()
+  fetchMock.mockResponseOnce(JSON.stringify({ access_token: 'a', expires_in: 1, token_type: 'Bearer' }))
+
+  await client.refreshTokens({ refreshToken: 'r', scope: ['openid', 'email'] })
+
+  expect(lastFetchCall().body.scope).toBe('openid email')
 })

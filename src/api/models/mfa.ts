@@ -49,6 +49,7 @@ export namespace MFA {
     createdAt: string
   }
 
+  /** Requires the MFA feature and the `mfa` scope. */
   export type CredentialsResponse = {
     credentials: Credential[]
   }
@@ -59,6 +60,7 @@ export namespace MFA {
   }
 }
 
+/** Requires the MFA and Risk-based Authentication features, and the `mfa` scope. */
 export type TrustedDevice = {
   id: string
   metadata: TrustedDeviceMetadata
@@ -72,4 +74,8 @@ export type TrustedDeviceMetadata = {
   userAgent?: string
   deviceClass?: string
   deviceName?: string
+  /** Located from the IP address, when it can be. */
+  country?: string
+  /** Located from the IP address, when it can be. */
+  city?: string
 }

@@ -22,6 +22,6 @@ export type CustomField = {
   path: string
   dataType: CustomFieldType
   selectableValues?: SelectableValue[]
-  scope?: string
-  readScope?: string
+  scope?: string[]
+  readScope?: string[]
 }

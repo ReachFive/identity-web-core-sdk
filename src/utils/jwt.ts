@@ -30,23 +30,32 @@ export type IdTokenAddress = {
 type RegisteredJwtClaims = Pick<JWTPayload, 'iss' | 'sub' | 'aud' | 'jti' | 'nbf' | 'exp' | 'iat'>
 
 /**
- * An id token's claims, as exposed by the SDK.
+ * An id token's claims, as exposed by the SDK. Profile claims (names, birthdate, gender, locale, picture…)
+ * require the `profile` scope.
  */
 export interface IdTokenPayload extends RegisteredJwtClaims {
+  /** @deprecated Never issued by the API. */
   acr?: string
+  /** The profile's default address. Requires the `address` scope. */
   address?: IdTokenAddress
   amr?: string[]
+  /** @deprecated Never issued by the API. */
   atHash?: string
   // Narrower than `JWTPayload['aud']`, which allows a bare string. Kept as-is to avoid changing a
   // published type; worth revisiting, since a single-audience token would be mistyped here.
   aud?: string[]
   authTime?: number
   authType?: string
+  /** @deprecated Never issued by the API. */
   azp?: string
   birthdate?: string
+  /** Only the custom fields whose read scope was requested. */
   customFields?: Record<string, unknown>
+  /** Requires the `profile` scope. */
   customIdentifier?: string
+  /** Requires the `email` scope. */
   email?: string
+  /** Requires the `email` scope. */
   emailVerified?: boolean
   externalId?: string
   familyName?: string
@@ -57,13 +66,19 @@ export interface IdTokenPayload extends RegisteredJwtClaims {
   name?: string
   newUser?: boolean
   nickname?: string
+  /** Only when a `nonce` was sent with the authorization request. */
   nonce?: string
+  /** Requires the `phone` scope. */
   phoneNumber?: string
+  /** Requires the `phone` scope. */
   phoneNumberVerified?: boolean
   picture?: string
   preferredUsername?: string
   profile?: string
+  /** ISO 8601 date-time. */
   updatedAt?: string
+  /** Only for users who logged in with BConnect. */
+  cico?: string
 }
 
 /**
