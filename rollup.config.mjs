@@ -25,11 +25,14 @@ const umdEntry = 'src/umd.ts'
 /** Consumed by a bundler or Node: no polyfills, modern syntax, dependencies left external. */
 const moduleEntry = 'src/main/index.ts'
 
-// Runtime dependencies are left external in the `es`/`cjs` bundles and inlined in the UMD one.
-// `jose` qualifies because it publishes both ESM and CJS entry points; an ESM-only package would
-// have to be bundled instead, or `require('cjs/main.js')` would fail on Node below 22.
+// Runtime dependencies are left external in the `es` bundle and inlined in the UMD one.
+// The `cjs` bundle inlines the ESM-only ones: `require()` cannot load them on Node below 20.19 / 22.12,
+// nor in a Jest suite running in CommonJS, whatever the Node version. `jose` stays a dependency
+// all the same, for the `es` bundle and for the published types, which import from it.
 const runtimeDependencies = Object.keys(pkg.dependencies)
+const esmOnlyDependencies = ['jose']
 const isRuntimeDependency = (id) => runtimeDependencies.includes(id) || /lodash/.test(id)
+const isRequirableDependency = (id) => isRuntimeDependency(id) && !esmOnlyDependencies.includes(id)
 
 const sourcePlugins = ({ target, browser = false }) => [
   // `browser` matters for the UMD bundle, which inlines its dependencies: jose publishes separate
@@ -86,11 +89,15 @@ export default [
   },
   {
     input: moduleEntry,
-    output: [
-      { banner, file: pkg.main, format: 'cjs' },
-      { banner, file: pkg.module, format: 'es' }
-    ],
+    output: { banner, file: pkg.module, format: 'es' },
     external: isRuntimeDependency,
+    onwarn,
+    plugins: sourcePlugins({ target: 'ES2020' })
+  },
+  {
+    input: moduleEntry,
+    output: { banner, file: pkg.main, format: 'cjs' },
+    external: isRequirableDependency,
     onwarn,
     plugins: sourcePlugins({ target: 'ES2020' })
   },
@@ -104,7 +111,9 @@ export default [
       file: pkg.types,
       format: 'es'
     },
-    external: isRuntimeDependency,
-    plugins: [dts({ tsconfig: './tsconfig.build.json' })]
+    // jose's types are inlined: an `import` of the ESM-only `jose` would not compile in a CommonJS
+    // project under `module: node16` (TS1479), even for a type.
+    external: isRequirableDependency,
+    plugins: [dts({ tsconfig: './tsconfig.build.json', respectExternal: true })]
   }
 ]

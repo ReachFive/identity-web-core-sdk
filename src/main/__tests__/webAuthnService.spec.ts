@@ -1,13 +1,11 @@
 /**
  * Covers the WebAuthn serialisation boundary.
  *
- * The encodings here are not arbitrary: the CIAM backend serialises these fields with Java's
- * `Base64.getUrlEncoder` and reads them back with `Base64.getUrlDecoder`
- * (see `webauthn/api/ByteList.scala`). Concretely:
+ * The encodings here are not arbitrary, they are the API's wire format:
  *
- *   - challenge and user.id       base64url WITH padding    (`ByteList.formatter`)
- *   - credential descriptor ids   base64url WITHOUT padding (`withoutPadding = true`)
- *   - everything the SDK sends    must be base64url, because `getUrlDecoder` rejects `+` and `/`
+ *   - challenge and user.id       base64url WITH padding
+ *   - credential descriptor ids   base64url WITHOUT padding
+ *   - everything the SDK sends    must be base64url, because the API rejects `+` and `/`
  *
  * These tests pin that wire format, so a change of encoding library cannot quietly alter it.
  */
@@ -42,7 +40,7 @@ describe('webAuthnService encoding invariants', () => {
   })
 
   describe('decoding what the backend sends', () => {
-    test('accepts a padded base64url challenge and user id, as ByteList.formatter emits', () => {
+    test('accepts a padded base64url challenge and user id, as the API sends them', () => {
       const encoded = encodePublicKeyCredentialCreationOptions({
         rp: { name: 'ReachFive' },
         user: { id: 'AQIDBAU=', displayName: 'Ada', name: 'ada@example.com' },

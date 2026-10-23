@@ -6,6 +6,7 @@ import type { ApiClientConfig } from './config'
 import type { AuthenticationToken } from '../api/models'
 import type OAuthClient from './oAuthClient'
 import { resolveScope } from './scopeHelper'
+import { postWithNavigation } from '../utils/postNavigation'
 import type {
   CredentialRequestOptionsSerialized,
   DeviceCredential,
@@ -13,6 +14,7 @@ import type {
   EmailLoginWithWebAuthnParams,
   InternalLoginWithWebAuthnParams,
   InternalSignupWithWebAuthnParams,
+  InternalStepUpWithWebAuthnParams,
   LoginWithWebAuthnParams,
   PhoneNumberLoginWithWebAuthnParams,
   RegistrationOptions
@@ -24,6 +26,7 @@ import {
   serializeAuthenticationPublicKeyCredential,
   serializeRegistrationPublicKeyCredential
 } from './webAuthnService'
+import { getStepUpContext, removeStepUpContext } from './stepUpContextService'
 
 type EmailResetPasskeysParams = {
   email: string
@@ -59,6 +62,8 @@ export default class WebAuthnClient {
   private resetPasskeysUrl = '/identity/v1/webauthn/reset'
   private signupOptionsUrl = '/identity/v1/webauthn/signup-options'
   private signupUrl = '/identity/v1/webauthn/signup'
+  private stepUpOptionsUrl = '/identity/v1/webauthn/stepup/options'
+  private stepUpVerifyUrl = '/identity/v1/webauthn/stepup/verify'
 
   constructor(props: {
     config: ApiClientConfig
@@ -223,6 +228,69 @@ export default class WebAuthnClient {
           return Promise.reject(err)
         })
     })
+  }
+
+  /**
+   * Achieves a step-up with a passkey.
+   *
+   * @param params.stepUpToken the token returned by `getMfaStepUpToken`
+   * @returns in redirect mode, an empty object resolved just before the page navigates
+   * In web message mode, the authentication result
+   */
+  achieveStepUpWithWebAuthn(params: InternalStepUpWithWebAuthnParams): Promise<AuthResult> {
+    if (!window.PublicKeyCredential) {
+      return Promise.reject(new Error('Unsupported WebAuthn API'))
+    }
+
+    return this.http
+      .post<CredentialRequestOptionsSerialized>(this.stepUpOptionsUrl, {
+        body: {
+          origin: params.webAuthnOrigin || window.location.origin,
+          stepUpToken: params.stepUpToken,
+          r5RequestToken: this.config.orchestrationToken
+        }
+      })
+      .then((response) =>
+        navigator.credentials.get({
+          publicKey: encodePublicKeyCredentialRequestOptions(response.publicKey),
+          signal: params.signal
+        })
+      )
+      .then((credentials) => {
+        if (!credentials || !this.isPublicKeyCredential(credentials)) {
+          return Promise.reject(new Error('Unable to stepup with invalid public key credentials.'))
+        }
+        const serializedCredentials = serializeAuthenticationPublicKeyCredential(credentials)
+
+        const context = getStepUpContext(params.stepUpToken)
+        const verifyUrl = `${this.config.baseUrl}${this.stepUpVerifyUrl}`
+        const verifyData = {
+          ...serializedCredentials,
+          trustDevice: params.trustDevice,
+          // Only used by the server to answer a failure when the original request cannot be retrieved
+          clientId: this.config.clientId,
+          redirectUri: context?.redirectUri
+        }
+
+        if (context?.responseMode === 'web_message') {
+          // The verification posts the authorization response to this page instead of redirecting it
+          return this.oAuthClient
+            .postWebMessage(verifyUrl, verifyData, this.config.baseUrl, context.redirectUri)
+            .then((authResult) => {
+              removeStepUpContext(params.stepUpToken)
+              return authResult
+            })
+        }
+        removeStepUpContext(params.stepUpToken)
+        // The verification answers with a redirection to the redirect URI, carrying the authorization
+        // code: the page must follow it itself, which a `fetch` would not do.
+        postWithNavigation(verifyUrl, verifyData)
+        return {} as AuthResult
+      })
+      .finally(() => {
+        this.oAuthClient.releaseSessionLock()
+        this.oAuthClient.releaseAuthorizationLock()
+      })
   }
 
   removeWebAuthnDevice(accessToken: string, deviceId: string): Promise<void> {

@@ -1,6 +1,4 @@
-import { pick } from '../utils/utils'
 import type { AuthOptions } from './authOptions'
-import { computeAuthOptions } from './authOptions'
 import type { AuthResult } from './authResult'
 import type { Http } from '../api/http/pipeline'
 import type { ApiClientConfig } from './config'
@@ -13,6 +11,7 @@ import EmailCredential = MFA.EmailCredential
 import StepUpResponse = MFA.StepUpResponse
 import PhoneCredential = MFA.PhoneCredential
 import { toQueryString } from '../utils/queryString'
+import { storeStepUpContext } from './stepUpContextService'
 
 export type RemoveMfaEmailParams = {
   accessToken: string
@@ -110,35 +109,30 @@ export default class MfaClient {
   }
 
   getMfaStepUpToken(params: WithPkceParams<StepUpParams>): Promise<StepUpResponse> {
-    if (this.config.orchestrationToken) {
-      const authParams = computeAuthOptions(params.options)
+    const authParams = this.oAuthClient.authParams(params.options ?? {})
+    const correctedAuthParams = this.config.orchestrationToken
+      ? Promise.resolve(authParams)
+      : this.oAuthClient.getPkceParams(authParams).then((challenge) => ({ ...authParams, ...challenge }))
 
-      const correctedAuthParams = {
-        clientId: this.config.clientId,
-        ...pick(authParams, 'responseType', 'redirectUri', 'persistent', 'display')
-      }
-      return this.http.post<StepUpResponse>(this.stepUpUrl, {
-        body: {
-          tkn: params.tkn,
-          action: params.action,
-          ...correctedAuthParams
-        },
-        accessToken: params.accessToken
-      })
-    } else {
-      const authParams = this.oAuthClient.authParams(params.options ?? {})
-      return this.oAuthClient.getPkceParams(authParams).then((challenge) => {
-        return this.http.post<StepUpResponse>(this.stepUpUrl, {
+    return correctedAuthParams.then((authRequest) =>
+      this.http
+        .post<StepUpResponse>(this.stepUpUrl, {
           body: {
-            ...authParams,
+            ...authRequest,
             tkn: params.tkn,
-            action: params.action,
-            ...challenge
+            action: params.action
           },
           accessToken: params.accessToken
         })
-      })
-    }
+        .then((stepUpResponse) => {
+          storeStepUpContext(stepUpResponse.token, {
+            // An orchestrated flow should always redirect
+            responseMode: this.config.orchestrationToken ? undefined : authParams.responseMode,
+            redirectUri: authParams.redirectUri
+          })
+          return stepUpResponse
+        })
+    )
   }
 
   listMfaCredentials(accessToken: string): Promise<CredentialsResponse> {

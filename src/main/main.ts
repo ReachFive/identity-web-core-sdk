@@ -63,7 +63,12 @@ import ProfileClient from './profileClient'
 import createUrlParser from './urlParser'
 import type { ResetPasskeysParams } from './webAuthnClient'
 import WebAuthnClient from './webAuthnClient'
-import type { DeviceCredential, LoginWithWebAuthnParams, SignupWithWebAuthnParams } from './webAuthnService'
+import type {
+  DeviceCredential,
+  LoginWithWebAuthnParams,
+  SignupWithWebAuthnParams,
+  StepUpWithWebAuthnParams
+} from './webAuthnService'
 import CredentialsResponse = MFA.CredentialsResponse
 import StepUpResponse = MFA.StepUpResponse
 
@@ -72,7 +77,12 @@ export { ApiClientConfig, Config } from './config'
 export { AuthResult } from './authResult'
 export * from '../api/models'
 export * from './oAuthClient'
-export { DeviceCredential, LoginWithWebAuthnParams, SignupWithWebAuthnParams } from './webAuthnService'
+export {
+  DeviceCredential,
+  LoginWithWebAuthnParams,
+  SignupWithWebAuthnParams,
+  StepUpWithWebAuthnParams
+} from './webAuthnService'
 // `AuthResult.idTokenPayload` has always been typed with these, but they were never exported, so
 // consumers could not name the type they were already handed.
 export type { Gender, IdTokenAddress, IdTokenPayload } from '../utils/jwt'
@@ -115,6 +125,7 @@ export type { ResetPasskeysParams } from './webAuthnClient'
 
 export type Client = {
   addNewWebAuthnDevice: (accessToken: string, friendlyName?: string) => Promise<void>
+  achieveStepUpWithWebAuthn: (params: StepUpWithWebAuthnParams) => Promise<AuthResult>
   checkSession: (options?: WithPkceParams<AuthOptions>) => Promise<AuthResult>
   checkUrlFragment: (url?: string) => boolean
   exchangeAuthorizationCodeWithPkce: (params: TokenRequestParameters) => Promise<AuthResult>
@@ -337,6 +348,15 @@ export function createClient(creationConfig: Config): Client {
     )
   }
 
+  function achieveStepUpWithWebAuthn(params: StepUpWithWebAuthnParams) {
+    return apiClients.then((clients) =>
+      clients.webAuthn.achieveStepUpWithWebAuthn({
+        ...params,
+        webAuthnOrigin
+      })
+    )
+  }
+
   function logout(params: LogoutParams = {}, revocationParams?: RevocationParams) {
     return apiClients.then((clients) => clients.oAuth.logout(params, revocationParams))
   }
@@ -477,6 +497,7 @@ export function createClient(creationConfig: Config): Client {
 
   return {
     addNewWebAuthnDevice,
+    achieveStepUpWithWebAuthn,
     checkSession,
     checkUrlFragment,
     exchangeAuthorizationCodeWithPkce,

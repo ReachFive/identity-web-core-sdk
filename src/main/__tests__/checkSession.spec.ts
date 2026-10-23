@@ -45,4 +45,33 @@ describe('checkSession', () => {
       code: 'mycode12'
     })
   })
+
+  test('rejects with the error redirected to the redirect URI, and stops listening', async () => {
+    const { client } = createDefaultTestClient({ isImplicitFlowForbidden: true, isPublic: false, sso: true })
+    const authenticatedHandler = jest.fn()
+    client.on('authenticated', authenticatedHandler)
+    jest.spyOn(document.body, 'appendChild').mockImplementationOnce(
+      jest.fn((iframe: HTMLIFrameElement) => {
+        // The frame followed the redirection to the redirect URI, of the same origin as the page
+        Object.defineProperty(iframe, 'contentWindow', {
+          value: { location: { search: '?error=login_required&error_description=No+session', hash: '' } }
+        })
+        iframe.dispatchEvent(new Event('load'))
+        return iframe
+      }) as jest.Mock
+    )
+
+    await expect(client.checkSession({ redirectUri: `https://test.fr/callback`, useWebMessage: true })).rejects.toEqual(
+      { error: 'login_required', errorDescription: 'No session' }
+    )
+
+    // A later message is no longer listened to
+    window.dispatchEvent(
+      new MessageEvent('message', {
+        origin: window.location.origin,
+        data: { type: 'authorization_response', response: { code: 'late-code' } }
+      })
+    )
+    expect(authenticatedHandler).not.toHaveBeenCalled()
+  })
 })

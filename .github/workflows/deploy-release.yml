@@ -24,8 +24,18 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Nothing is published unless the tests and the package checks pass on the tagged commit.
+      - name: Run tests
+        run: npm test -- --ci
+
       - name: Build
         run: npm run build
+
+      - name: Smoke-test the UMD bundles
+        run: npm run smoke:umd
+
+      - name: Smoke-test the published package
+        run: npm run smoke:package
 
       - name: Publish to NPM
         run: npm publish --provenance --access public
