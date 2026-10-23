@@ -230,6 +230,13 @@ export default class WebAuthnClient {
     })
   }
 
+  /**
+   * Achieves a step-up with a passkey.
+   *
+   * @param params.stepUpToken the token returned by `getMfaStepUpToken`
+   * @returns in redirect mode, an empty object resolved just before the page navigates
+   * In web message mode, the authentication result
+   */
   achieveStepUpWithWebAuthn(params: InternalStepUpWithWebAuthnParams): Promise<AuthResult> {
     if (!window.PublicKeyCredential) {
       return Promise.reject(new Error('Unsupported WebAuthn API'))
