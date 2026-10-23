@@ -27,6 +27,14 @@
 
 4. Create a pull request named `Release vx.y.z` (add the Github tag `release`) and submit it.
 
+   > **On-demand prereleases.** Comment `/rc` on the release pull request to publish a release candidate to npm
+   > (`x.y.z-rc.1`, `x.y.z-rc.2`, …) under the `next` dist-tag. The pull request must carry the `release` label and
+   > the comment must come from a repository member; CI reacts 🚀 to the comment when it picks the command up, runs the
+   > same checks as a release, then posts the published version on the pull request. Install a candidate with
+   > `npm install @reachfive/identity-core@<version>`. Prereleases are **never** tagged `latest`, so they cannot reach
+   > consumers who track `latest`. The version in `package.json` must already be bumped (step 3) or the CI job fails:
+   > an `x.y.z-rc.N` prerelease has lower precedence than an existing `x.y.z`.
+
 5. Once the branch is merged into `master`, create and push the new tag.
 
     ```sh
@@ -54,3 +62,12 @@
 
 7. Draft a new release in the [Github releases tab](https://github.com/ReachFive/identity-web-core-sdk/releases) (
    copy/paste the changelog in the release's description).
+
+## Dist-tags
+
+- `latest` — the current official release (what `npm install @reachfive/identity-core` resolves to). Only ever moved
+  by an official release.
+- `next` — the most recently published version, whether an official release or a prerelease. Use it to try the newest
+  candidate: `npm install @reachfive/identity-core@next`.
+
+Publishing an official release (tag push) moves **both** `latest` and `next` to it.

@@ -37,7 +37,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "smoke:umd": "node scripts/smoke-umd.cjs",
-    "smoke:package": "node scripts/smoke-package.mjs"
+    "smoke:package": "node scripts/smoke-package.mjs",
+    "test:scripts": "node --test 'scripts/*.test.mjs'"
   },
   "dependencies": {
     "@types/cordova-plugin-inappbrowser": "2.0.0",
