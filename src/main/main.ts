@@ -1,9 +1,8 @@
-import { toQueryString } from '../utils/queryString'
 import type { AuthOptions } from './authOptions'
 import type { AuthResult } from './authResult'
 import { initCordovaCallbackIfNecessary } from './cordovaHelper'
 import type { ApiClientConfig, Config } from './config'
-import { createHttpClient, rawRequest } from './httpClient'
+import { createBootstrapHttp, createBrowserHttp } from './http'
 import type { Events } from './identityEventManager'
 import createEventManager from './identityEventManager'
 import type {
@@ -68,7 +67,12 @@ import ProfileClient from './profileClient'
 import createUrlParser from './urlParser'
 import type { ResetPasskeysParams } from './webAuthnClient'
 import WebAuthnClient from './webAuthnClient'
-import type { DeviceCredential, LoginWithWebAuthnParams, SignupWithWebAuthnParams } from './webAuthnService'
+import type {
+  DeviceCredential,
+  LoginWithWebAuthnParams,
+  SignupWithWebAuthnParams,
+  StepUpWithWebAuthnParams
+} from './webAuthnService'
 import CredentialsResponse = MFA.CredentialsResponse
 import StepUpResponse = MFA.StepUpResponse
 
@@ -77,7 +81,12 @@ export { ApiClientConfig, Config } from './config'
 export { AuthResult } from './authResult'
 export * from '../api/models'
 export * from './oAuthClient'
-export { DeviceCredential, LoginWithWebAuthnParams, SignupWithWebAuthnParams } from './webAuthnService'
+export {
+  DeviceCredential,
+  LoginWithWebAuthnParams,
+  SignupWithWebAuthnParams,
+  StepUpWithWebAuthnParams
+} from './webAuthnService'
 // `AuthResult.idTokenPayload` has always been typed with these, but they were never exported, so
 // consumers could not name the type they were already handed.
 export type { Gender, IdTokenAddress, IdTokenPayload } from '../utils/jwt'
@@ -120,6 +129,7 @@ export type { ResetPasskeysParams } from './webAuthnClient'
 
 export type Client = {
   addNewWebAuthnDevice: (accessToken: string, friendlyName?: string) => Promise<void>
+  achieveStepUpWithWebAuthn: (params: StepUpWithWebAuthnParams) => Promise<AuthResult>
   checkSession: (options?: WithPkceParams<AuthOptions>) => Promise<AuthResult>
   checkUrlFragment: (url?: string) => boolean
   exchangeAuthorizationCodeWithPkce: (params: TokenRequestParameters) => Promise<AuthResult>
@@ -215,11 +225,9 @@ export function createClient(creationConfig: Config): Client {
 
   const baseUrl = `https://${domain}`
 
-  const baseIdentityUrl = `${baseUrl}/identity/v1`
-
-  const remoteSettings = rawRequest<RemoteSettings>(
-    `https://${domain}/identity/v1/config?${toQueryString({ clientId, lang: language, googleVariant })}`
-  )
+  const remoteSettings = createBootstrapHttp(baseUrl).get<RemoteSettings>('/identity/v1/config', {
+    query: { clientId, lang: language, googleVariant }
+  })
 
   const apiClients = remoteSettings.then((remoteConfig) => {
     const { language, sso } = remoteConfig
@@ -234,8 +242,8 @@ export function createClient(creationConfig: Config): Client {
       ...remoteConfig
     }
 
-    const http = createHttpClient({
-      baseUrl: baseIdentityUrl,
+    const http = createBrowserHttp({
+      baseUrl,
       language,
       acceptCookies: sso,
       locale
@@ -355,6 +363,15 @@ export function createClient(creationConfig: Config): Client {
   function loginWithWebAuthn(params: LoginWithWebAuthnParams) {
     return apiClients.then((clients) =>
       clients.webAuthn.loginWithWebAuthn({
+        ...params,
+        webAuthnOrigin
+      })
+    )
+  }
+
+  function achieveStepUpWithWebAuthn(params: StepUpWithWebAuthnParams) {
+    return apiClients.then((clients) =>
+      clients.webAuthn.achieveStepUpWithWebAuthn({
         ...params,
         webAuthnOrigin
       })
@@ -513,6 +530,7 @@ export function createClient(creationConfig: Config): Client {
 
   return {
     addNewWebAuthnDevice,
+    achieveStepUpWithWebAuthn,
     checkSession,
     checkUrlFragment,
     exchangeAuthorizationCodeWithPkce,

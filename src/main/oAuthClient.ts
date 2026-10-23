@@ -4,6 +4,7 @@ import WinChan from 'winchan'
 import { logError } from '../utils/logger'
 import type { QueryString } from '../utils/queryString'
 import { toQueryString } from '../utils/queryString'
+import { postWithNavigation } from '../utils/postNavigation'
 import { randomBase64String } from '../utils/random'
 import { getWithExpiry, setWithExpiry } from '../utils/sessionStorage'
 import { camelCaseProperties } from '../utils/transformObjectProperties'
@@ -13,7 +14,7 @@ import { computeAuthOptions } from './authOptions'
 import type { AuthParameters } from './authParameters'
 import { AuthResult, enrichAuthResult } from './authResult'
 import type { CaptchaParams } from './captcha'
-import type { HttpClient } from './httpClient'
+import type { Http } from '../api/http/pipeline'
 import type { IdentityEventManager } from './identityEventManager'
 import type { ApiClientConfig } from './config'
 import type MfaClient from './mfaClient'
@@ -121,7 +122,7 @@ export type VerifyPasswordlessParams =
  */
 export default class OAuthClient {
   private config: ApiClientConfig
-  private http: HttpClient
+  private http: Http
   private eventManager: IdentityEventManager
   private mfaClient: MfaClient | undefined
 
@@ -141,7 +142,7 @@ export default class OAuthClient {
   private signupUrl: string
   private signupTokenUrl: string
 
-  constructor(props: { config: ApiClientConfig; http: HttpClient; eventManager: IdentityEventManager }) {
+  constructor(props: { config: ApiClientConfig; http: Http; eventManager: IdentityEventManager }) {
     this.config = props.config
     this.http = props.http
     this.eventManager = props.eventManager
@@ -149,18 +150,18 @@ export default class OAuthClient {
     this.authorizeUrl = `${this.config.baseUrl}/oauth/authorize`
     this.customTokenUrl = `${this.config.baseUrl}/identity/v1/custom-token/login`
     this.logoutUrl = `${this.config.baseUrl}/identity/v1/logout`
-    this.revokeUrl = `${this.config.baseUrl}/oauth/revoke`
-    this.passwordlessVerifyUrl = `${this.config.baseUrl}/identity/v1/passwordless/verify`
-    this.passwordStrengthUrl = `${this.config.baseUrl}/identity/v1/password/strength`
+    this.revokeUrl = '/oauth/revoke'
+    this.passwordlessVerifyUrl = '/identity/v1/passwordless/verify'
+    this.passwordStrengthUrl = '/identity/v1/password/strength'
     this.popupRelayUrl = `${this.config.baseUrl}/popup/relay`
-    this.tokenUrl = `${this.config.baseUrl}/oauth/token`
+    this.tokenUrl = '/oauth/token'
 
-    this.passwordlessVerifyAuthCodeUrl = '/verify-auth-code'
-    this.passwordLoginUrl = '/password/login'
-    this.passwordlessStartUrl = '/passwordless/start'
-    this.sessionInfoUrl = '/sso/data'
-    this.signupUrl = '/signup'
-    this.signupTokenUrl = '/signup-token'
+    this.passwordlessVerifyAuthCodeUrl = '/identity/v1/verify-auth-code'
+    this.passwordLoginUrl = '/identity/v1/password/login'
+    this.passwordlessStartUrl = '/identity/v1/passwordless/start'
+    this.sessionInfoUrl = '/identity/v1/sso/data'
+    this.signupUrl = '/identity/v1/signup'
+    this.signupTokenUrl = '/identity/v1/signup-token'
   }
 
   setMfaClient(mfaClient: MfaClient): void {
@@ -564,6 +565,21 @@ export default class OAuthClient {
   }
 
   private getWebMessage(src: string, origin: string, redirectUri?: string): Promise<AuthResult> {
+    const iframe = this.createWebMessageIframe()
+    iframe.setAttribute('src', src)
+    return this.receiveWebMessage(iframe, origin, redirectUri, () => document.body.appendChild(iframe))
+  }
+
+  postWebMessage(url: string, data: object, origin: string, redirectUri?: string): Promise<AuthResult> {
+    const iframe = this.createWebMessageIframe()
+    return this.receiveWebMessage(iframe, origin, redirectUri, () => {
+      // The frame must be in the document before the form targets it
+      document.body.appendChild(iframe)
+      postWithNavigation(url, data, iframe.name)
+    })
+  }
+
+  private createWebMessageIframe(): HTMLIFrameElement {
     const iframe = document.createElement('iframe')
     // "wm" needed to make sure the randomized id is valid
     const id = `wm${randomBase64String()}`
@@ -571,8 +587,17 @@ export default class OAuthClient {
     iframe.setAttribute('height', '0')
     iframe.setAttribute('style', 'display:none;')
     iframe.setAttribute('id', id)
-    iframe.setAttribute('src', src)
+    iframe.setAttribute('name', id)
+    return iframe
+  }
 
+  /** Listens to the authorization response posted by the iframe, once `load` has started loading it. */
+  private receiveWebMessage(
+    iframe: HTMLIFrameElement,
+    origin: string,
+    redirectUri: string | undefined,
+    load: () => void
+  ): Promise<AuthResult> {
     return new Promise<AuthResult>((resolve, reject) => {
       const listener = (event: MessageEvent) => {
         // Verify the event's origin
@@ -616,8 +641,18 @@ export default class OAuthClient {
         window.removeEventListener('message', listener, false)
       }
 
+      // Listen error occurring when the server redirect in a web_message flow
+      const loadListener = () => {
+        const error = resolveErrorFromLocation(iframe.contentWindow?.location)
+        if (!error) return
+        window.removeEventListener('message', listener, false)
+        iframe.remove()
+        reject(error)
+      }
+
       window.addEventListener('message', listener, false)
-      document.body.appendChild(iframe)
+      iframe.addEventListener('load', loadListener)
+      load()
     }).finally(() => {
       this.releaseAuthorizationLock()
       this.releaseSessionLock()
@@ -694,7 +729,7 @@ export default class OAuthClient {
       const queryString = toQueryString({
         ...params
       })
-      window.location.assign(`${this.passwordlessVerifyUrl}?${queryString}`)
+      window.location.assign(`${this.config.baseUrl}${this.passwordlessVerifyUrl}?${queryString}`)
       return Promise.resolve()
     } else if (auth.useWebMessage) {
       return this.http
@@ -729,7 +764,7 @@ export default class OAuthClient {
         ...this.authParams(auth),
         ...params
       })
-      window.location.assign(`${this.passwordlessVerifyUrl}?${queryString}`)
+      window.location.assign(`${this.config.baseUrl}${this.passwordlessVerifyUrl}?${queryString}`)
       return Promise.resolve()
     }
   }
@@ -1026,5 +1061,19 @@ export default class OAuthClient {
 
   isAuthorizationLocked(): boolean {
     return getWithExpiry('authorize_state') !== null
+  }
+}
+
+function resolveErrorFromLocation(location: Location | undefined): ErrorResponse | undefined {
+  if (!location) return undefined
+  try {
+    const params = Object.fromEntries([
+      ...new URLSearchParams(location.search).entries(),
+      ...new URLSearchParams(location.hash.replace(/^#/, '')).entries()
+    ])
+    const response = camelCaseProperties(params)
+    return ErrorResponse.isErrorResponse(response) ? response : undefined
+  } catch (_e) {
+    return undefined
   }
 }

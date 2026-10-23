@@ -2,6 +2,7 @@ import fetchMock from 'jest-fetch-mock'
 import { createDefaultTestClient } from './helpers/clientFactory'
 import { mockPkceValues, pageDisplay, scope, tkn } from './helpers/oauthHelpers'
 import { defineWindowProperty, headers, mockWindowCrypto } from './helpers/testHelpers'
+import { getStepUpContext } from '../stepUpContextService'
 
 beforeAll(() => {
   fetchMock.enableMocks()
@@ -12,6 +13,7 @@ beforeAll(() => {
 beforeEach(() => {
   jest.resetAllMocks()
   fetchMock.resetMocks()
+  localStorage.clear()
 })
 
 describe('step up', () => {
@@ -28,10 +30,11 @@ describe('step up', () => {
       method: 'POST',
       headers: expect.objectContaining(headers.jsonAndDefaultLang),
       body: JSON.stringify({
-        ...tkn,
         client_id: clientId,
         response_type: 'token',
-        ...pageDisplay
+        ...scope,
+        ...pageDisplay,
+        ...tkn
       })
     })
   })
@@ -99,6 +102,48 @@ describe('step up', () => {
         ...pageDisplay,
         ...tkn
       })
+    })
+  })
+
+  describe('context of the verification', () => {
+    test('is stored in redirect mode, with the redirect URI', async () => {
+      const { client } = createDefaultTestClient()
+      defineWindowProperty('location', { search: '' })
+      fetchMock.mockResponseOnce(JSON.stringify({ amr: [], token: 'step-up-token' }))
+
+      await client.getMfaStepUpToken({ ...tkn, options: { redirectUri: 'http://mysite.com/login/callback' } })
+
+      expect(getStepUpContext('step-up-token')).toEqual({ redirectUri: 'http://mysite.com/login/callback' })
+    })
+
+    test('is stored in web message mode, with the response mode', async () => {
+      // A confidential client gets the tokens rather than a code in web message mode, without redirect URI
+      const { client } = createDefaultTestClient({ isPublic: true })
+      defineWindowProperty('location', { search: '' })
+      fetchMock.mockResponseOnce(JSON.stringify({ amr: [], token: 'step-up-token' }))
+
+      await client.getMfaStepUpToken({
+        ...tkn,
+        options: { redirectUri: 'http://mysite.com/login/callback', useWebMessage: true }
+      })
+
+      expect(getStepUpContext('step-up-token')).toEqual({
+        responseMode: 'web_message',
+        redirectUri: 'http://mysite.com/login/callback'
+      })
+    })
+
+    test('stores only the redirect URI when the flow is orchestrated, which follows the redirection', async () => {
+      const { client } = createDefaultTestClient({ isPublic: true })
+      defineWindowProperty('location', { search: 'r5_request_token=orchestratedtoken' })
+      fetchMock.mockResponseOnce(JSON.stringify({ amr: [], token: 'step-up-token' }))
+
+      await client.getMfaStepUpToken({
+        ...tkn,
+        options: { redirectUri: 'http://mysite.com/login/callback', useWebMessage: true }
+      })
+
+      expect(getStepUpContext('step-up-token')).toEqual({ redirectUri: 'http://mysite.com/login/callback' })
     })
   })
 })

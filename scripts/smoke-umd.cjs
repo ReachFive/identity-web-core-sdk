@@ -12,7 +12,7 @@ const fs = require('node:fs')
 const path = require('node:path')
 const { JSDOM } = require('jsdom')
 
-const EXPECTED_METHOD_COUNT = 51
+const EXPECTED_METHOD_COUNT = 52
 
 function loadAsScriptTag(bundlePath) {
   const dom = new JSDOM('<!doctype html><html><body></body></html>', { url: 'https://app.example.com/' })
