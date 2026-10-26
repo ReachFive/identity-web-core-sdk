@@ -9,13 +9,40 @@ on:
   # Deliberately unfiltered: a stacked pull request targets a feature branch, not master, and
   # would otherwise get no CI at all until its base is merged.
   pull_request:
+  # `/rc` on a release pull request publishes a release candidate under the `next` dist-tag (see RELEASE.md).
+  issue_comment:
+    types: [created]
 
 jobs:
   test:
     name: Build & Test
+    # On issue_comment, only run for an `/rc` command posted by a maintainer on a release-labelled pull request:
+    # every other comment in the repository is ignored.
+    if: >
+      github.event_name != 'issue_comment' ||
+      (github.event.issue.pull_request &&
+      startsWith(github.event.comment.body, '/rc') &&
+      contains(github.event.issue.labels.*.name, 'release') &&
+      contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association))
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
     steps:
+      - name: Acknowledge the /rc command
+        if: github.event_name == 'issue_comment'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          COMMENT_ID: ${{ github.event.comment.id }}
+        run: gh api --method POST "repos/$REPO/issues/comments/$COMMENT_ID/reactions" -f content=rocket
+
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 #v7.0.0
+        with:
+          # issue_comment carries no ref: check out the head of the commented pull request.
+          ref: ${{ github.event_name == 'issue_comment' && format('refs/pull/{0}/head', github.event.issue.number) || '' }}
+          # The pull request's code runs below; it gets no token to push with.
+          persist-credentials: false
 
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
@@ -39,11 +66,24 @@ jobs:
       - name: Typecheck the isomorphic API layer (no DOM)
         run: npm run typecheck:api
 
+      - name: Run script unit tests
+        run: npm run test:scripts
+
       - name: Install JUnit coverage reporter
         run: npm install --save-dev jest-junit
 
       - name: Run tests
         run: npm test -- --ci --reporters=default --reporters=jest-junit
+
+      # Before the build: the bundles' banner carries the version.
+      - name: Compute and set prerelease version
+        if: github.event_name == 'issue_comment'
+        run: |
+          BASE=$(node -p "require('./package.json').version")
+          VERSIONS=$(npm view @reachfive/identity-core versions --json 2>/dev/null || echo '')
+          RC=$(printf '%s' "$VERSIONS" | node scripts/prerelease-version.mjs "$BASE")
+          echo "Prerelease version: $RC"
+          npm pkg set version="$RC"
 
       - name: Build
         run: npm run build
@@ -73,3 +113,71 @@ jobs:
           path: jest-junit.xml
         env:
           JEST_JUNIT_OUTPUT_NAME: jest-junit.xml
+
+      - name: Upload npm package artifact
+        if: github.event_name == 'issue_comment'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
+        with:
+          name: npm-package
+          retention-days: 1
+          path: |
+            package.json
+            README.md
+            LICENSE.md
+            cjs
+            es
+            umd
+
+  # Publishes what the test job built and checked. It runs no code from the pull request, and is the only job that
+  # sees the npm token.
+  publish-prerelease:
+    name: Publish Prerelease
+    needs: test
+    if: github.event_name == 'issue_comment'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
+    concurrency:
+      group: prerelease-${{ github.event.issue.number }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e #v6.4.0
+        with:
+          node-version: 24
+          registry-url: 'https://registry.npmjs.org'
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
+        with:
+          name: npm-package
+          path: .
+
+      - name: Publish prerelease to NPM (next tag)
+        run: npm publish --tag next --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
+
+      - name: Comment prerelease version on the pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          MARKER="<!-- prerelease-publish -->"
+          BODY="$MARKER
+          📦 Published prerelease \`$VERSION\` to npm on dist-tag \`next\`.
+
+          Install it with:
+          \`\`\`sh
+          npm install @reachfive/identity-core@$VERSION
+          \`\`\`
+          This prerelease is **not** tagged \`latest\` and will not affect production consumers."
+          COMMENT_ID=$(gh api --paginate "repos/$REPO/issues/$PR_NUMBER/comments" \
+            --jq ".[] | select(.body | startswith(\"$MARKER\")) | .id" | head -n1)
+          if [ -n "$COMMENT_ID" ]; then
+            gh api --method PATCH "repos/$REPO/issues/comments/$COMMENT_ID" -f body="$BODY"
+          else
+            gh api --method POST "repos/$REPO/issues/$PR_NUMBER/comments" -f body="$BODY"
+          fi
