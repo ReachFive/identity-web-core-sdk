@@ -1,7 +1,7 @@
 import fetchMock from 'jest-fetch-mock'
 import { createDefaultTestClient } from './helpers/clientFactory'
 import { tkn } from './helpers/oauthHelpers'
-import { defineWindowProperty, mockWindowCrypto } from './helpers/testHelpers'
+import { defineWindowProperty, lastFetchCall, mockWindowCrypto } from './helpers/testHelpers'
 
 beforeAll(() => {
   fetchMock.enableMocks()
@@ -115,4 +115,31 @@ describe('error cases', () => {
     await expect(promise).rejects.toEqual(expectedError)
     await expect(loginFailedHandler).toHaveBeenCalledWith(expectedError)
   })
+})
+
+test('does not send saveCredentials or action, which only mean something to the SDK', async () => {
+  defineWindowProperty('location', { origin: 'https://local.reach5.net', assign: jest.fn() })
+  const { client } = createDefaultTestClient()
+  fetchMock.mockResponseOnce(JSON.stringify({ tkn: 'x' }))
+
+  await client.loginWithPassword({ email: 'john@example.com', password: 'p', saveCredentials: false, action: 'x' })
+
+  const [, init] = fetchMock.mock.calls.find(([url]) => String(url).endsWith('/password/login'))!
+  const body = JSON.parse(init!.body as string)
+  expect(body).not.toHaveProperty('save_credentials')
+  expect(body).not.toHaveProperty('action')
+  expect(body).toMatchObject({ email: 'john@example.com', password: 'p' })
+})
+
+test('a password grant login, under Cordova, sends the nonce of the auth options', async () => {
+  const { client } = createDefaultTestClient()
+  fetchMock.mockResponseOnce(JSON.stringify({ access_token: 'a', expires_in: 1, token_type: 'Bearer' }))
+  defineWindowProperty('cordova', {})
+  try {
+    await client.loginWithPassword({ email: 'john@example.com', password: 'p', auth: { nonce: 'n-0S6_WzA2Mj' } })
+  } finally {
+    delete (window as { cordova?: unknown }).cordova
+  }
+
+  expect(lastFetchCall().body).toMatchObject({ grant_type: 'password', nonce: 'n-0S6_WzA2Mj' })
 })

@@ -32,3 +32,12 @@ test('send verification for phone number', async () => {
     )
   })
 })
+
+test('resolves with whether the code was sent', async () => {
+  const { client } = createDefaultTestClient()
+  fetchMock.mockResponseOnce(JSON.stringify({ verification_code_sent: false }))
+
+  await expect(client.sendPhoneNumberVerification({ accessToken: 'tkn' })).resolves.toEqual({
+    verificationCodeSent: false
+  })
+})
