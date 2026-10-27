@@ -166,17 +166,6 @@ describe('with data', () => {
     defineWindowProperty('location')
   })
 
-  test('drops identifiers passed inside data', async () => {
-    const { client } = createDefaultTestClient(pblic)
-    fetchMock.mockResponseOnce(JSON.stringify(''))
-    const data = { givenName: 'John', email: 'other@example.com', phoneNumber: '+33600000000' }
-
-    await client.startPasswordless({ ...authParams, data }, authOptions)
-
-    expect(sentBody().email).toEqual(authParams.email)
-    expect(sentBody().data).toEqual({ given_name: 'John' })
-  })
-
   test('omits data when not provided', async () => {
     const { client } = createDefaultTestClient(pblic)
     fetchMock.mockResponseOnce(JSON.stringify(''))

@@ -77,7 +77,7 @@ export type SingleFactorPasswordlessParams = (
       phoneNumber?: string
     }
 ) & {
-  data?: Omit<SignupProfileData, 'email' | 'phoneNumber'>
+  data?: SignupProfileData
 } & CaptchaParams
 
 export type StepUpPasswordlessParams = {
@@ -860,11 +860,10 @@ export default class OAuthClient {
     auth: Omit<WithPkceParams<AuthOptions>, 'useWebMessage'> = {}
   ): Promise<object> {
     const { authType, data, captchaToken, captchaProvider } = params
-    const { email: _email, phoneNumber: _phoneNumber, ...profileData }: SignupProfileData = data ?? {}
     const passwordlessParams = {
       authType,
       ...(authType === 'magic_link' ? { email: params.email } : { phoneNumber: params.phoneNumber }),
-      ...(data && { data: profileData })
+      data
     }
 
     if (this.config.orchestrationToken) {
