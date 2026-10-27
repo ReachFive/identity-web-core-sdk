@@ -104,3 +104,74 @@ test('with confidential client', async () => {
     })
   })
 })
+
+describe('with data', () => {
+  const sentBody = () => JSON.parse(fetchMock.mock.calls[1][1]?.body as string)
+
+  test('forwards data in snake case', async () => {
+    const { client } = createDefaultTestClient(pblic)
+    fetchMock.mockResponseOnce(JSON.stringify(''))
+
+    await client.startPasswordless(
+      {
+        ...authParams,
+        data: {
+          givenName: 'John',
+          familyName: 'Doe',
+          consents: { newsletter: { granted: true, consentType: 'opt-in' } }
+        }
+      },
+      authOptions
+    )
+
+    expect(sentBody()).toMatchObject({
+      auth_type: 'magic_link',
+      email: authParams.email,
+      data: {
+        given_name: 'John',
+        family_name: 'Doe',
+        consents: { newsletter: { granted: true, consent_type: 'opt-in' } }
+      }
+    })
+  })
+
+  test('forwards data for sms', async () => {
+    const { client } = createDefaultTestClient(pblic)
+    fetchMock.mockResponseOnce(JSON.stringify(''))
+
+    await client.startPasswordless(
+      { authType: 'sms', phoneNumber: '+33612345678', data: { givenName: 'John' } },
+      authOptions
+    )
+
+    expect(sentBody()).toMatchObject({
+      auth_type: 'sms',
+      phone_number: '+33612345678',
+      data: { given_name: 'John' }
+    })
+  })
+
+  test('forwards data when flow is orchestrated', async () => {
+    defineWindowProperty('location', { search: 'r5_request_token=orchestratedtoken' })
+    const { client } = createDefaultTestClient(pblic)
+    fetchMock.mockResponseOnce(JSON.stringify(''))
+
+    await client.startPasswordless({ ...authParams, data: { givenName: 'John' } }, authOptions)
+
+    expect(sentBody()).toMatchObject({
+      r5_request_token: 'orchestratedtoken',
+      email: authParams.email,
+      data: { given_name: 'John' }
+    })
+    defineWindowProperty('location')
+  })
+
+  test('omits data when not provided', async () => {
+    const { client } = createDefaultTestClient(pblic)
+    fetchMock.mockResponseOnce(JSON.stringify(''))
+
+    await client.startPasswordless(authParams, authOptions)
+
+    expect(sentBody()).not.toHaveProperty('data')
+  })
+})
