@@ -25,7 +25,8 @@ import type {
   PasswordStrength,
   Scope,
   SessionInfo,
-  SignupProfile
+  SignupProfile,
+  SignupProfileData
 } from '../api/models'
 import { ErrorResponse } from '../api/models'
 import type { PkceParams, WithPkceParams } from './pkceService'
@@ -75,8 +76,9 @@ export type SingleFactorPasswordlessParams = (
       authType: 'sms'
       phoneNumber?: string
     }
-) &
-  CaptchaParams
+) & {
+  data?: Omit<SignupProfileData, 'email' | 'phoneNumber'>
+} & CaptchaParams
 
 export type StepUpPasswordlessParams = {
   authType: 'email' | 'sms'
@@ -857,10 +859,12 @@ export default class OAuthClient {
     params: SingleFactorPasswordlessParams,
     auth: Omit<WithPkceParams<AuthOptions>, 'useWebMessage'> = {}
   ): Promise<object> {
-    const { authType, captchaToken, captchaProvider } = params
+    const { authType, data, captchaToken, captchaProvider } = params
+    const { email: _email, phoneNumber: _phoneNumber, ...profileData }: SignupProfileData = data ?? {}
     const passwordlessParams = {
       authType,
-      ...(authType === 'magic_link' ? { email: params.email } : { phoneNumber: params.phoneNumber })
+      ...(authType === 'magic_link' ? { email: params.email } : { phoneNumber: params.phoneNumber }),
+      ...(data && { data: profileData })
     }
 
     if (this.config.orchestrationToken) {

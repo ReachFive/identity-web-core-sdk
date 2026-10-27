@@ -8,6 +8,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- `startPasswordless` accepts an optional `data` object (same shape as signup data) that is forwarded
+  to `POST /passwordless/start` and used only when the flow resolves to a signup.
 - The 28 sub-client parameter and response types named in `Client` are now exported from the entry
   point, and the old `es/main/*` deep type paths still resolve.
 - `IdTokenPayload`, `IdTokenAddress` and `Gender` are now exported from the entry point.
