@@ -19,13 +19,14 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - The root CDN URL of the package (jsDelivr, unpkg) now serves `umd/identity-core.min.js`.
 
 ### Changed
-- **Bundle size.** Gzipped, against 1.42.0: `es/main.js` and `cjs/main.js` go from 172 kB to 15 kB, and
-  `umd/identity-core.min.js` from 91 kB to 15 kB.
-- The `es` and `cjs` bundles now target ES2020. The UMD bundle still targets ES2015.
+- **Bundle size.** Gzipped, against 1.42.0: `es/main.js` goes from 172 kB to 19 kB, `cjs/main.js` from 172 kB to
+  20 kB, and `umd/identity-core.min.js` from 91 kB to 16 kB.
+- The `es` and `cjs` bundles, and the new [`jose`](https://github.com/panva/jose) dependency, use ES2020 syntax
+  (`?.`, `??`). Up to 1.42.0, these bundles used ES2015 syntax. If your build tool does not parse ES2020 and does
+  not transpile `node_modules` (webpack 4, for example, as used by Nuxt 2, Vue CLI 4 or Angular 11 and below),
+  configure it to transpile `@reachfive/identity-core` and `jose`, or use the UMD bundle.
 - Type declarations are published as a single `es/main.d.ts`. Imports of types from the old `es/main/*` paths still
   resolve.
-- New runtime dependency: [`jose`](https://github.com/panva/jose) 6. It is ESM-only, so it is inlined in
-  `cjs/main.js`.
 
 ### Fixed
 - The published type declarations referenced `InAppBrowser` from `@types/cordova-plugin-inappbrowser`, which was
@@ -33,12 +34,14 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   dependency.
 
 ### Removed
-- `core-js`, `regenerator-runtime` and the `buffer` polyfill are no longer bundled. The SDK requires at least
-  Chrome 92 or Safari 15.4, because it uses `crypto.subtle` and `crypto.randomUUID`, which no polyfill can provide.
-  IE11 was never supported. The UMD bundle still includes the `fetch` polyfill.
+- The `core-js`, `regenerator-runtime`, `whatwg-fetch` and `buffer` polyfills are no longer bundled, except
+  `whatwg-fetch` in the UMD bundle. The SDK requires at least Chrome 92 or Safari 15.4, because it uses
+  `crypto.subtle` and `crypto.randomUUID`, which no polyfill can provide. IE11 was never supported.
 
-  If your application relied on polyfills that the SDK used to include, import them yourself for your own browser
-  targets.
+  **Check your application before upgrading.** Up to 1.42.0, loading the SDK installed the whole of `core-js` and
+  the global `regeneratorRuntime` on the page, so they applied to your own code too. If your application uses a
+  recent API such as `structuredClone` or `Array.prototype.at` without polyfilling it, it can now fail on browsers
+  that do not have it. Import the polyfills you need yourself, for your own browser targets.
 - Deep imports into the package internals, for example `@reachfive/identity-core/es/utils/jwt`. Only the documented
   entry points are supported.
 
