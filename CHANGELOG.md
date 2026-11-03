@@ -18,6 +18,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `IdTokenPayload` now includes the `jti` and `nbf` claims.
 - The root CDN URL of the package (jsDelivr, unpkg) now serves `umd/identity-core.min.js`.
 - `recaptcha_enterprise` added to the `CaptchaProvider` union.
+- method `achieveStepUpWithWebAuthn` allows to achieve a step-up with a webauthn credential
 
 ### Changed
 - **Bundle size.** Gzipped, against 1.42.0: `es/main.js` goes from 172 kB to 19 kB, `cjs/main.js` from 172 kB to
@@ -28,6 +29,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   configure it to transpile `@reachfive/identity-core` and `jose`, or use the UMD bundle.
 - Type declarations are published as a single `es/main.d.ts`. Imports of types from the old `es/main/*` paths still
   resolve.
+- method `listMfaCredentials` can return a `PasskeyCredential`
 
 ### Fixed
 - The published type declarations referenced `InAppBrowser` from `@types/cordova-plugin-inappbrowser`, which was
