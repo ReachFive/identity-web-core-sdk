@@ -17,6 +17,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `AuthResult.idTokenPayload`.
 - `IdTokenPayload` now includes the `jti` and `nbf` claims.
 - The root CDN URL of the package (jsDelivr, unpkg) now serves `umd/identity-core.min.js`.
+- `recaptcha_enterprise` added to the `CaptchaProvider` union.
 
 ### Changed
 - **Bundle size.** Gzipped, against 1.42.0: `es/main.js` goes from 172 kB to 19 kB, `cjs/main.js` from 172 kB to
