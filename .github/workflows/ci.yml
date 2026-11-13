@@ -128,8 +128,8 @@ jobs:
             es
             umd
 
-  # Publishes what the test job built and checked. It runs no code from the pull request, and is the only job that
-  # sees the npm token.
+  # Publishes what the test job built and checked. It runs no code from the pull request, and is the only job with
+  # the `id-token: write` permission, which npm trusted publishing (OIDC) needs to publish.
   publish-prerelease:
     name: Publish Prerelease
     needs: test
@@ -155,8 +155,6 @@ jobs:
 
       - name: Publish prerelease to NPM (next tag)
         run: npm publish --tag next --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
 
       - name: Comment prerelease version on the pull request
         env:

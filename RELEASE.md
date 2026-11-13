@@ -42,12 +42,10 @@
     git push origin <tag_name>
     ```
 
-   [circleci](https://circleci.com) will automatically trigger a build, run the tests and publish the new version of the
-   SDK on [npm](https://www.npmjs.com/package/@reachfive/identity-core).
-
-   > It's important to push the tag separately otherwise the [deployement job is not triggered](https://support.circleci.com/hc/en-us/articles/115013854347-Jobs-builds-not-triggered-when-pushing-tag).
-
-   Refer to the [.circleci/config.yml](.circleci/config.yml) file to set up the integration.
+   The [Deploy Release](.github/workflows/deploy-release.yml) workflow runs on the tag: it runs the tests, builds,
+   checks the package and publishes the new version of the SDK on
+   [npm](https://www.npmjs.com/package/@reachfive/identity-core). See [npm publishing](#npm-publishing) for the
+   setup it needs.
 
 6. Purge the cache of a @latest or version aliased URL to force users to get the new updated version. Otherwise they might wait up to 7 days.
 
@@ -71,3 +69,16 @@
   candidate: `npm install @reachfive/identity-core@next`.
 
 Publishing an official release (tag push) moves **both** `latest` and `next` to it.
+
+## npm publishing
+
+The workflows publish with [npm trusted publishing](https://docs.npmjs.com/trusted-publishers/) (OIDC). The
+repository stores no npm token. In the package settings on npmjs.com, a package owner declares one trusted publisher
+(GitHub Actions, repository `ReachFive/identity-web-core-sdk`) for each workflow:
+
+| Workflow | Publishes | Allowed actions |
+|---|---|---|
+| `deploy-release.yml` | official releases, then moves `next` | `npm publish` and `npm dist-tag` |
+| `ci.yml` | release candidates (`/rc`) | `npm publish` |
+
+`npm dist-tag` with OIDC needs npm 11.21.0 or later: `deploy-release.yml` installs it before publishing.
