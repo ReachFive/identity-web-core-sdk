@@ -41,7 +41,7 @@ jobs:
       # stores no npm token. `npm dist-tag` with OIDC needs npm 11.21.0 or later, newer than the npm bundled with
       # Node 24.
       - name: Update npm
-        run: npm install -g npm@11.21.1
+        run: npm install -g 'npm@^11.21.0'
 
       - name: Publish to NPM
         run: npm publish --provenance --access public
