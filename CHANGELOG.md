@@ -7,6 +7,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+- The `Provider` type of `RemoteSettings.customProviders` now matches what the API returns: `btnBackgroundColor`,
+  `btnBorderColor` and `btnTextColor` are optional, `scope` is added, and `buttonLabel` is removed, since the API never
+  sends it.
+
 ## [1.43.0] - 2026-11-02
 
 ### Added
