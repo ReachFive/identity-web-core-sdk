@@ -37,26 +37,30 @@ jobs:
       - name: Smoke-test the published package
         run: npm run smoke:package
 
+      # npm authenticates with trusted publishing (OIDC, through the `id-token: write` permission): the repository
+      # stores no npm token. `npm dist-tag` with OIDC needs npm 11.21.0 or later, newer than the npm bundled with
+      # Node 24.
+      - name: Update npm
+        run: npm install -g 'npm@^11.21.0'
+
       - name: Publish to NPM
         run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
 
       # `next` follows the newest published version, release candidate or release (see RELEASE.md), so a release
       # moves it too. Right after `npm publish` the registry may not serve the new version yet, and a dist-tag write
-      # against it fails until it does: retry rather than fail the release on that race.
+      # against it fails until it does. Wait for the registry to serve the version, then write the tag once, so that
+      # any other error (a refused permission, for example) fails the job at once.
       - name: Point next tag at the release
         run: |
           version=$(node -p "require('./package.json').version")
           for attempt in $(seq 1 60); do
-            if npm dist-tag add "@reachfive/identity-core@$version" next; then
+            if [ "$(npm view "@reachfive/identity-core@$version" version 2>/dev/null)" = "$version" ]; then
+              npm dist-tag add "@reachfive/identity-core@$version" next
               echo "next now points at $version"
               exit 0
             fi
-            echo "Attempt $attempt failed; the registry may still be processing the publish. Retrying in 10s..."
+            echo "Attempt $attempt: the registry does not serve $version yet. Retrying in 10s..."
             sleep 10
           done
-          echo "::error::Timed out after 10 minutes pointing the next dist-tag at $version."
+          echo "::error::Timed out after 10 minutes waiting for the registry to serve $version."
           exit 1
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
