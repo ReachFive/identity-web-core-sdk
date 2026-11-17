@@ -1,5 +1,6 @@
 import fetchMock from 'jest-fetch-mock'
 
+import type { Provider } from '../../api/models/settings'
 import { createClient } from '../main'
 import { defineWindowProperty, mockWindowCrypto } from './helpers/testHelpers'
 
@@ -21,7 +22,7 @@ const wireConfig = {
   social_providers: [],
   custom_providers: {
     my_provider: { key: 'my_provider', name: 'Mine', btn_text_color: '#fff' },
-    x_2: { key: 'x_2', name: 'X2' }
+    x_2: { key: 'x_2', name: 'X2', icon: 'x2.svg', color: '#4c1d95', scope: ['email', 'openid'] }
   },
   password_policy: { minLength: 8, minStrength: 2, allowUpdateWithAccessTokenOnly: true },
   consents: [{ key: 'optin_news', title: 'News', consent_type: 'opt-in', status: 'active' }],
@@ -70,6 +71,14 @@ describe('remote settings', () => {
 
     expect(Object.keys(customProviders ?? {})).toEqual(['my_provider', 'x_2'])
     expect(customProviders?.my_provider).toEqual({ key: 'my_provider', name: 'Mine', btnTextColor: '#fff' })
+  })
+
+  test('types a custom provider as the API sends it', async () => {
+    const { customProviders } = await client().remoteSettings
+
+    // no button colors when none is configured, and never a button label
+    const expected: Provider = { key: 'x_2', name: 'X2', icon: 'x2.svg', color: '#4c1d95', scope: ['email', 'openid'] }
+    expect(customProviders?.x_2).toEqual(expected)
   })
 
   test('camel-cases custom field definitions, as their type declares', async () => {

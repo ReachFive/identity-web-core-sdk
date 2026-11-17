@@ -11,15 +11,19 @@ export type LoginTypeAllowed = {
   customIdentifier: boolean
 }
 
+/**
+ * A custom social provider, as configured on the account. The button colors are absent when they are not configured.
+ */
 export type Provider = {
   key: string
   name: string
   color: string
-  btnBackgroundColor: string
-  btnBorderColor: string
-  btnTextColor: string
-  buttonLabel: string
+  btnBackgroundColor?: string
+  btnBorderColor?: string
+  btnTextColor?: string
   icon: string
+  /** The scope requested from the provider. */
+  scope?: string[]
 }
 
 /**
