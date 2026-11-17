@@ -27,10 +27,10 @@
 
 4. Create a pull request named `Release vx.y.z` (add the Github tag `release`) and submit it.
 
-   > **On-demand prereleases.** Comment `/rc` on the release pull request to publish a release candidate to npm
-   > (`x.y.z-rc.1`, `x.y.z-rc.2`, …) under the `next` dist-tag. The pull request must carry the `release` label and
-   > the comment must come from a repository member; CI reacts 🚀 to the comment when it picks the command up, runs the
-   > same checks as a release, then posts the published version on the pull request. Install a candidate with
+   > **On-demand prereleases.** To publish a release candidate to npm (`x.y.z-rc.1`, `x.y.z-rc.2`, …) under the
+   > `next` dist-tag, open Actions → Continuous Integration → Run workflow, keep the `master` branch and enter the
+   > release pull request number. The pull request must carry the `release` label. CI runs the same checks as a
+   > release, then posts the published version on the pull request. Install a candidate with
    > `npm install @reachfive/identity-core@<version>`. Prereleases are **never** tagged `latest`, so they cannot reach
    > consumers who track `latest`. The version in `package.json` must already be bumped (step 3) or the CI job fails:
    > an `x.y.z-rc.N` prerelease has lower precedence than an existing `x.y.z`.
@@ -79,6 +79,6 @@ repository stores no npm token. In the package settings on npmjs.com, a package 
 | Workflow | Publishes | Allowed actions |
 |---|---|---|
 | `deploy-release.yml` | official releases, then moves `next` | `npm publish` and `npm dist-tag` |
-| `ci.yml` | release candidates (`/rc`) | `npm publish` |
+| `ci.yml` | release candidates (manual run) | `npm publish` |
 
 `npm dist-tag` with OIDC needs npm 11.21.0 or later: `deploy-release.yml` installs it before publishing.
