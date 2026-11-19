@@ -7,6 +7,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- `RemoteSettings` declares `mfaWebauthnEnabled`, `verificationCodeLength`, `verificationCodeMaxTrials` and
+  `stepUpTokenMaxUses`; code that builds a `RemoteSettings` object must set them.
+
 ### Fixed
 - The `Provider` type of `RemoteSettings.customProviders` now matches what the API returns: `btnBackgroundColor`,
   `btnBorderColor` and `btnTextColor` are optional, `scope` is added, and `buttonLabel` is removed, since the API never
