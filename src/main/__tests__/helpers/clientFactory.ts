@@ -36,11 +36,15 @@ export function createDefaultTestClient(remoteSettings: Partial<RemoteSettings> 
     resourceBaseUrl: `https://${domain}/hassets/sdk`,
     mfaEmailEnabled: false,
     mfaSmsEnabled: false,
+    mfaWebauthnEnabled: false,
     loginTypeAllowed: {
       email: true,
       phoneNumber: true,
       customIdentifier: true
     },
+    verificationCodeLength: 6,
+    verificationCodeMaxTrials: 3,
+    stepUpTokenMaxUses: 3,
     ...remoteSettings
   }
 

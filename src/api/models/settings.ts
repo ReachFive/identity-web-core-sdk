@@ -52,7 +52,15 @@ export type RemoteSettings = {
   resourceBaseUrl: string
   mfaSmsEnabled: boolean
   mfaEmailEnabled: boolean
+  /** Whether a passkey can be used as a second factor. */
+  mfaWebauthnEnabled: boolean
   rbaEnabled: boolean
   isImplicitFlowForbidden: boolean
   loginTypeAllowed: LoginTypeAllowed
+  /** The number of digits of the verification codes the account sends (email, SMS). */
+  verificationCodeLength: number
+  /** The wrong codes a verification code accepts before it is deleted. */
+  verificationCodeMaxTrials: number
+  /** The codes a single step-up token can send, the first one included. */
+  stepUpTokenMaxUses: number
 }

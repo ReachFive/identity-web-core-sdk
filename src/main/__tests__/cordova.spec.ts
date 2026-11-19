@@ -29,6 +29,7 @@ export function apiClientAndEventManager(remoteSettings: Partial<RemoteSettings>
       language: 'en',
       mfaEmailEnabled: false,
       mfaSmsEnabled: false,
+      mfaWebauthnEnabled: false,
       passwordPolicy: {
         minLength: 8,
         minStrength: 2,
@@ -48,6 +49,9 @@ export function apiClientAndEventManager(remoteSettings: Partial<RemoteSettings>
         phoneNumber: true,
         customIdentifier: true
       },
+      verificationCodeLength: 6,
+      verificationCodeMaxTrials: 3,
+      stepUpTokenMaxUses: 3,
       ...remoteSettings
     },
     http,
